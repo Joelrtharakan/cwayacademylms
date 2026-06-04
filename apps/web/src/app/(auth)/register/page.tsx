@@ -122,7 +122,7 @@ export default function RegisterPage() {
     <SplitAuthLayout>
       <div style={{ width: '100%' }}>
         <div style={{ marginBottom: '16px', textAlign: 'left' }}>
-          <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: '28px', marginBottom: '4px', letterSpacing: '-0.02em' }}>
+          <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(24px, 4vw, 28px)', marginBottom: '4px', letterSpacing: '-0.02em' }}>
             Join Academy
           </h2>
           <p className="font-sans" style={{ fontSize: '13px', color: '#526658' }}>

@@ -57,7 +57,7 @@ function LoginContent() {
   return (
     <div style={{ width: '100%' }}>
       <div style={{ marginBottom: '40px', textAlign: 'left' }}>
-        <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: '36px', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+        <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
           Welcome Back
         </h2>
         <p className="font-sans" style={{ fontSize: '14px', color: '#526658' }}>

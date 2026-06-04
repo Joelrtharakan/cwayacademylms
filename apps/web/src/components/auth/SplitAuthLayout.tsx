@@ -27,17 +27,18 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
         </div>
 
         {/* Content container inside left panel - Explicitly padded */}
-        <div className="relative z-10 flex flex-col w-full h-full justify-center" style={{ padding: '64px' }}>
+        <div className="relative z-10 flex flex-col w-full h-full justify-center" style={{ padding: 'clamp(24px, 5vw, 64px)' }}>
           
           {/* Top Logo (Absolute positioned so it doesn't mess up center alignment) */}
-          <div style={{ position: 'absolute', top: '32px', left: '48px' }}>
+          <div style={{ position: 'absolute', top: 'clamp(16px, 3vh, 32px)', left: 'clamp(24px, 5vw, 48px)' }}>
             <Link href="/" className="inline-block transition-transform hover:scale-105 duration-300">
               <Image
                 src="/logo.png"
                 alt="CWAY Academy"
                 width={120}
                 height={36}
-                className="h-9 w-auto object-contain drop-shadow-md"
+                className="w-[clamp(80px,10vw,120px)] h-auto object-contain drop-shadow-md"
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </Link>
@@ -47,27 +48,27 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
           <div className="flex flex-col justify-center animate-3d-entrance" style={{ animationDelay: '0.1s' }}>
             
             {/* Small Gold Header */}
-            <h3 className="font-sans font-bold" style={{ color: '#C9973A', textTransform: 'uppercase', letterSpacing: '0.25em', fontSize: '13px', marginBottom: '32px' }}>
+            <h3 className="font-sans font-bold" style={{ color: '#C9973A', textTransform: 'uppercase', letterSpacing: '0.25em', fontSize: 'clamp(10px, 1vw, 13px)', marginBottom: 'clamp(16px, 3vh, 32px)' }}>
               CWAY MISSIONS PRESENTS
             </h3>
 
             {/* Main Headline */}
-            <h1 className="font-serif text-white drop-shadow-xl" style={{ fontSize: '72px', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em' }}>
+            <h1 className="font-serif text-white drop-shadow-xl" style={{ fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em' }}>
               Coach. Challenge.
             </h1>
-            <h1 className="font-serif italic drop-shadow-xl" style={{ color: '#C9973A', fontSize: '72px', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em', marginBottom: '40px' }}>
+            <h1 className="font-serif italic drop-shadow-xl" style={{ color: '#C9973A', fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em', marginBottom: 'clamp(24px, 4vh, 40px)' }}>
               Commission.
             </h1>
             
             {/* Paragraph Text */}
-            <p className="font-sans text-white" style={{ fontSize: '18px', maxWidth: '500px', letterSpacing: '0.01em', lineHeight: '1.6', fontWeight: 300, opacity: 0.9 }}>
+            <p className="font-sans text-white" style={{ fontSize: 'clamp(14px, 1.5vw, 18px)', maxWidth: '500px', letterSpacing: '0.01em', lineHeight: '1.6', fontWeight: 300, opacity: 0.9 }}>
               Experience the unique blend of coaching, challenging, and commissioning to shape or enhance your leadership potential.
             </p>
             
           </div>
 
           {/* Bottom Link (Absolute positioned so it doesn't mess up center alignment) */}
-          <div style={{ position: 'absolute', bottom: '64px', left: '64px' }}>
+          <div style={{ position: 'absolute', bottom: 'clamp(24px, 5vh, 64px)', left: 'clamp(24px, 5vw, 64px)' }}>
             <Link
               href="/"
               className="inline-flex items-center gap-2 font-sans font-bold hover:text-white transition-all duration-300 hover:translate-x-1"
@@ -80,16 +81,17 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
       </div>
 
       {/* RIGHT PANEL: Form Container */}
-      <div className="flex-1 flex flex-col justify-center items-center min-h-screen overflow-y-auto relative z-10 w-full" style={{ padding: '16px' }}>
+      <div className="flex-1 flex flex-col justify-center items-center min-h-screen overflow-y-auto relative z-10 w-full" style={{ padding: 'clamp(12px, 3vw, 16px)' }}>
         {/* Mobile Logo fallback */}
-        <div className="md:hidden animate-3d-entrance" style={{ marginBottom: '24px' }}>
+        <div className="md:hidden animate-3d-entrance" style={{ marginBottom: '24px', marginTop: '16px' }}>
           <Link href="/">
             <Image
               src="/logo.png"
               alt="CWAY Academy"
               width={160}
               height={50}
-              className="h-12 w-auto object-contain brightness-0"
+              className="h-10 w-auto object-contain"
+              style={{ width: 'auto', height: 'auto' }}
               priority
             />
           </Link>
@@ -97,11 +99,11 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
 
         {/* 3D Glassmorphic Form Card */}
         <div className="w-full max-w-[500px] glass-card animate-3d-entrance relative group perspective-1000">
-          <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-b from-white/60 to-white/20 pointer-events-none" />
-          <div className="absolute inset-0 rounded-[2rem] border-2 border-white/40 group-hover:border-white/60 transition-colors duration-500 pointer-events-none" />
+          <div className="absolute inset-0 rounded-[clamp(1rem,3vw,2rem)] bg-gradient-to-b from-white/60 to-white/20 pointer-events-none" />
+          <div className="absolute inset-0 rounded-[clamp(1rem,3vw,2rem)] border-2 border-white/40 group-hover:border-white/60 transition-colors duration-500 pointer-events-none" />
           
           {/* Explicit padded inner wrapper to fix content overflowing the border */}
-          <div className="relative z-10" style={{ padding: '24px 32px' }}>
+          <div className="relative z-10" style={{ padding: 'clamp(20px, 4vw, 24px) clamp(20px, 5vw, 32px)' }}>
             {children}
           </div>
         </div>
