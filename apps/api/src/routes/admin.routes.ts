@@ -29,6 +29,7 @@ router.post("/users/:id/impersonate", AdminController.impersonateUser);
 
 // ─── INSTRUCTORS ─────────────────────────────────────────────────────────────
 router.get("/instructors", AdminController.getInstructors);
+router.post("/instructors", AdminController.createInstructor);
 router.put("/instructors/:id/payout-percentage", AdminController.updateInstructorPayout);
 
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────

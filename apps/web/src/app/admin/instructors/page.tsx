@@ -2,20 +2,33 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Percent, Save, X } from "lucide-react";
+import { Percent, Save, X, Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
-import { getInstructors, updateInstructorPayout } from "@/lib/api/admin";
+import { getInstructors, updateInstructorPayout, createInstructor } from "@/lib/api/admin";
 
 export default function AdminInstructorsPage() {
   const qc = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payoutVal, setPayoutVal] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newInstructor, setNewInstructor] = useState({ name: "", email: "" });
 
   const { data: instructors = [], isLoading } = useQuery({
     queryKey: ["admin-instructors"],
     queryFn: getInstructors,
+  });
+
+  const createMut = useMutation({
+    mutationFn: createInstructor,
+    onSuccess: () => {
+      toast.success("Instructor created and email sent!");
+      qc.invalidateQueries({ queryKey: ["admin-instructors"] });
+      setIsModalOpen(false);
+      setNewInstructor({ name: "", email: "" });
+    },
+    onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to create instructor"),
   });
 
   const updateMut = useMutation({
@@ -205,10 +218,34 @@ export default function AdminInstructorsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Instructors"
-        subtitle="Manage faculty accounts and revenue share percentages"
-      />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <PageHeader
+          title="Instructors"
+          subtitle="Manage faculty accounts and revenue share percentages"
+        />
+        <button
+          onClick={() => setIsModalOpen(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#1A261D",
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: "10px",
+            padding: "10px 20px",
+            fontSize: "13px",
+            fontWeight: 700,
+            cursor: "pointer",
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "#2C4A3B"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "#1A261D"}
+        >
+          <UserPlus size={16} />
+          Add Instructor
+        </button>
+      </div>
       <DataTable
         columns={columns}
         data={instructors}
@@ -216,6 +253,60 @@ export default function AdminInstructorsPage() {
         rowKey={(r) => r.id}
         emptyMessage="No instructors found"
       />
+
+      {isModalOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(26,38,29,0.4)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100
+        }}>
+          <div style={{
+            background: "#FFFFFF", borderRadius: "16px", padding: "32px", width: "400px",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.1)"
+          }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", color: "#1A261D", fontFamily: "Georgia, serif" }}>Add New Instructor</h3>
+            <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#8F9E93" }}>A secure password will be generated and emailed to them.</p>
+            
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: 600, color: "#1A261D" }}>Full Name</label>
+              <input 
+                type="text" 
+                value={newInstructor.name}
+                onChange={(e) => setNewInstructor({...newInstructor, name: e.target.value})}
+                placeholder="Dr. John Doe"
+                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: 600, color: "#1A261D" }}>Email Address</label>
+              <input 
+                type="email" 
+                value={newInstructor.email}
+                onChange={(e) => setNewInstructor({...newInstructor, email: e.target.value})}
+                placeholder="john.doe@example.com"
+                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "transparent", color: "#8F9E93", fontWeight: 600, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => createMut.mutate(newInstructor)}
+                disabled={!newInstructor.name || !newInstructor.email || createMut.isPending}
+                style={{ padding: "10px 16px", borderRadius: "8px", border: "none", background: "#B88645", color: "#FFFFFF", fontWeight: 600, cursor: "pointer", opacity: (!newInstructor.name || !newInstructor.email || createMut.isPending) ? 0.5 : 1 }}
+              >
+                {createMut.isPending ? "Creating..." : "Create & Send Email"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

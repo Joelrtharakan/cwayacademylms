@@ -60,10 +60,17 @@ export const exportUsersCSV = (filters: UserFilters = {}) => {
 
 // ─── INSTRUCTORS ─────────────────────────────────────────────────────────────
 
-export const getInstructors = () =>
-  api.get(`${BASE}/instructors`).then((r) => r.data.data);
+export const getInstructors = async () => {
+  const { data } = await api.get("/admin/instructors");
+  return data.data;
+};
 
-export const updateInstructorPayout = (id: string, percentage: number) =>
+export const createInstructor = async (payload: { name: string; email: string }) => {
+  const { data } = await api.post("/admin/instructors", payload);
+  return data.data;
+};
+
+export const updateInstructorPayout = async (id: string, percentage: number) =>
   api.put(`${BASE}/instructors/${id}/payout-percentage`, { percentage }).then((r) => r.data.data);
 
 // ─── COURSES ─────────────────────────────────────────────────────────────────

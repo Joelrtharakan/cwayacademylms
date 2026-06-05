@@ -260,7 +260,6 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
 }
 
 body {
@@ -269,7 +268,6 @@ body {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.7;
-  overflow-x: hidden;
   width: 100%;
 }
 

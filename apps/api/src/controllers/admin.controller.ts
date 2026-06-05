@@ -6,6 +6,8 @@ import { NotificationService } from "../services/notification.service";
 import { ExportService } from "../services/export.service";
 import { TokenService } from "../services/token.service";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import { EmailService } from "../services/email.service";
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
 
@@ -395,6 +397,39 @@ export const getInstructors = asyncHandler(async (req: Request, res: Response) =
   });
 
   res.json({ status: "success", data });
+});
+
+export const createInstructor = asyncHandler(async (req: Request, res: Response) => {
+  const { name, email } = req.body;
+  if (!name || !email) throw new AppError("Name and email are required", 400);
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new AppError("A user with this email already exists", 400);
+
+  // Generate a random 12-character alphanumeric password
+  const password = crypto.randomBytes(8).toString("hex").slice(0, 12);
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: "INSTRUCTOR",
+      isVerified: true, // Auto-verified since admin created them
+      payoutPercentage: 70, // Default CWAY revenue split
+    },
+    select: {
+      id: true, name: true, email: true, role: true, isVerified: true, createdAt: true
+    }
+  });
+
+  // Send the email asynchronously
+  EmailService.sendInstructorWelcomeEmail(user, password).catch(err => {
+    console.error("Failed to send instructor welcome email:", err);
+  });
+
+  res.status(201).json({ status: "success", data: user, message: "Instructor created and email sent." });
 });
 
 export const updateInstructorPayout = asyncHandler(async (req: Request, res: Response) => {

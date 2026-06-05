@@ -99,15 +99,27 @@ export default function AdminDashboardPage() {
         subtitle="Platform overview — track your growth and activity at a glance."
       />
 
+      <style>{`
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 24px;
+          margin-bottom: 32px;
+        }
+        @media (max-width: 1400px) {
+          .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 768px) {
+          .kpi-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+      
       {/* KPI Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "20px",
-          marginBottom: "32px",
-        }}
-      >
+      <div className="kpi-grid">
         <StatCard
           label="Total Students"
           value={statsLoading ? "—" : (stats?.totalStudents ?? 0).toLocaleString()}
