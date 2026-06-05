@@ -218,15 +218,33 @@ h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: upper
       {/* Preview Dialog */}
       <Dialog.Root open={!!previewHtml} onOpenChange={(o) => !o && setPreviewHtml(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#1A261D]/60 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-5xl max-h-[95vh] overflow-hidden bg-transparent outline-none flex flex-col gap-4">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#1A261D]/80 backdrop-blur-sm" />
+          <Dialog.Content className="fixed inset-0 z-50 flex flex-col items-center justify-center outline-none overflow-hidden">
             <Dialog.Title className="sr-only">Certificate Preview</Dialog.Title>
-            <div className="w-full flex justify-end">
-              <button onClick={() => setPreviewHtml(null)} className="w-10 h-10 flex items-center justify-center bg-white border border-cway-light-border text-cway-text-muted rounded-full shadow-lg hover:border-cway-gold hover:text-cway-gold transition-all">✕</button>
-            </div>
-            <div className="w-full overflow-auto" style={{ maxHeight: 'calc(95vh - 60px)' }}>
-              <div className="flex justify-center items-start min-h-full p-4">
-                <div dangerouslySetInnerHTML={{ __html: previewHtml || "" }} className="shadow-2xl flex-shrink-0 bg-white" />
+            
+            <button onClick={() => setPreviewHtml(null)} className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center bg-white border border-cway-light-border text-[#1A261D] rounded-full shadow-2xl z-[60] hover:scale-105 hover:border-cway-gold hover:text-cway-gold transition-all">✕</button>
+
+            <div className="flex-1 w-full h-full flex items-center justify-center relative">
+              <div 
+                ref={(el) => {
+                  if (el) {
+                    const updateScale = () => {
+                      const child = el.firstElementChild;
+                      if (!child) return;
+                      const contentWidth = Math.max(child.scrollWidth, 1000);
+                      const contentHeight = Math.max(child.scrollHeight, 700);
+                      const wScale = (window.innerWidth * 0.9) / contentWidth;
+                      const hScale = (window.innerHeight * 0.85) / contentHeight;
+                      el.style.transform = `scale(${Math.min(1, wScale, hScale)})`;
+                    };
+                    setTimeout(updateScale, 50); // wait for HTML to render
+                    window.addEventListener('resize', updateScale);
+                    (el as any)._cleanup = () => window.removeEventListener('resize', updateScale);
+                  }
+                }}
+                style={{ transformOrigin: "center center", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: previewHtml || "" }} className="shadow-2xl bg-white flex-shrink-0 inline-block" />
               </div>
             </div>
           </Dialog.Content>
