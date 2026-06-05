@@ -10,17 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         cway: {
-          'dark-green': '#1C2B1E',   // primary bg, sidebar, navbar
-          'forest': '#243825',       // secondary dark surfaces, cards
-          'gold': '#C9973A',         // primary accent, CTAs, highlights
-          'gold-light': '#E8B85A',   // gold hover state
-          'gold-muted': '#A8792A',   // gold text on light backgrounds
-          'cream': '#F5F0E8',        // light page backgrounds
-          'cream-dark': '#EDE5D5',   // card surfaces on light bg
-          'text-muted': '#8A9E8C',   // secondary text on dark bg
-          'success': '#4A8C5C',
-          'danger': '#8C3A3A',
-          'warning': '#8C6A1A',
+          'dark-green': '#1A261D',   // updated to deep forest
+          'forest': '#2C4A3B',       // updated to mid forest
+          'gold': '#B88645',         // updated to gold primary
+          'gold-light': '#D4A35B',   
+          'gold-muted': '#8A6432',   
+          'cream': '#FAFAF7',        // updated to cream base
+          'cream-dark': '#EAECE4',   
+          'text-muted': '#526658',   
+          'success': '#3D7A4B',
+          'danger': '#B03A2E',
+          'warning': '#C47D11',
+          'light-bg': '#FAFAF7',
+          'light-alt': '#F3F4F0',
+          'light-border': '#DCE0D5'
         }
       },
       fontFamily: {

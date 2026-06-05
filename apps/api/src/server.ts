@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
 dotenv.config(); // Fallback to local
 
 import authRoutes from "./routes/auth.routes";
+import adminRoutes from "./routes/admin.routes";
 import { AppError } from "./utils/errors";
 
 const app = express();
@@ -42,6 +43,7 @@ app.get("/health", (req: Request, res: Response) => {
 
 // API Routes mounting
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // Catch-all unhandled routes
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

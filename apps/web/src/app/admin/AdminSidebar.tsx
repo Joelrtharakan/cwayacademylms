@@ -25,158 +25,398 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-interface SidebarItem {
+interface NavItem {
   name: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }
 
-interface SidebarSection {
+interface NavSection {
   title: string;
-  items: SidebarItem[];
+  items: NavItem[];
 }
+
+const NAV: NavSection[] = [
+  {
+    title: "Overview",
+    items: [{ name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }],
+  },
+  {
+    title: "People",
+    items: [
+      { name: "Users", href: "/admin/users", icon: Users },
+      { name: "Instructors", href: "/admin/instructors", icon: GraduationCap },
+    ],
+  },
+  {
+    title: "Content",
+    items: [
+      { name: "Courses", href: "/admin/courses", icon: BookOpen },
+      { name: "Categories", href: "/admin/categories", icon: FolderKanban },
+      { name: "Blog Posts", href: "/admin/blog", icon: FileText },
+    ],
+  },
+  {
+    title: "Business",
+    items: [
+      { name: "Payments", href: "/admin/payments", icon: CreditCard },
+      { name: "Sponsorships", href: "/admin/sponsorships", icon: HeartHandshake },
+      { name: "Coupons", href: "/admin/coupons", icon: Percent },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [{ name: "Reports", href: "/admin/analytics", icon: BarChart3 }],
+  },
+  {
+    title: "System",
+    items: [
+      { name: "Certificates", href: "/admin/certificates", icon: Award },
+      { name: "Email Templates", href: "/admin/emails", icon: Mail },
+      { name: "Notifications", href: "/admin/notifications", icon: Bell },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
+    ],
+  },
+];
+
+// Sidebar width constants
+const EXPANDED_W = 260;
+const COLLAPSED_W = 68;
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
-  const sections: SidebarSection[] = [
-    {
-      title: "Overview",
-      items: [{ name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }],
-    },
-    {
-      title: "People",
-      items: [
-        { name: "Users", href: "/admin/users", icon: Users },
-        { name: "Instructors", href: "/admin/instructors", icon: GraduationCap },
-      ],
-    },
-    {
-      title: "Content",
-      items: [
-        { name: "Courses", href: "/admin/courses", icon: BookOpen },
-        { name: "Categories", href: "/admin/categories", icon: FolderKanban },
-        { name: "Blog Posts", href: "/admin/blog", icon: FileText },
-      ],
-    },
-    {
-      title: "Business",
-      items: [
-        { name: "Payments", href: "/admin/payments", icon: CreditCard },
-        { name: "Sponsorships", href: "/admin/sponsorships", icon: HeartHandshake },
-        { name: "Coupons", href: "/admin/coupons", icon: Percent },
-      ],
-    },
-    {
-      title: "Analytics",
-      items: [{ name: "Reports", href: "/admin/analytics", icon: BarChart3 }],
-    },
-    {
-      title: "System",
-      items: [
-        { name: "Certificates", href: "/admin/certificates", icon: Award },
-        { name: "Email Templates", href: "/admin/emails", icon: Mail },
-        { name: "Notifications", href: "/admin/notifications", icon: Bell },
-        { name: "Settings", href: "/admin/settings", icon: Settings },
-      ],
-    },
-  ];
+  const W = collapsed ? COLLAPSED_W : EXPANDED_W;
 
   const handleSignOut = () => {
     clearAuth();
-    toast.success("Successfully logged out");
+    toast.success("Signed out successfully");
     router.push("/login");
   };
 
   return (
-    <div
-      className={`bg-cway-dark-green text-cway-cream min-h-screen border-r border-cway-gold/15 transition-all duration-300 flex flex-col justify-between relative ${
-        isCollapsed ? "w-16" : "w-64"
-      }`}
-    >
-      {/* Collapse Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 bg-cway-gold text-cway-dark-green rounded-full p-1 border border-cway-gold hover:bg-cway-gold-light transition-colors z-50 cursor-pointer"
-      >
-        {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-      </button>
+    <>
+      <style>{`
+        .admin-sidebar-nav::-webkit-scrollbar {
+          width: 4px;
+        }
+        .admin-sidebar-nav::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .admin-sidebar-nav::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        .admin-sidebar-nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
 
-      {/* Top Section */}
-      <div>
-        <div className={`p-6 flex flex-col items-center ${isCollapsed ? "px-2" : "px-6"}`}>
-          <img
-            src="https://cwayacademy.netlify.app/logo.png?v=3"
-            alt="CWAY Academy"
-            className={`transition-all duration-300 object-contain ${
-              isCollapsed ? "h-6 w-6" : "h-10 w-auto"
-            }`}
-          />
-          {!isCollapsed && (
-            <span className="text-[10px] uppercase tracking-widest font-sans font-semibold text-cway-gold mt-2.5">
-              Admin Panel
-            </span>
+      {/* Fixed sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          height: "100vh",
+          width: `${W}px`,
+          background: "#1A261D",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 40,
+          transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Decorative radial glow top-right */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: "180px",
+            height: "180px",
+            background: "radial-gradient(circle at top right, rgba(184,134,69,0.1) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* ── Logo ───────────────────────────────── */}
+        <div
+          style={{
+            padding: collapsed ? "24px 0" : "24px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: "12px",
+            flexShrink: 0,
+          }}
+        >
+          {/* Icon mark */}
+          <div
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "10px",
+              background: "rgba(184,134,69,0.15)",
+              border: "1px solid rgba(184,134,69,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: "18px", color: "#B88645" }}>C</span>
+          </div>
+
+          {/* Brand text — only when expanded */}
+          {!collapsed && (
+            <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+              <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: "17px", color: "#FFFFFF", letterSpacing: "0.02em", lineHeight: 1 }}>
+                CWAY <span style={{ color: "#B88645" }}>Academy</span>
+              </div>
+              <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(255,255,255,0.3)", marginTop: "4px" }}>
+                Administration
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Navigation Sections */}
-        <div className="px-3 py-2 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
-          {sections.map((section, idx) => (
-            <div key={idx} className="space-y-1">
-              {!isCollapsed && (
-                <div className="font-serif text-[11px] uppercase tracking-wider text-cway-gold/85 px-3 py-1 mt-2">
+        {/* ── Navigation ── */}
+        <nav
+          className="admin-sidebar-nav"
+          style={{
+            flex: 1,
+            minHeight: 0, // CRITICAL FOR SCROLLING IN FLEX LAYOUT
+            overflowY: "auto",
+            overflowX: "hidden",
+            padding: collapsed ? "12px 8px" : "12px 10px",
+          }}
+        >
+          {NAV.map((section, si) => (
+            <div key={si} style={{ marginBottom: "4px" }}>
+              {/* Section header */}
+              {!collapsed && (
+                <div
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.2em",
+                    color: "rgba(255,255,255,0.2)",
+                    padding: "12px 12px 6px",
+                    userSelect: "none",
+                  }}
+                >
                   {section.title}
                 </div>
               )}
+              {collapsed && si > 0 && (
+                <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "8px 4px" }} />
+              )}
+
+              {/* Items */}
               {section.items.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 const Icon = item.icon;
 
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={isCollapsed ? item.name : undefined}
-                    className={`nav-item ${isActive ? "nav-item-active" : ""} ${
-                      isCollapsed ? "justify-center px-0" : ""
-                    }`}
+                    title={collapsed ? item.name : undefined}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: collapsed ? 0 : "12px",
+                      justifyContent: collapsed ? "center" : "flex-start",
+                      padding: collapsed ? "10px 0" : "10px 12px",
+                      borderRadius: "10px",
+                      marginBottom: "2px",
+                      textDecoration: "none",
+                      position: "relative",
+                      transition: "background 0.15s",
+                      background: isActive ? "rgba(184,134,69,0.14)" : "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent";
+                    }}
                   >
-                    <Icon size={isCollapsed ? 20 : 16} className={isActive ? "text-cway-gold" : "text-cway-text-muted"} />
-                    {!isCollapsed && <span>{item.name}</span>}
+                    {/* Active indicator */}
+                    {isActive && !collapsed && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: "6px",
+                          bottom: "6px",
+                          width: "3px",
+                          borderRadius: "0 3px 3px 0",
+                          background: "#B88645",
+                        }}
+                      />
+                    )}
+
+                    <Icon
+                      size={18}
+                      style={{ color: isActive ? "#B88645" : "rgba(255,255,255,0.45)", flexShrink: 0 }}
+                    />
+
+                    {!collapsed && (
+                      <span
+                        style={{
+                          fontSize: "13.5px",
+                          fontWeight: isActive ? 600 : 500,
+                          color: isActive ? "#B88645" : "rgba(255,255,255,0.6)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.name}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
             </div>
           ))}
+        </nav>
+
+        {/* ── User Footer ─────────────────────────── */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: collapsed ? "14px 8px" : "14px 12px",
+            flexShrink: 0,
+          }}
+        >
+          {/* User card */}
+          {!collapsed && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                borderRadius: "10px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                marginBottom: "8px",
+              }}
+            >
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "rgba(184,134,69,0.18)",
+                  border: "1px solid rgba(184,134,69,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "#B88645",
+                  textTransform: "uppercase" as const,
+                  flexShrink: 0,
+                }}
+              >
+                {user?.name?.slice(0, 2) || "AD"}
+              </div>
+              <div style={{ overflow: "hidden", flex: 1 }}>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {user?.name || "Admin"}
+                </div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sign out */}
+          <button
+            onClick={handleSignOut}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: collapsed ? "center" : "flex-start",
+              gap: collapsed ? 0 : "10px",
+              padding: collapsed ? "10px 0" : "10px 12px",
+              borderRadius: "10px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "13px",
+              fontWeight: 500,
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(176,58,46,0.14)";
+              e.currentTarget.style.color = "#f87171";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgba(255,255,255,0.35)";
+            }}
+          >
+            <LogOut size={16} style={{ flexShrink: 0 }} />
+            {!collapsed && <span>Sign out</span>}
+          </button>
+        </div>
+
+        {/* ── Collapse toggle (bottom of sidebar) ── */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: collapsed ? "center" : "flex-end",
+            padding: collapsed ? "0 0 14px" : "0 14px 14px",
+            flexShrink: 0,
+          }}
+        >
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.07)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.4)",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(184,134,69,0.15)";
+              e.currentTarget.style.color = "#B88645";
+              e.currentTarget.style.borderColor = "rgba(184,134,69,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+              e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+            }}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
         </div>
       </div>
 
-      {/* Bottom User Section */}
-      <div className={`p-4 border-t border-white/10 ${isCollapsed ? "px-2" : "p-4"}`}>
-        {!isCollapsed && (
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-cway-gold text-cway-dark-green font-sans font-bold flex items-center justify-center uppercase text-sm">
-              {user?.name?.slice(0, 2) || "AD"}
-            </div>
-            <div className="overflow-hidden">
-              <div className="text-xs font-semibold truncate text-white">{user?.name || "Admin"}</div>
-              <div className="text-[10px] text-cway-text-muted truncate">{user?.email}</div>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={handleSignOut}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-sans text-cway-text-muted hover:text-cway-danger hover:bg-white/5 transition-all duration-150 cursor-pointer ${
-            isCollapsed ? "justify-center px-0" : ""
-          }`}
-        >
-          <LogOut size={16} />
-          {!isCollapsed && <span>Sign out</span>}
-        </button>
-      </div>
-    </div>
+      {/* Spacer to push content right — same width as sidebar */}
+      <div style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
+    </>
   );
 }

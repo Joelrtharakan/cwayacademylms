@@ -34,6 +34,8 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+let refreshPromise: Promise<string | null> | null = null;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
@@ -51,29 +53,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   refreshAccessToken: async () => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/auth/refresh`,
-        {},
-        { withCredentials: true }
-      );
-      const { accessToken } = response.data;
-      
-      // Fetch user profile on successful token refresh
-      const userResponse = await axios.get(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const { user } = userResponse.data;
+    if (refreshPromise) return refreshPromise;
 
-      get().setAuth(user, accessToken);
-      return accessToken;
-    } catch (err) {
-      get().clearAuth();
-      return null;
-    }
+    refreshPromise = (async () => {
+      try {
+        const response = await axios.post(
+          `${API_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        const { accessToken } = response.data;
+        
+        // Fetch user profile on successful token refresh
+        const userResponse = await axios.get(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const { user } = userResponse.data;
+
+        get().setAuth(user, accessToken);
+        return accessToken;
+      } catch (err) {
+        get().clearAuth();
+        return null;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
   },
 
   initAuth: async () => {
+    if (get().user) {
+      set({ isLoading: false });
+      return;
+    }
     set({ isLoading: true });
     await get().refreshAccessToken();
     set({ isLoading: false });

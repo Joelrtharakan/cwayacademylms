@@ -3,6 +3,10 @@ import { body } from "express-validator";
 import { AuthController } from "../controllers/auth.controller";
 import { validate } from "../middleware/validate";
 import { authenticate } from "../middleware/authenticate";
+import { asyncHandler, AppError } from "../utils/errors";
+import { redis } from "../utils/redis";
+import { prisma } from "../utils/prisma";
+import { TokenService } from "../services/token.service";
 
 const router = Router();
 
@@ -45,5 +49,31 @@ router.post("/reset-password", resetPasswordRules, validate, AuthController.rese
 
 // Protected routes
 router.get("/me", authenticate, AuthController.me);
+
+import { Request, Response } from "express";
+
+// Impersonation route — used after admin generates an impersonation token
+router.get("/impersonate/:token", asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const userId = await redis.get(`impersonate:${token}`);
+  if (!userId) throw new AppError("Impersonation token is invalid or expired", 401);
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+  if (!user) throw new AppError("User not found", 404);
+
+  const accessToken = TokenService.generateAccessToken({ userId: user.id, role: user.role });
+  const refreshToken = TokenService.generateRefreshToken({ userId: user.id, role: user.role });
+  await TokenService.storeRefreshToken(user.id, refreshToken);
+  await redis.del(`impersonate:${token}`);
+
+  res.cookie("cway_refresh", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.json({ status: "success", accessToken, userId: user.id });
+}));
 
 export default router;

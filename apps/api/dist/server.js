@@ -14,6 +14,7 @@ const path_1 = __importDefault(require("path"));
 dotenv_1.default.config({ path: path_1.default.resolve(process.cwd(), "../../.env") });
 dotenv_1.default.config(); // Fallback to local
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
 const PORT = process.env.API_PORT || 4000;
@@ -39,6 +40,7 @@ app.get("/health", (req, res) => {
 });
 // API Routes mounting
 app.use("/api/v1/auth", auth_routes_1.default);
+app.use("/api/v1/admin", admin_routes_1.default);
 // Catch-all unhandled routes
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));

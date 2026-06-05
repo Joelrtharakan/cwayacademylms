@@ -1,4 +1,4 @@
-import { PrismaClient, Role, CourseStatus, CourseLevel, LessonType, EnrollmentStatus, CouponType, Language } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -39,7 +39,7 @@ async function main() {
       name: "CWAY Admin",
       email: "admin@cwayacademy.com",
       passwordHash: adminHash,
-      role: Role.ADMIN,
+      role: "ADMIN",
       isVerified: true,
     },
   });
@@ -50,7 +50,7 @@ async function main() {
       name: "Dr. Reeju Tharakan",
       email: "dr.reeju@cwayacademy.com",
       passwordHash: instructorHash,
-      role: Role.INSTRUCTOR,
+      role: "INSTRUCTOR",
       isVerified: true,
       bio: "With a Ph.D. in Christian Studies and a Master of Theology in History of Christianity and 24 years of experience in theological education. Lead Pastor of Immanuel AG Church in Dubai and President-Trustee of CWAY Missions.",
       church: "Immanuel AG Church, Dubai",
@@ -63,7 +63,7 @@ async function main() {
       name: "Pr. Robin Ninan",
       email: "pr.robin@cwayacademy.com",
       passwordHash: instructorHash,
-      role: Role.INSTRUCTOR,
+      role: "INSTRUCTOR",
       isVerified: true,
       bio: "Holding a Master of Divinity and extensive experience in leadership, management, and media. Secretary-Trustee of CWAY Missions Religious Trust, Bangalore.",
       church: "CWAY Missions",
@@ -97,7 +97,7 @@ async function main() {
       categoryName: "Spiritual Formation",
       scriptureRef: "2 Corinthians 3:18",
       subtitle: "Integrated study of the Christian life and personal character development by the Holy Spirit",
-      level: CourseLevel.BEGINNER,
+      level: "BEGINNER",
     },
     {
       title: "Old Testament",
@@ -106,7 +106,7 @@ async function main() {
       categoryName: "Biblical Studies",
       scriptureRef: "2 Timothy 3:16",
       subtitle: "Overview of the content and theology of the Old Testament books, examining key themes and ministry relevance",
-      level: CourseLevel.BEGINNER,
+      level: "BEGINNER",
     },
     {
       title: "New Testament",
@@ -115,7 +115,7 @@ async function main() {
       categoryName: "Biblical Studies",
       scriptureRef: "John 1:1",
       subtitle: "Overview within historical, literary, cultural, and theological contexts, tracing each book's Christological development",
-      level: CourseLevel.BEGINNER,
+      level: "BEGINNER",
     },
     {
       title: "Interpreting the Bible",
@@ -124,7 +124,7 @@ async function main() {
       categoryName: "Biblical Studies",
       scriptureRef: "2 Timothy 2:15",
       subtitle: "Equipping you with tools to study Scripture with insight, accuracy, and understanding",
-      level: CourseLevel.INTERMEDIATE,
+      level: "INTERMEDIATE",
     },
     {
       title: "Theology & Doctrines 1",
@@ -133,7 +133,7 @@ async function main() {
       categoryName: "Theology",
       scriptureRef: "Hebrews 11:1",
       subtitle: "God, Humanity, Christ, and Salvation — developing a Biblically grounded theology for life and ministry",
-      level: CourseLevel.INTERMEDIATE,
+      level: "INTERMEDIATE",
     },
     {
       title: "Theology & Doctrines 2",
@@ -142,7 +142,7 @@ async function main() {
       categoryName: "Theology",
       scriptureRef: "Acts 1:8",
       subtitle: "Church, Holy Spirit, and Mission — exploring major areas of Christian theology to defend and teach the faith",
-      level: CourseLevel.INTERMEDIATE,
+      level: "INTERMEDIATE",
     },
     {
       title: "Five-Fold Ministry",
@@ -151,7 +151,7 @@ async function main() {
       categoryName: "Ministry & Leadership",
       scriptureRef: "Ephesians 4:11-12",
       subtitle: "Training in church leadership, revealing functions of apostles, prophets, evangelists, pastors, and teachers",
-      level: CourseLevel.INTERMEDIATE,
+      level: "INTERMEDIATE",
     },
     {
       title: "Our Roots: Church History",
@@ -160,7 +160,7 @@ async function main() {
       categoryName: "Church History",
       scriptureRef: "Matthew 16:18",
       subtitle: "Development of Christianity from inception to present, including global expansion and India's heritage",
-      level: CourseLevel.BEGINNER,
+      level: "BEGINNER",
     },
     {
       title: "Spiritual Leadership",
@@ -169,7 +169,7 @@ async function main() {
       categoryName: "Ministry & Leadership",
       scriptureRef: "Mark 10:43-44",
       subtitle: "Practical understanding of leadership principles, blending natural and spiritual qualities to shape your calling",
-      level: CourseLevel.ADVANCED,
+      level: "ADVANCED",
     },
   ];
 
@@ -183,9 +183,9 @@ async function main() {
         description: `This complete theological module guides leaders into deep insights regarding ${course.title}.`,
         price: 0,
         currency: "INR",
-        status: CourseStatus.PUBLISHED,
+        status: "PUBLISHED",
         level: course.level,
-        language: Language.ENGLISH,
+        language: "ENGLISH",
         moduleNumber: course.moduleNumber,
         weeksDuration: 6,
         totalLectures: 3,
@@ -214,7 +214,7 @@ async function main() {
         data: {
           sectionId: section.id,
           title: `Lesson ${l}: Foundations of ${course.title}`,
-          type: LessonType.TEXT,
+          type: "TEXT",
           content: `<p>Welcome to Lesson ${l}. This core curriculum establishes foundational concepts for biblical leadership.</p><blockquote class="scripture-quote">${course.scriptureRef || "Proverbs 16:3"}</blockquote>`,
           duration: 1800, // 30 mins in seconds
           order: l,
@@ -247,7 +247,7 @@ async function main() {
             name: `Reviewer ${r}`,
             email: studentEmail,
             passwordHash: studentHash,
-            role: Role.STUDENT,
+            role: "STUDENT",
             isVerified: true,
           },
         });
@@ -268,7 +268,7 @@ async function main() {
   const studentNames = ["Rahul Sharma", "Priya Nair", "Samuel David", "Mary Thomas", "Amit Patel", "Shalini Kumari", "Ebenezer Paul", "Rupali Das", "John Wesley", "Mercy Mathew"];
   const studentChurches = ["Grace Bible Church", "Bethel Fellowship", "Emmanuel Assembly", "Zion Chapel", "Calvary Tabernacle", "Hebron Assembly", "Trinity Covenant", "Redeemer Assembly", "Faith Mission", "Hope Fellowship"];
   const studentLocations = ["Kerala", "Tamil Nadu", "Karnataka", "Andhra Pradesh", "Maharashtra", "Jharkhand", "Assam", "West Bengal", "Uttar Pradesh", "Telangana"];
-  const studentLanguages = [Language.ENGLISH, Language.TAMIL, Language.TELUGU, Language.MALAYALAM, Language.KANNADA, Language.HINDI, Language.ENGLISH, Language.ENGLISH, Language.ENGLISH, Language.ENGLISH];
+  const studentLanguages = ["ENGLISH", "TAMIL", "TELUGU", "MALAYALAM", "KANNADA", "HINDI", "ENGLISH", "ENGLISH", "ENGLISH", "ENGLISH"];
 
   const students = [];
   for (let i = 0; i < 10; i++) {
@@ -277,7 +277,7 @@ async function main() {
         name: studentNames[i],
         email: `student${i + 1}@test.com`,
         passwordHash: studentHash,
-        role: Role.STUDENT,
+        role: "STUDENT",
         isVerified: true,
         church: studentChurches[i],
         location: studentLocations[i],
@@ -314,7 +314,7 @@ async function main() {
         studentId: student.id,
         courseId: course.id,
         progress: item.progress,
-        status: item.progress === 100 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE,
+        status: item.progress === 100 ? "COMPLETED" : "ACTIVE",
         enrolledAt: new Date(),
         completedAt: item.progress === 100 ? new Date() : null,
       },

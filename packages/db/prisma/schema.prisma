@@ -4,82 +4,43 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  INSTRUCTOR
-  STUDENT
-}
 
-enum CourseStatus {
-  DRAFT
-  PENDING
-  PUBLISHED
-  ARCHIVED
-}
 
-enum CourseLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
 
-enum LessonType {
-  VIDEO
-  TEXT
-  QUIZ
-  ASSIGNMENT
-}
 
-enum EnrollmentStatus {
-  ACTIVE
-  COMPLETED
-  REFUNDED
-}
 
-enum QuestionType {
-  MCQ
-  TRUE_FALSE
-  SHORT_ANSWER
-}
 
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
 
-enum CouponType {
-  PERCENT
-  FIXED
-}
 
-enum Language {
-  ENGLISH
-  HINDI
-  TAMIL
-  TELUGU
-  KANNADA
-  MALAYALAM
-}
+
+
+
+
+
+
+
+
+
 
 model User {
   id                String    @id @default(cuid())
   name              String
   email             String    @unique
   passwordHash      String?
-  role              Role      @default(STUDENT)
+  role              String      @default("STUDENT")
   avatar            String?
   bio               String?
   phone             String?
   church            String?
   location          String?
-  preferredLanguage Language  @default(ENGLISH)
+  preferredLanguage String  @default("ENGLISH")
   isVerified        Boolean   @default(false)
   isBanned          Boolean   @default(false)
+  payoutPercentage  Float     @default(70)
   emailVerifyToken  String?
   resetToken        String?
   resetTokenExpiry  DateTime?
@@ -112,6 +73,7 @@ model Category {
   name      String
   slug      String     @unique
   icon      String?
+  order     Int        @default(0)
   parentId  String?
   parent    Category?  @relation("Subcategories", fields: [parentId], references: [id])
   children  Category[] @relation("Subcategories")
@@ -124,14 +86,14 @@ model Course {
   title            String
   slug             String       @unique
   subtitle         String?
-  description      String?      @db.Text
+  description      String?      
   thumbnail        String?
   promoVideoUrl    String?
   price            Float        @default(0)
   currency         String       @default("INR")
-  status           CourseStatus @default(DRAFT)
-  level            CourseLevel  @default(BEGINNER)
-  language         Language     @default(ENGLISH)
+  status           String @default("DRAFT")
+  level            String  @default("BEGINNER")
+  language         String     @default("ENGLISH")
   moduleNumber     Int?
   weeksDuration    Int          @default(6)
   totalLectures    Int          @default(0)
@@ -139,12 +101,12 @@ model Course {
   scriptureRef     String?
   isFeatured       Boolean      @default(false)
   isFree           Boolean      @default(true)
-  requirements     String[]
-  outcomes         String[]
-  targetAudience   String[]
+  requirements     String @default("[]")
+  outcomes         String @default("[]")
+  targetAudience   String @default("[]")
   welcomeMessage   String?
   congratsMessage  String?
-  tags             String[]
+  tags             String @default("[]")
   rejectionReason  String?
 
   instructorId String
@@ -184,8 +146,8 @@ model Lesson {
   sectionId   String
   section     Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   title       String
-  type        LessonType
-  content     String?    @db.Text
+  type        String
+  content     String?    
   videoUrl    String?
   duration    Int        @default(0) // seconds
   order       Int
@@ -208,7 +170,7 @@ model Enrollment {
   enrolledAt  DateTime         @default(now())
   completedAt DateTime?
   progress    Float            @default(0)
-  status      EnrollmentStatus @default(ACTIVE)
+  status      String @default("ACTIVE")
   paymentId   String?
   payment     Payment?         @relation(fields: [paymentId], references: [id])
   sponsorshipId String?
@@ -248,8 +210,8 @@ model Question {
   id           String       @id @default(cuid())
   quizId       String
   quiz         Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  text         String       @db.Text
-  type         QuestionType @default(MCQ)
+  text         String       
+  type         String @default("MCQ")
   points       Int          @default(1)
   order        Int
   scriptureRef String?
@@ -274,7 +236,7 @@ model QuizAttempt {
   student     User      @relation(fields: [studentId], references: [id])
   score       Float     @default(0)
   passed      Boolean   @default(false)
-  answers     Json      // { questionId: answerId }
+  answers     String      // { questionId: answerId }
   startedAt   DateTime  @default(now())
   completedAt DateTime?
 
@@ -286,7 +248,7 @@ model Assignment {
   lessonId      String       @unique
   lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   title         String
-  description   String       @db.Text
+  description   String       
   dueDate       DateTime?
   maxScore      Int          @default(100)
   attachmentUrl String?
@@ -299,11 +261,11 @@ model Submission {
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
   studentId    String
   student      User       @relation(fields: [studentId], references: [id])
-  content      String?    @db.Text
+  content      String?    
   fileUrl      String?
   submittedAt  DateTime   @default(now())
   grade        Float?
-  feedback     String?    @db.Text
+  feedback     String?    
   gradedAt     DateTime?
   isGraded     Boolean    @default(false)
 
@@ -329,7 +291,7 @@ model Certificate {
 model CertificateTemplate {
   id                   String        @id @default(cuid())
   name                 String
-  htmlTemplate         String        @db.Text
+  htmlTemplate         String        
   isDefault            Boolean       @default(false)
   logoUrl              String?
   signatorySignatureUrl String?
@@ -345,7 +307,7 @@ model Review {
   studentId  String
   student    User     @relation(fields: [studentId], references: [id])
   rating     Int      // 1-5
-  comment    String?  @db.Text
+  comment    String?  
   isApproved Boolean  @default(true)
   createdAt  DateTime @default(now())
 
@@ -367,7 +329,7 @@ model ForumPost {
   authorId  String
   author    User         @relation(fields: [authorId], references: [id])
   title     String
-  content   String       @db.Text
+  content   String       
   isPinned  Boolean      @default(false)
   replies   ForumReply[]
   createdAt DateTime     @default(now())
@@ -381,7 +343,7 @@ model ForumReply {
   post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
   author    User      @relation(fields: [authorId], references: [id])
-  content   String    @db.Text
+  content   String    
   createdAt DateTime  @default(now())
 
   @@index([postId])
@@ -393,7 +355,7 @@ model Message {
   sender     User     @relation("SentMessages", fields: [senderId], references: [id])
   receiverId String
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  content    String   @db.Text
+  content    String   
   sentAt     DateTime @default(now())
   readAt     DateTime?
 
@@ -423,7 +385,7 @@ model Payment {
   amount          Float
   currency        String        @default("INR")
   stripePaymentId String?       @unique
-  status          PaymentStatus @default(PENDING)
+  status          String @default("PENDING")
   isSponsored     Boolean       @default(false)
   createdAt       DateTime      @default(now())
   enrollments     Enrollment[]
@@ -436,7 +398,7 @@ model Sponsorship {
   amount          Float
   currency        String        @default("INR")
   stripePaymentId String?       @unique
-  status          PaymentStatus @default(PENDING)
+  status          String @default("PENDING")
   message         String?
   studentId       String?
   student         User?         @relation(fields: [studentId], references: [id])
@@ -448,7 +410,7 @@ model Coupon {
   id        String     @id @default(cuid())
   code      String     @unique
   discount  Float
-  type      CouponType
+  type      String
   maxUses   Int        @default(100)
   usedCount Int        @default(0)
   expiresAt DateTime?
@@ -462,8 +424,8 @@ model EmailTemplate {
   id        String   @id @default(cuid())
   name      String   @unique
   subject   String
-  htmlBody  String   @db.Text
-  variables String[]
+  htmlBody  String   
+  variables String @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -476,9 +438,9 @@ model SiteSettings {
   contactEmail   String?
   contactWhatsApp String?
   primaryColor   String   @default("#C9973A")
-  smtpConfig     Json?
-  stripeConfig   Json?
-  storageConfig  Json?
+  smtpConfig     String?
+  stripeConfig   String?
+  storageConfig  String?
   updatedAt      DateTime @updatedAt
 }
 
@@ -487,7 +449,7 @@ model BlogPost {
   title       String
   slug        String   @unique
   excerpt     String?
-  content     String   @db.Text
+  content     String   
   coverImage  String?
   authorId    String
   author      User     @relation(fields: [authorId], references: [id])

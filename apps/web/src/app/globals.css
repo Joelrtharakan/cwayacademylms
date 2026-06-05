@@ -3,22 +3,36 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cway-dark-green: #1C2B1E;
-  --color-cway-forest: #243825;
-  --color-cway-gold: #C9973A;
-  --color-cway-gold-light: #E8B85A;
-  --color-cway-gold-muted: #A8792A;
-  --color-cway-cream: #F5F0E8;
-  --color-cway-cream-dark: #EDE5D5;
+  /* Dark theme (homepage) */
+  --color-cway-dark-green: #1A261D;
+  --color-cway-forest: #2C4A3B;
+  --color-cway-gold: #B88645;
+  --color-cway-gold-light: #D4A35B;
+  --color-cway-gold-muted: #8A6432;
+  --color-cway-cream: #FAFAF7;
+  --color-cway-cream-dark: #EAECE4;
   --color-cway-white: #FFFFFF;
-  --color-cway-text-muted: #8A9E8C;
-  --color-cway-border-dark: rgba(201, 151, 58, 0.2);
-  --color-cway-border-light: rgba(28, 43, 30, 0.12);
-  --color-cway-success: #4A8C5C;
-  --color-cway-danger: #8C3A3A;
-  --color-cway-warning: #8C6A1A;
+
+  /* Text */
+  --color-cway-text-muted: #8F9E93;
+
+  /* Status */
+  --color-cway-success: #3D7A4B;
+  --color-cway-danger: #B03A2E;
+  --color-cway-warning: #C47D11;
+
+  /* Light admin theme */
+  --color-cway-light-bg: #F7F8F5;
+  --color-cway-light-alt: #F0F2ED;
+  --color-cway-light-border: #E8EBE4;
+
+  /* Border aliases */
+  --color-cway-border-dark: rgba(184, 134, 69, 0.2);
+  --color-cway-border-light: rgba(26, 38, 29, 0.12);
+
   --radius-pill: 999px;
 }
+
 
 @layer base {
   :root {
