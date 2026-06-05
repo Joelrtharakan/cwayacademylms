@@ -53,12 +53,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F0F2ED" }}>
+    <div style={{ display: "flex", height: "100vh", background: "#F0F2ED", overflow: "hidden" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
       <AdminSidebar />
 
       {/* Main column */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh" }}>
 
         {/* ── Top bar ──────────────────────────────── */}
         <header
@@ -195,6 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             flex: 1,
             padding: "32px 36px",
             overflowY: "auto",
+            minHeight: 0, // Critical for flexbox scrolling to work properly in all browsers
           }}
         >
           {children}
