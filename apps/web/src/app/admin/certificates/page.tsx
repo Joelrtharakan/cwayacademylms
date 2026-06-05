@@ -21,6 +21,55 @@ export default function AdminCertificatesPage() {
   const [htmlTemplate, setHtmlTemplate] = useState("");
   const [cssStyles, setCssStyles] = useState("");
 
+  const loadDefaultTemplate = () => {
+    setName("CWAY Standard Certificate");
+    setHtmlTemplate(`<style>
+.certificate {
+  width: 800px;
+  height: 600px;
+  padding: 40px;
+  background: white;
+  border: 10px solid #B88645;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  font-family: 'Georgia', serif;
+}
+.logo { height: 60px; margin: 0 auto 20px auto; display: block; }
+h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
+.body p { font-size: 18px; color: #5C7360; margin: 10px 0; }
+.body h2 { font-size: 42px; color: #B88645; margin: 20px 0; font-style: italic; }
+.body h3 { font-size: 28px; color: #1A261D; margin: 20px 0; }
+.footer { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px; }
+.signature .line { width: 200px; border-bottom: 1px solid #1A261D; margin-bottom: 10px; }
+.date { text-align: left; }
+.code { font-size: 12px; color: #8F9E93; margin-top: 5px; font-family: monospace; }
+</style>
+
+<div class="certificate">
+  <div class="header">
+    <img src="/logo.png" alt="CWAY Academy Logo" class="logo" />
+    <h1>Certificate of Completion</h1>
+  </div>
+  <div class="body">
+    <p>This is to certify that</p>
+    <h2>{{studentName}}</h2>
+    <p>has successfully completed the course</p>
+    <h3>{{courseName}}</h3>
+  </div>
+  <div class="footer">
+    <div class="signature">
+      <div class="line"></div>
+      <p>Director of Academics</p>
+    </div>
+    <div class="date">
+      <p>Date: {{issueDate}}</p>
+      <p class="code">Credential ID: {{uniqueCode}}</p>
+    </div>
+  </div>
+</div>`);
+  };
+
   const { data: templates = [], isLoading } = useQuery({ queryKey: ["admin-cert-templates"], queryFn: getCertificateTemplates });
 
   const resetForm = () => { setShowForm(false); setEditTarget(null); setName(""); setHtmlTemplate(""); setCssStyles(""); };
@@ -49,14 +98,23 @@ export default function AdminCertificatesPage() {
     mutationFn: (id: string) => previewCertificateTemplate(id, {
       studentName: "John Doe", courseName: "Biblical Leadership", issueDate: new Date().toISOString(), uniqueCode: "CWAY-CERT-1234"
     }),
-    onSuccess: (data) => setPreviewHtml(data.html),
+    onSuccess: (data) => setPreviewHtml(data.renderedHtml),
     onError: (e: any) => toast.error("Failed to generate preview"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editTarget) updateMut.mutate({ id: editTarget.id, data: { name, htmlTemplate, cssStyles } });
-    else createMut.mutate({ name, htmlTemplate, cssStyles });
+    if (editTarget) updateMut.mutate({ id: editTarget.id, data: { name, htmlTemplate } });
+    else createMut.mutate({ name, htmlTemplate });
+  };
+
+  const handleLocalPreview = () => {
+    let html = htmlTemplate;
+    html = html.replace(/{{studentName}}/g, "John Doe");
+    html = html.replace(/{{courseName}}/g, "Biblical Leadership");
+    html = html.replace(/{{issueDate}}/g, new Date().toLocaleDateString());
+    html = html.replace(/{{uniqueCode}}/g, "CWAY-CERT-1234");
+    setPreviewHtml(`<div style="display:flex;justify-content:center;align-items:center;min-height:100%;padding:20px;">${html}</div>`);
   };
 
   const columns: Column<any>[] = [
@@ -87,39 +145,61 @@ export default function AdminCertificatesPage() {
     <div className="space-y-6">
       <PageHeader title="Certificate Templates" subtitle="Design dynamic certificates generated for students upon completion"
         actions={
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent">
-            <Plus size={15} strokeWidth={2.5} /> New Template
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-14 py-5 rounded-full font-sans text-[14px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent shadow-sm">
+            <Plus size={18} strokeWidth={2.5} /> New Template
           </button>
         } />
 
       {showForm && (
-        <div className="rounded-[20px] p-7 bg-white border border-cway-light-border shadow-sm">
-          <h2 className="font-serif font-bold mb-6 text-[20px] text-[#1A261D]">{editTarget ? "Edit Template" : "Create New Template"}</h2>
+        <div style={{
+          background: "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(228, 232, 224, 0.8)",
+          borderRadius: "20px",
+          padding: "32px",
+          boxShadow: "0 10px 40px rgba(26, 38, 29, 0.03), inset 0 0 0 1px rgba(255,255,255,1)",
+        }}>
+          <div className="flex justify-between items-center mb-6">
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: 0 }}>
+              {editTarget ? "Edit Template" : "Create New Template"}
+            </h2>
+            {!editTarget && (
+              <button onClick={loadDefaultTemplate} className="text-[12px] font-bold uppercase tracking-wider text-cway-gold hover:text-cway-gold-light transition-colors border border-cway-gold/30 px-4 py-2 rounded-lg bg-cway-gold/5">
+                Load Default CWAY Template
+              </button>
+            )}
+          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Template Name *</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none" />
+              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#8F9E93", display: "block", marginBottom: "8px" }}>Template Name *</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} required 
+                style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", background: "#F9FAF8", border: "1.5px solid #E4E8E0", fontSize: "15px", color: "#1A261D", outline: "none", transition: "all 0.2s" }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(184,134,69,0.1)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.boxShadow = "none"; }}
+              />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 flex justify-between items-end text-cway-text-muted">
-                  <span>HTML Template *</span>
+                <label style={{ fontFamily: "'Inter', sans-serif", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#8F9E93", display: "flex", justifyContent: "space-between", alignItems: "end", marginBottom: "8px" }}>
+                  <span>HTML / CSS Template *</span>
                   <span className="text-[10px] normal-case tracking-normal opacity-70">Use {`{{studentName}}`}, {`{{courseName}}`}, {`{{issueDate}}`}, {`{{uniqueCode}}`}</span>
                 </label>
-                <textarea value={htmlTemplate} onChange={(e) => setHtmlTemplate(e.target.value)} required rows={14}
-                  className="w-full px-4 py-3 rounded-xl font-mono text-[13px] bg-cway-light-alt border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none resize-y" />
-              </div>
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">CSS Styles</label>
-                <textarea value={cssStyles} onChange={(e) => setCssStyles(e.target.value)} rows={14}
-                  className="w-full px-4 py-3 rounded-xl font-mono text-[13px] bg-cway-light-alt border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none resize-y" />
+                <textarea value={htmlTemplate} onChange={(e) => setHtmlTemplate(e.target.value)} required rows={16}
+                  style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "#F0F2ED", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "monospace", color: "#1A261D", outline: "none", resize: "vertical" }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-light-border bg-white text-cway-text-muted shadow-sm hover:border-cway-gold hover:text-cway-gold">Cancel</button>
-              <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
+            <div className="flex justify-end items-center gap-4 mt-8 pt-6 border-t border-cway-light-border">
+              <button type="button" onClick={handleLocalPreview} className="mr-auto flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-[#FAFBFA] border border-[#E4E8E0] text-[#1A261D] hover:bg-[#F0F2ED]">
+                <Eye size={15} /> Live Preview
+              </button>
+
+              <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-transparent text-cway-text-muted hover:text-[#1A261D]">Cancel</button>
+              <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-8 py-3 rounded-full font-sans text-[13px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
                 {createMut.isPending || updateMut.isPending ? "Saving..." : "Save Template"}
               </button>
             </div>
@@ -138,11 +218,16 @@ export default function AdminCertificatesPage() {
       {/* Preview Dialog */}
       <Dialog.Root open={!!previewHtml} onOpenChange={(o) => !o && setPreviewHtml(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#1A261D]/40 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden bg-white shadow-2xl rounded-xl border border-cway-light-border">
-            <button onClick={() => setPreviewHtml(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white border border-cway-light-border text-cway-text-muted rounded-full shadow-sm z-10 hover:border-cway-gold hover:text-cway-gold transition-all">✕</button>
-            <div className="w-full h-full p-6 overflow-auto bg-cway-light-bg">
-              <div dangerouslySetInnerHTML={{ __html: previewHtml || "" }} className="w-full min-h-[500px] shadow-lg border border-cway-light-border bg-white" />
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#1A261D]/60 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-5xl max-h-[95vh] overflow-hidden bg-transparent outline-none flex flex-col gap-4">
+            <Dialog.Title className="sr-only">Certificate Preview</Dialog.Title>
+            <div className="w-full flex justify-end">
+              <button onClick={() => setPreviewHtml(null)} className="w-10 h-10 flex items-center justify-center bg-white border border-cway-light-border text-cway-text-muted rounded-full shadow-lg hover:border-cway-gold hover:text-cway-gold transition-all">✕</button>
+            </div>
+            <div className="w-full overflow-auto" style={{ maxHeight: 'calc(95vh - 60px)' }}>
+              <div className="flex justify-center items-start min-h-full p-4">
+                <div dangerouslySetInnerHTML={{ __html: previewHtml || "" }} className="shadow-2xl flex-shrink-0 bg-white" />
+              </div>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
