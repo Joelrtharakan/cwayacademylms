@@ -98,16 +98,24 @@ export default function AdminSponsorshipsPage() {
         subtitle="Manage donations and allocate them to student enrollments"
       />
 
-      <div className="flex gap-4 overflow-x-auto border-b border-cway-light-border pb-1">
+      <div style={{ display: "flex", gap: "8px", background: "#F0F2ED", padding: "6px", borderRadius: "14px", width: "fit-content", marginBottom: "24px", border: "1px solid #E4E8E0" }}>
         {["UNLINKED", "LINKED"].map((t) => (
           <button key={t} onClick={() => setTab(t as any)}
-            className={`px-4 py-2 font-sans text-[14px] font-bold transition-all relative ${
-              tab === t ? "text-cway-gold" : "text-cway-text-muted hover:text-[#1A261D]"
-            }`}>
+            style={{ 
+              padding: "12px 28px", 
+              borderRadius: "10px", 
+              fontSize: "12px", 
+              fontWeight: 800, 
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              border: "none",
+              cursor: "pointer",
+              background: tab === t ? "white" : "transparent",
+              color: tab === t ? "#B88645" : "#8F9E93",
+              boxShadow: tab === t ? "0 4px 12px rgba(26, 38, 29, 0.05), 0 1px 2px rgba(26, 38, 29, 0.05)" : "none"
+            }}>
             {t === "UNLINKED" ? "Unlinked Funds" : "Allocated Funds"}
-            {tab === t && (
-              <span className="absolute bottom-[-5px] left-0 right-0 h-1 bg-cway-gold rounded-t-full"></span>
-            )}
           </button>
         ))}
       </div>
