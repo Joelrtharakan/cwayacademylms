@@ -863,6 +863,24 @@ export const getEmailTemplates = asyncHandler(async (req: Request, res: Response
   res.json({ status: "success", data: templates });
 });
 
+export const createEmailTemplate = asyncHandler(async (req: Request, res: Response) => {
+  const { name, subject, htmlBody } = req.body;
+  if (!name || !subject || !htmlBody) {
+    throw new AppError("name, subject, and htmlBody are required", 400);
+  }
+
+  const existing = await prisma.emailTemplate.findUnique({ where: { name } });
+  if (existing) {
+    throw new AppError(`An email template with the name '${name}' already exists.`, 400);
+  }
+
+  const template = await prisma.emailTemplate.create({
+    data: { name, subject, htmlBody, variables: "[]" },
+  });
+  
+  res.status(201).json({ status: "success", data: template });
+});
+
 export const updateEmailTemplate = asyncHandler(async (req: Request, res: Response) => {
   const { subject, htmlBody } = req.body;
   const template = await prisma.emailTemplate.update({

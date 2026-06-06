@@ -72,8 +72,9 @@ export default function AdminNotificationsPage() {
     <div className="space-y-6">
       <PageHeader title="Push Notifications" subtitle="Send announcements and alerts to platform users"
         actions={
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent">
-            <Send size={15} strokeWidth={2.5} /> Send Broadcast
+          <button onClick={() => setShowForm(true)} className="group flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-xl hover:-translate-y-0.5"
+            style={{ padding: "12px 28px", boxShadow: "0 8px 24px rgba(201, 151, 58, 0.25)" }}>
+            <Send size={18} strokeWidth={2.5} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" /> Send Broadcast
           </button>
         } />
 
@@ -84,58 +85,87 @@ export default function AdminNotificationsPage() {
       {/* Broadcast Modal */}
       <Dialog.Root open={showForm} onOpenChange={(o) => !o && resetForm()}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#1A261D]/40 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-[20px] p-7 w-full max-w-lg shadow-xl bg-white border border-cway-light-border outline-none">
-            <Dialog.Title className="font-serif font-bold text-[24px] mb-6 text-[#1A261D]">New Broadcast Message</Dialog.Title>
+          <Dialog.Overlay style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(26, 38, 29, 0.6)", backdropFilter: "blur(8px)" }} />
+          
+          {/* Scrollable Wrapper to guarantee mouse scroll works perfectly */}
+          <div style={{ position: "fixed", inset: 0, zIndex: 50, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}>
             
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Target Audience</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {ROLE_OPTIONS.map((r) => (
-                    <button key={r.value} type="button" onClick={() => setTargetRole(r.value as any)}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-xl font-sans text-[13px] font-bold transition-all border ${
-                        targetRole === r.value ? "bg-cway-gold/10 border-cway-gold text-[#1A261D]" : "bg-white border-cway-light-border text-cway-text-muted hover:border-cway-gold/40"
-                      }`}>
-                      {r.icon} {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Notification Title *</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-white border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none shadow-sm" />
-              </div>
-
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Message Body *</label>
-                <textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={4} className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-white border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none shadow-sm resize-none" />
-              </div>
-
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Call to Action Link (Optional)</label>
-                <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/courses or https://..." className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-white border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none shadow-sm placeholder:text-cway-text-muted/60" />
-              </div>
-
-              <div className="flex items-center gap-4 pt-4 border-t border-cway-light-border/60">
-                <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} className="w-5 h-5 accent-cway-gold cursor-pointer" />
+            <Dialog.Content style={{
+              position: "relative", width: "100%", maxWidth: "520px", outline: "none",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(228, 232, 224, 0.8)",
+              borderRadius: "20px",
+              padding: "28px",
+              boxShadow: "0 10px 40px rgba(26, 38, 29, 0.05), inset 0 0 0 1px rgba(255,255,255,1)",
+              margin: "auto"
+            }}>
+              
+              <Dialog.Title style={{ fontFamily: "serif", fontWeight: 700, fontSize: "20px", color: "#1A261D", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(228, 232, 224, 0.6)" }}>
+                New Broadcast Message
+              </Dialog.Title>
+              
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
                 <div>
-                  <label htmlFor="sendEmail" className="font-sans text-[14px] font-bold block text-[#1A261D] cursor-pointer">Send as Email Alert as well</label>
-                  <p className="font-sans text-[12px] text-cway-text-muted font-medium mt-0.5">This will send an email to all targeted users. Use sparingly.</p>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>Target Audience</label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    {ROLE_OPTIONS.map((r) => (
+                      <button key={r.value} type="button" onClick={() => setTargetRole(r.value as any)}
+                        style={{ 
+                          display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", 
+                          borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer",
+                          border: targetRole === r.value ? "1px solid #B88645" : "1px solid #E4E8E0", 
+                          background: targetRole === r.value ? "rgba(184, 134, 69, 0.1)" : "white", 
+                          color: targetRole === r.value ? "#1A261D" : "#5C7360", 
+                          transition: "all 0.2s" 
+                        }}>
+                        {r.icon} {r.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-2">
-                <Dialog.Close asChild>
-                  <button type="button" className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-light-border bg-white text-cway-text-muted shadow-sm hover:border-cway-gold hover:text-cway-gold">Cancel</button>
-                </Dialog.Close>
-                <button type="submit" disabled={broadcastMut.isPending} className="flex items-center gap-2 px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
-                  {broadcastMut.isPending ? "Sending..." : <><Send size={15} strokeWidth={2.5} /> Send Broadcast</>}
-                </button>
-              </div>
-            </form>
-          </Dialog.Content>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Notification Title *</label>
+                  <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Short & catchy title" 
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "rgba(255,255,255,0.8)", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Message Body *</label>
+                  <textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={3} 
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F4F6F3", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", resize: "vertical" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Call to Action Link (Optional)</label>
+                  <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="e.g. /courses or https://..." 
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "rgba(255,255,255,0.8)", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginTop: "4px", padding: "16px", background: "#F4F6F3", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
+                  <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} style={{ width: "18px", height: "18px", accentColor: "#B88645", cursor: "pointer", marginTop: "2px" }} />
+                  <div>
+                    <label htmlFor="sendEmail" style={{ fontSize: "13px", fontWeight: 700, color: "#1A261D", cursor: "pointer", display: "block" }}>Also deliver as Email Alert</label>
+                    <p style={{ fontSize: "11px", color: "#5C7360", marginTop: "4px", lineHeight: "1.4" }}>Sends a physical email to targeted users. Use for high-priority news.</p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px", paddingTop: "20px", borderTop: "1px solid #E4E8E0" }}>
+                  <Dialog.Close asChild>
+                    <button type="button" style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#5C7360", border: "1px solid #E4E8E0", background: "white", cursor: "pointer" }}>Cancel</button>
+                  </Dialog.Close>
+                  <button type="submit" disabled={broadcastMut.isPending} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#B88645", border: "none", cursor: broadcastMut.isPending ? "not-allowed" : "pointer", opacity: broadcastMut.isPending ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184, 134, 69, 0.3)" }}>
+                    {broadcastMut.isPending ? "Sending..." : <><Send size={15} strokeWidth={2.5} /> Send Broadcast</>}
+                  </button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </div>
         </Dialog.Portal>
       </Dialog.Root>
 

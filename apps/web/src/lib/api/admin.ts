@@ -185,6 +185,9 @@ export const previewCertificateTemplate = (id: string, params: Record<string, st
 export const getEmailTemplates = () =>
   api.get(`${BASE}/email-templates`).then((r) => r.data.data);
 
+export const createEmailTemplate = (data: { name: string; subject: string; htmlBody: string }) =>
+  api.post(`${BASE}/email-templates`, data).then((r) => r.data.data);
+
 export const updateEmailTemplate = (id: string, data: { subject?: string; htmlBody?: string }) =>
   api.put(`${BASE}/email-templates/${id}`, data).then((r) => r.data.data);
 

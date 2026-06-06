@@ -69,6 +69,7 @@ router.get("/certificate-templates/:id/preview", AdminController.previewCertific
 
 // ─── EMAIL TEMPLATES ─────────────────────────────────────────────────────────
 router.get("/email-templates", AdminController.getEmailTemplates);
+router.post("/email-templates", AdminController.createEmailTemplate);
 router.put("/email-templates/:id", AdminController.updateEmailTemplate);
 router.post("/email-templates/:id/preview", AdminController.previewEmailTemplate);
 router.post("/email-templates/:id/test", AdminController.testEmailTemplate);

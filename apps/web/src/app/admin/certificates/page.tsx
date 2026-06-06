@@ -145,8 +145,9 @@ h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: upper
     <div className="space-y-6">
       <PageHeader title="Certificate Templates" subtitle="Design dynamic certificates generated for students upon completion"
         actions={
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-14 py-5 rounded-full font-sans text-[14px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent shadow-sm">
-            <Plus size={18} strokeWidth={2.5} /> New Template
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-xl hover:-translate-y-0.5"
+            style={{ padding: "12px 28px", boxShadow: "0 8px 24px rgba(201, 151, 58, 0.25)" }}>
+            <Plus size={18} strokeWidth={2.5} /> Create New Template
           </button>
         } />
 
