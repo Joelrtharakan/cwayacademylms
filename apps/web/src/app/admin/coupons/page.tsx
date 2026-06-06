@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { getCoupons, createCoupon, updateCoupon, deleteCoupon, getCourses } from "@/lib/api/admin";
+import * as Dialog from "@radix-ui/react-dialog";
 
 function formatDate(iso: string) {
   if (!iso) return "Never";
@@ -110,83 +111,120 @@ export default function AdminCouponsPage() {
         subtitle="Create and manage promotional codes for courses"
         actions={
           <button onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent">
-            <Plus size={15} strokeWidth={2.5} /> New Coupon
+            className="flex items-center gap-2 rounded-xl font-sans font-bold text-[12px] uppercase tracking-wider transition-all duration-300 bg-cway-gold text-white hover:bg-cway-gold-light hover:-translate-y-0.5"
+            style={{ padding: "10px 20px", boxShadow: "0 8px 24px rgba(201, 151, 58, 0.25)" }}>
+            <Plus size={16} strokeWidth={2.5} /> New Coupon
           </button>
         }
       />
 
-      {showForm && (
-        <div className="rounded-[20px] p-7 bg-white border border-cway-light-border shadow-sm">
-          <h2 className="font-serif font-bold mb-6 text-[20px] text-[#1A261D]">{editTarget ? "Edit Coupon Settings" : "Create New Coupon"}</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <div>
-              <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Coupon Code *</label>
-              <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))} required disabled={!!editTarget}
-                className="w-full px-4 py-3 rounded-xl font-mono text-[14px] tracking-wider bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] disabled:opacity-50 disabled:bg-cway-light-alt transition-all outline-none"
-                placeholder="e.g. SUMMER25" />
-            </div>
-
-            <div className="flex gap-4">
-              <div className="w-1/3">
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Type</label>
-                <select value={type} onChange={(e) => setType(e.target.value as any)} disabled={!!editTarget}
-                  className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] disabled:opacity-50 disabled:bg-cway-light-alt transition-all outline-none cursor-pointer">
-                  <option value="PERCENT">Percent %</option>
-                  <option value="FIXED">Fixed ₹</option>
-                </select>
+      {/* Create/Edit Modal */}
+      <Dialog.Root open={showForm} onOpenChange={(o) => !o && resetForm()}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(26, 38, 29, 0.6)", backdropFilter: "blur(8px)" }} />
+          
+          <div style={{ position: "fixed", inset: 0, zIndex: 50, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}>
+            <Dialog.Content style={{
+              position: "relative", width: "100%", maxWidth: "600px", outline: "none",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(228, 232, 224, 0.8)",
+              borderRadius: "20px",
+              padding: "28px",
+              boxShadow: "0 10px 40px rgba(26, 38, 29, 0.05), inset 0 0 0 1px rgba(255,255,255,1)",
+              margin: "auto"
+            }}>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(228, 232, 224, 0.6)" }}>
+                <Dialog.Title style={{ fontFamily: "serif", fontWeight: 700, fontSize: "20px", color: "#1A261D", margin: 0 }}>
+                  {editTarget ? "Edit Coupon Settings" : "Create New Coupon"}
+                </Dialog.Title>
+                
+                <Dialog.Close asChild>
+                  <button type="button" style={{ color: "#9AAE9B", cursor: "pointer", background: "transparent", border: "none", fontSize: "18px", padding: "4px" }}>✕</button>
+                </Dialog.Close>
               </div>
-              <div className="flex-1">
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Discount *</label>
-                <input type="number" step="any" min="0" value={discount} onChange={(e) => setDiscount(e.target.value)} required disabled={!!editTarget}
-                  className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] disabled:opacity-50 disabled:bg-cway-light-alt transition-all outline-none"
-                  placeholder={type === "PERCENT" ? "e.g. 20" : "e.g. 500"} />
-              </div>
-            </div>
+              
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Coupon Code *</label>
+                    <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))} required disabled={!!editTarget}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: editTarget ? "rgba(228,232,224,0.3)" : "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em", color: "#1A261D", outline: "none", transition: "all 0.2s", boxSizing: "border-box", opacity: editTarget ? 0.7 : 1 }}
+                      onFocus={(e) => { if (!editTarget) e.currentTarget.style.borderColor = "#B88645"; }}
+                      onBlur={(e) => { if (!editTarget) e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                      placeholder="e.g. SUMMER25" />
+                  </div>
 
-            <div>
-              <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Max Uses</label>
-              <input type="number" min="1" value={maxUses} onChange={(e) => setMaxUses(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none"
-                placeholder="e.g. 100" />
-            </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Type</label>
+                    <select value={type} onChange={(e) => setType(e.target.value as any)} disabled={!!editTarget}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: editTarget ? "rgba(228,232,224,0.3)" : "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", cursor: editTarget ? "not-allowed" : "pointer", boxSizing: "border-box", opacity: editTarget ? 0.7 : 1 }}>
+                      <option value="PERCENT">Percent %</option>
+                      <option value="FIXED">Fixed ₹</option>
+                    </select>
+                  </div>
 
-            <div>
-              <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Expiry Date</label>
-              <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none" />
-            </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Discount *</label>
+                    <input type="number" step="any" min="0" value={discount} onChange={(e) => setDiscount(e.target.value)} required disabled={!!editTarget}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: editTarget ? "rgba(228,232,224,0.3)" : "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", boxSizing: "border-box", opacity: editTarget ? 0.7 : 1 }}
+                      onFocus={(e) => { if (!editTarget) e.currentTarget.style.borderColor = "#B88645"; }}
+                      onBlur={(e) => { if (!editTarget) e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                      placeholder={type === "PERCENT" ? "e.g. 20" : "e.g. 500"} />
+                  </div>
 
-            {!editTarget && (
-              <div>
-                <label className="font-sans text-[11px] font-bold uppercase tracking-wider block mb-2 text-cway-text-muted">Limit to Course</label>
-                <select value={courseId} onChange={(e) => setCourseId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-cway-light-bg border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none cursor-pointer">
-                  <option value="">None (Valid for all courses)</option>
-                  {coursesData?.courses?.map((c: any) => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
-              </div>
-            )}
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Max Uses</label>
+                    <input type="number" min="1" value={maxUses} onChange={(e) => setMaxUses(e.target.value)}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", boxSizing: "border-box" }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                      placeholder="e.g. 100" />
+                  </div>
 
-            {editTarget && (
-              <div className="flex items-center gap-3 mt-6">
-                <input type="checkbox" id="isActive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="w-5 h-5 accent-cway-gold cursor-pointer" />
-                <label htmlFor="isActive" className="font-sans text-[14px] text-[#1A261D] cursor-pointer font-medium">Coupon is Active</label>
-              </div>
-            )}
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Expiry Date</label>
+                    <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", boxSizing: "border-box" }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }} />
+                  </div>
+                </div>
 
-            <div className="col-span-full flex justify-end gap-3 mt-4">
-              <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-light-border bg-white text-cway-text-muted shadow-sm hover:border-cway-gold hover:text-cway-gold">Cancel</button>
-              <button type="submit" disabled={createMut.isPending || updateMut.isPending}
-                className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
-                {createMut.isPending || updateMut.isPending ? "Saving..." : editTarget ? "Update Coupon" : "Create Coupon"}
-              </button>
-            </div>
+                {!editTarget && (
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Limit to Course</label>
+                    <select value={courseId} onChange={(e) => setCourseId(e.target.value)}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "rgba(255,255,255,0.8)", border: "1px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", cursor: "pointer", boxSizing: "border-box" }}>
+                      <option value="">None (Valid for all courses)</option>
+                      {coursesData?.courses?.map((c: any) => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    </select>
+                  </div>
+                )}
 
-          </form>
-        </div>
-      )}
+                {editTarget && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", padding: "16px", background: "#F4F6F3", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
+                    <input type="checkbox" id="isActive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} style={{ width: "18px", height: "18px", accentColor: "#B88645", cursor: "pointer" }} />
+                    <label htmlFor="isActive" style={{ fontSize: "13px", fontWeight: 700, color: "#1A261D", cursor: "pointer", margin: 0 }}>Coupon is Active</label>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px", paddingTop: "20px", borderTop: "1px solid #E4E8E0" }}>
+                  <Dialog.Close asChild>
+                    <button type="button" onClick={resetForm} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#5C7360", border: "1px solid #E4E8E0", background: "white", cursor: "pointer" }}>Cancel</button>
+                  </Dialog.Close>
+                  <button type="submit" disabled={createMut.isPending || updateMut.isPending} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#B88645", border: "none", cursor: (createMut.isPending || updateMut.isPending) ? "not-allowed" : "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184, 134, 69, 0.3)" }}>
+                    {createMut.isPending || updateMut.isPending ? "Saving..." : editTarget ? "Update Coupon" : "Create Coupon"}
+                  </button>
+                </div>
+
+              </form>
+            </Dialog.Content>
+          </div>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <DataTable columns={columns} data={coupons} loading={isLoading} rowKey={(r) => r.id} emptyMessage="No discount coupons found" />
 
