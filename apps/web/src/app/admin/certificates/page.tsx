@@ -151,62 +151,79 @@ h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: upper
           </button>
         } />
 
-      {showForm && (
-        <div style={{
-          background: "rgba(255, 255, 255, 0.9)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(228, 232, 224, 0.8)",
-          borderRadius: "20px",
-          padding: "32px",
-          boxShadow: "0 10px 40px rgba(26, 38, 29, 0.03), inset 0 0 0 1px rgba(255,255,255,1)",
-        }}>
-          <div className="flex justify-between items-center mb-6">
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: 0 }}>
-              {editTarget ? "Edit Template" : "Create New Template"}
-            </h2>
-            {!editTarget && (
-              <button onClick={loadDefaultTemplate} className="text-[12px] font-bold uppercase tracking-wider text-cway-gold hover:text-cway-gold-light transition-colors border border-cway-gold/30 px-4 py-2 rounded-lg bg-cway-gold/5">
-                Load Default CWAY Template
-              </button>
-            )}
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label style={{ fontFamily: "'Inter', sans-serif", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#8F9E93", display: "block", marginBottom: "8px" }}>Template Name *</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} required 
-                style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", background: "#F9FAF8", border: "1.5px solid #E4E8E0", fontSize: "15px", color: "#1A261D", outline: "none", transition: "all 0.2s" }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(184,134,69,0.1)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.boxShadow = "none"; }}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label style={{ fontFamily: "'Inter', sans-serif", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#8F9E93", display: "flex", justifyContent: "space-between", alignItems: "end", marginBottom: "8px" }}>
-                  <span>HTML / CSS Template *</span>
-                  <span className="text-[10px] normal-case tracking-normal opacity-70">Use {`{{studentName}}`}, {`{{courseName}}`}, {`{{issueDate}}`}, {`{{uniqueCode}}`}</span>
-                </label>
-                <textarea value={htmlTemplate} onChange={(e) => setHtmlTemplate(e.target.value)} required rows={16}
-                  style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "#F0F2ED", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "monospace", color: "#1A261D", outline: "none", resize: "vertical" }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }}
-                />
+      {/* Create/Edit Modal */}
+      <Dialog.Root open={showForm} onOpenChange={(o) => !o && resetForm()}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(26, 38, 29, 0.6)", backdropFilter: "blur(8px)" }} />
+          
+          <div style={{ position: "fixed", inset: 0, zIndex: 50, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}>
+            <Dialog.Content style={{
+              position: "relative", width: "100%", maxWidth: "700px", outline: "none",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(228, 232, 224, 0.8)",
+              borderRadius: "20px",
+              padding: "28px",
+              boxShadow: "0 10px 40px rgba(26, 38, 29, 0.05), inset 0 0 0 1px rgba(255,255,255,1)",
+              margin: "auto"
+            }}>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(228, 232, 224, 0.6)" }}>
+                <Dialog.Title style={{ fontFamily: "serif", fontWeight: 700, fontSize: "20px", color: "#1A261D", margin: 0 }}>
+                  {editTarget ? "Edit Template" : "Create New Template"}
+                </Dialog.Title>
+                
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  {!editTarget && (
+                    <button onClick={loadDefaultTemplate} type="button" style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#B88645", border: "1px solid rgba(184, 134, 69, 0.3)", padding: "6px 12px", borderRadius: "8px", background: "rgba(184, 134, 69, 0.05)", cursor: "pointer", transition: "all 0.2s" }}>
+                      Load Default CWAY Template
+                    </button>
+                  )}
+                  <Dialog.Close asChild>
+                    <button type="button" style={{ color: "#9AAE9B", cursor: "pointer", background: "transparent", border: "none", fontSize: "18px", padding: "4px" }}>✕</button>
+                  </Dialog.Close>
+                </div>
               </div>
-            </div>
+              
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Template Name *</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. End of Course Diploma"
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "#F9FAF8", border: "1.5px solid #E4E8E0", fontSize: "13px", color: "#1A261D", outline: "none", transition: "all 0.2s", boxSizing: "border-box" }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                  />
+                </div>
 
-            <div className="flex justify-end items-center gap-4 mt-8 pt-6 border-t border-cway-light-border">
-              <button type="button" onClick={handleLocalPreview} className="mr-auto flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-[#FAFBFA] border border-[#E4E8E0] text-[#1A261D] hover:bg-[#F0F2ED]">
-                <Eye size={15} /> Live Preview
-              </button>
+                <div>
+                  <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: "11px", fontWeight: 700, color: "#5C7360", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>
+                    <span>HTML / CSS Template *</span>
+                    <span style={{ fontSize: "10px", fontWeight: 400, textTransform: "none", letterSpacing: "normal", opacity: 0.7 }}>Use {`{{studentName}}`}, {`{{courseName}}`}, {`{{issueDate}}`}, {`{{uniqueCode}}`}</span>
+                  </label>
+                  <textarea value={htmlTemplate} onChange={(e) => setHtmlTemplate(e.target.value)} required rows={12}
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", background: "#F0F2ED", border: "1px solid #E4E8E0", fontSize: "12px", fontFamily: "monospace", color: "#1A261D", outline: "none", resize: "vertical", boxSizing: "border-box", minHeight: "200px" }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "#B88645"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; }}
+                  />
+                </div>
 
-              <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-transparent text-cway-text-muted hover:text-[#1A261D]">Cancel</button>
-              <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-8 py-3 rounded-full font-sans text-[13px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
-                {createMut.isPending || updateMut.isPending ? "Saving..." : "Save Template"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+                <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "12px", marginTop: "12px", paddingTop: "20px", borderTop: "1px solid #E4E8E0" }}>
+                  <button type="button" onClick={handleLocalPreview} style={{ marginRight: "auto", display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "10px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", background: "#FAFBFA", border: "1px solid #E4E8E0", color: "#1A261D", cursor: "pointer" }}>
+                    <Eye size={14} /> Live Preview
+                  </button>
+
+                  <Dialog.Close asChild>
+                    <button type="button" onClick={resetForm} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#5C7360", border: "1px solid transparent", background: "transparent", cursor: "pointer" }}>Cancel</button>
+                  </Dialog.Close>
+                  <button type="submit" disabled={createMut.isPending || updateMut.isPending} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#B88645", border: "none", cursor: (createMut.isPending || updateMut.isPending) ? "not-allowed" : "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184, 134, 69, 0.3)" }}>
+                    {createMut.isPending || updateMut.isPending ? "Saving..." : "Save Template"}
+                  </button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </div>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <DataTable columns={columns} data={templates} loading={isLoading} rowKey={(r) => r.id} emptyMessage="No certificate templates found" />
 
