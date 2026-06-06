@@ -154,7 +154,7 @@ export default function AdminSidebar() {
           left: 0,
           height: "100vh",
           width: `${W}px`,
-          background: "#1A261D",
+          background: "linear-gradient(180deg, #0f172a 0%, #020617 100%)",
           zIndex: 40,
           transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
         }}
@@ -180,14 +180,14 @@ export default function AdminSidebar() {
             top: 0,
             left: 0,
             right: 0,
-            height: "60px", // Match layout.tsx header height exactly
+            height: "70px", // Match layout.tsx header height exactly
             padding: "0 20px",
-            borderBottom: "1px solid #E4E8E0",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
             justifyContent: collapsed ? "center" : "flex-start",
             zIndex: 2,
-            background: "#FFFFFF", // Match header background
+            background: "transparent", 
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
@@ -205,23 +205,23 @@ export default function AdminSidebar() {
             {!collapsed && (
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div style={{ 
-                  fontFamily: "'Cormorant Garamond', serif", 
+                  fontFamily: "var(--font-cinzel), 'Cinzel', Georgia, serif", 
                   fontSize: "18px", 
                   fontWeight: 700, 
-                  color: "#1A261D", 
+                  color: "#FFFFFF", 
                   letterSpacing: "0.15em",
                   lineHeight: 1
                 }}>
-                  CWAY <span style={{ color: "#B88645" }}>ACADEMY</span>
+                  CWAY <span style={{ color: "#D4A35B", fontWeight: 400, letterSpacing: "0.2em" }}>ACADEMY</span>
                 </div>
                 <div style={{ 
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "8.5px", 
+                  fontFamily: "var(--font-plus-jakarta), sans-serif",
+                  fontSize: "9px", 
                   fontWeight: 800, 
                   textTransform: "uppercase", 
                   letterSpacing: "0.2em", 
-                  color: "rgba(26,38,29,0.5)", 
-                  marginTop: "3px" 
+                  color: "rgba(255,255,255,0.6)", 
+                  marginTop: "4px" 
                 }}>
                   Administration
                 </div>
@@ -235,7 +235,7 @@ export default function AdminSidebar() {
           className="admin-sidebar-scroll"
           style={{
             position: "absolute",
-            top: "60px", // Match new header height
+            top: "70px", // Match new header height
             bottom: "140px", // Exact space for footer
             left: 0,
             right: 0,
@@ -274,10 +274,10 @@ export default function AdminSidebar() {
                     >
                       <span
                         style={{
-                          fontFamily: "'Cormorant Garamond', serif",
+                          fontFamily: "var(--font-dm-serif), serif",
                           fontSize: "15px",
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
+                          fontWeight: 400,
+                          letterSpacing: "0.05em",
                           color: isSectionExpanded ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.5)",
                           transition: "color 0.15s",
                         }}
@@ -342,30 +342,34 @@ export default function AdminSidebar() {
                               <div
                                 style={{
                                   position: "absolute",
-                                  left: 0,
-                                  top: "8px",
-                                  bottom: "8px",
-                                  width: "4px",
-                                  borderRadius: "0 4px 4px 0",
-                                  background: "#B88645",
+                                  left: "0",
+                                  right: "0",
+                                  top: "0",
+                                  bottom: "0",
+                                  borderRadius: "10px",
+                                  background: "linear-gradient(90deg, rgba(184,134,69,0.15), rgba(212,163,91,0.05))",
+                                  border: "1px solid rgba(184,134,69,0.3)",
+                                  pointerEvents: "none",
                                 }}
                               />
                             )}
 
                             <Icon
                               size={20}
-                              style={{ color: isActive ? "#B88645" : "rgba(255,255,255,0.7)", flexShrink: 0 }}
+                              style={{ color: isActive ? "#D4A35B" : "rgba(255,255,255,0.7)", flexShrink: 0, position: "relative", zIndex: 1 }}
                             />
 
                             {!collapsed && (
                               <span
                                 style={{
-                                  fontFamily: "'Inter', sans-serif",
-                                  fontSize: "15px",
-                                  fontWeight: isActive ? 600 : 500,
-                                  color: isActive ? "#B88645" : "rgba(255,255,255,0.85)",
+                                  fontFamily: "var(--font-plus-jakarta), sans-serif",
+                                  fontSize: "14.5px",
+                                  fontWeight: isActive ? 700 : 500,
+                                  color: isActive ? "#D4A35B" : "rgba(255,255,255,0.85)",
                                   whiteSpace: "nowrap",
-                                  letterSpacing: "0.01em",
+                                  letterSpacing: "0.02em",
+                                  position: "relative",
+                                  zIndex: 1
                                 }}
                               >
                                 {item.name}
@@ -391,7 +395,7 @@ export default function AdminSidebar() {
             right: 0,
             height: "140px",
             borderTop: "1px solid rgba(255,255,255,0.08)",
-            background: "#1A261D", // Ensure it covers anything behind it
+            background: "transparent", // Use the underlying gradient
             zIndex: 3,
             display: "flex",
             flexDirection: "column",
@@ -433,10 +437,10 @@ export default function AdminSidebar() {
                   {user?.name?.slice(0, 2) || "AD"}
                 </div>
                 <div style={{ overflow: "hidden", flex: 1 }}>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", fontWeight: 600, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "14px", fontWeight: 700, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {user?.name || "Admin"}
                   </div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "rgba(255,255,255,0.5)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "12px", color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {user?.email}
                   </div>
                 </div>
@@ -457,10 +461,10 @@ export default function AdminSidebar() {
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.5)",
+                color: "rgba(255,255,255,0.6)",
                 fontSize: "14px",
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 500,
+                fontFamily: "var(--font-plus-jakarta), sans-serif",
+                fontWeight: 600,
                 transition: "all 0.15s",
               }}
               onMouseEnter={(e) => {

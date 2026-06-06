@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F0F2ED" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
       <AdminSidebar />
 
@@ -63,15 +63,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* ── Top bar ──────────────────────────────── */}
         <header
           style={{
-            height: "60px",
-            background: "#FFFFFF",
-            borderBottom: "1px solid #E4E8E0",
+            height: "70px",
+            background: "rgba(250, 250, 247, 0.85)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderBottom: "1px solid rgba(220, 224, 213, 0.6)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             padding: "0 28px",
             flexShrink: 0,
-            boxShadow: "0 1px 0 rgba(26,38,29,0.04)",
             position: "sticky",
             top: 0,
             zIndex: 30,

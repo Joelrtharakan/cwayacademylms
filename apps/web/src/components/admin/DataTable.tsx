@@ -49,6 +49,7 @@ export function DataTable<T>({
         borderRadius: "16px",
         overflow: "hidden",
         boxShadow: "0 1px 3px rgba(26,38,29,0.04)",
+        fontFamily: "var(--font-plus-jakarta), sans-serif",
       }}
     >
       <div style={{ overflowX: "auto" }}>
