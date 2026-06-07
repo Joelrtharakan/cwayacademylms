@@ -61,7 +61,7 @@ export default function ModuleManagementPage() {
   ] as const;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
       
       {/* Sticky Top Header */}
       <header style={{ position: "sticky", top: "70px", zIndex: 20, background: "#FFFFFF", padding: "16px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
