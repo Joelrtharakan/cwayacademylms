@@ -63,6 +63,13 @@ model User {
   payments          Payment[]
   sponsorships      Sponsorship[]
   blogPosts         BlogPost[]
+  payoutRequests    PayoutRequest[]
+  socialLinks       String? // JSON: { twitter, linkedin, website }
+  title             String?  // e.g. "Dr."
+  credentials       String?  // e.g. "M.Th., Ph.D."
+  yearsExperience   Int?
+  expertise         String  @default("[]")
+  notificationPrefs String  @default("{}")
 
   @@index([email])
   @@index([role])
@@ -153,6 +160,7 @@ model Lesson {
   order       Int
   isFree      Boolean    @default(false)
   isPreview   Boolean    @default(false)
+  bunnyVideoId String?
 
   quiz        Quiz?
   assignment  Assignment?
@@ -459,4 +467,20 @@ model BlogPost {
   updatedAt   DateTime @updatedAt
 
   @@index([slug])
+}
+
+model PayoutRequest {
+  id           String   @id @default(cuid())
+  instructorId String
+  instructor   User     @relation(fields: [instructorId], references: [id])
+  amount       Float
+  currency     String   @default("INR")
+  status       String   @default("PENDING")
+  bankDetails  String?
+  note         String?
+  adminNote    String?
+  requestedAt  DateTime @default(now())
+  resolvedAt   DateTime?
+
+  @@index([instructorId])
 }

@@ -3,13 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
+exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
 const notification_service_1 = require("../services/notification.service");
 const export_service_1 = require("../services/export.service");
 const crypto_1 = __importDefault(require("crypto"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const email_service_1 = require("../services/email.service");
 // ─── STATS ───────────────────────────────────────────────────────────────────
 exports.getStats = (0, errors_1.asyncHandler)(async (req, res) => {
     const now = new Date();
@@ -365,6 +367,35 @@ exports.getInstructors = (0, errors_1.asyncHandler)(async (req, res) => {
         };
     });
     res.json({ status: "success", data });
+});
+exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { name, email } = req.body;
+    if (!name || !email)
+        throw new errors_1.AppError("Name and email are required", 400);
+    const existing = await prisma_1.prisma.user.findUnique({ where: { email } });
+    if (existing)
+        throw new errors_1.AppError("A user with this email already exists", 400);
+    // Generate a random 12-character alphanumeric password
+    const password = crypto_1.default.randomBytes(8).toString("hex").slice(0, 12);
+    const passwordHash = await bcryptjs_1.default.hash(password, 10);
+    const user = await prisma_1.prisma.user.create({
+        data: {
+            name,
+            email,
+            passwordHash,
+            role: "INSTRUCTOR",
+            isVerified: true, // Auto-verified since admin created them
+            payoutPercentage: 70, // Default CWAY revenue split
+        },
+        select: {
+            id: true, name: true, email: true, role: true, isVerified: true, createdAt: true
+        }
+    });
+    // Send the email asynchronously
+    email_service_1.EmailService.sendInstructorWelcomeEmail(user, password).catch(err => {
+        console.error("Failed to send instructor welcome email:", err);
+    });
+    res.status(201).json({ status: "success", data: user, message: "Instructor created and email sent." });
 });
 exports.updateInstructorPayout = (0, errors_1.asyncHandler)(async (req, res) => {
     const { percentage } = req.body;
@@ -722,6 +753,20 @@ exports.previewCertificateTemplate = (0, errors_1.asyncHandler)(async (req, res)
 exports.getEmailTemplates = (0, errors_1.asyncHandler)(async (req, res) => {
     const templates = await prisma_1.prisma.emailTemplate.findMany({ orderBy: { name: "asc" } });
     res.json({ status: "success", data: templates });
+});
+exports.createEmailTemplate = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { name, subject, htmlBody } = req.body;
+    if (!name || !subject || !htmlBody) {
+        throw new errors_1.AppError("name, subject, and htmlBody are required", 400);
+    }
+    const existing = await prisma_1.prisma.emailTemplate.findUnique({ where: { name } });
+    if (existing) {
+        throw new errors_1.AppError(`An email template with the name '${name}' already exists.`, 400);
+    }
+    const template = await prisma_1.prisma.emailTemplate.create({
+        data: { name, subject, htmlBody, variables: "[]" },
+    });
+    res.status(201).json({ status: "success", data: template });
 });
 exports.updateEmailTemplate = (0, errors_1.asyncHandler)(async (req, res) => {
     const { subject, htmlBody } = req.body;

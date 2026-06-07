@@ -58,6 +58,7 @@ router.delete("/users/:id", AdminController.deleteUser);
 router.post("/users/:id/impersonate", AdminController.impersonateUser);
 // ─── INSTRUCTORS ─────────────────────────────────────────────────────────────
 router.get("/instructors", AdminController.getInstructors);
+router.post("/instructors", AdminController.createInstructor);
 router.put("/instructors/:id/payout-percentage", AdminController.updateInstructorPayout);
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────
 router.get("/courses", AdminController.getCourses);
@@ -90,6 +91,7 @@ router.delete("/certificate-templates/:id", AdminController.deleteCertificateTem
 router.get("/certificate-templates/:id/preview", AdminController.previewCertificateTemplate);
 // ─── EMAIL TEMPLATES ─────────────────────────────────────────────────────────
 router.get("/email-templates", AdminController.getEmailTemplates);
+router.post("/email-templates", AdminController.createEmailTemplate);
 router.put("/email-templates/:id", AdminController.updateEmailTemplate);
 router.post("/email-templates/:id/preview", AdminController.previewEmailTemplate);
 router.post("/email-templates/:id/test", AdminController.testEmailTemplate);

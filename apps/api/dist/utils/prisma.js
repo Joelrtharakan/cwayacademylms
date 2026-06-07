@@ -1,7 +1,21 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prisma = void 0;
 const client_1 = require("@prisma/client");
+const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+// Load environment variables from workspace root if not already loaded
+const rootEnvPath = path_1.default.resolve(process.cwd(), "../../.env");
+if (fs_1.default.existsSync(rootEnvPath)) {
+    dotenv_1.default.config({ path: rootEnvPath });
+}
+else {
+    dotenv_1.default.config();
+}
 const globalForPrisma = globalThis;
 const basePrisma = globalForPrisma.prisma ??
     new client_1.PrismaClient({

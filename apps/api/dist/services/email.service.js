@@ -211,5 +211,37 @@ class EmailService {
             console.log(`[Email Fallback] To: ${user.email} | Welcome message printed.`);
         }
     }
+    static async sendInstructorWelcomeEmail(user, password) {
+        const loginUrl = `${APP_URL}/login`;
+        const htmlContent = this.wrapHtml(`
+      <h1>Welcome to CWAY Academy Faculty</h1>
+      <p>Dear ${user.name},</p>
+      <p>An administrator has created an Instructor account for you on CWAY Academy. We are honored to have you join our faculty to help equip frontline leaders.</p>
+      
+      <div style="background: rgba(201, 151, 58, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(201, 151, 58, 0.3); margin: 24px 0;">
+        <p style="margin-bottom: 8px; font-weight: 600; color: #1C2B1E;">Your Login Credentials:</p>
+        <p style="margin-bottom: 4px; font-family: monospace; font-size: 15px;"><strong>Email:</strong> ${user.email}</p>
+        <p style="margin: 0; font-family: monospace; font-size: 15px;"><strong>Password:</strong> ${password}</p>
+      </div>
+
+      <p>Please log in using the credentials above. We highly recommend changing your password from your account settings once you log in.</p>
+      
+      <div class="cta-container">
+        <a href="${loginUrl}" class="btn-primary" target="_blank">Log In to Dashboard</a>
+      </div>
+    `);
+        try {
+            await this.transporter.sendMail({
+                from: EMAIL_FROM,
+                to: user.email,
+                subject: "Your CWAY Academy Instructor Account Credentials",
+                html: htmlContent,
+            });
+            console.log(`✓ Instructor welcome email sent successfully to ${user.email}`);
+        }
+        catch (err) {
+            console.log(`[Email Fallback] To: ${user.email} | Password: ${password}`);
+        }
+    }
 }
 exports.EmailService = EmailService;

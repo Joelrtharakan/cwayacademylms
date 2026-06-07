@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import InstructorSidebar from "./InstructorSidebar";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 
 export default function InstructorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,61 +16,187 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user) {
-        router.push("/login");
-      } else if (user.role !== "INSTRUCTOR" && user.role !== "ADMIN") {
-        router.push("/login");
-      }
+      if (!user) router.push("/login");
+      else if (user.role !== "INSTRUCTOR" && user.role !== "ADMIN") router.push("/login");
     }
   }, [user, isLoading, router]);
 
   if (isLoading || !user || (user.role !== "INSTRUCTOR" && user.role !== "ADMIN")) {
     return (
-      <div className="min-h-screen bg-cway-dark-green flex flex-col justify-center items-center text-cway-cream">
-        <div className="w-10 h-10 border-4 border-cway-gold border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-sans text-xs uppercase tracking-widest text-cway-text-muted mt-4">
-          Loading Instructor Workspace...
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#F7F8F5",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "16px",
+        }}
+      >
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "50%",
+            border: "3px solid #B88645",
+            borderTopColor: "transparent",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", color: "#8F9E93" }}>
+          Loading...
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-cway-forest">
-      {/* Sidebar */}
+    <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+      {/* Sidebar (renders its own fixed div + spacer) */}
       <InstructorSidebar />
 
-      {/* Main Workspace */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        {/* Topbar */}
-        <header className="h-[60px] bg-cway-dark-green border-b border-cway-gold/15 px-6 flex items-center justify-between z-10">
-          <div className="flex items-center gap-4">
-            <h2 className="font-serif text-lg font-semibold text-white tracking-wide uppercase">
-              Instructor Dashboard
-            </h2>
+      {/* Main column */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
+
+        {/* ── Top bar ──────────────────────────────── */}
+        <header
+          style={{
+            height: "70px",
+            background: "rgba(250, 250, 247, 0.85)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderBottom: "1px solid rgba(220, 224, 213, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 28px",
+            flexShrink: 0,
+            position: "sticky",
+            top: 0,
+            zIndex: 30,
+          }}
+        >
+          {/* Search */}
+          <div style={{ position: "relative", width: "240px" }}>
+            <Search
+              size={14}
+              style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9AAE9B" }}
+            />
+            <input
+              type="text"
+              placeholder="Quick search..."
+              style={{
+                width: "100%",
+                paddingLeft: "36px",
+                paddingRight: "14px",
+                paddingTop: "8px",
+                paddingBottom: "8px",
+                fontSize: "13px",
+                fontWeight: 500,
+                fontFamily: "inherit",
+                background: "#F7F8F5",
+                border: "1px solid #E4E8E0",
+                borderRadius: "9px",
+                outline: "none",
+                color: "#1A261D",
+                transition: "border-color 0.15s, box-shadow 0.15s",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#B88645";
+                e.target.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#E4E8E0";
+                e.target.style.boxShadow = "none";
+              }}
+            />
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Search Trigger */}
-            <button className="text-cway-text-muted hover:text-cway-gold transition-colors cursor-pointer">
-              <Search size={18} />
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Notification bell */}
+            <button
+              style={{
+                position: "relative",
+                width: "38px",
+                height: "38px",
+                borderRadius: "10px",
+                background: "#F7F8F5",
+                border: "1px solid #E4E8E0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#9AAE9B",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#B88645";
+                e.currentTarget.style.color = "#B88645";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#E4E8E0";
+                e.currentTarget.style.color = "#9AAE9B";
+              }}
+            >
+              <Bell size={15} />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  width: "7px",
+                  height: "7px",
+                  borderRadius: "50%",
+                  background: "#B03A2E",
+                  border: "2px solid #FFFFFF",
+                }}
+              />
             </button>
 
-            {/* Notification Bell */}
-            <button className="text-cway-text-muted hover:text-cway-gold transition-colors relative cursor-pointer">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-cway-gold rounded-full"></span>
-            </button>
+            <div style={{ width: "1px", height: "24px", background: "#E4E8E0" }} />
 
-            {/* Profile Avatar Context */}
-            <div className="w-8 h-8 rounded-full border border-cway-gold/20 flex items-center justify-center text-cway-gold bg-white/5">
-              <User size={16} />
+            {/* User */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "default" }}>
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "rgba(184,134,69,0.1)",
+                  border: "1.5px solid rgba(184,134,69,0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "#B88645",
+                  textTransform: "uppercase" as const,
+                }}
+              >
+                {user?.name?.slice(0, 2) || "IN"}
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
+                  {user?.name || "Instructor"}
+                </div>
+                <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>
+                  Instructor
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Content View */}
-        <main className="flex-1 overflow-y-auto p-6 bg-cway-forest text-cway-cream">
+        {/* ── Page Content ─────────────────────────── */}
+        <main
+          style={{
+            flex: 1,
+            padding: "32px 36px",
+          }}
+        >
           {children}
         </main>
       </div>
