@@ -1,81 +1,117 @@
 import axios from "axios";
+import { AppError } from "../utils/errors";
 
-const BUNNY_API_KEY = process.env.BUNNY_API_KEY || "";
-const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID || "";
-const BUNNY_BASE = `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}`;
+const BUNNY_API_KEY = process.env.BUNNY_API_KEY;
+const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
 
-const isDev = !BUNNY_API_KEY || !BUNNY_LIBRARY_ID;
+const bunnyApi = axios.create({
+  baseURL: `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}`,
+  headers: {
+    AccessKey: BUNNY_API_KEY,
+    Accept: "application/json",
+  },
+});
 
 export const VideoService = {
+  /**
+   * Initializes a video object in Bunny.net.
+   * Returns the videoId to be used for uploading.
+   */
   async createBunnyVideo(title: string): Promise<{ videoId: string; uploadUrl: string }> {
-    if (isDev) {
-      const mockId = `mock-${Date.now()}`;
-      return { videoId: mockId, uploadUrl: `https://mock.bunnycdn.com/upload/${mockId}` };
+    if (!BUNNY_API_KEY || !BUNNY_LIBRARY_ID) {
+      console.warn("[VideoService] Bunny credentials missing. Using mock video creation.");
+      const mockId = `mock-video-${Date.now()}`;
+      return { videoId: mockId, uploadUrl: `mock-upload-url/${mockId}` };
     }
-    const { data } = await axios.post(
-      `${BUNNY_BASE}/videos`,
-      { title },
-      { headers: { AccessKey: BUNNY_API_KEY, "Content-Type": "application/json" } }
-    );
-    return {
-      videoId: data.guid,
-      uploadUrl: `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${data.guid}`,
-    };
+
+    try {
+      const response = await bunnyApi.post("/videos", { title });
+      const videoId = response.data.guid;
+      // Note: Direct upload via API might be different based on the Bunny library endpoint
+      return { 
+        videoId, 
+        uploadUrl: `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}` 
+      };
+    } catch (error) {
+      console.error("[VideoService] Failed to create video:", error);
+      throw new AppError("Failed to initialize video upload", 500);
+    }
   },
 
-  async uploadVideoToBunny(uploadUrl: string, fileBuffer: Buffer): Promise<void> {
-    if (isDev) {
-      console.log(`[VideoService DEV] Would upload to: ${uploadUrl}`);
+  /**
+   * Uploads the video file buffer directly to Bunny.net.
+   */
+  async uploadVideoToBunny(uploadUrl: string, fileBuffer: Buffer) {
+    if (!BUNNY_API_KEY) {
+      console.warn("[VideoService] Bunny credentials missing. Mocking upload.");
       return;
     }
-    await axios.put(uploadUrl, fileBuffer, {
-      headers: { AccessKey: BUNNY_API_KEY, "Content-Type": "video/*" },
-      maxBodyLength: Infinity,
-      maxContentLength: Infinity,
-    });
+
+    try {
+      await axios.put(uploadUrl, fileBuffer, {
+        headers: {
+          AccessKey: BUNNY_API_KEY,
+          "Content-Type": "application/octet-stream",
+        },
+      });
+    } catch (error) {
+      console.error("[VideoService] Failed to upload video:", error);
+      throw new AppError("Failed to upload video data", 500);
+    }
   },
 
-  async getBunnyVideoStatus(videoId: string): Promise<{
-    status: string;
-    encodingProgress: number;
-    thumbnailUrl: string;
-    streamUrl: string;
-    duration: number;
-  }> {
-    if (isDev || videoId.startsWith("mock-")) {
+  /**
+   * Gets the encoding status and thumbnail of a video.
+   */
+  async getBunnyVideoStatus(videoId: string) {
+    if (!BUNNY_API_KEY) {
       return {
-        status: "ready",
+        status: "Mock Finished",
         encodingProgress: 100,
-        thumbnailUrl: "https://via.placeholder.com/640x360.png",
-        streamUrl: VideoService.getBunnyStreamUrl(videoId),
-        duration: 600,
+        thumbnailUrl: `https://mock.cdn/thumbnail/${videoId}.jpg`,
+        streamUrl: this.getBunnyStreamUrl(videoId),
+        duration: 120, // 2 minutes mock
       };
     }
-    const { data } = await axios.get(`${BUNNY_BASE}/videos/${videoId}`, {
-      headers: { AccessKey: BUNNY_API_KEY },
-    });
-    return {
-      status: data.status === 4 ? "ready" : "processing",
-      encodingProgress: data.encodeProgress || 0,
-      thumbnailUrl: data.thumbnailFileName
-        ? `https://${process.env.BUNNY_PULL_ZONE}/${videoId}/${data.thumbnailFileName}`
-        : "",
-      streamUrl: VideoService.getBunnyStreamUrl(videoId),
-      duration: data.length || 0,
-    };
-  },
 
-  async deleteBunnyVideo(videoId: string): Promise<void> {
-    if (isDev || videoId.startsWith("mock-")) return;
-    await axios.delete(`${BUNNY_BASE}/videos/${videoId}`, {
-      headers: { AccessKey: BUNNY_API_KEY },
-    });
-  },
-
-  getBunnyStreamUrl(videoId: string): string {
-    if (isDev || videoId.startsWith("mock-")) {
-      return "https://www.w3schools.com/html/mov_bbb.mp4";
+    try {
+      const response = await bunnyApi.get(`/videos/${videoId}`);
+      const data = response.data;
+      
+      return {
+        status: data.status, // e.g., 0 = queued, 1 = processing, 2 = finished
+        encodingProgress: data.encodeProgress,
+        thumbnailUrl: `https://${process.env.BUNNY_CDN_HOSTNAME}/${videoId}/${data.thumbnailFileName}`,
+        streamUrl: this.getBunnyStreamUrl(videoId),
+        duration: data.length,
+      };
+    } catch (error) {
+      console.error("[VideoService] Failed to get video status:", error);
+      throw new AppError("Failed to check video status", 500);
     }
+  },
+
+  /**
+   * Deletes a video from Bunny.net.
+   */
+  async deleteBunnyVideo(videoId: string) {
+    if (!BUNNY_API_KEY) {
+      console.warn("[VideoService] Mock deleting video", videoId);
+      return;
+    }
+
+    try {
+      await bunnyApi.delete(`/videos/${videoId}`);
+    } catch (error) {
+      console.error("[VideoService] Failed to delete video:", error);
+      throw new AppError("Failed to delete video", 500);
+    }
+  },
+
+  /**
+   * Helper to generate the standard embed URL.
+   */
+  getBunnyStreamUrl(videoId: string): string {
     return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}`;
   },
 };

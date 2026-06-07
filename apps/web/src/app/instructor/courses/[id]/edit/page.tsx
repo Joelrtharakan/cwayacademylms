@@ -9,7 +9,7 @@ import { ArrowLeft, Save, Upload, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { getCourseById, updateCourse, uploadThumbnail } from "@/lib/api/instructor";
 
-const GOLD = "#C9973A";
+const GOLD = "#B88645";
 const SURFACE = "#243825";
 const DARK = "#1C2B1E";
 const MUTED = "#8A9E8C";
@@ -19,8 +19,8 @@ function Input({ label, error, ...props }: any) {
   return (
     <div style={{ marginBottom: 18 }}>
       {label && <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</label>}
-      <input {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(201,151,58,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", ...props.style }}
-        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#F87171" : "rgba(201,151,58,0.25)"} />
+      <input {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(184,134,69,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#1A261D", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", ...props.style }}
+        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#F87171" : "rgba(184,134,69,0.25)"} />
       {error && <p style={{ color: "#F87171", fontSize: 11, marginTop: 4 }}>{error}</p>}
     </div>
   );
@@ -30,8 +30,8 @@ function Textarea({ label, error, ...props }: any) {
   return (
     <div style={{ marginBottom: 18 }}>
       {label && <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</label>}
-      <textarea {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(201,151,58,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 120, ...props.style }}
-        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#F87171" : "rgba(201,151,58,0.25)"} />
+      <textarea {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(184,134,69,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#1A261D", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 120, ...props.style }}
+        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#F87171" : "rgba(184,134,69,0.25)"} />
       {error && <p style={{ color: "#F87171", fontSize: 11, marginTop: 4 }}>{error}</p>}
     </div>
   );
@@ -127,11 +127,11 @@ export default function EditCoursePage() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button onClick={() => router.back()} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#F5F0E8", cursor: "pointer", transition: "all 0.15s" }}>
+          <button onClick={() => router.back()} style={{ background: "#F7F8F5", border: "1px solid #E4E8E0", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#1A261D", cursor: "pointer", transition: "all 0.15s" }}>
             <ArrowLeft size={16} />
           </button>
           <div>
-            <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 24, color: "#F5F0E8", margin: 0 }}>Edit Course</h1>
+            <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 24, color: "#1A261D", margin: 0 }}>Edit Course</h1>
             <p style={{ color: MUTED, fontSize: 13, marginTop: 2 }}>{course.title}</p>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function EditCoursePage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.1)", marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 8, borderBottom: "1px solid #E4E8E0", marginBottom: 24 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             style={{ padding: "12px 16px", background: "transparent", border: "none", borderBottom: `2px solid ${activeTab === t.id ? GOLD : "transparent"}`, color: activeTab === t.id ? GOLD : MUTED, fontWeight: activeTab === t.id ? 700 : 500, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
@@ -157,7 +157,7 @@ export default function EditCoursePage() {
         ))}
       </div>
 
-      <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, padding: 32 }}>
+      <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: 32 }}>
         {activeTab === "basic" && (
           <form id="edit-form">
             <Input label="Course Title *" {...form.register("title", { required: "Title is required" })} error={form.formState.errors.title?.message} />
@@ -170,7 +170,7 @@ export default function EditCoursePage() {
                 {LEVELS.map(l => (
                   <label key={l} style={{ flex: 1, display: "block", cursor: "pointer" }}>
                     <input type="radio" {...form.register("level")} value={l} style={{ display: "none" }} />
-                    <div style={{ textAlign: "center", padding: "8px 0", borderRadius: 8, border: `1px solid ${form.watch("level") === l ? GOLD : "rgba(201,151,58,0.25)"}`, background: form.watch("level") === l ? GOLD : "transparent", color: form.watch("level") === l ? DARK : MUTED, fontSize: 12, fontWeight: 700 }}>{l}</div>
+                    <div style={{ textAlign: "center", padding: "8px 0", borderRadius: 8, border: `1px solid ${form.watch("level") === l ? GOLD : "rgba(184,134,69,0.25)"}`, background: form.watch("level") === l ? GOLD : "transparent", color: form.watch("level") === l ? DARK : MUTED, fontSize: 12, fontWeight: 700 }}>{l}</div>
                   </label>
                 ))}
               </div>
@@ -182,7 +182,7 @@ export default function EditCoursePage() {
                 {LANGUAGES.map(l => (
                   <label key={l} style={{ cursor: "pointer" }}>
                     <input type="radio" {...form.register("language")} value={l} style={{ display: "none" }} />
-                    <div style={{ padding: "6px 14px", borderRadius: 100, border: `1px solid ${form.watch("language") === l ? GOLD : "rgba(201,151,58,0.25)"}`, background: form.watch("language") === l ? GOLD : "transparent", color: form.watch("language") === l ? DARK : MUTED, fontSize: 12, fontWeight: 700 }}>{l}</div>
+                    <div style={{ padding: "6px 14px", borderRadius: 100, border: `1px solid ${form.watch("language") === l ? GOLD : "rgba(184,134,69,0.25)"}`, background: form.watch("language") === l ? GOLD : "transparent", color: form.watch("language") === l ? DARK : MUTED, fontSize: 12, fontWeight: 700 }}>{l}</div>
                   </label>
                 ))}
               </div>
@@ -202,7 +202,7 @@ export default function EditCoursePage() {
             <label style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 10 }}>Course Thumbnail</label>
             <label style={{ display: "block", cursor: "pointer", marginBottom: 24 }}>
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleThumbnail(e.target.files[0])} />
-              <div style={{ border: "2px dashed rgba(201,151,58,0.35)", borderRadius: 12, background: "rgba(255,255,255,0.02)", padding: 32, textAlign: "center" }}>
+              <div style={{ border: "2px dashed rgba(184,134,69,0.35)", borderRadius: 12, background: "#F7F8F5", padding: 32, textAlign: "center" }}>
                 {thumbnail ? (
                   <div>
                     <img src={thumbnail} alt="Thumbnail" style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 8 }} />
@@ -213,7 +213,7 @@ export default function EditCoursePage() {
                 ) : (
                   <>
                     <Upload size={36} color={MUTED} style={{ margin: "0 auto 12px" }} />
-                    <p style={{ color: "#F5F0E8", fontSize: 14 }}>Upload Thumbnail</p>
+                    <p style={{ color: "#1A261D", fontSize: 14 }}>Upload Thumbnail</p>
                   </>
                 )}
               </div>
@@ -226,7 +226,7 @@ export default function EditCoursePage() {
             <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
               <div style={{ flex: 1 }}>
                 <label style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Currency</label>
-                <select {...form.register("currency")} style={{ width: "100%", background: DARK, border: "1px solid rgba(201,151,58,0.25)", borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontSize: 14, outline: "none" }}>
+                <select {...form.register("currency")} style={{ width: "100%", background: DARK, border: "1px solid rgba(184,134,69,0.25)", borderRadius: 8, padding: "10px 14px", color: "#1A261D", fontSize: 14, outline: "none" }}>
                   <option value="INR">₹ INR</option>
                   <option value="USD">$ USD</option>
                 </select>

@@ -101,9 +101,25 @@ router.delete("/forum/posts/:postId", authenticate_1.authenticate, CC.deleteForu
 router.post("/forum/posts/:postId/replies", authenticate_1.authenticate, CC.createForumReply);
 router.delete("/forum/replies/:replyId", authenticate_1.authenticate, CC.deleteForumReply);
 // Instructor-specific
+router.get("/instructor/courses", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getMyCourses);
 router.get("/instructor/stats", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorStats);
 router.get("/instructor/courses/:id/analytics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
 router.get("/instructor/assignments", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getInstructorAssignments);
+const MC = __importStar(require("../controllers/modules.controller"));
+// ─── Phase 4: Modules & Content ──────────────────────────────────────────────
+router.post("/courses/:id/modules", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.createModule);
+router.get("/courses/:id/modules", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getModules);
+router.put("/courses/:id/modules/reorder", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.reorderModules);
+router.put("/courses/:id/modules/:moduleId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateModule);
+router.delete("/courses/:id/modules/:moduleId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.deleteModule);
+router.post("/modules/:moduleId/lessons", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.createLesson);
+router.put("/modules/:moduleId/lessons/reorder", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.reorderLessons);
+router.put("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateLesson);
+router.delete("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.deleteLesson);
+router.get("/courses/:id/rubrics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getCourseRubrics);
+router.post("/courses/:id/rubrics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.createRubric);
+router.get("/courses/:id/curriculum", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getCurriculum);
+router.put("/courses/:id/curriculum", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateCurriculum);
 router.get("/instructor/revenue", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getInstructorRevenue);
 router.post("/instructor/payouts/request", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.requestPayout);
 router.get("/instructor/payouts/history", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getPayoutHistory);

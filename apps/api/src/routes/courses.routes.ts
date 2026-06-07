@@ -38,15 +38,7 @@ router.post("/lessons/:lessonId/upload-video", authenticate, authorize("INSTRUCT
 router.get("/lessons/:lessonId/video-status", authenticate, CC.getLessonVideoStatus);
 router.post("/lessons/:lessonId/upload-attachment", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("attachment"), CC.uploadLessonAttachment);
 
-// Quiz
-router.post("/lessons/:lessonId/quiz", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createQuiz);
-router.put("/quizzes/:quizId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.updateQuiz);
-router.post("/quizzes/:quizId/questions", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.addQuestion);
-router.put("/questions/:questionId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.updateQuestion);
-router.delete("/questions/:questionId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteQuestion);
-router.put("/quizzes/:quizId/questions/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.reorderQuestions);
-router.get("/quizzes/:quizId/attempts", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizAttempts);
-router.get("/quizzes/:quizId/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizStats);
+
 
 // Assignment
 router.post("/lessons/:lessonId/assignment", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createAssignment);
@@ -63,9 +55,61 @@ router.post("/forum/posts/:postId/replies", authenticate, CC.createForumReply);
 router.delete("/forum/replies/:replyId", authenticate, CC.deleteForumReply);
 
 // Instructor-specific
+router.get("/instructor/courses", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getMyCourses);
 router.get("/instructor/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorStats);
 router.get("/instructor/courses/:id/analytics", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
 router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR"), CC.getInstructorAssignments);
+
+import * as MC from "../controllers/modules.controller";
+
+// ─── Phase 4: Modules & Content ──────────────────────────────────────────────
+router.post("/courses/:id/modules", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createModule);
+router.get("/courses/:id/modules", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getModules);
+router.put("/courses/:id/modules/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.reorderModules);
+router.put("/courses/:id/modules/:moduleId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateModule);
+router.delete("/courses/:id/modules/:moduleId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteModule);
+
+router.post("/modules/:moduleId/lessons", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createLesson);
+router.put("/modules/:moduleId/lessons/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.reorderLessons);
+router.put("/lessons/:lessonId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateLesson);
+router.delete("/lessons/:lessonId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteLesson);
+
+// Videos
+router.post("/lessons/:lessonId/upload-video", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("video"), MC.uploadVideoToLesson);
+router.get("/lessons/:lessonId/video-status", authenticate, MC.getLessonVideoStatus);
+
+// Reading Materials
+router.post("/modules/:moduleId/reading-materials", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("file"), MC.createReadingMaterial);
+router.get("/modules/:moduleId/reading-materials", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getReadingMaterials);
+router.put("/reading-materials/:id", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateReadingMaterial);
+router.delete("/reading-materials/:id", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteReadingMaterial);
+router.put("/modules/:moduleId/reading-materials/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.reorderReadingMaterials);
+
+// Quizzes
+router.post("/modules/:moduleId/quiz", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createQuiz);
+router.get("/modules/:moduleId/quizzes", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getQuizzes);
+router.put("/quizzes/:quizId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateQuiz);
+router.delete("/quizzes/:quizId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteQuiz);
+
+router.post("/quizzes/:quizId/questions", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createQuestion);
+router.put("/questions/:questionId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateQuestion);
+router.delete("/questions/:questionId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteQuestion);
+router.put("/quizzes/:quizId/questions/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.reorderQuestions);
+
+// Assignments
+router.post("/modules/:moduleId/assignment", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createAssignment);
+router.get("/modules/:moduleId/assignments", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getAssignments);
+router.put("/assignments/:assignmentId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateAssignment);
+router.delete("/assignments/:assignmentId", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.deleteAssignment);
+router.post("/assignments/:assignmentId/upload-attachment", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("file"), MC.uploadAssignmentAttachment);
+router.get("/assignments/:assignmentId/submissions", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getAssignmentSubmissions);
+router.put("/submissions/:submissionId/grade", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.gradeSubmission);
+
+router.get("/courses/:id/rubrics", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getCourseRubrics);
+router.post("/courses/:id/rubrics", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.createRubric);
+
+router.get("/courses/:id/curriculum", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getCurriculum);
+router.put("/courses/:id/curriculum", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateCurriculum);
 router.get("/instructor/revenue", authenticate, authorize("INSTRUCTOR"), CC.getInstructorRevenue);
 router.post("/instructor/payouts/request", authenticate, authorize("INSTRUCTOR"), CC.requestPayout);
 router.get("/instructor/payouts/history", authenticate, authorize("INSTRUCTOR"), CC.getPayoutHistory);

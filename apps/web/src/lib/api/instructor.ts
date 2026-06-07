@@ -9,7 +9,7 @@ export const getCourseAnalytics = (courseId: string) =>
 
 // ─── Courses ─────────────────────────────────────────────────────────────────
 export const getInstructorCourses = (params: any = {}) =>
-  api.get("/courses", { params: { ...params, limit: 100 } }).then((r) => r.data.data);
+  api.get("/instructor/courses", { params }).then((r) => r.data.data);
 
 export const createCourse = (data: any) =>
   api.post("/courses", data).then((r) => r.data.data);

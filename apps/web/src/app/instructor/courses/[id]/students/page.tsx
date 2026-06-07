@@ -8,7 +8,7 @@ import Link from "next/link";
 import { api } from "@/store/auth.store";
 import { format } from "date-fns";
 
-const GOLD = "#C9973A";
+const GOLD = "#B88645";
 const SURFACE = "#243825";
 const DARK = "#1C2B1E";
 const MUTED = "#8A9E8C";
@@ -40,29 +40,29 @@ export default function CourseStudentsPage() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <button onClick={() => router.back()} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#F5F0E8", cursor: "pointer", transition: "all 0.15s" }}>
+        <button onClick={() => router.back()} style={{ background: "#F7F8F5", border: "1px solid #E4E8E0", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#1A261D", cursor: "pointer", transition: "all 0.15s" }}>
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 24, color: "#F5F0E8", margin: 0 }}>Enrolled Students</h1>
+          <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 24, color: "#1A261D", margin: 0 }}>Enrolled Students</h1>
           <p style={{ color: MUTED, fontSize: 13, marginTop: 2 }}>{students.length} students enrolled</p>
         </div>
       </div>
 
-      <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, overflow: "hidden" }}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 12px", border: "1px solid rgba(255,255,255,0.06)", width: 300 }}>
             <Search size={14} color={MUTED} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search students..." style={{ background: "transparent", border: "none", outline: "none", color: "#F5F0E8", fontSize: 13, flex: 1 }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search students..." style={{ background: "transparent", border: "none", outline: "none", color: "#1A261D", fontSize: 13, flex: 1 }} />
           </div>
-          <button style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#F5F0E8", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button style={{ display: "flex", alignItems: "center", gap: 8, background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#1A261D", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             <Download size={14} /> Export CSV
           </button>
         </div>
 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ background: "rgba(255,255,255,0.02)" }}>
+            <tr style={{ background: "#F7F8F5" }}>
               <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>Student</th>
               <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>Enrolled</th>
               <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>Progress</th>
@@ -78,7 +78,7 @@ export default function CourseStudentsPage() {
                       {e.student?.name?.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#F5F0E8" }}>{e.student?.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1A261D" }}>{e.student?.name}</div>
                       <div style={{ fontSize: 11, color: MUTED }}>{e.student?.email}</div>
                     </div>
                   </div>
@@ -88,7 +88,7 @@ export default function CourseStudentsPage() {
                 </td>
                 <td style={{ padding: "12px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 10 }}>
+                    <div style={{ flex: 1, height: 6, background: "#E4E8E0", borderRadius: 10 }}>
                       <div style={{ width: `${e.progress}%`, height: "100%", background: GOLD, borderRadius: 10 }} />
                     </div>
                     <span style={{ fontSize: 12, color: MUTED, width: 32 }}>{Math.round(e.progress)}%</span>

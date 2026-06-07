@@ -28,6 +28,8 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) 
       onMouseEnter={() => setHover(true)} 
       onMouseLeave={() => setHover(false)}
       style={{ 
+        display: "flex",
+        flexDirection: "column",
         background: "#FFFFFF", 
         border: `1px solid ${hover ? "#B88645" : "#E4E8E0"}`, 
         borderRadius: "16px", 
@@ -56,7 +58,7 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) 
         )}
       </div>
       {/* Body */}
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
         <h3 style={{ fontFamily: "Georgia, serif", fontSize: "18px", color: "#1A261D", fontWeight: 700, lineHeight: 1.3, marginBottom: "8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
           {course.title}
         </h3>
@@ -66,8 +68,8 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) 
           <span>{course.totalLectures} lessons</span>
         </div>
         {/* Footer */}
-        <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #E4E8E0", paddingTop: "16px" }}>
-          <Link href={`/instructor/courses/${course.id}/edit`}
+        <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #E4E8E0", paddingTop: "16px", marginTop: "auto" }}>
+          <Link href={`/instructor/courses/${course.id}`}
             style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "rgba(184,134,69,0.08)", border: "1px solid rgba(184,134,69,0.2)", color: "#B88645", borderRadius: "8px", padding: "8px 0", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textDecoration: "none", transition: "all 0.15s" }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.15)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.08)"; }}

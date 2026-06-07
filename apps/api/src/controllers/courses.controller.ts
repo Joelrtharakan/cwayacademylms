@@ -110,11 +110,10 @@ export const createCourse = asyncHandler(async (req: Request, res: Response) => 
       welcomeMessage, congratsMessage,
       tags: JSON.stringify(tags || []),
       slug, status: "DRAFT", instructorId: instId,
+      forum: { create: {} },
+      curriculum: { create: {} }
     },
   });
-
-  // Create Forum for this course
-  await prisma.forum.create({ data: { courseId: course.id } });
 
   res.status(201).json({ status: "success", data: course });
 });
@@ -131,6 +130,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
       sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       reviews: { select: { rating: true } },
       _count: { select: { enrollments: true } },
+      curriculum: true,
     },
   });
 
@@ -679,6 +679,31 @@ export const deleteForumReply = asyncHandler(async (req: Request, res: Response)
 });
 
 // ─── INSTRUCTOR STATS ────────────────────────────────────────────────────────
+
+export const getMyCourses = asyncHandler(async (req: Request, res: Response) => {
+  const courses = await prisma.course.findMany({
+    where: { instructorId: req.user!.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      instructor: { select: { id: true, name: true, avatar: true } },
+      category: { select: { name: true } },
+      _count: { select: { enrollments: true } },
+      reviews: { select: { rating: true } },
+    },
+  });
+
+  const enriched = courses.map((c) => {
+    const ratings = c.reviews.map((r) => r.rating);
+    return {
+      ...c,
+      avgRating: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0,
+      reviewCount: ratings.length,
+      reviews: undefined,
+    };
+  });
+
+  res.json({ status: "success", data: { courses: enriched, total: courses.length, page: 1, pages: 1 } });
+});
 
 export const getInstructorStats = asyncHandler(async (req: Request, res: Response) => {
   const instructorId = req.user!.id;

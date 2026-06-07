@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPublicCategories = exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorStats = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
+exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
+exports.getPublicCategories = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
@@ -104,10 +105,10 @@ exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             welcomeMessage, congratsMessage,
             tags: JSON.stringify(tags || []),
             slug, status: "DRAFT", instructorId: instId,
+            forum: { create: {} },
+            curriculum: { create: {} }
         },
     });
-    // Create Forum for this course
-    await prisma_1.prisma.forum.create({ data: { courseId: course.id } });
     res.status(201).json({ status: "success", data: course });
 });
 // ─── GET COURSE ─────────────────────────────────────────────────────────────
@@ -121,6 +122,7 @@ exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
             reviews: { select: { rating: true } },
             _count: { select: { enrollments: true } },
+            curriculum: true,
         },
     });
     if (!course)
@@ -642,6 +644,28 @@ exports.deleteForumReply = (0, errors_1.asyncHandler)(async (req, res) => {
     res.json({ status: "success", message: "Reply deleted" });
 });
 // ─── INSTRUCTOR STATS ────────────────────────────────────────────────────────
+exports.getMyCourses = (0, errors_1.asyncHandler)(async (req, res) => {
+    const courses = await prisma_1.prisma.course.findMany({
+        where: { instructorId: req.user.id },
+        orderBy: { createdAt: "desc" },
+        include: {
+            instructor: { select: { id: true, name: true, avatar: true } },
+            category: { select: { name: true } },
+            _count: { select: { enrollments: true } },
+            reviews: { select: { rating: true } },
+        },
+    });
+    const enriched = courses.map((c) => {
+        const ratings = c.reviews.map((r) => r.rating);
+        return {
+            ...c,
+            avgRating: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0,
+            reviewCount: ratings.length,
+            reviews: undefined,
+        };
+    });
+    res.json({ status: "success", data: { courses: enriched, total: courses.length, page: 1, pages: 1 } });
+});
 exports.getInstructorStats = (0, errors_1.asyncHandler)(async (req, res) => {
     const instructorId = req.user.id;
     const courses = await prisma_1.prisma.course.findMany({ where: { instructorId }, select: { id: true, status: true } });

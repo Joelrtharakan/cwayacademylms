@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 
 // Load environment variables from workspace root
 dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
@@ -19,7 +20,7 @@ const app = express();
 const PORT = process.env.API_PORT || 4000;
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
     origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -41,6 +42,11 @@ app.use(cookieParser());
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "success", message: "CWAY Academy LMS API is healthy" });
 });
+
+// Serve local uploads
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir));
 
 // API Routes mounting
 app.use("/api/v1/auth", authRoutes);

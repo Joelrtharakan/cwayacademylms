@@ -131,35 +131,6 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {/* Role Selector Segmented Tabs */}
-          <div style={{ marginBottom: '4px' }}>
-            <label className="font-sans font-bold" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(28,43,30,0.7)', marginBottom: '4px' }}>
-              Select Account Type
-            </label>
-            <div style={{ position: 'relative', display: 'flex', padding: '6px', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '2px solid white', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-              {/* Animated background pill */}
-              <div 
-                style={{ position: 'absolute', top: '6px', bottom: '6px', width: 'calc(50% - 6px)', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(28,43,30,0.08)', transition: 'transform 300ms ease-out', transform: role === "STUDENT" ? "translateX(0)" : "translateX(100%)", zIndex: 0 }}
-              />
-              <button
-                type="button"
-                onClick={() => setRole("STUDENT")}
-                className="font-sans font-bold"
-                style={{ position: 'relative', flex: 1, padding: '8px 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRadius: '12px', zIndex: 10, cursor: 'pointer', background: 'none', border: 'none', color: role === "STUDENT" ? '#1C2B1E' : 'rgba(82,102,88,0.6)' }}
-              >
-                I want to learn
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("INSTRUCTOR")}
-                className="font-sans font-bold"
-                style={{ position: 'relative', flex: 1, padding: '8px 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRadius: '12px', zIndex: 10, cursor: 'pointer', background: 'none', border: 'none', color: role === "INSTRUCTOR" ? '#1C2B1E' : 'rgba(82,102,88,0.6)' }}
-              >
-                I want to teach
-              </button>
-            </div>
-          </div>
-
           <div>
             <label className="font-sans font-bold" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(28,43,30,0.7)', marginBottom: '4px' }}>
               Full Name *
