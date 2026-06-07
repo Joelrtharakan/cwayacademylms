@@ -124,7 +124,7 @@ export default function AdminCategoriesPage() {
               gap: "8px",
               padding: "12px 24px",
               borderRadius: "10px",
-              background: "#B88645",
+              background: "#1A261D",
               color: "#FFFFFF",
               fontSize: "14px",
               fontWeight: 700,

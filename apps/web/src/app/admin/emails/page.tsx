@@ -59,7 +59,7 @@ export default function AdminEmailsPage() {
     <div className="space-y-6">
       <PageHeader title="Email Templates" subtitle="Customize transactional emails sent by the platform" 
         actions={
-          <button onClick={openCreate} className="flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-xl hover:-translate-y-0.5"
+          <button onClick={openCreate} className="flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-[#1A261D] text-white hover:bg-[#2C4A3B] hover:shadow-xl hover:-translate-y-0.5"
             style={{ padding: "12px 28px", boxShadow: "0 8px 24px rgba(201, 151, 58, 0.25)" }}>
             <Mail size={18} strokeWidth={2.5} /> Create New Template
           </button>
@@ -120,7 +120,7 @@ export default function AdminEmailsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={updateMut.isPending || createMut.isPending} 
-                style={{ padding: "12px 28px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#B88645", border: "none", cursor: updateMut.isPending || createMut.isPending ? "not-allowed" : "pointer", opacity: updateMut.isPending || createMut.isPending ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184, 134, 69, 0.3)" }}>
+                style={{ padding: "12px 28px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#1A261D", border: "none", cursor: updateMut.isPending || createMut.isPending ? "not-allowed" : "pointer", opacity: updateMut.isPending || createMut.isPending ? 0.7 : 1, boxShadow: "0 4px 14px rgba(26, 38, 29, 0.3)" }}>
                 {updateMut.isPending || createMut.isPending ? "Saving..." : isCreating ? "Create Template" : "Save Changes"}
               </button>
             </div>
@@ -138,7 +138,7 @@ export default function AdminEmailsPage() {
             <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="Email address..." className="w-full px-4 py-3 rounded-xl font-sans text-[14px] bg-white border border-cway-light-border focus:border-cway-gold focus:ring-1 focus:ring-cway-gold text-[#1A261D] transition-all outline-none shadow-sm mb-6" />
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowTestDialog(false)} className="px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-light-border bg-white text-cway-text-muted shadow-sm hover:border-cway-gold hover:text-cway-gold">Cancel</button>
-              <button onClick={() => testEmail && testMut.mutate({ id: editingTemplate.id, to: testEmail })} disabled={!testEmail || testMut.isPending} className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
+              <button onClick={() => testEmail && testMut.mutate({ id: editingTemplate.id, to: testEmail })} disabled={!testEmail || testMut.isPending} className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-[#1A261D] text-white hover:bg-[#2C4A3B] hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
                 {testMut.isPending ? "Sending..." : "Send Test"}
               </button>
             </div>

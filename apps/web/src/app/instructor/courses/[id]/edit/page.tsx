@@ -141,7 +141,7 @@ export default function EditCoursePage() {
               Unpublish to Draft
             </button>
           )}
-          <button onClick={form.handleSubmit(onSubmit)} disabled={updateMut.isPending} style={{ display: "flex", alignItems: "center", gap: 8, background: GOLD, color: DARK, borderRadius: 100, padding: "8px 20px", fontWeight: 700, fontSize: 13, border: "none", cursor: updateMut.isPending ? "not-allowed" : "pointer", opacity: updateMut.isPending ? 0.7 : 1 }}>
+          <button onClick={form.handleSubmit(onSubmit)} disabled={updateMut.isPending} style={{ display: "flex", alignItems: "center", gap: 8, background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "8px 20px", fontWeight: 700, fontSize: 13, border: "none", cursor: updateMut.isPending ? "not-allowed" : "pointer", opacity: updateMut.isPending ? 0.7 : 1 }}>
             <Save size={14} /> {updateMut.isPending ? "Saving..." : "Save Changes"}
           </button>
         </div>

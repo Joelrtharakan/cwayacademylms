@@ -132,7 +132,7 @@ export default function InstructorSettingsPage() {
                   <Input label="Location" {...profileForm.register("location")} />
                 </div>
                 <Input label="Phone Number" {...profileForm.register("phone")} />
-                <button type="submit" disabled={profileMut.isPending} style={{ background: GOLD, color: DARK, borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
+                <button type="submit" disabled={profileMut.isPending} style={{ background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
                   {profileMut.isPending ? "Saving..." : "Save Profile"}
                 </button>
               </form>
@@ -151,7 +151,7 @@ export default function InstructorSettingsPage() {
                   <Input label="Credentials" {...credentialsForm.register("credentials")} placeholder="e.g. M.Th., Ph.D." />
                 </div>
                 <Input label="Years of Experience" type="number" {...credentialsForm.register("yearsExperience")} />
-                <button type="submit" disabled={profileMut.isPending} style={{ background: GOLD, color: DARK, borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
+                <button type="submit" disabled={profileMut.isPending} style={{ background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
                   Save Credentials
                 </button>
               </form>
@@ -168,7 +168,7 @@ export default function InstructorSettingsPage() {
                 <Input type="password" label="Current Password *" {...passwordForm.register("currentPassword", { required: "Required" })} error={passwordForm.formState.errors.currentPassword?.message} />
                 <Input type="password" label="New Password *" {...passwordForm.register("newPassword", { required: "Required", minLength: { value: 8, message: "Min 8 chars" } })} error={passwordForm.formState.errors.newPassword?.message} />
                 <Input type="password" label="Confirm New Password *" {...passwordForm.register("confirmPassword", { required: "Required" })} error={passwordForm.formState.errors.confirmPassword?.message} />
-                <button type="submit" disabled={passwordMut.isPending} style={{ background: GOLD, color: DARK, borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
+                <button type="submit" disabled={passwordMut.isPending} style={{ background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 8 }}>
                   Update Password
                 </button>
               </form>
@@ -194,7 +194,7 @@ export default function InstructorSettingsPage() {
                   </label>
                 ))}
               </div>
-              <button style={{ background: GOLD, color: DARK, borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 24 }}>
+              <button style={{ background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", marginTop: 24 }}>
                 Save Preferences
               </button>
             </div>

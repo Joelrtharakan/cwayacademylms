@@ -143,7 +143,7 @@ function Step1({ form, onNext, categories }: any) {
       <Input label="Scripture Reference" {...register("scriptureRef")} placeholder="e.g. 2 Timothy 2:15" />
       <p style={{ fontSize: 11, color: MUTED, marginTop: -12, marginBottom: 18 }}>This verse will appear on the course detail page and certificate</p>
 
-      <button type="submit" style={{ width: "100%", background: GOLD, color: DARK, borderRadius: 100, padding: "14px 0", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+      <button type="submit" style={{ width: "100%", background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "14px 0", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
         Continue <ChevronRight size={16} />
       </button>
     </form>
@@ -280,7 +280,7 @@ function Step3({ form, onNext, onBack }: any) {
         <button type="button" onClick={onBack} style={{ flex: 1, background: "rgba(255,255,255,0.06)", color: "#F5F0E8", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "12px 0", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <ChevronLeft size={16} /> Back
         </button>
-        <button type="submit" style={{ flex: 2, background: GOLD, color: DARK, borderRadius: 100, padding: "12px 0", fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <button type="submit" style={{ flex: 2, background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 0", fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Continue <ChevronRight size={16} />
         </button>
       </div>
@@ -368,7 +368,7 @@ function Step4({ courseId, onNext, onBack }: any) {
         <button onClick={onBack} style={{ flex: 1, background: "rgba(255,255,255,0.06)", color: "#F5F0E8", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "12px 0", cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <ChevronLeft size={16} /> Back
         </button>
-        <button onClick={onNext} style={{ flex: 2, background: GOLD, color: DARK, borderRadius: 100, padding: "12px 0", fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <button onClick={onNext} style={{ flex: 2, background: "#1A261D", color: "#FFFFFF", borderRadius: 100, padding: "12px 0", fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Continue <ChevronRight size={16} />
         </button>
       </div>

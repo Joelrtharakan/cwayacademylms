@@ -145,7 +145,7 @@ h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: upper
     <div className="space-y-6">
       <PageHeader title="Certificate Templates" subtitle="Design dynamic certificates generated for students upon completion"
         actions={
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-xl hover:-translate-y-0.5"
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 rounded-xl font-medium text-sm transition-all duration-300 bg-[#1A261D] text-white hover:bg-[#2C4A3B] hover:shadow-xl hover:-translate-y-0.5"
             style={{ padding: "12px 28px", boxShadow: "0 8px 24px rgba(201, 151, 58, 0.25)" }}>
             <Plus size={18} strokeWidth={2.5} /> Create New Template
           </button>
@@ -215,7 +215,7 @@ h1 { font-size: 36px; color: #1A261D; margin-bottom: 40px; text-transform: upper
                   <Dialog.Close asChild>
                     <button type="button" onClick={resetForm} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#5C7360", border: "1px solid transparent", background: "transparent", cursor: "pointer" }}>Cancel</button>
                   </Dialog.Close>
-                  <button type="submit" disabled={createMut.isPending || updateMut.isPending} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#B88645", border: "none", cursor: (createMut.isPending || updateMut.isPending) ? "not-allowed" : "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184, 134, 69, 0.3)" }}>
+                  <button type="submit" disabled={createMut.isPending || updateMut.isPending} style={{ padding: "10px 24px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "white", background: "#1A261D", border: "none", cursor: (createMut.isPending || updateMut.isPending) ? "not-allowed" : "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1, boxShadow: "0 4px 14px rgba(26, 38, 29, 0.3)" }}>
                     {createMut.isPending || updateMut.isPending ? "Saving..." : "Save Template"}
                   </button>
                 </div>

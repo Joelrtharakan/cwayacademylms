@@ -86,7 +86,7 @@ export default function UserDetailPage() {
 
       {/* Header */}
       <div className="rounded-[20px] p-7 flex flex-col sm:flex-row items-start sm:items-center gap-6 bg-white border border-cway-light-border shadow-sm">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center font-serif font-bold text-[32px] uppercase flex-shrink-0 bg-cway-gold text-white shadow-md">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center font-serif font-bold text-[32px] uppercase flex-shrink-0 bg-[#1A261D] text-white shadow-md">
           {user.name?.slice(0, 2) || "U"}
         </div>
         <div className="flex-1">

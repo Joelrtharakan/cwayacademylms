@@ -299,7 +299,7 @@ export default function AdminInstructorsPage() {
               <button 
                 onClick={() => createMut.mutate(newInstructor)}
                 disabled={!newInstructor.name || !newInstructor.email || createMut.isPending}
-                style={{ padding: "10px 16px", borderRadius: "8px", border: "none", background: "#B88645", color: "#FFFFFF", fontWeight: 600, cursor: "pointer", opacity: (!newInstructor.name || !newInstructor.email || createMut.isPending) ? 0.5 : 1 }}
+                style={{ padding: "10px 16px", borderRadius: "8px", border: "none", background: "#1A261D", color: "#FFFFFF", fontWeight: 600, cursor: "pointer", opacity: (!newInstructor.name || !newInstructor.email || createMut.isPending) ? 0.5 : 1 }}
               >
                 {createMut.isPending ? "Creating..." : "Create & Send Email"}
               </button>

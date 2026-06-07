@@ -159,19 +159,27 @@ export default function AdminPaymentsPage() {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              padding: "10px 16px",
-              borderRadius: "12px",
-              background: "#FFFFFF",
-              border: "1px solid #E4E8E0",
-              color: "#526658",
-              fontSize: "13px",
-              fontWeight: 600,
+              padding: "10px 24px",
+              borderRadius: "10px",
+              background: "#1A261D",
+              border: "none",
+              color: "#FFFFFF",
+              fontSize: "12px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
               cursor: "pointer",
               transition: "all 0.15s",
-              boxShadow: "0 1px 3px rgba(26,38,29,0.05)",
+              boxShadow: "0 4px 14px rgba(26, 38, 29, 0.3)",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.color = "#B88645"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#526658"; }}
+            onMouseEnter={(e) => { 
+              e.currentTarget.style.background = "#2C4A3B";
+              e.currentTarget.style.boxShadow = "0 6px 20px rgba(26, 38, 29, 0.4)"; 
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.background = "#1A261D";
+              e.currentTarget.style.boxShadow = "0 4px 14px rgba(26, 38, 29, 0.3)";
+            }}
           >
             <Download size={14} /> Export CSV
           </button>

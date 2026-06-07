@@ -180,7 +180,7 @@ export default function AdminSponsorshipsPage() {
               <button 
                 onClick={() => linkMut.mutate({ id: linkTarget.id, studentId: selectedStudent, courseId: selectedCourse })}
                 disabled={!selectedStudent || !selectedCourse || linkMut.isPending}
-                className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-cway-gold text-white hover:bg-cway-gold-light hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
+                className="px-6 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all bg-[#1A261D] text-white hover:bg-[#2C4A3B] hover:shadow-md border border-transparent disabled:opacity-60 disabled:cursor-not-allowed">
                 {linkMut.isPending ? "Allocating..." : "Allocate & Enroll Student"}
               </button>
             </div>
