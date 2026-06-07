@@ -7,10 +7,10 @@ import { CheckCircle, Clock, FileText, Download, ChevronDown, ChevronUp } from "
 import { getInstructorAssignments, gradeSubmission } from "@/lib/api/instructor";
 import { formatDistanceToNow } from "date-fns";
 
-const GOLD = "#C9973A";
-const SURFACE = "#243825";
-const DARK = "#1C2B1E";
-const MUTED = "#8A9E8C";
+const GOLD = "var(--gold-primary, #C9A84C)";
+const SURFACE = "#FFFFFF";
+const DARK = "#1A261D";
+const MUTED = "#8F9E93";
 
 type Tab = "ungraded" | "graded" | "all";
 
@@ -21,16 +21,16 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
   const maxScore = sub.assignment?.maxScore || 100;
 
   return (
-    <div style={{ background: SURFACE, border: `1px solid ${sub.isGraded ? "rgba(74,222,128,0.2)" : "rgba(201,151,58,0.3)"}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
+    <div style={{ background: SURFACE, border: `1px solid ${sub.isGraded ? "var(--success, #4ADE80)" : "var(--border-light, #E2E8F0)"}`, borderRadius: 12, overflow: "hidden", marginBottom: 16, boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05))" }}>
       {/* Header */}
       <div onClick={() => setExpanded(!expanded)}
         style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
-        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${GOLD}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 15, fontWeight: 700, color: GOLD }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `rgba(201,168,76,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 15, fontWeight: 700, color: "var(--gold-dark, #A68A3D)" }}>
           {sub.student?.name?.slice(0, 2).toUpperCase()}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: "#F5F0E8", fontSize: 14 }}>{sub.student?.name}</div>
-          <div style={{ fontSize: 12, color: MUTED }}>{sub.assignment?.title} · {sub.assignment?.lesson?.section?.course?.title}</div>
+          <div style={{ fontWeight: 700, color: DARK, fontSize: 15, marginBottom: 2 }}>{sub.student?.name}</div>
+          <div style={{ fontSize: 13, color: MUTED }}>{sub.assignment?.title} · {sub.assignment?.lesson?.section?.course?.title}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {sub.isGraded ? (
@@ -47,33 +47,33 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
       </div>
 
       {expanded && (
-        <div style={{ padding: "0 20px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "0 20px 20px", borderTop: "1px solid var(--border-light, #E2E8F0)" }}>
           {/* Content */}
           {sub.content && (
-            <div style={{ marginTop: 16, padding: 14, background: "rgba(255,255,255,0.03)", borderRadius: 8, color: "#F5F0E8", fontSize: 13, lineHeight: 1.6 }}>
+            <div style={{ marginTop: 16, padding: 16, background: "var(--cream-light, #F9FAF8)", borderRadius: 8, color: DARK, fontSize: 14, lineHeight: 1.6, border: "1px solid var(--border-light, #E2E8F0)" }}>
               {sub.content}
             </div>
           )}
           {sub.fileUrl && (
-            <a href={sub.fileUrl} target="_blank" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, color: GOLD, textDecoration: "none", fontSize: 13 }}>
-              <Download size={14} /> Download Submission File
+            <a href={sub.fileUrl} target="_blank" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 16, padding: "8px 16px", background: "rgba(201,168,76,0.1)", borderRadius: 8, color: "var(--gold-dark, #A68A3D)", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+              <Download size={16} /> Download Submission File
             </a>
           )}
 
           {/* Grading */}
-          <div style={{ marginTop: 20, padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: 10, border: "1px solid rgba(201,151,58,0.15)" }}>
+          <div style={{ marginTop: 24, padding: "20px", background: "var(--cream-mid, #F4F5F1)", borderRadius: 12, border: "1px solid rgba(201,168,76,0.2)" }}>
             <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>Score:</label>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <label style={{ fontSize: 13, fontWeight: 700, color: DARK, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>Score:</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <input type="number" min={0} max={maxScore} value={grade} onChange={e => setGrade(e.target.value)}
-                  style={{ width: 80, background: "rgba(255,255,255,0.06)", border: `1px solid ${GOLD}`, borderRadius: 8, padding: "8px 12px", color: "#F5F0E8", fontSize: 18, fontWeight: 700, textAlign: "center", outline: "none" }} />
-                <span style={{ color: MUTED, fontSize: 14 }}>/ {maxScore}</span>
+                  style={{ width: 80, background: "#FFFFFF", border: `1px solid rgba(201,168,76,0.4)`, borderRadius: 8, padding: "8px 12px", color: DARK, fontSize: 18, fontWeight: 700, textAlign: "center", outline: "none" }} />
+                <span style={{ color: MUTED, fontSize: 15, fontWeight: 600 }}>/ {maxScore}</span>
               </div>
             </div>
             <textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Write your feedback for the student..." rows={3}
-              style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,151,58,0.2)", borderRadius: 8, padding: "10px 12px", color: "#F5F0E8", fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+              style={{ width: "100%", background: "#FFFFFF", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 8, padding: "12px", color: DARK, fontSize: 14, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
             <button onClick={() => grade !== "" && onGrade(sub.id, Number(grade), feedback)}
-              style={{ marginTop: 10, background: GOLD, color: DARK, borderRadius: 100, padding: "9px 24px", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
+              style={{ marginTop: 16, background: GOLD, color: "#FFFFFF", borderRadius: 100, padding: "10px 28px", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", transition: "transform 0.2s" }}>
               Save Grade
             </button>
           </div>
@@ -105,15 +105,15 @@ export default function AssignmentsPage() {
   const ungradedCount = allSubs.filter((s: any) => !s.isGraded).length;
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 26, color: "#F5F0E8", marginBottom: 24 }}>Assignments & Grading</h1>
+    <div style={{ padding: "24px 32px" }}>
+      <h1 style={{ fontFamily: "var(--font-cinzel), serif", fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 32, letterSpacing: "0.5px" }}>Assignments & Grading</h1>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 4, marginBottom: 24, width: "fit-content" }}>
+      <div style={{ display: "flex", gap: 8, background: "rgba(201,168,76,0.1)", borderRadius: 12, padding: 6, marginBottom: 32, width: "fit-content" }}>
         {(["ungraded", "graded", "all"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            style={{ background: tab === t ? GOLD : "transparent", color: tab === t ? DARK : MUTED, borderRadius: 7, padding: "7px 16px", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6 }}>
-            {t === "ungraded" && ungradedCount > 0 && <span style={{ background: "#FBBF24", color: DARK, borderRadius: 100, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}>{ungradedCount}</span>}
+            style={{ background: tab === t ? GOLD : "transparent", color: tab === t ? "#FFFFFF" : "var(--gold-dark)", borderRadius: 8, padding: "8px 20px", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
+            {t === "ungraded" && ungradedCount > 0 && <span style={{ background: tab === t ? "#FFFFFF" : GOLD, color: tab === t ? GOLD : "#FFFFFF", borderRadius: 100, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{ungradedCount}</span>}
             {t}
           </button>
         ))}
