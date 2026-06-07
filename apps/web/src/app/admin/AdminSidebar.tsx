@@ -316,6 +316,7 @@ export default function AdminSidebar() {
                           <Link
                             key={item.href}
                             href={item.href}
+                            prefetch={true}
                             title={collapsed ? item.name : undefined}
                             style={{
                               display: "flex",
