@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 export default function VideosPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", isFree: false, videoUrl: "" });
 
   // We fetch lessons directly here for better encapsulation
@@ -34,6 +35,22 @@ export default function VideosPanel({ module }: { module: any }) {
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create video lesson"),
   });
 
+  const updateMut = useMutation({
+    mutationFn: async (id: string) => {
+      const lesson = await updateLesson(id, { title: form.title, isFree: form.isFree, videoUrl: form.videoUrl });
+      return lesson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", module.id] });
+      queryClient.invalidateQueries({ queryKey: ["modules"] });
+      setEditingId(null);
+      setIsCreating(false);
+      setForm({ title: "", isFree: false, videoUrl: "" });
+      toast.success("Video lesson updated!");
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update video lesson"),
+  });
+
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteLesson(id),
     onSuccess: () => {
@@ -46,7 +63,17 @@ export default function VideosPanel({ module }: { module: any }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    createMut.mutate();
+    if (editingId) {
+      updateMut.mutate(editingId);
+    } else {
+      createMut.mutate();
+    }
+  };
+
+  const handleEdit = (vid: any) => {
+    setEditingId(vid.id);
+    setIsCreating(true);
+    setForm({ title: vid.title, isFree: vid.isFree, videoUrl: vid.videoUrl || "" });
   };
 
   return (
@@ -58,7 +85,7 @@ export default function VideosPanel({ module }: { module: any }) {
         </div>
         {!isCreating && (
           <button 
-            onClick={() => setIsCreating(true)}
+            onClick={() => { setEditingId(null); setForm({ title: "", isFree: false, videoUrl: "" }); setIsCreating(true); }}
             style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
           >
             <Plus size={16} /> Add Video
@@ -69,8 +96,8 @@ export default function VideosPanel({ module }: { module: any }) {
       {isCreating && (
         <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "12px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 10px 30px rgba(26,38,29,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>New Video Lesson</h3>
-            <button onClick={() => setIsCreating(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
+            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>{editingId ? "Edit Video Lesson" : "New Video Lesson"}</h3>
+            <button onClick={() => { setIsCreating(false); setEditingId(null); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
           </div>
           
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -115,10 +142,10 @@ export default function VideosPanel({ module }: { module: any }) {
             <div style={{ display: "flex", gap: "12px", paddingTop: "8px", borderTop: "1px solid #E4E8E0" }}>
               <button 
                 type="submit"
-                disabled={createMut.isPending}
-                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", opacity: createMut.isPending ? 0.7 : 1 }}
+                disabled={createMut.isPending || updateMut.isPending}
+                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1 }}
               >
-                {createMut.isPending ? "Uploading & Saving..." : "Save Video Lesson"}
+                {(createMut.isPending || updateMut.isPending) ? "Saving..." : "Save Video Lesson"}
               </button>
             </div>
           </form>
@@ -155,7 +182,7 @@ export default function VideosPanel({ module }: { module: any }) {
                 </div>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
-                <button style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <button onClick={() => handleEdit(vid)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <Edit2 size={16} />
                 </button>
                 <button onClick={() => { if(confirm("Delete video?")) deleteMut.mutate(vid.id); }} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
