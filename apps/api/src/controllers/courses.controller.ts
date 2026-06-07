@@ -210,11 +210,10 @@ export const updateCourse = asyncHandler(async (req: Request, res: Response) => 
   if (congratsMessage !== undefined) data.congratsMessage = congratsMessage;
   if (tags !== undefined) data.tags = JSON.stringify(tags);
 
-  // Instructors can only go back to DRAFT from PUBLISHED
   if (status !== undefined) {
-    if (req.user!.role === "INSTRUCTOR" && status === "DRAFT" && course.status === "PUBLISHED") {
-      data.status = "DRAFT";
-    } else if (req.user!.role === "ADMIN") {
+    if (req.user!.role === "ADMIN") {
+      data.status = status;
+    } else if (req.user!.role === "INSTRUCTOR" && ["DRAFT", "PUBLISHED", "ARCHIVED"].includes(status)) {
       data.status = status;
     }
   }

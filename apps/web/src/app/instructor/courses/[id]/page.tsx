@@ -104,9 +104,6 @@ export default function CourseManagementPage() {
             </div>
           </div>
         </div>
-        <Link href={`/courses/${course.slug}`} target="_blank" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, background: "rgba(184,134,69,0.1)", color: "#B88645", border: "1px solid rgba(184,134,69,0.3)", textDecoration: "none", transition: "all 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.2)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.1)"; }}>
-          Preview <ExternalLink size={14} />
-        </Link>
       </header>
 
       {/* Course Info Strip */}

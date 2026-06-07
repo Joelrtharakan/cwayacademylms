@@ -5,6 +5,9 @@ import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmailCard } from "@/components/EmailCard";
 import { ContactContent } from "./contact/ContactContent";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/store/auth.store";
+import Link from "next/link";
 
 interface Post {
   slug: string;
@@ -89,6 +92,12 @@ export default function LandingPage() {
   const [selectedBlogPost, setSelectedBlogPost] = useState<Post | null>(null);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+
+  const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
+    queryKey: ["publicCourses"],
+    queryFn: () => api.get("/courses").then((res) => res.data.data),
+  });
+  const courses = coursesData?.courses || [];
 
   useEffect(() => {
     if (selectedBlogPost || showPrivacyModal || showTermsModal) {
@@ -1330,97 +1339,37 @@ export default function LandingPage() {
         </div>
 
         <div className="section container">
-          <div className="grid-3">
-            <div className="card course-card reveal">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Spiritual Formation</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Integrated study of the Christian life and personal character development by the initiation and enactment of the Holy Spirit.</p>
-              </div>
+          {isLoadingCourses ? (
+            <div style={{ textAlign: "center", padding: "4rem 0" }}>
+              <p className="body-text">Loading courses...</p>
             </div>
-
-            <div className="card course-card reveal stagger-1">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Old Testament</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Overview of the content and theology of the Old Testament books, examining key theological themes and relevance to ministry today.</p>
-              </div>
+          ) : !courses?.length ? (
+            <div style={{ textAlign: "center", padding: "4rem 0", background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: "20px", marginBottom: "1rem", color: "var(--text-main)" }}>No Courses Available Yet</h3>
+              <p className="body-text">Check back soon for upcoming courses.</p>
             </div>
-
-            <div className="card course-card reveal stagger-2">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
+          ) : (
+            <div className="grid-3">
+              {courses.map((c: any, i: number) => (
+                <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`}>
+                  <div>
+                    <div className="course-badges">
+                      <span className="badge">{c.weeksDuration} Wks</span>
+                      {c.totalLectures > 0 && <span className="badge">{c.totalLectures} Lectures</span>}
+                      {c.level && <span className="badge">{c.level}</span>}
+                    </div>
+                    <h3 style={{ fontSize: "20px", marginBottom: "0.75rem", fontFamily: "Georgia, serif" }}>{c.title}</h3>
+                    <p className="body-text" style={{ fontSize: "14.5px" }}>{c.subtitle || c.description?.substring(0, 100) || "Learn the foundations of this topic."}</p>
+                  </div>
+                  <div style={{ marginTop: "1.5rem" }}>
+                    <Link href={`/courses/${c.slug}`} style={{ display: "inline-block", color: "var(--accent-green)", fontWeight: 700, fontSize: "13px", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1px" }}>
+                      View Details →
+                    </Link>
+                  </div>
                 </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>New Testament</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Overview within historical, literary, cultural, and theological contexts, tracing each book&apos;s Christological development.</p>
-              </div>
+              ))}
             </div>
-
-            <div className="card course-card reveal">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Interpreting the Bible</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Equipping you with tools to study Scripture with insight, accuracy, and understanding through sound interpretive principles.</p>
-              </div>
-            </div>
-
-            <div className="card course-card reveal stagger-1">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Theology & Doctrines 1</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>God, Humanity, Christ, and Salvation. Developing a Biblically grounded theology for life and ministry.</p>
-              </div>
-            </div>
-
-            <div className="card course-card reveal stagger-2">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Theology & Doctrines 2</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Church, Holy Spirit, and Mission. Exploring major areas of Christian theology to defend and teach the faith.</p>
-              </div>
-            </div>
-
-            <div className="card course-card reveal">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Five-Fold Ministry</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Training in church leadership, revealing functions of apostles, prophets, evangelists, pastors, and teachers.</p>
-              </div>
-            </div>
-
-            <div className="card course-card reveal stagger-1">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Our Roots: Church History</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Development of Christianity from inception to present, including the global expansion and India&apos;s heritage.</p>
-              </div>
-            </div>
-
-            <div className="card course-card reveal stagger-2">
-              <div>
-                <div className="course-badges">
-                  <span className="badge">6 Wks</span><span className="badge">10 Lectures</span>
-                </div>
-                <h3 style={{ fontSize: "20px", marginBottom: "0.75rem" }}>Spiritual Leadership</h3>
-                <p className="body-text" style={{ fontSize: "14.5px" }}>Practical understanding of leadership principles and blending natural/spiritual qualities to shape your calling.</p>
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="text-center reveal" style={{ marginTop: "4rem" }}>
             <div className="bank-card" style={{ display: "inline-block" }}>

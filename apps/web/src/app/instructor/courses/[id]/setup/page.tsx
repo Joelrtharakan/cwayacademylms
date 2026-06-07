@@ -62,10 +62,10 @@ export default function CourseSetupPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
       
       {/* Header */}
-      <header style={{ background: "#FFFFFF", padding: "20px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
+      <header style={{ position: "sticky", top: "70px", zIndex: 50, background: "#FFFFFF", padding: "20px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <Link href="/instructor/dashboard" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
             <ArrowLeft size={20} /> Back to Dashboard
@@ -81,9 +81,6 @@ export default function CourseSetupPage() {
             </div>
           </div>
         </div>
-        <Link href={`/courses/${course.slug}`} target="_blank" style={{ padding: "10px 20px", borderRadius: "8px", fontSize: "14px", fontWeight: 600, background: "transparent", color: "#B88645", border: "1px solid #B88645", textDecoration: "none", transition: "all 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.1)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
-          Preview Student View
-        </Link>
       </header>
 
       {/* Main Layout */}
