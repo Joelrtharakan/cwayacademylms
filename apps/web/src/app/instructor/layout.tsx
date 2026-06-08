@@ -174,9 +174,14 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                   fontWeight: 700,
                   color: "#B88645",
                   textTransform: "uppercase" as const,
+                  overflow: "hidden"
                 }}
               >
-                {user?.name?.slice(0, 2) || "IN"}
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  user?.name?.slice(0, 2) || "IN"
+                )}
               </div>
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>

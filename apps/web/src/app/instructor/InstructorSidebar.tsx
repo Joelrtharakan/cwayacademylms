@@ -389,9 +389,14 @@ export default function InstructorSidebar() {
                     color: "#B88645",
                     textTransform: "uppercase" as const,
                     flexShrink: 0,
+                    overflow: "hidden"
                   }}
                 >
-                  {user?.name?.slice(0, 2) || "IN"}
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    user?.name?.slice(0, 2) || "IN"
+                  )}
                 </div>
                 <div style={{ overflow: "hidden", flex: 1 }}>
                   <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "14px", fontWeight: 700, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

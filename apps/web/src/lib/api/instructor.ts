@@ -166,3 +166,13 @@ export const uploadAvatar = (file: File) => {
 // ─── Public Categories ────────────────────────────────────────────────────────
 export const getCategories = () =>
   api.get("/categories").then((r) => r.data.data);
+
+// ─── Announcements ────────────────────────────────────────────────────────────
+export const getInstructorAnnouncements = (courseId: string) =>
+  api.get(`/instructor/courses/${courseId}/announcements`).then((r) => r.data.data);
+
+export const createAnnouncement = (courseId: string, data: { title: string; content: string }) =>
+  api.post(`/instructor/courses/${courseId}/announcements`, data).then((r) => r.data.data);
+
+export const deleteAnnouncement = (courseId: string, announcementId: string) =>
+  api.delete(`/instructor/courses/${courseId}/announcements/${announcementId}`).then((r) => r.data.data);

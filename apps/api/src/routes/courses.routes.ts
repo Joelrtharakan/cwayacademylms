@@ -123,4 +123,10 @@ router.post("/messages", authenticate, CC.sendMessage);
 router.put("/users/me/profile", authenticate, CC.updateMyProfile);
 router.post("/users/me/upload-avatar", authenticate, upload.single("avatar"), CC.uploadAvatar);
 
+// Announcements
+router.get("/courses/:id/announcements", authenticate, CC.getCourseAnnouncements);
+router.get("/instructor/courses/:id/announcements", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorAnnouncements);
+router.post("/instructor/courses/:id/announcements", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createAnnouncement);
+router.delete("/instructor/courses/:id/announcements/:announcementId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteAnnouncement);
+
 export default router;

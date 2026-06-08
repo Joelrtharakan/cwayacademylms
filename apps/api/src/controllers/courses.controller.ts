@@ -129,6 +129,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
       category: { select: { id: true, name: true, slug: true } },
       sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       reviews: { select: { rating: true } },
+      announcements: { orderBy: { createdAt: "desc" } },
       _count: { select: { enrollments: true } },
       curriculum: true,
     },
@@ -902,4 +903,64 @@ export const updateMyProfile = asyncHandler(async (req: Request, res: Response) 
 export const getPublicCategories = asyncHandler(async (_req: Request, res: Response) => {
   const cats = await prisma.category.findMany({ orderBy: { order: "asc" } });
   res.json({ status: "success", data: cats });
+});
+
+// ─── ANNOUNCEMENTS ───────────────────────────────────────────────────────────
+
+export const getCourseAnnouncements = asyncHandler(async (req: Request, res: Response) => {
+  const course = await prisma.course.findFirst({
+    where: { OR: [{ id: req.params.id }, { slug: req.params.id }] }
+  });
+  if (!course) return res.status(404).json({ status: "error", message: "Course not found" });
+
+  const announcements = await prisma.announcement.findMany({
+    where: { courseId: course.id },
+    orderBy: { createdAt: "desc" },
+    include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+  });
+  res.json({ status: "success", data: announcements });
+});
+
+export const getInstructorAnnouncements = asyncHandler(async (req: Request, res: Response) => {
+  const announcements = await prisma.announcement.findMany({
+    where: { courseId: req.params.id, authorId: req.user!.id },
+    orderBy: { createdAt: "desc" },
+    include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+  });
+  res.json({ status: "success", data: announcements });
+});
+
+export const createAnnouncement = asyncHandler(async (req: Request, res: Response) => {
+  const { title, content } = req.body;
+  if (!title || !content) {
+    return res.status(400).json({ status: "error", message: "Title and content are required" });
+  }
+
+  const course = await prisma.course.findFirst({ where: { id: req.params.id, instructorId: req.user!.id } });
+  if (!course) return res.status(404).json({ status: "error", message: "Course not found" });
+
+  const announcement = await prisma.announcement.create({
+    data: {
+      courseId: course.id,
+      authorId: req.user!.id,
+      title,
+      content,
+    },
+    include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+  });
+
+  res.json({ status: "success", data: announcement });
+});
+
+export const deleteAnnouncement = asyncHandler(async (req: Request, res: Response) => {
+  const announcement = await prisma.announcement.findFirst({
+    where: { id: req.params.announcementId, courseId: req.params.id, authorId: req.user!.id }
+  });
+
+  if (!announcement) {
+    return res.status(404).json({ status: "error", message: "Announcement not found" });
+  }
+
+  await prisma.announcement.delete({ where: { id: announcement.id } });
+  res.json({ status: "success", message: "Announcement deleted" });
 });

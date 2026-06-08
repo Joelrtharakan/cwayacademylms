@@ -190,6 +190,21 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             )}
           </div>
 
+          <h2 style={{ marginBottom: "1.25rem" }}>Instructor Announcements</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2.5rem" }}>
+            {course.announcements && course.announcements.length > 0 ? course.announcements.map((ann: any) => (
+              <div key={ann.id} style={{ padding: "1.25rem", background: "#FFFFFF", borderRadius: "10px", border: "1px solid var(--border-light)", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
+                <h3 style={{ fontSize: "1.1rem", margin: "0 0 0.5rem 0", color: "var(--navy-deep)", display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ color: "var(--gold-primary)" }}>📢</span> {ann.title}</h3>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>{new Date(ann.createdAt).toLocaleDateString()}</div>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: 1.6, whiteSpace: "pre-wrap", margin: 0 }}>{ann.content}</p>
+              </div>
+            )) : (
+              <div style={{ padding: "20px", background: "var(--cream-mid)", borderRadius: "10px", textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
+                No announcements yet.
+              </div>
+            )}
+          </div>
+
           {requirements.length > 0 && (
             <>
               <h2 style={{ marginBottom: "1.25rem" }}>Requirements</h2>
