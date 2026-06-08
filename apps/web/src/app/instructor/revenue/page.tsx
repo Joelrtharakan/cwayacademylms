@@ -8,20 +8,22 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { getInstructorRevenue, requestPayout, getPayoutHistory } from "@/lib/api/instructor";
 import { format } from "date-fns";
 
-const GOLD = "#C9973A";
-const SURFACE = "#243825";
-const DARK = "#1C2B1E";
-const MUTED = "#8A9E8C";
+const GOLD = "#B88645";
+const SURFACE = "#FFFFFF";
+const DARK = "#1A261D";
+const MUTED = "#8F9E93";
+const BORDER = "#E4E8E0";
+const BG_ALT = "#F7F8F5";
 
 function KpiCard({ label, value, icon: Icon, accent = GOLD }: any) {
   return (
-    <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, padding: "20px 22px", display: "flex", gap: 14, alignItems: "center" }}>
+    <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "20px 22px", display: "flex", gap: 14, alignItems: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
       <div style={{ width: 44, height: 44, borderRadius: 10, background: `${accent}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon size={20} color={accent} />
       </div>
       <div>
         <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
-        <div style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 24, fontWeight: 700, color: "#F5F0E8", marginTop: 2 }}>{value}</div>
+        <div style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: DARK, marginTop: 2 }}>{value}</div>
       </div>
     </div>
   );
@@ -29,12 +31,12 @@ function KpiCard({ label, value, icon: Icon, accent = GOLD }: any) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    PENDING: { color: "#FBBF24", bg: "#2A2A1A" },
-    APPROVED: { color: "#4ADE80", bg: "#1A4A2E" },
-    REJECTED: { color: "#F87171", bg: "#4A1A1A" },
+    PENDING: { color: "#D97706", bg: "#FEF3C7" },
+    APPROVED: { color: "#059669", bg: "#D1FAE5" },
+    REJECTED: { color: "#DC2626", bg: "#FEE2E2" },
   };
   const s = map[status] || map.PENDING;
-  return <span style={{ background: s.bg, color: s.color, borderRadius: 6, padding: "2px 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{status}</span>;
+  return <span style={{ background: s.bg, color: s.color, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{status}</span>;
 }
 
 export default function RevenuePage() {
@@ -71,39 +73,39 @@ export default function RevenuePage() {
 
   return (
     <div>
-      <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 26, color: "#F5F0E8", marginBottom: 24 }}>Revenue & Payouts</h1>
+      <h1 style={{ fontFamily: "Georgia, serif", fontSize: 26, color: DARK, marginBottom: 24, fontWeight: 700 }}>Revenue & Payouts</h1>
 
       {/* KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 24 }}>
         <KpiCard label="Total Earned" value={isLoading ? "—" : fmt(revenue?.totalEarned || 0)} icon={TrendingUp} />
-        <KpiCard label="Pending Payout" value={isLoading ? "—" : fmt(revenue?.pendingPayout || 0)} icon={Clock} accent="#FBBF24" />
-        <KpiCard label="Paid Out" value={isLoading ? "—" : fmt(revenue?.paidOut || 0)} icon={DollarSign} accent="#4ADE80" />
+        <KpiCard label="Pending Payout" value={isLoading ? "—" : fmt(revenue?.pendingPayout || 0)} icon={Clock} accent="#D97706" />
+        <KpiCard label="Paid Out" value={isLoading ? "—" : fmt(revenue?.paidOut || 0)} icon={DollarSign} accent="#059669" />
         <KpiCard label="Platform Fee" value={isLoading ? "—" : `${revenue?.platformFeeRate || 30}%`} icon={Percent} accent={MUTED} />
       </div>
 
       {/* Chart */}
-      <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, padding: 24, marginBottom: 24 }}>
-        <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#F5F0E8", marginBottom: 20 }}>Earnings Over Time</h3>
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+        <h3 style={{ fontFamily: "Georgia, serif", fontSize: 18, color: DARK, marginBottom: 20, fontWeight: 700 }}>Earnings Over Time</h3>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={chartData} margin={{ left: -20 }}>
-            <CartesianGrid stroke="rgba(201,151,58,0.08)" vertical={false} />
-            <XAxis dataKey="month" stroke={MUTED} tick={{ fontSize: 11 }} />
-            <YAxis stroke={MUTED} tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
-            <Tooltip contentStyle={{ background: DARK, border: "1px solid rgba(201,151,58,0.3)", borderRadius: 8 }} labelStyle={{ color: "#F5F0E8" }} formatter={(v: any) => [`₹${v.toLocaleString()}`, "Earnings"]} />
-            <Line type="monotone" dataKey="earnings" stroke={GOLD} strokeWidth={2.5} dot={{ fill: GOLD, r: 4 }} />
+            <CartesianGrid stroke={BORDER} vertical={false} />
+            <XAxis dataKey="month" stroke={MUTED} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis stroke={MUTED} tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} tickLine={false} axisLine={false} />
+            <Tooltip contentStyle={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} labelStyle={{ color: DARK, fontWeight: 700 }} itemStyle={{ color: GOLD }} formatter={(v: any) => [`₹${v.toLocaleString()}`, "Earnings"]} />
+            <Line type="monotone" dataKey="earnings" stroke={GOLD} strokeWidth={2.5} dot={{ fill: GOLD, r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* Transactions Table */}
-      <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, overflow: "hidden", marginBottom: 24 }}>
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#F5F0E8" }}>Transaction History</h3>
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, overflow: "hidden", marginBottom: 24, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${BORDER}` }}>
+          <h3 style={{ fontFamily: "Georgia, serif", fontSize: 18, color: DARK, fontWeight: 700 }}>Transaction History</h3>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "rgba(255,255,255,0.02)" }}>
+              <tr style={{ background: BG_ALT }}>
                 {["Date", "Student", "Course", "Sale", "Fee", "Your Earnings"].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
@@ -111,12 +113,12 @@ export default function RevenuePage() {
             </thead>
             <tbody>
               {(revenue?.transactions || []).map((t: any) => (
-                <tr key={t.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={t.id} style={{ borderTop: `1px solid ${BORDER}` }}>
                   <td style={{ padding: "12px 16px", fontSize: 12, color: MUTED }}>{format(new Date(t.createdAt), "MMM d, yyyy")}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#F5F0E8" }}>{t.student?.name}</td>
+                  <td style={{ padding: "12px 16px", fontSize: 13, color: DARK, fontWeight: 500 }}>{t.student?.name}</td>
                   <td style={{ padding: "12px 16px", fontSize: 12, color: MUTED, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.course?.title}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#F5F0E8" }}>{fmt(t.amount)}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#F87171" }}>-{fmt(t.platformFee)}</td>
+                  <td style={{ padding: "12px 16px", fontSize: 13, color: DARK }}>{fmt(t.amount)}</td>
+                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#EF4444" }}>-{fmt(t.platformFee)}</td>
                   <td style={{ padding: "12px 16px", fontSize: 14, fontWeight: 700, color: GOLD }}>{fmt(t.instructorEarnings)}</td>
                 </tr>
               ))}
@@ -129,43 +131,45 @@ export default function RevenuePage() {
       </div>
 
       {/* Payout Request */}
-      <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.3)", borderRadius: 12, padding: 24, marginBottom: 24 }}>
-        <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 20, color: "#F5F0E8", marginBottom: 4 }}>Request a Payout</h3>
-        <div style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 36, fontWeight: 700, color: GOLD, marginBottom: 20 }}>
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+        <h3 style={{ fontFamily: "Georgia, serif", fontSize: 20, color: DARK, marginBottom: 4, fontWeight: 700 }}>Request a Payout</h3>
+        <div style={{ fontFamily: "Georgia, serif", fontSize: 36, fontWeight: 700, color: GOLD, marginBottom: 20 }}>
           {fmt(revenue?.pendingPayout || 0)} <span style={{ fontSize: 15, color: MUTED, fontFamily: "sans-serif", fontWeight: 400 }}>available</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
           <div>
             <label style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Amount to Request</label>
             <input type="number" value={amount} onChange={e => setAmount(e.target.value)} max={revenue?.pendingPayout || 0} placeholder={String(revenue?.pendingPayout || 0)}
-              style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,151,58,0.25)", borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              style={{ width: "100%", background: BG_ALT, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "12px 14px", color: DARK, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
           </div>
           <div>
             <label style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Note to Admin (Optional)</label>
-            <input value={note} onChange={e => setNote(e.target.value)} placeholder="Any notes..." style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,151,58,0.25)", borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+            <input value={note} onChange={e => setNote(e.target.value)} placeholder="Any notes..." style={{ width: "100%", background: BG_ALT, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "12px 14px", color: DARK, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
           </div>
         </div>
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ marginBottom: 20 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Bank / Payment Details</label>
           <textarea value={bankDetails} onChange={e => setBankDetails(e.target.value)} placeholder="Bank name, Account number, IFSC code or UPI ID..." rows={3}
-            style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,151,58,0.25)", borderRadius: 8, padding: "10px 14px", color: "#F5F0E8", fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+            style={{ width: "100%", background: BG_ALT, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "12px 14px", color: DARK, fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
         </div>
         <button onClick={() => amount && payoutMut.mutate()} disabled={!amount || payoutMut.isPending}
-          style={{ background: GOLD, color: DARK, borderRadius: 100, padding: "12px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: amount ? "pointer" : "not-allowed", opacity: amount ? 1 : 0.6 }}>
+          style={{ background: GOLD, color: "#FFFFFF", borderRadius: 8, padding: "14px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: amount ? "pointer" : "not-allowed", opacity: amount ? 1 : 0.6, transition: "background 0.2s" }}
+          onMouseEnter={(e) => amount && (e.currentTarget.style.background = "#A3763A")}
+          onMouseLeave={(e) => amount && (e.currentTarget.style.background = GOLD)}>
           {payoutMut.isPending ? "Requesting..." : "Request Payout"}
         </button>
-        <p style={{ fontSize: 11, color: MUTED, marginTop: 10 }}>Minimum payout: ₹500. Payouts are processed within 5 business days.</p>
+        <p style={{ fontSize: 11, color: MUTED, marginTop: 12 }}>Minimum payout: ₹500. Payouts are processed within 5 business days.</p>
       </div>
 
       {/* Payout History */}
       {payouts.length > 0 && (
-        <div style={{ background: SURFACE, border: "1px solid rgba(201,151,58,0.2)", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#F5F0E8" }}>Payout History</h3>
+        <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${BORDER}` }}>
+            <h3 style={{ fontFamily: "Georgia, serif", fontSize: 18, color: DARK, fontWeight: 700 }}>Payout History</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "rgba(255,255,255,0.02)" }}>
+              <tr style={{ background: BG_ALT }}>
                 {["Date Requested", "Amount", "Status", "Note"].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
                 ))}
@@ -173,7 +177,7 @@ export default function RevenuePage() {
             </thead>
             <tbody>
               {payouts.map((p: any) => (
-                <tr key={p.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={p.id} style={{ borderTop: `1px solid ${BORDER}` }}>
                   <td style={{ padding: "12px 16px", fontSize: 12, color: MUTED }}>{format(new Date(p.requestedAt), "MMM d, yyyy")}</td>
                   <td style={{ padding: "12px 16px", fontSize: 14, fontWeight: 700, color: GOLD }}>{fmt(p.amount)}</td>
                   <td style={{ padding: "12px 16px" }}><StatusBadge status={p.status} /></td>

@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules } from "@/lib/api/modules";
 import { useCourseBuilderStore } from "@/store/course-builder.store";
-import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
 // Panels (To be created)
@@ -15,6 +15,7 @@ import VideosPanel from "./_components/VideosPanel";
 import ReadingsPanel from "./_components/ReadingsPanel";
 import AssignmentsPanel from "./_components/AssignmentsPanel";
 import QuizzesPanel from "./_components/QuizzesPanel";
+import ForumsPanel from "./_components/ForumsPanel";
 
 export default function ModuleManagementPage() {
   const { id, moduleId } = useParams() as { id: string; moduleId: string };
@@ -58,6 +59,7 @@ export default function ModuleManagementPage() {
     { id: "readings", label: "Reading Materials", icon: BookOpen },
     { id: "assignments", label: "Assignments", icon: FileText },
     { id: "quizzes", label: "Quizzes", icon: Award },
+    { id: "forums", label: "Learning Forums", icon: MessageSquare },
   ] as const;
 
   return (
@@ -111,6 +113,7 @@ export default function ModuleManagementPage() {
             {activeTab === "readings" && <ReadingsPanel module={currentModule} />}
             {activeTab === "assignments" && <AssignmentsPanel module={currentModule} />}
             {activeTab === "quizzes" && <QuizzesPanel module={currentModule} />}
+            {activeTab === "forums" && <ForumsPanel module={currentModule} />}
           </div>
         </div>
 

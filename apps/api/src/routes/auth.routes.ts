@@ -49,6 +49,7 @@ router.post("/reset-password", resetPasswordRules, validate, AuthController.rese
 
 // Protected routes
 router.get("/me", authenticate, AuthController.me);
+router.put("/update-password", authenticate, AuthController.updatePassword);
 
 import { Request, Response } from "express";
 

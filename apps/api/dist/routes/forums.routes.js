@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authenticate_1 = require("../middleware/authenticate");
+const forums_controller_1 = require("../controllers/forums.controller");
+const router = (0, express_1.Router)();
+router.use(authenticate_1.authenticate);
+router.get("/lessons/:lessonId", forums_controller_1.getLessonForums);
+router.post("/lessons/:lessonId", forums_controller_1.createForumPost);
+router.post("/discussions/:discussionId/replies", forums_controller_1.createForumReply);
+exports.default = router;

@@ -81,6 +81,14 @@ export class AuthController {
     res.status(200).json({ status: "success", data: result });
   });
 
+  public static updatePassword = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new AppError("Not authenticated", 401);
+    }
+    const result = await AuthService.updatePassword(req.user.id, req.body);
+    res.status(200).json({ status: "success", data: result });
+  });
+
   public static me = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
       throw new AppError("Not authenticated", 401);

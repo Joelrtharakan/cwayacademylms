@@ -24,6 +24,7 @@ interface AuthState {
   clearAuth: () => void;
   refreshAccessToken: () => Promise<string | null>;
   initAuth: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
@@ -91,6 +92,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     await get().refreshAccessToken();
     set({ isLoading: false });
+  },
+
+  refreshUser: async () => {
+    try {
+      const response = await api.get("/auth/me");
+      const { user } = response.data;
+      set({ user });
+    } catch (err) {
+      console.error("Failed to refresh user profile", err);
+    }
   },
 }));
 

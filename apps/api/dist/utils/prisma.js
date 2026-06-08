@@ -28,10 +28,15 @@ const allFields = [...arrayFields, ...jsonFields];
 exports.prisma = basePrisma.$extends({
     query: {
         $allModels: {
-            async $allOperations({ operation, args, query }) {
+            async $allOperations({ model, operation, args, query }) {
                 // Serialize before query
                 if (args.data) {
                     for (const field of allFields) {
+                        console.log(`[PRISMA INTERCEPTOR] model=${model}, field=${field}`);
+                        if (field === "answers" && model !== "QuizAttempt") {
+                            console.log(`[PRISMA INTERCEPTOR] Skipping stringify for answers on model ${model}`);
+                            continue;
+                        }
                         if (args.data[field] !== undefined) {
                             if (typeof args.data[field] !== "string") {
                                 args.data[field] = JSON.stringify(args.data[field]);
@@ -42,6 +47,8 @@ exports.prisma = basePrisma.$extends({
                 if (args.update) {
                     // for updateMany
                     for (const field of allFields) {
+                        if (field === "answers" && model !== "QuizAttempt")
+                            continue;
                         if (args.update[field] !== undefined) {
                             if (typeof args.update[field] !== "string") {
                                 args.update[field] = JSON.stringify(args.update[field]);
@@ -55,6 +62,8 @@ exports.prisma = basePrisma.$extends({
                     if (!obj)
                         return;
                     for (const field of allFields) {
+                        if (field === "answers" && model !== "QuizAttempt")
+                            continue;
                         if (obj[field] && typeof obj[field] === "string") {
                             try {
                                 obj[field] = JSON.parse(obj[field]);

@@ -25,12 +25,17 @@ export default function PublicationSection({ course }: { course: any }) {
       <p style={{ fontSize: "14px", color: "#8F9E93", marginBottom: "32px" }}>Review your course details before making it available to students.</p>
 
       {course.status === "PUBLISHED" ? (
-        <div style={{ padding: "32px", background: "rgba(46,204,113,0.1)", border: "1px solid #2ECC71", borderRadius: "12px", display: "flex", alignItems: "flex-start", gap: "16px" }}>
-          <CheckCircle2 size={24} color="#2ECC71" />
-          <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#1A261D", margin: "0 0 4px 0" }}>Course is Published</h3>
-            <p style={{ fontSize: "14px", color: "#8F9E93", margin: 0 }}>This course is live and available for enrollment.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ padding: "32px", background: "rgba(46,204,113,0.1)", border: "1px solid #2ECC71", borderRadius: "12px", display: "flex", alignItems: "flex-start", gap: "16px" }}>
+            <CheckCircle2 size={24} color="#2ECC71" />
+            <div>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#1A261D", margin: "0 0 4px 0" }}>Course is Published</h3>
+              <p style={{ fontSize: "14px", color: "#8F9E93", margin: 0 }}>This course is live and available for enrollment.</p>
+            </div>
           </div>
+          <button onClick={() => publishMut.mutate()} disabled={publishMut.isPending} style={{ width: "100%", padding: "16px", background: "#FFFFFF", color: "#1A261D", border: "1px solid #E4E8E0", borderRadius: "12px", fontSize: "16px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={(e) => e.currentTarget.style.background = "#FFFFFF"}>
+            <Globe size={20} /> {publishMut.isPending ? "Updating..." : "Publish Updates"}
+          </button>
         </div>
       ) : (
         <>

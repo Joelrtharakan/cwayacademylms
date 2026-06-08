@@ -203,4 +203,27 @@ export class AuthService {
 
     return { message: "Password updated" };
   }
+
+  public static async updatePassword(userId: string, data: any): Promise<{ message: string }> {
+    const { currentPassword, newPassword } = data;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.passwordHash) {
+      throw new AppError("User not found", 404);
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new AppError("Incorrect current password", 400);
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    return { message: "Password updated successfully" };
+  }
 }

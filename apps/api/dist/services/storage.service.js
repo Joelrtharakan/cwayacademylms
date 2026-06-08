@@ -32,8 +32,17 @@ exports.StorageService = {
      */
     async uploadFile(fileBuffer, key, mimeType) {
         if (!s3Client) {
-            console.warn("[StorageService] R2 credentials missing. Using mock upload.");
-            return { url: `${PUBLIC_URL}/mock/${key}`, key };
+            console.warn("[StorageService] R2 credentials missing. Saving locally.");
+            const fs = require("fs");
+            const path = require("path");
+            const uploadDir = path.join(process.cwd(), "uploads");
+            const fileDir = path.join(uploadDir, path.dirname(key));
+            if (!fs.existsSync(fileDir))
+                fs.mkdirSync(fileDir, { recursive: true });
+            const filePath = path.join(uploadDir, key);
+            fs.writeFileSync(filePath, fileBuffer);
+            const localUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "http://localhost:4000";
+            return { url: `${localUrl}/uploads/${key}`, key };
         }
         try {
             const command = new client_s3_1.PutObjectCommand({
