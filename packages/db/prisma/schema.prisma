@@ -56,6 +56,7 @@ model User {
   yearsExperience   Int?
   expertise         String             @default("[]")
   notificationPrefs String             @default("{}")
+  notes             Note[]
 
   @@index([email])
   @@index([role])
@@ -165,6 +166,7 @@ model Lesson {
   assignment       Assignment?
   progress         LessonProgress[]
   discussions      Discussion[]
+  notes            Note[]
 
   @@index([sectionId])
 }
@@ -618,4 +620,18 @@ model Curriculum {
   weeklyPlan     String   @default("[]") // JSON array
   assessmentPlan String? // JSON string
   updatedAt      DateTime @updatedAt
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id])
+  lessonId   String
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  content    String
+  timestamp  Int?     // video timestamp in seconds
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([studentId, lessonId])
 }

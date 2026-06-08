@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
-import StudentTopnav from "./StudentTopnav";
+import StudentTopnav from "@/components/student/StudentTopnav";
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isLoading, initAuth } = useAuthStore();
 
   useEffect(() => {
@@ -32,13 +33,15 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     );
   }
 
+  const isPlayer = pathname ? pathname.includes('/learn') : false;
+
   return (
     <div className="min-h-screen bg-cway-cream flex flex-col">
       {/* Top Navbar */}
-      <StudentTopnav />
+      {!isPlayer && <StudentTopnav />}
 
       {/* Content Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full mx-auto flex flex-col">
         {children}
       </main>
     </div>

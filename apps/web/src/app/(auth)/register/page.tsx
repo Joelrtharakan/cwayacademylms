@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import SplitAuthLayout from "@/components/auth/SplitAuthLayout";
@@ -30,6 +31,8 @@ export default function RegisterPage() {
     }
     return () => clearTimeout(timer);
   }, [countdown]);
+
+  const router = useRouter(); // Need to import from next/navigation
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,9 +63,8 @@ export default function RegisterPage() {
         preferredLanguage,
       });
 
-      setIsSuccess(true);
-      setCountdown(60);
-      toast.success("Account created successfully!");
+      toast.success("Account created successfully! You can now sign in.");
+      router.push("/login");
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Something went wrong. Please try again.";
       toast.error(errMsg);

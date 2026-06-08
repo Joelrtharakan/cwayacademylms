@@ -44,6 +44,7 @@ router.post("/forgot-password", forgotPasswordRules, validate_1.validate, auth_c
 router.post("/reset-password", resetPasswordRules, validate_1.validate, auth_controller_1.AuthController.resetPassword);
 // Protected routes
 router.get("/me", authenticate_1.authenticate, auth_controller_1.AuthController.me);
+router.put("/update-password", authenticate_1.authenticate, auth_controller_1.AuthController.updatePassword);
 // Impersonation route — used after admin generates an impersonation token
 router.get("/impersonate/:token", (0, errors_1.asyncHandler)(async (req, res) => {
     const { token } = req.params;

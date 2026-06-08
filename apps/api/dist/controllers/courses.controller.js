@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
-exports.getPublicCategories = void 0;
+exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
@@ -121,6 +121,7 @@ exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             category: { select: { id: true, name: true, slug: true } },
             sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
             reviews: { select: { rating: true } },
+            announcements: { orderBy: { createdAt: "desc" } },
             _count: { select: { enrollments: true } },
             curriculum: true,
         },
@@ -836,4 +837,55 @@ exports.updateMyProfile = (0, errors_1.asyncHandler)(async (req, res) => {
 exports.getPublicCategories = (0, errors_1.asyncHandler)(async (_req, res) => {
     const cats = await prisma_1.prisma.category.findMany({ orderBy: { order: "asc" } });
     res.json({ status: "success", data: cats });
+});
+// ─── ANNOUNCEMENTS ───────────────────────────────────────────────────────────
+exports.getCourseAnnouncements = (0, errors_1.asyncHandler)(async (req, res) => {
+    const course = await prisma_1.prisma.course.findFirst({
+        where: { OR: [{ id: req.params.id }, { slug: req.params.id }] }
+    });
+    if (!course)
+        return res.status(404).json({ status: "error", message: "Course not found" });
+    const announcements = await prisma_1.prisma.announcement.findMany({
+        where: { courseId: course.id },
+        orderBy: { createdAt: "desc" },
+        include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+    });
+    res.json({ status: "success", data: announcements });
+});
+exports.getInstructorAnnouncements = (0, errors_1.asyncHandler)(async (req, res) => {
+    const announcements = await prisma_1.prisma.announcement.findMany({
+        where: { courseId: req.params.id, authorId: req.user.id },
+        orderBy: { createdAt: "desc" },
+        include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+    });
+    res.json({ status: "success", data: announcements });
+});
+exports.createAnnouncement = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { title, content } = req.body;
+    if (!title || !content) {
+        return res.status(400).json({ status: "error", message: "Title and content are required" });
+    }
+    const course = await prisma_1.prisma.course.findFirst({ where: { id: req.params.id, instructorId: req.user.id } });
+    if (!course)
+        return res.status(404).json({ status: "error", message: "Course not found" });
+    const announcement = await prisma_1.prisma.announcement.create({
+        data: {
+            courseId: course.id,
+            authorId: req.user.id,
+            title,
+            content,
+        },
+        include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
+    });
+    res.json({ status: "success", data: announcement });
+});
+exports.deleteAnnouncement = (0, errors_1.asyncHandler)(async (req, res) => {
+    const announcement = await prisma_1.prisma.announcement.findFirst({
+        where: { id: req.params.announcementId, courseId: req.params.id, authorId: req.user.id }
+    });
+    if (!announcement) {
+        return res.status(404).json({ status: "error", message: "Announcement not found" });
+    }
+    await prisma_1.prisma.announcement.delete({ where: { id: announcement.id } });
+    res.json({ status: "success", message: "Announcement deleted" });
 });

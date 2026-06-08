@@ -22,10 +22,6 @@ export class AuthService {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Verification token
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const emailVerifyToken = this.hashToken(rawToken);
-
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -36,15 +32,15 @@ export class AuthService {
         church,
         location,
         preferredLanguage: preferredLanguage || "ENGLISH",
-        isVerified: false,
-        emailVerifyToken,
+        isVerified: true,
+        emailVerifyToken: null,
       },
     });
 
-    // Send email
-    await EmailService.sendVerificationEmail({ name: user.name, email: user.email }, rawToken);
+    // Send welcome email directly
+    await EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
 
-    return { message: "Verification email sent" };
+    return { message: "Account created successfully" };
   }
 
   public static async verifyEmail(token: string): Promise<{ message: string }> {
@@ -78,10 +74,6 @@ export class AuthService {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) {
       throw new AppError("Invalid email or password", 401);
-    }
-
-    if (!user.isVerified) {
-      throw new AppError("Please verify your email first", 403);
     }
 
     if (user.isBanned) {

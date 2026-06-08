@@ -23,9 +23,6 @@ class AuthService {
         }
         // Hash password
         const passwordHash = await bcryptjs_1.default.hash(password, 12);
-        // Verification token
-        const rawToken = crypto_1.default.randomBytes(32).toString("hex");
-        const emailVerifyToken = this.hashToken(rawToken);
         // Create user
         const user = await prisma_1.prisma.user.create({
             data: {
@@ -36,13 +33,13 @@ class AuthService {
                 church,
                 location,
                 preferredLanguage: preferredLanguage || "ENGLISH",
-                isVerified: false,
-                emailVerifyToken,
+                isVerified: true,
+                emailVerifyToken: null,
             },
         });
-        // Send email
-        await email_service_1.EmailService.sendVerificationEmail({ name: user.name, email: user.email }, rawToken);
-        return { message: "Verification email sent" };
+        // Send welcome email directly
+        await email_service_1.EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
+        return { message: "Account created successfully" };
     }
     static async verifyEmail(token) {
         const hashedToken = this.hashToken(token);
@@ -68,9 +65,6 @@ class AuthService {
         const user = await prisma_1.prisma.user.findUnique({ where: { email } });
         if (!user || !user.passwordHash) {
             throw new errors_1.AppError("Invalid email or password", 401);
-        }
-        if (!user.isVerified) {
-            throw new errors_1.AppError("Please verify your email first", 403);
         }
         if (user.isBanned) {
             throw new errors_1.AppError("Your account has been suspended", 403);
@@ -166,6 +160,23 @@ class AuthService {
         // Revoke refresh tokens (force sign out everywhere)
         await token_service_1.TokenService.revokeRefreshToken(user.id);
         return { message: "Password updated" };
+    }
+    static async updatePassword(userId, data) {
+        const { currentPassword, newPassword } = data;
+        const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.passwordHash) {
+            throw new errors_1.AppError("User not found", 404);
+        }
+        const isMatch = await bcryptjs_1.default.compare(currentPassword, user.passwordHash);
+        if (!isMatch) {
+            throw new errors_1.AppError("Incorrect current password", 400);
+        }
+        const passwordHash = await bcryptjs_1.default.hash(newPassword, 12);
+        await prisma_1.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash },
+        });
+        return { message: "Password updated successfully" };
     }
 }
 exports.AuthService = AuthService;

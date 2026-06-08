@@ -19,3 +19,12 @@ export const cwayChartColors = {
   gridLine:   'rgba(201,151,58,0.1)',
   tooltip:    '#243825',
 };
+
+export const THEME = {
+  HERO: cwayColors.darkGreen,
+  MUTED: cwayColors.textMuted,
+  GOLD: cwayColors.gold,
+  LIGHT: cwayColors.cream,
+  DANGER: cwayColors.danger,
+  TEXT: cwayColors.forest,
+};

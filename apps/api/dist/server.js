@@ -18,6 +18,7 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const courses_routes_1 = __importDefault(require("./routes/courses.routes"));
 const forums_routes_1 = __importDefault(require("./routes/forums.routes"));
+const student_routes_1 = __importDefault(require("./routes/student.routes"));
 const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
 const PORT = process.env.API_PORT || 4000;
@@ -51,6 +52,7 @@ app.use("/api/v1/auth", auth_routes_1.default);
 app.use("/api/v1/admin", admin_routes_1.default);
 app.use("/api/v1", courses_routes_1.default);
 app.use("/api/v1", forums_routes_1.default);
+app.use("/api/v1/student", student_routes_1.default);
 // Catch-all unhandled routes
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));

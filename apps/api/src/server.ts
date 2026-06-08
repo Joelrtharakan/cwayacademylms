@@ -15,6 +15,7 @@ import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
 import coursesRoutes from "./routes/courses.routes";
 import forumsRoutes from "./routes/forums.routes";
+import studentRoutes from "./routes/student.routes";
 import { AppError } from "./utils/errors";
 
 const app = express();
@@ -54,6 +55,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1", coursesRoutes);
 app.use("/api/v1", forumsRoutes);
+app.use("/api/v1/student", studentRoutes);
 
 // Catch-all unhandled routes
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

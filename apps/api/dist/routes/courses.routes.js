@@ -147,4 +147,9 @@ router.post("/messages", authenticate_1.authenticate, CC.sendMessage);
 // User profile
 router.put("/users/me/profile", authenticate_1.authenticate, CC.updateMyProfile);
 router.post("/users/me/upload-avatar", authenticate_1.authenticate, upload.single("avatar"), CC.uploadAvatar);
+// Announcements
+router.get("/courses/:id/announcements", authenticate_1.authenticate, CC.getCourseAnnouncements);
+router.get("/instructor/courses/:id/announcements", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorAnnouncements);
+router.post("/instructor/courses/:id/announcements", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createAnnouncement);
+router.delete("/instructor/courses/:id/announcements/:announcementId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.deleteAnnouncement);
 exports.default = router;

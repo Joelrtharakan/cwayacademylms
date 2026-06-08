@@ -67,6 +67,13 @@ class AuthController {
         const result = await auth_service_1.AuthService.resetPassword(req.body);
         res.status(200).json({ status: "success", data: result });
     });
+    static updatePassword = (0, errors_1.asyncHandler)(async (req, res) => {
+        if (!req.user) {
+            throw new errors_1.AppError("Not authenticated", 401);
+        }
+        const result = await auth_service_1.AuthService.updatePassword(req.user.id, req.body);
+        res.status(200).json({ status: "success", data: result });
+    });
     static me = (0, errors_1.asyncHandler)(async (req, res) => {
         if (!req.user) {
             throw new errors_1.AppError("Not authenticated", 401);
