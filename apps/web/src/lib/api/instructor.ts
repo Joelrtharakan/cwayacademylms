@@ -130,6 +130,9 @@ export const pinForumPost = (postId: string) =>
 export const deleteForumPost = (postId: string) =>
   api.delete(`/forum/posts/${postId}`).then((r) => r.data);
 
+export const deleteForumReply = (replyId: string) =>
+  api.delete(`/forum/replies/${replyId}`).then((r) => r.data);
+
 export const createForumReply = (postId: string, content: string) =>
   api.post(`/forum/posts/${postId}/replies`, { content }).then((r) => r.data.data);
 

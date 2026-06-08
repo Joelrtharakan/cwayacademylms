@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api } from "@/store/auth.store";
+import { api, useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import SplitAuthLayout from "@/components/auth/SplitAuthLayout";
 import { Eye, EyeOff, User, Mail, Lock, Building, MapPin, Globe, Check } from "lucide-react";
@@ -63,8 +63,16 @@ export default function RegisterPage() {
         preferredLanguage,
       });
 
-      toast.success("Account created successfully! You can now sign in.");
-      router.push("/login");
+      // Automatically log the user in
+      const res = await api.post("/auth/login", { email, password });
+      
+      // Manually set Zustand store to ensure immediate session availability
+      const { user: newUser, accessToken } = res.data;
+      useAuthStore.getState().setAuth(newUser, accessToken);
+      
+      toast.success("Account created successfully! Welcome to CWAY Academy.");
+      router.push("/student/dashboard");
+      
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Something went wrong. Please try again.";
       toast.error(errMsg);

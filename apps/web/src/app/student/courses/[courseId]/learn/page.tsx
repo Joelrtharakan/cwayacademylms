@@ -1,46 +1,42 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { api } from "@/store/auth.store";
-import { THEME } from "@/lib/cway-theme";
 
-export default function CoursePlayerRedirectPage({ params }: { params: { courseId: string } }) {
+export default function LearnIndexPage() {
   const router = useRouter();
-
-  const { data: enrollment, isLoading } = useQuery({
-    queryKey: ["enrollment", params.courseId],
-    queryFn: () => api.get(`/student/courses/\${params.courseId}/learn`).then(res => res.data.data),
-  });
+  const params = useParams();
+  const courseId = params.courseId as string;
 
   useEffect(() => {
-    if (enrollment) {
-      let firstIncompleteLessonId = null;
-      let firstLessonId = null;
-
-      for (const section of enrollment.course.sections) {
-        for (const lesson of section.lessons) {
-          if (!firstLessonId) firstLessonId = lesson.id;
-          if (!lesson.isCompleted && !firstIncompleteLessonId) {
-            firstIncompleteLessonId = lesson.id;
-            break;
+    const fetchAndRedirect = async () => {
+      try {
+        const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+        const enr = enrRes.data.data;
+        
+        // Find first lesson
+        let firstLessonId = null;
+        if (enr.course.sections && enr.course.sections.length > 0) {
+          const firstSection = enr.course.sections[0];
+          if (firstSection.lessons && firstSection.lessons.length > 0) {
+            firstLessonId = firstSection.lessons[0].id;
           }
         }
-        if (firstIncompleteLessonId) break;
-      }
 
-      const targetLessonId = firstIncompleteLessonId || firstLessonId;
-      
-      if (targetLessonId) {
-        router.replace(`/student/courses/\${params.courseId}/learn/\${targetLessonId}`);
+        if (firstLessonId) {
+          router.replace(`/student/courses/${courseId}/learn/${firstLessonId}`);
+        }
+      } catch (err) {
+        console.error("Failed to fetch course data for redirect", err);
       }
-    }
-  }, [enrollment, params.courseId, router]);
+    };
+    fetchAndRedirect();
+  }, [courseId, router]);
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", background: THEME.SURFACE }}>
-      <div style={{ width: 40, height: 40, border: `4px solid \${THEME.MUTED}`, borderTopColor: THEME.GOLD, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+    <div className="w-full h-full flex items-center justify-center bg-[#1C2B1E]">
+      <div className="animate-spin h-8 w-8 border-4 border-[#C9973A] border-t-transparent rounded-full" />
     </div>
   );
 }
