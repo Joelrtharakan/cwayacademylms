@@ -20,12 +20,12 @@ export default function NotesPanel({ lessonId }: NotesPanelProps) {
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ["notes", lessonId],
-    queryFn: () => api.get(`/student/lessons/\${lessonId}/my-notes`).then(res => res.data.data),
+    queryFn: () => api.get(`/student/lessons/${lessonId}/my-notes`).then(res => res.data.data),
     enabled: !!lessonId && notesPanelOpen
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data: { content: string }) => api.post(`/student/lessons/\${lessonId}/notes`, data),
+    mutationFn: (data: { content: string }) => api.post(`/student/lessons/${lessonId}/notes`, data),
     onSuccess: () => {
       setContent("");
       queryClient.invalidateQueries({ queryKey: ["notes", lessonId] });
@@ -33,7 +33,7 @@ export default function NotesPanel({ lessonId }: NotesPanelProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: { id: string, content: string }) => api.put(`/student/notes/\${data.id}`, { content: data.content }),
+    mutationFn: (data: { id: string, content: string }) => api.put(`/student/notes/${data.id}`, { content: data.content }),
     onSuccess: () => {
       setEditingId(null);
       setContent("");
@@ -42,7 +42,7 @@ export default function NotesPanel({ lessonId }: NotesPanelProps) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/student/notes/\${id}`),
+    mutationFn: (id: string) => api.delete(`/student/notes/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes", lessonId] });
     }
@@ -86,7 +86,7 @@ export default function NotesPanel({ lessonId }: NotesPanelProps) {
           {editingId && (
             <button 
               onClick={() => { setEditingId(null); setContent(""); }}
-              style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid \${THEME.MUTED}`, background: "transparent", color: THEME.TEXT, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+              style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${THEME.MUTED}`, background: "transparent", color: THEME.TEXT, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
             >
               Cancel
             </button>

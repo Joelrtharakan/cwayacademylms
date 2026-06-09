@@ -79,7 +79,7 @@ export default function AdminInstructorsPage() {
       header: "Courses Published",
       render: (row) => (
         <span style={{ fontSize: "14px", fontWeight: 700, color: "#1A261D" }}>
-          {row._count?.coursesCreated ?? 0}
+          {row.publishedCourses ?? 0}
         </span>
       ),
     },

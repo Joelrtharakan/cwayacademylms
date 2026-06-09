@@ -14,7 +14,7 @@ export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any
 
   const { data: submission, isLoading } = useQuery({
     queryKey: ["assignmentSubmission", assignmentId],
-    queryFn: () => api.get(`/student/assignments/\${assignmentId}/my-submission`).then(res => res.data.data),
+    queryFn: () => api.get(`/student/assignments/${assignmentId}/my-submission`).then(res => res.data.data),
     enabled: !!assignmentId
   });
 
@@ -25,9 +25,9 @@ export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any
       if (file) formData.append("file", file);
       
       // We also hit completeLesson to advance the progress visually
-      api.post(`/student/enrollments/\${enrollmentId}/lessons/\${lesson.id}/complete`);
+      api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/complete`);
       
-      return api.post(`/student/assignments/\${assignmentId}/submit`, formData);
+      return api.post(`/student/assignments/${assignmentId}/submit`, formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignmentSubmission", assignmentId] });
@@ -87,7 +87,7 @@ export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any
                   {submission.score} / {submission.assignment?.maxScore || 100}
                 </div>
                 {submission.feedback && (
-                  <div style={{ background: "rgba(201,151,58,0.05)", borderLeft: `4px solid \${THEME.GOLD}`, padding: 16, fontSize: 14, color: THEME.TEXT }}>
+                  <div style={{ background: "rgba(201,151,58,0.05)", borderLeft: `4px solid ${THEME.GOLD}`, padding: 16, fontSize: 14, color: THEME.TEXT }}>
                     {submission.feedback}
                   </div>
                 )}

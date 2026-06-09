@@ -15,11 +15,11 @@ export default function CertificatesPage() {
 
   const handleDownload = async (id: string, slug: string) => {
     try {
-      const res = await api.get(`/student/certificates/\${id}/download`, { responseType: 'blob' });
+      const res = await api.get(`/student/certificates/${id}/download`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `\${slug}-certificate.pdf`);
+      link.setAttribute('download', `${slug}-certificate.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -32,7 +32,7 @@ export default function CertificatesPage() {
   if (isLoading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
-        <div style={{ width: 40, height: 40, border: `4px solid \${THEME.MUTED}`, borderTopColor: THEME.GOLD, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <div style={{ width: 40, height: 40, border: `4px solid ${THEME.MUTED}`, borderTopColor: THEME.GOLD, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
       </div>
     );
   }

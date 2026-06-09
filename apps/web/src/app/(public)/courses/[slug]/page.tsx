@@ -5,17 +5,51 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Users, Award, BookOpen, ChevronRight, Play, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/store/auth.store";
+// Ensure we import hooks at the top.
+import { useAuthStore, api } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   const { data: course, isLoading, error } = useQuery({
     queryKey: ["course", slug],
     queryFn: () => api.get(`/courses/${slug}`).then(r => r.data.data),
     retry: false
   });
+
+  const handleEnrollClick = async () => {
+    if (!user) {
+      // Not logged in -> redirect to login with intent
+      router.push(`/login?enrollCourseId=${course.id}`);
+      return;
+    }
+
+    // Already logged in -> auto enroll
+    setIsEnrolling(true);
+    try {
+      await api.post("/student/enrollments", { courseId: course.id });
+      toast.success("Successfully enrolled!");
+      window.location.href = "/student/dashboard";
+    } catch (err: any) {
+      console.error("Enrollment failed", err);
+      // It might fail if they are already enrolled
+      if (err.response?.data?.message?.includes("already enrolled")) {
+        toast.info("You are already enrolled in this course.");
+        window.location.href = "/student/dashboard";
+      } else {
+        toast.error("Failed to enroll in the course.");
+      }
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   if (isLoading) return (
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -134,7 +168,16 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                 {course.isFree ? "Free" : `${course.currency === "INR" ? "₹" : "$"}${course.price}`}
               </div>
               <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.25rem" }}>Includes full access to all materials</p>
-              <Link href="#" className="btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.625rem" }}>Enroll Now</Link>
+              
+              <button 
+                onClick={handleEnrollClick}
+                disabled={isEnrolling}
+                className="btn-primary" 
+                style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.625rem", border: "none", cursor: isEnrolling ? "not-allowed" : "pointer", opacity: isEnrolling ? 0.7 : 1 }}
+              >
+                {isEnrolling ? <Loader2 size={16} className="animate-spin" /> : "Enroll Now"}
+              </button>
+
               <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-light)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 {[`Language: ${course.language}`, `Duration: ${course.weeksDuration} weeks`].map((item) => (
                   <div key={item} style={{ fontSize: "0.78rem", color: "var(--text-secondary)", display: "flex", gap: "0.5rem" }}>

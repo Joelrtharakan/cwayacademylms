@@ -50,7 +50,7 @@ export default function PlayerSidebar({ courseId, modules }: PlayerSidebarProps)
               background: "none", border: "none",
               padding: "8px 4px", cursor: "pointer",
               color: activeTab === tab.id ? THEME.GOLD : THEME.MUTED,
-              borderBottom: activeTab === tab.id ? `2px solid \${THEME.GOLD}` : "2px solid transparent",
+              borderBottom: activeTab === tab.id ? `2px solid ${THEME.GOLD}` : "2px solid transparent",
               display: "flex", alignItems: "center", gap: 6,
               fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 500,
               whiteSpace: "nowrap", transition: "all 0.2s"
@@ -85,16 +85,16 @@ export default function PlayerSidebar({ courseId, modules }: PlayerSidebarProps)
                 {expandedModules[mod.id] && (
                   <div style={{ padding: "0 0 16px", background: "rgba(0,0,0,0.01)" }}>
                     {mod.lessons?.map((lesson: any) => {
-                      const isActive = pathname?.includes(`/learn/\${lesson.id}`);
+                      const isActive = pathname?.includes(`/learn/${lesson.id}`);
                       return (
                         <Link 
                           key={lesson.id} 
-                          href={`/student/courses/\${courseId}/learn/\${lesson.id}`}
+                          href={`/student/courses/${courseId}/learn/${lesson.id}`}
                           style={{ 
                             display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 20px",
                             textDecoration: "none", transition: "background 0.2s",
                             background: isActive ? "rgba(201,151,58,0.05)" : "transparent",
-                            borderLeft: isActive ? `3px solid \${THEME.GOLD}` : "3px solid transparent"
+                            borderLeft: isActive ? `3px solid ${THEME.GOLD}` : "3px solid transparent"
                           }}
                         >
                           <div style={{ marginTop: 2 }}>
@@ -112,7 +112,7 @@ export default function PlayerSidebar({ courseId, modules }: PlayerSidebarProps)
                               {lesson.title}
                             </div>
                             <div style={{ fontSize: 12, color: THEME.MUTED }}>
-                              {lesson.type === "VIDEO" && lesson.duration ? `\${Math.round(lesson.duration / 60)} min` : lesson.type}
+                              {lesson.type === "VIDEO" && lesson.duration ? `${Math.round(lesson.duration / 60)} min` : lesson.type}
                             </div>
                           </div>
                         </Link>

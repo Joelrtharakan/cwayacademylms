@@ -40,11 +40,7 @@ router.post("/lessons/:lessonId/upload-attachment", authenticate, authorize("INS
 
 
 
-// Assignment
-router.post("/lessons/:lessonId/assignment", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createAssignment);
-router.put("/assignments/:assignmentId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.updateAssignment);
-router.get("/assignments/:assignmentId/submissions", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getAssignmentSubmissions);
-router.put("/submissions/:submissionId/grade", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.gradeSubmission);
+// Removed duplicate Assignment routes; Phase 4 implementation below handles these.
 
 // Forum
 router.get("/courses/:id/forum/posts", authenticate, CC.getForumPosts);

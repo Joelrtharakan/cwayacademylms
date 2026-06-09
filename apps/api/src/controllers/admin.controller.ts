@@ -434,7 +434,7 @@ export const createInstructor = asyncHandler(async (req: Request, res: Response)
 
 export const updateInstructorPayout = asyncHandler(async (req: Request, res: Response) => {
   const { percentage } = req.body;
-  if (typeof percentage !== "number" || percentage < 0 || percentage > 100) {
+  if (typeof percentage !== "number" || isNaN(percentage) || percentage < 0 || percentage > 100) {
     throw new AppError("Percentage must be a number between 0 and 100", 400);
   }
 

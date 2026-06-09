@@ -14,12 +14,12 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
 
   const { data: attemptsData, isLoading: loadingAttempts } = useQuery({
     queryKey: ["quizAttempts", quizId],
-    queryFn: () => api.get(`/student/quizzes/\${quizId}/my-attempts`).then(res => res.data.data),
+    queryFn: () => api.get(`/student/quizzes/${quizId}/my-attempts`).then(res => res.data.data),
     enabled: !!quizId
   });
 
   const startMutation = useMutation({
-    mutationFn: () => api.post(`/student/quizzes/\${quizId}/attempt`),
+    mutationFn: () => api.post(`/student/quizzes/${quizId}/attempt`),
     onSuccess: (res) => {
       setActiveAttempt(res.data.data);
       setAnswers({});
@@ -27,7 +27,7 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
   });
 
   const submitMutation = useMutation({
-    mutationFn: () => api.post(`/student/quizzes/\${quizId}/submit`, {
+    mutationFn: () => api.post(`/student/quizzes/${quizId}/submit`, {
       attemptId: activeAttempt.attemptId,
       answers,
       timeTaken: 0 // Simplification
@@ -65,7 +65,7 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
               {q.type === "MCQ" || q.type === "TRUE_FALSE" ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {q.answers.map((a: any) => (
-                    <label key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "12px 16px", background: answers[q.id] === a.id ? "rgba(201,151,58,0.1)" : "rgba(0,0,0,0.02)", borderRadius: 8, border: `1px solid \${answers[q.id] === a.id ? THEME.GOLD : "transparent"}` }}>
+                    <label key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", padding: "12px 16px", background: answers[q.id] === a.id ? "rgba(201,151,58,0.1)" : "rgba(0,0,0,0.02)", borderRadius: 8, border: `1px solid ${answers[q.id] === a.id ? THEME.GOLD : "transparent"}` }}>
                       <input 
                         type="radio" 
                         name={q.id} 

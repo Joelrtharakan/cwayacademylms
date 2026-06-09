@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api, useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import SplitAuthLayout from "@/components/auth/SplitAuthLayout";
 import { Eye, EyeOff, User, Mail, Lock, Building, MapPin, Globe, Check } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +34,6 @@ export default function RegisterPage() {
     }
     return () => clearTimeout(timer);
   }, [countdown]);
-
-  const router = useRouter(); // Need to import from next/navigation
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +72,24 @@ export default function RegisterPage() {
       useAuthStore.getState().setAuth(newUser, accessToken);
       
       toast.success("Account created successfully! Welcome to CWAY Academy.");
-      router.push("/student/dashboard");
+
+      // Handle auto-enrollment intent
+      const enrollCourseId = searchParams.get("enrollCourseId");
+      if (enrollCourseId && newUser.role === "STUDENT") {
+        try {
+          await api.post("/student/enrollments", { courseId: enrollCourseId });
+          toast.success("Successfully enrolled in the course!");
+        } catch (err: any) {
+          if (!err.response?.data?.message?.includes("already enrolled")) {
+            toast.error("Failed to auto-enroll in the course.");
+          }
+        }
+        window.location.href = "/student/dashboard";
+        return;
+      }
+
+      toast.success("Registration successful!");
+      window.location.href = newUser.role === "INSTRUCTOR" ? "/instructor/dashboard" : "/student/dashboard";
       
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Something went wrong. Please try again.";
@@ -319,7 +337,7 @@ export default function RegisterPage() {
 
         <div>
           <a
-            href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google`}
+            href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google${searchParams.get("enrollCourseId") ? `?state=${searchParams.get("enrollCourseId")}` : ""}`}
             className="font-sans font-semibold"
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '40px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none' }}
           >
@@ -336,7 +354,7 @@ export default function RegisterPage() {
         <div className="font-sans" style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#526658' }}>
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={searchParams.get("enrollCourseId") ? `/login?enrollCourseId=${searchParams.get("enrollCourseId")}` : "/login"}
             className="font-bold hover:underline"
             style={{ color: '#A8792A' }}
           >
@@ -345,5 +363,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </SplitAuthLayout>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-cway-gold animate-pulse font-serif italic">Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
   );
 }

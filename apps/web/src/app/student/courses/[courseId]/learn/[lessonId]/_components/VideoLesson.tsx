@@ -13,7 +13,7 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
   const [markedThisSession, setMarkedThisSession] = useState(false);
 
   const completeMutation = useMutation({
-    mutationFn: () => api.post(`/student/enrollments/\${enrollmentId}/lessons/\${lesson.id}/complete`),
+    mutationFn: () => api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/complete`),
     onSuccess: (res) => {
       setCompleted(true);
       setMarkedThisSession(true);
@@ -26,7 +26,7 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
   });
 
   const progressMutation = useMutation({
-    mutationFn: (seconds: number) => api.post(`/student/enrollments/\${enrollmentId}/lessons/\${lesson.id}/progress`, { watchedSeconds: seconds }),
+    mutationFn: (seconds: number) => api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/progress`, { watchedSeconds: seconds }),
   });
 
   useEffect(() => {

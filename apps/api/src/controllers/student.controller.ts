@@ -7,6 +7,37 @@ import { CertificateService } from "../services/certificate.service";
 // PROGRESS TRACKING
 // ==========================================
 
+export const enrollInCourse = asyncHandler(async (req: Request, res: Response) => {
+  const { courseId } = req.body;
+  const studentId = req.user!.id;
+
+  if (!courseId) throw new AppError("Course ID is required", 400);
+
+  const course = await prisma.course.findUnique({ where: { id: courseId } });
+  if (!course || course.status !== "PUBLISHED") {
+    throw new AppError("Course not found or not available", 404);
+  }
+
+  const existing = await prisma.enrollment.findUnique({
+    where: { studentId_courseId: { studentId, courseId } }
+  });
+
+  if (existing) {
+    throw new AppError("You are already enrolled in this course", 400);
+  }
+
+  const enrollment = await prisma.enrollment.create({
+    data: {
+      studentId,
+      courseId,
+      status: "ACTIVE",
+      progress: 0
+    }
+  });
+
+  res.status(201).json({ status: "success", data: enrollment });
+});
+
 export const getCourseEnrollment = asyncHandler(async (req: Request, res: Response) => {
   const { courseId } = req.params;
   const studentId = req.user!.id;

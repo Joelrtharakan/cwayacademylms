@@ -47,7 +47,7 @@ export default function MyCoursesPage() {
             {inProgress.map((enrollment: any) => (
               <Link 
                 key={enrollment.id} 
-                href={`/student/courses/\${enrollment.course.id}/learn`}
+                href={`/student/courses/${enrollment.course.id}/learn`}
                 style={{ textDecoration: "none" }}
               >
                 <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(0,0,0,0.05)", transition: "transform 0.2s, box-shadow 0.2s", height: "100%", display: "flex", flexDirection: "column" }}
@@ -59,7 +59,7 @@ export default function MyCoursesPage() {
                       <img src={enrollment.course.thumbnail} alt={enrollment.course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     )}
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 6, background: "rgba(201,151,58,0.2)" }}>
-                      <div style={{ height: "100%", background: THEME.GOLD, width: `\${enrollment.progress}%` }} />
+                      <div style={{ height: "100%", background: THEME.GOLD, width: `${enrollment.progress}%` }} />
                     </div>
                   </div>
                   <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column" }}>
@@ -106,7 +106,7 @@ export default function MyCoursesPage() {
                     Instructor: {enrollment.course.instructor.name}
                   </p>
                   <div style={{ marginTop: "auto", display: "flex", gap: 12 }}>
-                    <Link href={`/student/courses/\${enrollment.course.id}/learn`} style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, border: `1px solid \${THEME.MUTED}`, color: THEME.HERO, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>
+                    <Link href={`/student/courses/${enrollment.course.id}/learn`} style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, border: `1px solid ${THEME.MUTED}`, color: THEME.HERO, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>
                       Review
                     </Link>
                     <Link href="/student/certificates" style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>

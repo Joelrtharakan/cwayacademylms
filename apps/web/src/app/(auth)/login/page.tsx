@@ -39,6 +39,21 @@ function LoginContent() {
       setAuth(user, accessToken);
       toast.success(`Welcome back, ${user.name}!`);
 
+      // Handle auto-enrollment intent
+      const enrollCourseId = searchParams.get("enrollCourseId");
+      if (enrollCourseId && user.role === "STUDENT") {
+        try {
+          await api.post("/student/enrollments", { courseId: enrollCourseId });
+          toast.success("Successfully enrolled in the course!");
+        } catch (err: any) {
+          if (!err.response?.data?.message?.includes("already enrolled")) {
+            toast.error("Failed to auto-enroll in the course.");
+          }
+        }
+        window.location.href = "/student/dashboard";
+        return;
+      }
+
       if (user.role === "ADMIN") {
         router.push("/admin/dashboard");
       } else if (user.role === "INSTRUCTOR") {
@@ -146,7 +161,7 @@ function LoginContent() {
 
       <div>
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google`}
+          href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google${searchParams.get("enrollCourseId") ? `?state=${searchParams.get("enrollCourseId")}` : ""}`}
           className="font-sans font-semibold"
           style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '44px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none' }}
         >
@@ -163,7 +178,7 @@ function LoginContent() {
       <div className="font-sans" style={{ marginTop: '32px', textAlign: 'center', fontSize: '12px', color: '#526658' }}>
         Don't have an account?{" "}
         <Link
-          href="/register"
+          href={searchParams.get("enrollCourseId") ? `/register?enrollCourseId=${searchParams.get("enrollCourseId")}` : "/register"}
           className="font-bold hover:underline"
           style={{ color: '#A8792A' }}
         >

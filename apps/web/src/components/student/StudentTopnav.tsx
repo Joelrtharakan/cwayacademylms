@@ -43,7 +43,7 @@ export default function StudentTopnav() {
           {/* Center: Desktop Links */}
           <div className="desktop-only" style={{ display: "none", alignItems: "center", gap: 24 }}>
             {links.map(link => {
-              const active = pathname === link.href || pathname.startsWith(`\${link.href}/`);
+              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <Link
                   key={link.href}
@@ -127,7 +127,7 @@ export default function StudentTopnav() {
       {mobileMenuOpen && (
         <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: THEME.HERO, borderBottom: `1px solid rgba(201,151,58,0.2)`, padding: "16px 24px", display: "flex", flexDirection: "column", gap: 8, boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}>
           {links.map(link => {
-            const active = pathname === link.href || pathname.startsWith(`\${link.href}/`);
+            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
             return (
               <Link
                 key={link.href}

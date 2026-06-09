@@ -94,6 +94,11 @@ export const getAssignments = async (moduleId: string) => {
   return res.data.data;
 };
 
+export const updateAssignment = async (assignmentId: string, data: any) => {
+  const res = await api.put(`/assignments/${assignmentId}`, data);
+  return res.data.data;
+};
+
 export const deleteAssignment = async (assignmentId: string) => {
   const res = await api.delete(`/assignments/${assignmentId}`);
   return res.data;

@@ -11,7 +11,7 @@ export default function TextLesson({ lesson, enrollmentId }: { lesson: any, enro
   const [completed, setCompleted] = useState(lesson.isCompleted);
 
   const completeMutation = useMutation({
-    mutationFn: () => api.post(`/student/enrollments/\${enrollmentId}/lessons/\${lesson.id}/complete`),
+    mutationFn: () => api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/complete`),
     onSuccess: (res) => {
       setCompleted(true);
       queryClient.invalidateQueries({ queryKey: ["enrollment"] });

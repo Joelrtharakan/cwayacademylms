@@ -104,7 +104,7 @@ model Course {
   rejectionReason String?
 
   instructorId String
-  instructor   User      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructor   User      @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
   categoryId   String?
   category     Category? @relation(fields: [categoryId], references: [id])
 
@@ -174,7 +174,7 @@ model Lesson {
 model Enrollment {
   id            String    @id @default(cuid())
   studentId     String
-  student       User      @relation(fields: [studentId], references: [id])
+  student       User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId      String
   course        Course    @relation(fields: [courseId], references: [id])
   enrolledAt    DateTime  @default(now())
@@ -245,7 +245,7 @@ model QuizAttempt {
   quizId      String
   quiz        Quiz      @relation(fields: [quizId], references: [id])
   studentId   String
-  student     User      @relation(fields: [studentId], references: [id])
+  student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   score       Float     @default(0)
   passed      Boolean   @default(false)
   answers     String // { questionId: answerId }
@@ -274,7 +274,7 @@ model Submission {
   assignmentId String
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
   studentId    String
-  student      User       @relation(fields: [studentId], references: [id])
+  student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   content      String?
   fileUrl      String?
   submittedAt  DateTime   @default(now())
@@ -290,7 +290,7 @@ model Submission {
 model Certificate {
   id          String               @id @default(cuid())
   studentId   String
-  student     User                 @relation(fields: [studentId], references: [id])
+  student     User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId    String
   course      Course               @relation(fields: [courseId], references: [id])
   issuedAt    DateTime             @default(now())
@@ -319,7 +319,7 @@ model Review {
   courseId   String
   course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   studentId  String
-  student    User     @relation(fields: [studentId], references: [id])
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   rating     Int // 1-5
   comment    String?
   isApproved Boolean  @default(true)
@@ -341,7 +341,7 @@ model ForumPost {
   forumId   String
   forum     Forum        @relation(fields: [forumId], references: [id])
   authorId  String
-  author    User         @relation(fields: [authorId], references: [id])
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title     String
   content   String
   isPinned  Boolean      @default(false)
@@ -356,7 +356,7 @@ model ForumReply {
   postId    String
   post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User      @relation(fields: [authorId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String
   createdAt DateTime  @default(now())
 
@@ -366,9 +366,9 @@ model ForumReply {
 model Message {
   id         String    @id @default(cuid())
   senderId   String
-  sender     User      @relation("SentMessages", fields: [senderId], references: [id])
+  sender     User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
-  receiver   User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiver   User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   content    String
   sentAt     DateTime  @default(now())
   readAt     DateTime?
@@ -393,7 +393,7 @@ model Notification {
 model Payment {
   id              String       @id @default(cuid())
   studentId       String
-  student         User         @relation(fields: [studentId], references: [id])
+  student         User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId        String
   course          Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   amount          Float
@@ -415,7 +415,7 @@ model Sponsorship {
   status          String   @default("PENDING")
   message         String?
   studentId       String?
-  student         User?    @relation(fields: [studentId], references: [id])
+  student         User?    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId        String?
   createdAt       DateTime @default(now())
 }
@@ -466,7 +466,7 @@ model BlogPost {
   content     String
   coverImage  String?
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   isPublished Boolean  @default(false)
   readingTime Int? // minutes
   createdAt   DateTime @default(now())
@@ -478,7 +478,7 @@ model BlogPost {
 model PayoutRequest {
   id           String    @id @default(cuid())
   instructorId String
-  instructor   User      @relation(fields: [instructorId], references: [id])
+  instructor   User      @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   amount       Float
   currency     String    @default("INR")
   status       String    @default("PENDING")
@@ -512,7 +512,7 @@ model Announcement {
   sectionId String?
   section   Section? @relation(fields: [sectionId], references: [id])
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title     String
   content   String
   isPinned  Boolean  @default(false)
@@ -529,7 +529,7 @@ model Discussion {
   lessonId  String?
   lesson    Lesson?           @relation(fields: [lessonId], references: [id])
   authorId  String
-  author    User              @relation(fields: [authorId], references: [id])
+  author    User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title     String
   content   String
   isPinned  Boolean           @default(false)
@@ -543,7 +543,7 @@ model DiscussionReply {
   discussionId String
   discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
   authorId     String
-  author       User       @relation(fields: [authorId], references: [id])
+  author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content      String
   isInstructor Boolean    @default(false)
   createdAt    DateTime   @default(now())
@@ -603,7 +603,7 @@ model AttendanceRecord {
   sessionId String
   session   AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   studentId String
-  student   User              @relation(fields: [studentId], references: [id])
+  student   User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   status    String            @default("ABSENT")
   markedAt  DateTime          @default(now())
   note      String?
@@ -625,7 +625,7 @@ model Curriculum {
 model Note {
   id         String   @id @default(cuid())
   studentId  String
-  student    User     @relation(fields: [studentId], references: [id])
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   lessonId   String
   lesson     Lesson   @relation(fields: [lessonId], references: [id])
   content    String

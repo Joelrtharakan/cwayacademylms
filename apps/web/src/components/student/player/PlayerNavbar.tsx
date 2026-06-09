@@ -44,7 +44,7 @@ export default function PlayerNavbar({ courseTitle, progress }: PlayerNavbarProp
         <div style={{ display: "flex", alignItems: "center", gap: 12 }} className="hidden md:flex">
           <div style={{ fontSize: 12, fontWeight: 600, color: THEME.MUTED }}>{Math.round(progress)}% COMPLETE</div>
           <div style={{ width: 120, height: 6, background: "rgba(201,151,58,0.2)", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{ width: `\${progress}%`, height: "100%", background: THEME.GOLD, borderRadius: 3, transition: "width 0.3s ease" }} />
+            <div style={{ width: `${progress}%`, height: "100%", background: THEME.GOLD, borderRadius: 3, transition: "width 0.3s ease" }} />
           </div>
         </div>
 
