@@ -140,8 +140,8 @@ export default function LessonPlayerPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar relative">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
-          <div className="w-full bg-black flex items-center justify-center relative" style={{ height: 'calc(100vh - 64px)' }}>
-            <div className="w-full h-full relative max-w-7xl mx-auto flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
+          <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
+            <div className="w-full h-full relative max-w-7xl mx-auto flex items-center justify-center">
               {lesson.videoUrl ? (
                 hasMounted && (
                   lesson.videoUrl.includes('youtu') ? (
