@@ -16,6 +16,11 @@ export default function LessonPlayerPage() {
   const [lesson, setLesson] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // For quizzes
   const [quizState, setQuizState] = useState("not_started"); // not_started, in_progress, results
@@ -135,22 +140,40 @@ export default function LessonPlayerPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar relative">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
-          <div className="flex flex-col h-full bg-[#FAFAF7]">
-            <div className="w-full aspect-video bg-black relative shadow-2xl">
+          <div className="w-full bg-black flex items-center justify-center relative" style={{ height: 'calc(100vh - 64px)' }}>
+            <div className="w-full h-full relative max-w-7xl mx-auto flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
               {lesson.videoUrl ? (
-                <ReactPlayer 
-                  url={lesson.videoUrl} 
-                  width="100%" 
-                  height="100%" 
-                  controls 
-                  onProgress={handleVideoProgress}
-                  onEnded={markComplete}
-                />
+                hasMounted && (
+                  lesson.videoUrl.includes('youtu') ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${
+                        lesson.videoUrl.includes('youtu.be/') 
+                          ? lesson.videoUrl.split('youtu.be/')[1].split('?')[0] 
+                          : lesson.videoUrl.split('v=')[1]?.split('&')[0]
+                      }?rel=0`}
+                      title={lesson.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center [&>div]:!w-full [&>div]:!h-full">
+                      <ReactPlayer 
+                        url={lesson.videoUrl.trim()} 
+                        width="100%" 
+                        height="100%" 
+                        controls 
+                        onProgress={handleVideoProgress}
+                        onEnded={markComplete}
+                      />
+                    </div>
+                  )
+                )
               ) : lesson.bunnyVideoId ? (
                 <iframe
                   src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${lesson.bunnyVideoId}?autoplay=false&responsive=true`}
                   loading="lazy"
-                  className="border-0 absolute top-0 h-full w-full"
+                  className="w-full h-full border-0"
                   allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
                   allowFullScreen={true}
                 />
@@ -159,28 +182,6 @@ export default function LessonPlayerPage() {
                   No video source provided
                 </div>
               )}
-            </div>
-            <div className="max-w-4xl w-full mx-auto p-6 md:p-10 text-[#1A261D]">
-              <div className="text-sm text-[#8A9E8C] mb-2">{lesson.section?.title} &rarr; {lesson.title}</div>
-              <h1 className="font-serif text-3xl md:text-4xl font-semibold mb-4">{lesson.title}</h1>
-              {lesson.content && (
-                <div className="text-[#8A9E8C] text-lg leading-relaxed max-w-3xl" dangerouslySetInnerHTML={{ __html: lesson.content }} />
-              )}
-              
-              <div className="mt-8 pt-8 border-t border-[#E4E8E0]">
-                {lesson.isCompleted ? (
-                  <button className="px-6 py-3 bg-[#4A8C5C]/20 border border-[#4A8C5C] text-[#4A8C5C] rounded-lg font-bold flex items-center gap-2 cursor-default">
-                    <CheckCircle className="w-5 h-5" /> Completed
-                  </button>
-                ) : (
-                  <button 
-                    onClick={markComplete}
-                    className="px-6 py-3 bg-[#C9973A] text-[#1A261D] rounded-lg font-bold flex items-center gap-2 hover:bg-[#A8792A] transition-colors"
-                  >
-                    Mark as Complete <CheckCircle className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
             </div>
           </div>
         )}
