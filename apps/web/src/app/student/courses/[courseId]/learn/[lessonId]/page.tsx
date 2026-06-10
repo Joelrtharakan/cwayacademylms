@@ -77,15 +77,8 @@ export default function LessonPlayerPage() {
     fetchLesson();
   }, [courseId, lessonId]);
 
-  if (loading || !lesson) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#C9973A] border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
   const markComplete = async () => {
+    if (!enrollment) return;
     try {
       await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
       // Update local state or trigger refresh
@@ -94,6 +87,29 @@ export default function LessonPlayerPage() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://iframe.mediadelivery.net") return;
+      try {
+        const data = JSON.parse(event.data);
+        // Auto complete Bunny video when it ends
+        if (data.event === "ended" && lesson && !lesson.isCompleted) {
+          markComplete();
+        }
+      } catch (e) {}
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [lesson, enrollment, lessonId]);
+
+  if (loading || !lesson) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#C9973A] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   const handleVideoProgress = async (state: any) => {
     if (!lesson.isCompleted && state.playedSeconds > 0 && state.playedSeconds % 10 < 1) {
@@ -541,13 +557,16 @@ export default function LessonPlayerPage() {
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
       <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-4 md:px-8 z-30">
-        <button className="text-[#8A9E8C] hover:text-[#C9973A] flex items-center gap-2 text-sm font-semibold transition-colors">
+        <button className="text-[#8A9E8C] hover:text-[#C9973A] flex items-center gap-2 text-sm font-semibold transition-colors px-6 py-2">
           <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">Previous Lesson</span>
         </button>
         <div className="text-xs text-[#8A9E8C] font-medium tracking-wide">
           Module · Lesson
         </div>
-        <button className="px-4 py-2 bg-transparent border border-[#C9973A] text-[#C9973A] hover:bg-[#C9973A] hover:text-[#1A261D] rounded-md text-sm font-semibold transition-colors flex items-center gap-2">
+        <button 
+          disabled={!lesson.isCompleted}
+          className="px-6 py-2 bg-transparent border border-[#C9973A] text-[#C9973A] hover:bg-[#C9973A] hover:text-[#1A261D] rounded-md text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-[#E4E8E0] disabled:text-[#8A9E8C] disabled:hover:bg-transparent"
+        >
           Next Lesson <ArrowRight className="w-4 h-4" />
         </button>
       </div>
