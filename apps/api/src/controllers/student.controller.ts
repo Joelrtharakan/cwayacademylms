@@ -111,11 +111,15 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
     where: { id: enrollmentId },
     include: {
       lessonProgress: true,
+      readingMaterialProgress: true,
       course: {
         include: {
           sections: {
             orderBy: { order: "asc" },
-            include: { lessons: { orderBy: { order: "asc" } } }
+            include: {
+              lessons: { orderBy: { order: "asc" } },
+              readingMaterials: true
+            }
           }
         }
       }
@@ -125,12 +129,13 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   if (!enrollment) throw new AppError("Enrollment not found", 404);
   if (enrollment.studentId !== studentId && req.user!.role !== "ADMIN") throw new AppError("Unauthorized", 403);
 
-  let totalLessons = 0;
-  let completedLessons = 0;
+  let totalItems = 0;
+  let completedItems = 0;
 
   const moduleProgress = enrollment.course.sections.map(section => {
     const sectionLessons = section.lessons;
-    let sectionTotal = sectionLessons.length;
+    const sectionReadingMaterials = section.readingMaterials || [];
+    let sectionTotal = sectionLessons.length + sectionReadingMaterials.length;
     let sectionCompleted = 0;
 
     const mappedLessons = sectionLessons.map(lesson => {
@@ -138,9 +143,9 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
       const isCompleted = !!prog?.completedAt;
       if (isCompleted) {
         sectionCompleted++;
-        completedLessons++;
+        completedItems++;
       }
-      totalLessons++;
+      totalItems++;
       return {
         lessonId: lesson.id,
         lessonTitle: lesson.title,
@@ -151,18 +156,35 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
       };
     });
 
+    const mappedReadingMaterials = sectionReadingMaterials.map(material => {
+      const materialProg = enrollment.readingMaterialProgress.find(rmp => rmp.readingMaterialId === material.id);
+      const isCompleted = !!materialProg?.completedAt;
+      if (isCompleted) {
+        sectionCompleted++;
+        completedItems++;
+      }
+      totalItems++;
+      return {
+        readingMaterialId: material.id,
+        title: material.title,
+        isCompleted,
+        completedAt: materialProg?.completedAt || null
+      };
+    });
+
     return {
       moduleId: section.id,
       moduleTitle: section.title,
       order: section.order,
-      completedLessons: sectionCompleted,
-      totalLessons: sectionTotal,
+      completedItems: sectionCompleted,
+      totalItems: sectionTotal,
       progress: sectionTotal > 0 ? (sectionCompleted / sectionTotal) * 100 : 0,
-      lessons: mappedLessons
+      lessons: mappedLessons,
+      readingMaterials: mappedReadingMaterials
     };
   });
 
-  const overallProgress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
   res.json({
     status: "success",
@@ -170,8 +192,8 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
       enrollmentId,
       courseId: enrollment.courseId,
       overallProgress,
-      completedLessons,
-      totalLessons,
+      completedItems,
+      totalItems,
       moduleProgress
     }
   });
@@ -270,7 +292,41 @@ export const completeReadingMaterial = asyncHandler(async (req: Request, res: Re
     create: { enrollmentId, readingMaterialId: materialId, completedAt: new Date() }
   });
 
-  res.json({ status: "success", data: { progress, completed: true } });
+  const refreshedEnrollment = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    include: {
+      lessonProgress: true,
+      readingMaterialProgress: true,
+      course: {
+        include: {
+          sections: {
+            include: {
+              lessons: true,
+              readingMaterials: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!refreshedEnrollment) throw new AppError("Enrollment not found", 404);
+
+  const totalItems = refreshedEnrollment.course.sections.reduce(
+    (sum, section) => sum + section.lessons.length + section.readingMaterials.length,
+    0
+  );
+  const completedLessonsCount = refreshedEnrollment.lessonProgress.filter(lp => !!lp.completedAt).length;
+  const completedMaterialsCount = refreshedEnrollment.readingMaterialProgress.filter(rmp => !!rmp.completedAt).length;
+  const completedItems = completedLessonsCount + completedMaterialsCount;
+  const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+
+  await prisma.enrollment.update({
+    where: { id: enrollmentId },
+    data: { progress: overallProgress }
+  });
+
+  res.json({ status: "success", data: { progress, completed: true, overallProgress } });
 });
 
 export const saveWatchProgress = asyncHandler(async (req: Request, res: Response) => {

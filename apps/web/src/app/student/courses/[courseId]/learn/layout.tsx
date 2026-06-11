@@ -102,6 +102,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
     if (!enrollment) return;
     try {
       await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${materialId}/complete`);
+      const progressResp = await api.get(`/student/enrollments/${enrollment.id}/progress`);
+      setProgress(progressResp.data.data);
       setEnrollment((prev: any) => {
         if (!prev) return prev;
         const updated = { ...prev };
@@ -248,7 +250,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             />
           </div>
           <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "6px" }}>
-            {progress.completedLessons} of {progress.totalLessons} lessons completed
+            {progress.completedItems} of {progress.totalItems} items completed
           </div>
         </div>
 
@@ -256,8 +258,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
         <div className="course-sidebar-scroll" style={{ flex: 1, overflowY: "auto", zIndex: 2, position: "relative" }}>
           {progress.moduleProgress.map((mod: any, index: number) => {
             const isExpanded = expandedModules[mod.moduleId];
-            const isAllComplete = mod.completedLessons === mod.totalLessons && mod.totalLessons > 0;
-            const isSomeComplete = mod.completedLessons > 0 && mod.completedLessons < mod.totalLessons;
+            const isAllComplete = mod.completedItems === mod.totalItems && mod.totalItems > 0;
+            const isSomeComplete = mod.completedItems > 0 && mod.completedItems < mod.totalItems;
             const section = sectionLookup[mod.moduleId];
             const materials = section?.readingMaterials || [];
 
@@ -285,7 +287,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                       Module {index + 1}: {mod.moduleTitle}
                     </div>
                     <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
-                      {mod.completedLessons}/{mod.totalLessons} lessons
+                      {mod.completedItems}/{mod.totalItems} items
                     </div>
                   </div>
                   {isAllComplete && <CheckCircle size={16} style={{ color: "#4A8C5C" }} />}
@@ -310,10 +312,14 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
                         return orderedItems.map((item: any) => {
                           if (item.itemType === "READING_MATERIAL") {
+                            const isActiveMaterial = item.id === lessonId;
                             return (
                               <div
                                 key={`material-${item.id}`}
-                                onClick={() => setSelectedMaterial(item)}
+                                onClick={() => {
+                                  setSelectedMaterial(null);
+                                  router.push(`/student/courses/${courseId}/learn/${item.id}`);
+                                }}
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
@@ -323,14 +329,14 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                   borderRadius: "8px",
                                   width: "100%",
                                   textAlign: "left",
-                                  background: selectedMaterial?.id === item.id ? "rgba(212,163,91,0.2)" : "rgba(255,255,255,0.08)",
+                                  background: isActiveMaterial ? "rgba(212,163,91,0.2)" : "rgba(255,255,255,0.08)",
                                   color: "rgba(255,255,255,0.9)",
                                   cursor: "pointer",
                                   marginBottom: "4px",
                                 }}
                               >
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: 0 }}>
-                                  <FileText size={16} style={{ marginTop: "2px", color: selectedMaterial?.id === item.id ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
+                                  <FileText size={16} style={{ marginTop: "2px", color: isActiveMaterial ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
                                   <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: "13px", fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>
                                       {item.title}
@@ -524,7 +530,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                 <iframe
                   src={selectedMaterial.fileUrl}
                   title={selectedMaterial.title}
-                  style={{ width: "100%", height: "calc(100vh - 260px)", border: "1px solid #E5E7EB", borderRadius: "16px" }}
+                  style={{ width: "100%", height: "calc(100vh - 220px)", border: "1px solid #E5E7EB", borderRadius: "16px" }}
                 />
               ) : (
                 <div style={{ padding: "24px", borderRadius: "16px", border: "1px solid #E5E7EB", background: "#F8FAFC" }}>
@@ -554,26 +560,6 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                 >
                   Back to lesson
                 </button>
-                {selectedMaterial.isCompleted ? (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 18px", borderRadius: "999px", background: "rgba(39, 163, 138, 0.12)", color: "#155E75", fontWeight: 700, fontSize: "13px" }}>
-                    <CheckCircle size={16} /> Reading marked complete
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => markReadingMaterialComplete(selectedMaterial.id)}
-                    style={{
-                      padding: "12px 18px",
-                      borderRadius: "999px",
-                      background: "#D4A35B",
-                      border: "none",
-                      color: "#FFFFFF",
-                      cursor: "pointer",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Mark this reading complete
-                  </button>
-                )}
               </div>
             </div>
           ) : (

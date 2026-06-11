@@ -21,7 +21,7 @@ class AuthController {
         res.cookie("cway_refresh", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "none",
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
         res.status(200).json({
@@ -39,7 +39,7 @@ class AuthController {
         res.cookie("cway_refresh", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "none",
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
         res.status(200).json({

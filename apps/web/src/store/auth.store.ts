@@ -110,14 +110,26 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== "/auth/refresh") {
+    if (!originalRequest) return Promise.reject(error);
+
+    const isRefreshRequest = originalRequest.url?.includes("/auth/refresh");
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
       originalRequest._retry = true;
       const newAccessToken = await useAuthStore.getState().refreshAccessToken();
       if (newAccessToken) {
+        originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       }
     }
+
+    if (error.response?.status === 401) {
+      useAuthStore.getState().clearAuth();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+
     return Promise.reject(error);
   }
 );

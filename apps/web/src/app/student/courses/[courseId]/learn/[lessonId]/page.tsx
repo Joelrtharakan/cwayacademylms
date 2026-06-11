@@ -29,6 +29,39 @@ export default function LessonPlayerPage() {
   const [quizResult, setQuizResult] = useState<any>(null);
   const lastSavedSecond = useRef<number>(0);
 
+  const buildFlowItems = (sections: any[] = []) => {
+    return sections.flatMap((section: any) => {
+      const videoLessons = section.lessons.filter((l: any) => l.type === "VIDEO");
+      const quizLessons = section.lessons.filter((l: any) => l.type === "QUIZ");
+      const assignmentLessons = section.lessons.filter((l: any) => l.type === "ASSIGNMENT");
+      const otherLessons = section.lessons.filter((l: any) => !["VIDEO", "QUIZ", "ASSIGNMENT"].includes(l.type));
+
+      const readingMaterials = (section.readingMaterials || []).map((material: any) => ({
+        ...material,
+        itemType: "READING_MATERIAL",
+        section
+      }));
+
+      return [
+        ...videoLessons.map((item: any) => ({ ...item, itemType: item.type, section })),
+        ...readingMaterials,
+        ...quizLessons.map((item: any) => ({ ...item, itemType: item.type, section })),
+        ...assignmentLessons.map((item: any) => ({ ...item, itemType: item.type, section })),
+        ...otherLessons.map((item: any) => ({ ...item, itemType: item.type, section }))
+      ];
+    });
+  };
+
+  const allItems = enrollment?.course?.sections ? buildFlowItems(enrollment.course.sections) : [];
+  const currentItemIndex = lesson ? allItems.findIndex((item: any) => item.id === lesson.id && item.itemType === lesson.type) : -1;
+  const previousItem = currentItemIndex > 0 ? allItems[currentItemIndex - 1] : null;
+  const nextItem = currentItemIndex >= 0 && currentItemIndex < allItems.length - 1 ? allItems[currentItemIndex + 1] : null;
+
+  const goToItem = (item: any) => {
+    if (!item) return;
+    router.push(`/student/courses/${courseId}/learn/${item.id}`);
+  };
+
   const readingMaterials = lesson?.section?.readingMaterials || [];
 
   // For assignments
@@ -69,6 +102,21 @@ export default function LessonPlayerPage() {
           } else {
             setLesson({ ...foundLesson, section: foundSection });
           }
+        } else {
+          // If no lesson found, try reading material by ID
+          let foundMaterial = null;
+          for (const s of enr.course.sections) {
+            const rm = s.readingMaterials.find((x: any) => x.id === lessonId);
+            if (rm) {
+              const prog = enr.readingMaterialProgress.find((rmp: any) => rmp.readingMaterialId === rm.id);
+              foundMaterial = { ...rm, type: "READING_MATERIAL", section: s, isCompleted: !!prog?.completedAt };
+              break;
+            }
+          }
+
+          if (foundMaterial) {
+            setLesson(foundMaterial);
+          }
         }
       } catch (err) {
         console.error("Failed to load lesson", err);
@@ -80,23 +128,29 @@ export default function LessonPlayerPage() {
   }, [courseId, lessonId]);
 
   const markComplete = async () => {
-    if (!enrollment) return;
+    if (!enrollment || !lesson) return;
     try {
-      await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
-      // Update local state or trigger refresh
+      if (lesson.type === "READING_MATERIAL") {
+        await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${lesson.id}/complete`);
+      } else {
+        await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
+      }
       setLesson((prev: any) => ({ ...prev, isCompleted: true }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const allLessons = enrollment?.course?.sections?.flatMap((section: any) =>
-    section.lessons.map((lessonItem: any) => ({ ...lessonItem, section }))
-  ) ?? [];
+  const handleNext = async () => {
+    if (!nextItem || !enrollment || !lesson) return;
+    if (lesson.type === "READING_MATERIAL") {
+      await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${lesson.id}/complete`);
+    }
+    goToItem(nextItem);
+  };
 
-  const currentLessonIndex = lesson ? allLessons.findIndex((item: any) => item.id === lesson.id) : -1;
-  const previousLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
-  const nextLesson = currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1 ? allLessons[currentLessonIndex + 1] : null;
+  const previousLesson = previousItem;
+  const nextLesson = nextItem;
 
   const goToLesson = (targetLessonId: string) => {
     router.push(`/student/courses/${courseId}/learn/${targetLessonId}`);
@@ -179,9 +233,7 @@ export default function LessonPlayerPage() {
     }
   };
 
-  const nextButtonClasses = lesson?.isCompleted
-    ? "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent"
-    : "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB] cursor-not-allowed";
+  const nextButtonClasses = "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent";
 
   return (
     <div className="w-full h-full flex flex-col relative">
@@ -244,6 +296,45 @@ export default function LessonPlayerPage() {
           </div>
         )}
 
+        {/* READING MATERIAL */}
+        {lesson.type === "READING_MATERIAL" && (
+          <div className="w-full min-h-full bg-[#F7F8F5] text-[#1A261D] px-6 py-16 md:px-12 md:py-20">
+            <div className="mx-auto w-full max-w-[1280px] space-y-10 px-6 md:px-10 lg:px-12">
+              <div className="pt-4 text-center">
+                <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#111827] mb-6">
+                  {lesson.title}
+                </h1>
+              </div>
+
+              <div className="flex justify-center">
+                <div className="w-full max-w-[1200px] mx-auto rounded-[32px] overflow-hidden border border-[#E5E7EB] bg-[#000000] shadow-[0_24px_72px_-24px_rgba(15,23,42,0.18)]">
+                  {lesson.fileUrl?.toLowerCase().endsWith(".pdf") ? (
+                    <iframe
+                      src={lesson.fileUrl}
+                      title={lesson.title}
+                      className="w-full min-h-[82vh] md:min-h-[calc(100vh-180px)]"
+                    />
+                  ) : (
+                    <div className="flex min-h-[520px] flex-col items-center justify-center gap-6 bg-[#F8FAFC] p-12 text-center">
+                      <p className="text-lg font-semibold text-[#111827]">Preview unavailable</p>
+                      <p className="max-w-xl text-sm text-[#6B7280]">This reading material cannot be previewed inside the app. Open it in a new tab instead.</p>
+                      <a
+                        href={lesson.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full bg-[#D4A35B] px-6 py-3 text-sm font-semibold text-[#1A261D]"
+                      >
+                        Open / Download
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
         {/* TEXT LESSON */}
         {lesson.type === "TEXT" && (
           <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]">
@@ -277,7 +368,7 @@ export default function LessonPlayerPage() {
           </div>
         )}
 
-        {readingMaterials.length > 0 && (
+        {lesson.type !== "READING_MATERIAL" && readingMaterials.length > 0 && (
           <div className="max-w-3xl mx-auto py-10 px-6 md:px-12">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
@@ -640,10 +731,10 @@ export default function LessonPlayerPage() {
           Module · Lesson
         </div>
         <button 
-          disabled={!lesson.isCompleted || !nextLesson}
-          onClick={() => nextLesson && goToLesson(nextLesson.id)}
-          title={!lesson.isCompleted ? "Watch the full video to unlock the next lesson" : "Continue to next lesson"}
-          className={`${nextButtonClasses} ml-4`}
+          disabled={!nextLesson}
+          onClick={handleNext}
+          title={nextLesson ? "Continue to next lesson" : "No next lesson available"}
+          className={`${nextButtonClasses} ml-4 ${!nextLesson ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           Next Lesson <ArrowRight className="w-4 h-4" />
         </button>
