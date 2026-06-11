@@ -28,6 +28,8 @@ export default function LessonPlayerPage() {
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [quizResult, setQuizResult] = useState<any>(null);
   const lastSavedSecond = useRef<number>(0);
+  const [cheatStrikes, setCheatStrikes] = useState(0);
+  const [showCheatWarning, setShowCheatWarning] = useState(false);
 
   const buildFlowItems = (sections: any[] = []) => {
     return sections.flatMap((section: any) => {
@@ -141,9 +143,14 @@ export default function LessonPlayerPage() {
 
   const handleNext = async () => {
     if (!nextItem || !enrollment || !lesson) return;
+    
     if (lesson.type === "READING_MATERIAL") {
-      await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${lesson.id}/complete`);
+      await markComplete();
+    } else if (lesson.type === "QUIZ" && quizResult?.passed && !lesson.isCompleted) {
+      // Fallback in case submitQuiz failed to mark complete
+      await markComplete();
     }
+    
     goToItem(nextItem);
   };
 
@@ -168,6 +175,91 @@ export default function LessonPlayerPage() {
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, [lesson, enrollment, lessonId]);
+
+  const startQuiz = async () => {
+    if (!lesson) return;
+    try {
+      const res = await api.post(`/student/quizzes/${lesson.quiz.id}/attempt`);
+      setQuizData(res.data.data);
+      setQuizState("in_progress");
+      setCurrentQuestionIdx(0);
+      setQuizAnswers({});
+      setCheatStrikes(0);
+      setShowCheatWarning(false);
+      
+      try {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (e) {
+        console.warn("Fullscreen request failed", e);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to start quiz");
+    }
+  };
+
+  const submitQuiz = async () => {
+    if (!quizData || !lesson) return;
+    try {
+      const res = await api.post(`/student/quizzes/${lesson.quiz.id}/submit`, {
+        attemptId: quizData.attemptId,
+        answers: quizAnswers
+      });
+      setQuizResult(res.data.data);
+      setQuizState("results");
+      
+      if (res.data.data.passed || !res.data.data.canRetake) {
+        try {
+          await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
+          setLesson((prev: any) => ({ ...prev, isCompleted: true }));
+        } catch (err) { console.error(err); }
+      }
+
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      } catch (e) {
+        console.warn("Fullscreen exit failed", e);
+      }
+    } catch (err: any) {
+      alert("Failed to submit");
+    }
+  };
+
+  // Anti-cheat detection
+  useEffect(() => {
+    const handleViolation = () => {
+      if (quizState === "in_progress") {
+        setCheatStrikes(prev => {
+          const newStrikes = prev + 1;
+          if (newStrikes > 3) {
+            submitQuiz();
+            alert("Quiz automatically submitted due to maximum infractions. Cheating is not permitted.");
+          } else {
+            setShowCheatWarning(true);
+          }
+          return newStrikes;
+        });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) handleViolation();
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) handleViolation();
+    };
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [quizState, quizData, quizAnswers, lesson]);
 
   if (loading || !lesson) {
     return (
@@ -205,37 +297,13 @@ export default function LessonPlayerPage() {
     }
   };
 
-  const startQuiz = async () => {
-    try {
-      const res = await api.post(`/student/quizzes/${lesson.quiz.id}/attempt`);
-      setQuizData(res.data.data);
-      setQuizState("in_progress");
-      setCurrentQuestionIdx(0);
-      setQuizAnswers({});
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to start quiz");
-    }
-  };
 
-  const submitQuiz = async () => {
-    if (!quizData) return;
-    try {
-      const res = await api.post(`/student/quizzes/${lesson.quiz.id}/submit`, {
-        attemptId: quizData.attemptId,
-        answers: quizAnswers
-      });
-      setQuizResult(res.data.data);
-      setQuizState("results");
-    } catch (err: any) {
-      alert("Failed to submit");
-    }
-  };
 
   const nextButtonClasses = "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent";
 
   return (
-    <div className="w-full h-full flex flex-col relative">
-      <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative">
+      <div className="flex-1 w-full relative">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
@@ -369,126 +437,196 @@ export default function LessonPlayerPage() {
 
         {/* QUIZ LESSON */}
         {lesson.type === "QUIZ" && (
-          <div className="w-full min-h-full bg-[#F7F7F2] text-[#1A261D] px-6 py-12 md:px-12 md:py-16">
-            <div className="mx-auto max-w-6xl space-y-10">
-              <section className="relative overflow-hidden rounded-[32px] border border-[#E4E8E0] bg-white/95 p-8 md:p-12 shadow-[0_40px_120px_-60px_rgba(15,23,42,0.2)]">
-                <div className="pointer-events-none absolute right-0 top-0 h-36 w-36 rounded-full bg-[#C9973A]/10 blur-3xl"></div>
-                <div className="pointer-events-none absolute left-0 bottom-0 h-32 w-32 rounded-full bg-[#4A8C5C]/10 blur-3xl"></div>
-                <div className="relative">
-                  <span className="inline-flex items-center rounded-full bg-[#F8FAF7] px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#4A8C5C]">
-                    Quiz Overview
-                  </span>
-                  <h1 className="font-serif text-3xl md:text-5xl font-bold tracking-tight text-[#111827] mt-6 max-w-3xl">
-                    {lesson.title}
-                  </h1>
-                  {lesson.description && (
-                    <p className="max-w-3xl text-base leading-8 text-[#4B5563] mt-5">
-                      {lesson.description}
-                    </p>
-                  )}
-
-                  <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-5">
-                      <p className="text-sm uppercase tracking-[0.18em] text-[#8A9E8C] mb-2">Passing score</p>
-                      <p className="text-3xl font-semibold text-[#1A261D]">{lesson.quiz?.passingScore ?? 0}%</p>
+          <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: '3rem 1.5rem' }}>
+            <div className="mx-auto w-full" style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {quizState === "not_started" && (
+                <section className="relative overflow-hidden rounded-[24px] border border-[#E4E8E0] bg-white shadow-sm" style={{ padding: '1.5rem 2rem' }}>
+                  <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-[#C9973A]/10 blur-3xl"></div>
+                  <div className="pointer-events-none absolute left-0 bottom-0 h-40 w-40 rounded-full bg-[#4A8C5C]/10 blur-3xl"></div>
+                  <div className="relative z-10" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div>
+                      <span className="inline-flex items-center rounded-md bg-[#4A8C5C]/10 text-[10px] font-bold uppercase tracking-widest text-[#4A8C5C]" style={{ padding: '4px 8px' }}>
+                        Quiz Overview
+                      </span>
                     </div>
-                    <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-5">
-                      <p className="text-sm uppercase tracking-[0.18em] text-[#8A9E8C] mb-2">Time limit</p>
-                      <p className="text-3xl font-semibold text-[#1A261D]">
-                        {lesson.quiz?.timeLimit ? `${lesson.quiz.timeLimit / 60} min` : "Unlimited"}
+                    
+                    <h1 className="font-serif font-bold tracking-tight text-[#1A261D]" style={{ fontSize: 'clamp(24px, 4vw, 36px)', lineHeight: '1.2', margin: '0' }}>
+                      {lesson.title}
+                    </h1>
+                    
+                    {lesson.description && (
+                      <p className="text-sm text-gray-600 max-w-2xl leading-relaxed" style={{ margin: '0' }}>
+                        {lesson.description}
                       </p>
-                    </div>
-                    <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-5">
-                      <p className="text-sm uppercase tracking-[0.18em] text-[#8A9E8C] mb-2">Attempts</p>
-                      <p className="text-3xl font-semibold text-[#1A261D]">
-                        {lesson.quiz?.maxAttempts > 0 ? lesson.quiz.maxAttempts : "Unlimited"}
-                      </p>
-                    </div>
-                  </div>
+                    )}
 
-                  {lesson.attempts && lesson.attempts.length > 0 && (
-                    <div className="mt-10 rounded-3xl bg-[#F8FAF7] border border-[#E4E8E0] p-6">
-                      <h2 className="text-sm uppercase tracking-[0.22em] text-[#8A9E8C] mb-4 font-semibold">Recent attempts</h2>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {lesson.attempts.map((att: any, i: number) => (
-                          <div key={att.id} className="rounded-3xl bg-white border border-[#E4E8E0] p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm text-[#8A9E8C]">Attempt {lesson.attempts.length - i}</span>
-                              <span className={`text-xs uppercase font-semibold ${att.passed ? 'text-[#4A8C5C]' : 'text-[#8C3A3A]'}`}>
-                                {att.passed ? 'Passed' : 'Failed'}
-                              </span>
-                            </div>
-                            <p className="text-2xl font-semibold text-[#1A261D]">{att.score.toFixed(1)}%</p>
-                          </div>
-                        ))}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '0.25rem' }}>
+                      <div className="rounded-[16px] bg-[#FAFAF7] border border-[#E4E8E0] flex flex-col justify-center" style={{ padding: '16px 20px' }}>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-gray-500" style={{ marginBottom: '4px' }}>Passing score</p>
+                        <p className="font-bold text-[#1A261D] leading-none" style={{ fontSize: '24px', margin: '0' }}>{lesson.quiz?.passingScore ?? 0}%</p>
+                      </div>
+                      <div className="rounded-[16px] bg-[#FAFAF7] border border-[#E4E8E0] flex flex-col justify-center" style={{ padding: '16px 20px' }}>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-gray-500" style={{ marginBottom: '4px' }}>Time limit</p>
+                        <p className="font-bold text-[#1A261D] leading-none" style={{ fontSize: '24px', margin: '0' }}>
+                          {lesson.quiz?.timeLimit ? `${lesson.quiz.timeLimit / 60} min` : "Unlimited"}
+                        </p>
+                      </div>
+                      <div className="rounded-[16px] bg-[#FAFAF7] border border-[#E4E8E0] flex flex-col justify-center" style={{ padding: '16px 20px' }}>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-gray-500" style={{ marginBottom: '4px' }}>Attempts</p>
+                        <p className="font-bold text-[#1A261D] leading-none" style={{ fontSize: '24px', margin: '0' }}>
+                          {lesson.quiz?.maxAttempts > 0 ? lesson.quiz.maxAttempts : "Unlimited"}
+                        </p>
                       </div>
                     </div>
-                  )}
 
-                  <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:justify-start">
-                    <button
-                      onClick={startQuiz}
-                      className="inline-flex items-center justify-center rounded-full bg-[#C9973A] px-8 py-4 text-sm font-bold uppercase tracking-[0.12em] text-[#1A261D] shadow-lg shadow-[#C9973A]/20 transition-colors hover:bg-[#A8792A]"
-                    >
-                      Start Quiz
-                    </button>
-                    <span className="text-sm text-[#6B7280] max-w-xl text-center sm:text-left">
-                      Ready when you are. Your progress will be saved automatically as you go.
-                    </span>
+                    {lesson.attempts && lesson.attempts.length > 0 && (
+                      <div className="rounded-[20px] bg-[#FAFAF7] border border-[#E4E8E0]" style={{ padding: '20px', marginTop: '0.5rem' }}>
+                        <div className="flex items-center justify-between mb-3">
+                          <h2 className="text-[10px] uppercase font-bold tracking-wider text-gray-500">Recent attempts</h2>
+                          {lesson.attempts.some((a: any) => a.passed) && (
+                            <span className="text-xs font-bold text-[#4A8C5C] bg-[#4A8C5C]/10 px-3 py-1 rounded-full">
+                              Highest Score: {Math.max(...lesson.attempts.map((a: any) => a.score)).toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
+                          {lesson.attempts.map((att: any, i: number) => (
+                            <div key={att.id} className="rounded-[12px] bg-white border border-[#E4E8E0]" style={{ padding: '12px' }}>
+                              <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
+                                <span className="text-xs font-medium text-gray-500">Attempt {lesson.attempts.length - i}</span>
+                                <span className={`text-[10px] uppercase font-bold rounded-md ${att.passed ? 'bg-[#4A8C5C]/10 text-[#4A8C5C]' : 'bg-red-50 text-red-600'}`} style={{ padding: '4px 8px' }}>
+                                  {att.passed ? 'Passed' : 'Failed'}
+                                </span>
+                              </div>
+                              <p className="font-bold text-[#1A261D] leading-none" style={{ fontSize: '20px', margin: '0' }}>{att.score.toFixed(1)}%</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row items-center border-t border-[#E4E8E0]" style={{ paddingTop: '20px', marginTop: '12px', gap: '16px' }}>
+                      {(!lesson.quiz?.maxAttempts || !lesson.attempts || lesson.attempts.length < lesson.quiz.maxAttempts) ? (
+                        <button
+                          onClick={startQuiz}
+                          className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#C9973A] text-sm font-bold text-white shadow-sm transition-all hover:bg-[#B8872A]"
+                          style={{ padding: '12px 28px' }}
+                        >
+                          {lesson.attempts && lesson.attempts.length > 0 ? "Retake Quiz" : "Start Quiz"}
+                        </button>
+                      ) : (
+                        <div className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-400 cursor-not-allowed" style={{ padding: '12px 28px' }}>
+                          Maximum Attempts Reached
+                        </div>
+                      )}
+                      
+                      {lesson.isCompleted ? (
+                        <div className="flex items-center gap-2 text-sm font-bold text-[#4A8C5C]">
+                          <CheckCircle className="w-5 h-5" /> Quiz Completed
+                        </div>
+                      ) : (
+                        (lesson.attempts?.some((a: any) => a.passed) || (lesson.quiz?.maxAttempts > 0 && lesson.attempts?.length >= lesson.quiz.maxAttempts)) && (
+                          <button
+                            onClick={async () => {
+                              await markComplete();
+                              router.refresh();
+                            }}
+                            className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#4A8C5C] text-sm font-bold text-white shadow-sm transition-all hover:bg-[#3B7A4A]"
+                            style={{ padding: '12px 28px' }}
+                          >
+                            Mark as Completed
+                          </button>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+              )}
 
               {quizState === "in_progress" && quizData && quizData.quiz && quizData.quiz.questions && (
-                <div className="rounded-[32px] border border-[#E4E8E0] bg-white p-6 md:p-10 shadow-xl">
-                  <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div 
+                  className="rounded-[24px] border border-[#E4E8E0] bg-white shadow-xl" 
+                  style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', userSelect: 'none' }}
+                  onCopy={e => e.preventDefault()}
+                  onPaste={e => e.preventDefault()}
+                  onContextMenu={e => e.preventDefault()}
+                >
+                  {showCheatWarning && (
+                    <div 
+                      className="rounded-[16px] bg-[#FEF2F2] border border-[#FCA5A5]" 
+                      style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <XCircle className="text-[#DC2626]" style={{ width: '24px', height: '24px', flexShrink: 0 }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <p className="font-bold text-[#991B1B]" style={{ fontSize: '14px', margin: 0 }}>Warning: Leaving fullscreen or switching tabs is not allowed ({cheatStrikes}/3 infractions).</p>
+                          <p className="text-[#B91C1C]" style={{ fontSize: '12px', margin: 0 }}>If you violate this {4 - cheatStrikes} more time(s), your quiz will be automatically submitted.</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setShowCheatWarning(false);
+                          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(e => console.warn(e));
+                          }
+                        }} 
+                        className="bg-white rounded-full font-bold text-[#DC2626] border border-[#FCA5A5] hover:bg-[#FEF2F2]"
+                        style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
+                      >
+                        Resume Quiz
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between" style={{ gap: '0.75rem' }}>
                     <div>
-                      <p className="text-sm uppercase tracking-[0.22em] text-[#8A9E8C] mb-2">Question Progress</p>
-                      <p className="text-lg font-semibold text-[#1A261D]">
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#8A9E8C]" style={{ marginBottom: '0.25rem' }}>Question Progress</p>
+                      <p className="font-semibold text-[#1A261D]" style={{ fontSize: '1rem', margin: 0 }}>
                         {currentQuestionIdx + 1} of {quizData.quiz.questions.length}
                       </p>
                     </div>
-                    <div className="w-full md:w-1/2 h-3 rounded-full bg-[#F3F4F6] overflow-hidden">
+                    <div className="w-full md:w-1/2 h-2 rounded-full bg-[#F3F4F6] overflow-hidden" style={{ position: 'relative' }}>
                       <div className="h-full rounded-full bg-[#C9973A] transition-all" style={{ width: `${((currentQuestionIdx + 1) / quizData.quiz.questions.length) * 100}%` }} />
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-[#E4E8E0] bg-[#F7F8F5] p-6 md:p-8">
+                  <div className="rounded-[20px] border border-[#E4E8E0] bg-[#FAFAF7]" style={{ padding: '1.25rem 1.5rem' }}>
                     {(() => {
                       const q = quizData.quiz.questions[currentQuestionIdx];
                       if (!q) return null;
                       return (
-                        <div>
-                          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-6">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between" style={{ gap: '1rem' }}>
                             <div>
-                              <p className="text-sm uppercase tracking-[0.22em] text-[#8A9E8C] mb-2">Question {currentQuestionIdx + 1}</p>
-                              <h2 className="text-2xl md:text-3xl font-semibold text-[#1A261D]">{q.text}</h2>
+                              <p className="text-xs uppercase tracking-[0.2em] text-[#8A9E8C]" style={{ marginBottom: '0.5rem' }}>Question {currentQuestionIdx + 1}</p>
+                              <h2 className="font-semibold text-[#1A261D]" style={{ fontSize: 'clamp(20px, 2.5vw, 28px)', margin: 0, fontFamily: 'var(--font-serif)' }}>{q.text}</h2>
                             </div>
-                            <div className="rounded-3xl bg-white border border-[#E4E8E0] px-4 py-2 text-sm font-semibold text-[#1A261D]">
+                            <div className="rounded-full bg-white border border-[#E4E8E0] font-semibold text-[#1A261D] shrink-0" style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                               {q.points} pt{q.points > 1 ? 's' : ''}
                             </div>
                           </div>
                           {q.scriptureRef && (
-                            <div className="mb-4 rounded-3xl bg-white border border-[#E4E8E0] px-4 py-3 text-sm text-[#4A8C5C]">
+                            <div className="rounded-[12px] bg-white border border-[#E4E8E0] text-[#4A8C5C]" style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
                               {q.scriptureRef}
                             </div>
                           )}
 
                           {(q.type === "MCQ" || q.type === "TRUE_FALSE") && (
-                            <div className="space-y-4">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                               {q.answers.map((ans: any) => {
                                 const isSelected = quizAnswers[q.id] === ans.id;
                                 return (
                                   <button
                                     key={ans.id}
                                     onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: ans.id })}
-                                    className={`w-full rounded-3xl border p-5 text-left transition-all ${isSelected ? 'border-[#C9973A] bg-[#FFF7E5]' : 'border-[#E4E8E0] bg-white hover:border-[#D4A35B]'}`}
+                                    className={`w-full rounded-[16px] border text-left transition-all ${isSelected ? 'border-[#C9973A] bg-[#FFF7E5]' : 'border-[#E4E8E0] bg-white hover:border-[#D4A35B]'}`}
+                                    style={{ padding: '0.875rem 1.25rem' }}
                                   >
-                                    <div className="flex items-center gap-4">
-                                      <div className={`h-5 w-5 rounded-full border-2 ${isSelected ? 'border-[#C9973A] bg-[#C9973A]' : 'border-[#D1D5DB]'}`}>
-                                        {isSelected && <div className="m-1 h-2 w-2 rounded-full bg-white" />}
+                                    <div className="flex items-center" style={{ gap: '0.75rem' }}>
+                                      <div className={`rounded-full border-2 ${isSelected ? 'border-[#C9973A] bg-[#C9973A]' : 'border-[#D1D5DB]'}`} style={{ width: '18px', height: '18px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {isSelected && <div className="rounded-full bg-white" style={{ width: '6px', height: '6px' }} />}
                                       </div>
-                                      <span className={`text-base ${isSelected ? 'text-[#C9973A] font-semibold' : 'text-[#1A261D]'}`}>{ans.text}</span>
+                                      <span className={isSelected ? 'text-[#C9973A] font-medium' : 'text-[#1A261D]'} style={{ fontSize: '0.95rem' }}>{ans.text}</span>
                                     </div>
                                   </button>
                                 );
@@ -497,15 +635,16 @@ export default function LessonPlayerPage() {
                           )}
 
                           {q.type === "SHORT_ANSWER" && (
-                            <div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               <textarea
                                 value={quizAnswers[q.id] || ""}
                                 onChange={e => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
-                                rows={6}
-                                className="w-full rounded-[24px] border border-[#E4E8E0] bg-white px-5 py-4 text-[#1A261D] placeholder-[#9CA3AF] focus:border-[#C9973A] focus:outline-none"
+                                rows={5}
+                                className="w-full rounded-[16px] border border-[#E4E8E0] bg-white text-[#1A261D] placeholder-[#9CA3AF] focus:border-[#C9973A] focus:outline-none"
+                                style={{ padding: '1rem' }}
                                 placeholder="Type your answer here..."
                               />
-                              <p className="mt-3 text-sm text-[#6B7280]">Your response will be reviewed by your instructor.</p>
+                              <p className="text-xs text-[#6B7280]" style={{ margin: 0 }}>Your response will be reviewed by your instructor.</p>
                             </div>
                           )}
                         </div>
@@ -513,25 +652,28 @@ export default function LessonPlayerPage() {
                     })()}
                   </div>
 
-                  <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-between">
+                  <div className="flex flex-col sm:flex-row justify-between items-center" style={{ gap: '1rem', marginTop: '1.5rem' }}>
                     <button
                       onClick={() => setCurrentQuestionIdx(i => Math.max(0, i - 1))}
                       disabled={currentQuestionIdx === 0}
-                      className="rounded-full border border-[#E4E8E0] bg-white px-6 py-3 text-sm font-semibold text-[#1A261D] transition hover:border-[#C9973A] disabled:opacity-40"
+                      className="rounded-full border border-[#E4E8E0] bg-white text-sm font-semibold text-[#1A261D] transition hover:border-[#C9973A] disabled:opacity-40"
+                      style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center' }}
                     >
-                      <ArrowLeft className="inline-block w-4 h-4 mr-2" /> Previous
+                      <ArrowLeft className="w-4 h-4" style={{ marginRight: '0.5rem' }} /> Previous
                     </button>
                     {currentQuestionIdx === quizData.quiz.questions.length - 1 ? (
                       <button
                         onClick={submitQuiz}
-                        className="rounded-full bg-[#C9973A] px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A]"
+                        className="rounded-full bg-[#C9973A] text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A]"
+                        style={{ padding: '0.75rem 1.5rem' }}
                       >
                         Submit Quiz
                       </button>
                     ) : (
                       <button
                         onClick={() => setCurrentQuestionIdx(i => Math.min(quizData.quiz.questions.length - 1, i + 1))}
-                        className="rounded-full bg-[#C9973A] px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A] flex items-center justify-center gap-2"
+                        className="rounded-full bg-[#C9973A] text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A]"
+                        style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                       >
                         Next <ArrowRight className="w-4 h-4" />
                       </button>
@@ -541,71 +683,71 @@ export default function LessonPlayerPage() {
               )}
 
               {quizState === "results" && quizResult && (
-                <div className="space-y-8">
-                  <div className="rounded-[32px] border border-[#E4E8E0] bg-white p-10 shadow-xl">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div className="rounded-[24px] border border-[#E4E8E0] bg-white shadow-xl" style={{ padding: '2rem 1.5rem' }}>
                     <div className="text-center">
                       {quizResult.passed ? (
-                        <CheckCircle className="mx-auto mb-4 h-16 w-16 text-[#4A8C5C]" />
+                        <CheckCircle className="mx-auto text-[#4A8C5C]" style={{ marginBottom: '1rem', width: '3rem', height: '3rem' }} />
                       ) : (
-                        <XCircle className="mx-auto mb-4 h-16 w-16 text-[#8C3A3A]" />
+                        <XCircle className="mx-auto text-[#8C3A3A]" style={{ marginBottom: '1rem', width: '3rem', height: '3rem' }} />
                       )}
-                      <h1 className={`font-serif text-4xl font-bold ${quizResult.passed ? 'text-[#4A8C5C]' : 'text-[#8C3A3A]'}`}>
+                      <h1 className={`font-serif font-bold ${quizResult.passed ? 'text-[#4A8C5C]' : 'text-[#8C3A3A]'}`} style={{ fontSize: 'clamp(24px, 3.5vw, 32px)' }}>
                         {quizResult.passed ? 'You passed the quiz!' : 'Quiz complete'}
                       </h1>
-                      <p className="mt-4 text-[#6B7280]">
+                      <p className="text-[#6B7280]" style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
                         {quizResult.passed ? 'Great work — your score is above the passing threshold.' : 'Review your score and try again to improve.'}
                       </p>
                     </div>
 
-                    <div className="mt-10 grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-6">
-                        <p className="text-sm uppercase tracking-[0.18em] text-[#8A9E8C] mb-2">Final Score</p>
-                        <p className="text-4xl font-bold text-[#111827]">{quizResult.score.toFixed(0)}%</p>
+                    <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginTop: '2rem' }}>
+                      <div className="rounded-[16px] bg-[#FAFAF7] border border-[#E4E8E0]" style={{ padding: '16px' }}>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-[#8A9E8C]" style={{ marginBottom: '0.5rem' }}>Final Score</p>
+                        <p className="font-bold text-[#111827]" style={{ fontSize: '1.75rem', margin: 0 }}>{quizResult.score.toFixed(0)}%</p>
                       </div>
-                      <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-6">
-                        <p className="text-sm uppercase tracking-[0.18em] text-[#8A9E8C] mb-2">Points</p>
-                        <p className="text-4xl font-bold text-[#111827]">{quizResult.earnedPoints}/{quizResult.totalPoints}</p>
+                      <div className="rounded-[16px] bg-[#FAFAF7] border border-[#E4E8E0]" style={{ padding: '16px' }}>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-[#8A9E8C]" style={{ marginBottom: '0.5rem' }}>Points</p>
+                        <p className="font-bold text-[#111827]" style={{ fontSize: '1.75rem', margin: 0 }}>{quizResult.earnedPoints}/{quizResult.totalPoints}</p>
                       </div>
                     </div>
 
-                    <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                    <div className="flex flex-col items-center sm:flex-row sm:justify-center" style={{ marginTop: '2rem', gap: '1rem' }}>
                       {quizResult.passed ? (
-                        <button className="rounded-full bg-[#4A8C5C] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#3B7A54]">
+                        <button className="rounded-full bg-[#4A8C5C] text-sm font-semibold text-white transition hover:bg-[#3B7A54]" style={{ padding: '10px 24px' }}>
                           Continue to Next Lesson &rarr;
                         </button>
                       ) : quizResult.canRetake ? (
-                        <button onClick={startQuiz} className="rounded-full border border-[#C9973A] px-8 py-3 text-sm font-semibold text-[#C9973A] transition hover:bg-[#C9973A] hover:text-[#1A261D]">
+                        <button onClick={startQuiz} className="rounded-full border border-[#C9973A] text-sm font-semibold text-[#C9973A] transition hover:bg-[#C9973A] hover:text-[#1A261D]" style={{ padding: '10px 24px' }}>
                           Retake Quiz ({quizResult.attemptsLeft} left)
                         </button>
                       ) : (
-                        <span className="text-[#8A9E8C]">No attempts left. Contact your instructor.</span>
+                        <span className="text-[#8A9E8C] text-xs">No attempts left. Contact your instructor.</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="font-serif text-2xl text-[#1A261D]">Review Answers</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <h3 className="font-serif text-[#1A261D]" style={{ fontSize: '1.25rem', margin: 0 }}>Review Answers</h3>
                     {quizResult.results.map((r: any, i: number) => (
-                      <div key={i} className="rounded-[28px] border border-[#E4E8E0] bg-white p-6 shadow-sm">
-                        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start mb-4">
-                          <span className="text-sm font-semibold text-[#8A9E8C]">Question {i + 1}</span>
-                          <span className="rounded-full bg-[#F7F8F5] px-3 py-1 text-xs uppercase tracking-[0.22em] text-[#4A8C5C]">
+                      <div key={i} className="rounded-[20px] border border-[#E4E8E0] bg-white shadow-sm" style={{ padding: '1.25rem' }}>
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start" style={{ marginBottom: '0.75rem', gap: '0.5rem' }}>
+                          <span className="text-xs font-semibold text-[#8A9E8C]">Question {i + 1}</span>
+                          <span className="rounded-full bg-[#FAFAF7] text-[10px] uppercase tracking-[0.2em] text-[#4A8C5C]" style={{ padding: '4px 8px' }}>
                             {r.isCorrect ? 'Correct' : 'Incorrect'}
                           </span>
                         </div>
-                        <p className="text-[#1A261D] text-lg mb-4">{r.questionText}</p>
-                        <div className="space-y-3 text-sm">
-                          <div className="rounded-3xl bg-[#F7F8F5] border border-[#E4E8E0] p-4">
-                            <p className="text-[#8A9E8C] mb-2">Your Answer</p>
-                            <div className="flex items-center gap-2 text-[#1A261D]">
-                              {r.isCorrect ? <CheckCircle className="w-4 h-4 text-[#4A8C5C]" /> : <XCircle className="w-4 h-4 text-[#8C3A3A]" />}
+                        <p className="text-[#1A261D]" style={{ fontSize: '1rem', marginBottom: '1rem' }}>{r.questionText}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem' }}>
+                          <div className="rounded-[12px] bg-[#FAFAF7] border border-[#E4E8E0]" style={{ padding: '12px' }}>
+                            <p className="text-[#8A9E8C] text-[10px] uppercase" style={{ marginBottom: '0.5rem' }}>Your Answer</p>
+                            <div className="flex items-center text-[#1A261D]" style={{ gap: '0.5rem' }}>
+                              {r.isCorrect ? <CheckCircle className="text-[#4A8C5C]" style={{ width: '1rem', height: '1rem' }} /> : <XCircle className="text-[#8C3A3A]" style={{ width: '1rem', height: '1rem' }} />}
                               <span className={r.isCorrect ? 'font-semibold text-[#4A8C5C]' : 'line-through text-[#8C3A3A]'}>{r.yourAnswer || 'No answer'}</span>
                             </div>
                           </div>
                           {!r.isCorrect && r.correctAnswer && (
-                            <div className="rounded-3xl bg-[#EBF7ED] border border-[#D1E7D1] p-4">
-                              <p className="text-[#4A8C5C] mb-2">Correct Answer</p>
-                              <p className="font-semibold text-[#1A261D]">{r.correctAnswer}</p>
+                            <div className="rounded-[12px] bg-[#EBF7ED] border border-[#D1E7D1]" style={{ padding: '12px' }}>
+                              <p className="text-[#4A8C5C] text-[10px] uppercase" style={{ marginBottom: '0.5rem' }}>Correct Answer</p>
+                              <p className="font-semibold text-[#1A261D]" style={{ margin: 0 }}>{r.correctAnswer}</p>
                             </div>
                           )}
                         </div>
@@ -718,7 +860,7 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-12 md:px-20 z-30">
+      <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-12 md:px-20 z-30 sticky bottom-0">
         <button
           disabled={!previousLesson}
           onClick={() => previousLesson && goToLesson(previousLesson.id)}

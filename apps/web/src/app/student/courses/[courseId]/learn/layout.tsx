@@ -127,7 +127,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif", overflow: "hidden" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       <style>{`
         .course-sidebar-scroll::-webkit-scrollbar {
           width: 6px;
@@ -146,9 +146,10 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
       {/* SIDEBAR */}
       <aside 
-        className={`fixed md:static inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed md:sticky inset-y-0 left-0 top-0 z-40 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
           width: "320px",
+          height: "100vh",
           background: "linear-gradient(180deg, #0f172a 0%, #020617 100%)",
           display: "flex",
           flexDirection: "column",
@@ -442,7 +443,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
       )}
 
       {/* Main column */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative" }}>
 
         {/* ── Top bar ──────────────────────────────── */}
         <header
@@ -517,7 +518,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
         </header>
 
         {/* ── Page Content ─────────────────────────── */}
-        <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
+        <main style={{ flex: 1, position: "relative" }}>
           {selectedMaterial ? (
             <div style={{ padding: "24px", minHeight: "100%", background: "#FFFFFF" }}>
               <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: "28px", marginBottom: "16px", color: "#1A261D" }}>

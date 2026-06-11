@@ -54,7 +54,7 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
             include: {
               lessons: {
                 orderBy: { order: "asc" },
-                include: { quiz: { select: { id: true } }, assignment: { select: { id: true } } }
+                include: { quiz: true, assignment: true }
               },
               readingMaterials: {
                 orderBy: { order: "asc" },
