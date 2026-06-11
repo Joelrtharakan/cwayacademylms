@@ -24,7 +24,7 @@ export class AuthController {
     res.cookie("cway_refresh", refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -46,7 +46,7 @@ export class AuthController {
     res.cookie("cway_refresh", refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -65,7 +65,7 @@ export class AuthController {
     res.clearCookie("cway_refresh", {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "strict",
+      sameSite: "none",
     });
 
     res.status(200).json({ status: "success", message: "Logged out" });

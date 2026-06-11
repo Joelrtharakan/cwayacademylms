@@ -44,10 +44,12 @@ const router = (0, express_1.Router)();
 const upload = (0, multer_1.default)(); // Mock multer since S3 integration handles real uploads elsewhere, or use it for parsing multipart forms
 router.use(authenticate_1.authenticate);
 // Progress
+router.post("/enrollments", studentCtrl.enrollInCourse);
 router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
 router.get("/enrollments/:enrollmentId/progress", studentCtrl.getProgress);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/complete", studentCtrl.completeLesson);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/progress", studentCtrl.saveWatchProgress);
+router.post("/enrollments/:enrollmentId/reading-materials/:materialId/complete", studentCtrl.completeReadingMaterial);
 // Quizzes
 router.get("/quizzes/:quizId/my-attempts", studentCtrl.getMyQuizAttempts);
 router.post("/quizzes/:quizId/attempt", studentCtrl.attemptQuiz);

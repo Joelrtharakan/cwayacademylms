@@ -46,15 +46,23 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
     where: { studentId_courseId: { studentId, courseId } },
     include: {
       lessonProgress: true,
+      readingMaterialProgress: true,
       course: {
         include: {
           sections: {
             orderBy: { order: "asc" },
-            include: { 
-              lessons: { 
+            include: {
+              lessons: {
                 orderBy: { order: "asc" },
                 include: { quiz: { select: { id: true } }, assignment: { select: { id: true } } }
-              } 
+              },
+              readingMaterials: {
+                orderBy: { order: "asc" },
+              },
+              discussions: {
+                orderBy: { createdAt: "asc" },
+                include: { author: { select: { id: true, name: true } } }
+              }
             }
           }
         }
@@ -73,6 +81,13 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
         ...lesson,
         isCompleted: !!prog?.completedAt,
         watchedSeconds: prog?.watchedSeconds || 0
+      };
+    }),
+    readingMaterials: section.readingMaterials.map(material => {
+      const materialProg = enrollment.readingMaterialProgress.find(rmp => rmp.readingMaterialId === material.id);
+      return {
+        ...material,
+        isCompleted: !!materialProg?.completedAt
       };
     })
   }));
@@ -235,6 +250,27 @@ export const completeLesson = asyncHandler(async (req: Request, res: Response) =
       courseCompleted
     }
   });
+});
+
+export const completeReadingMaterial = asyncHandler(async (req: Request, res: Response) => {
+  const { enrollmentId, materialId } = req.params;
+  const studentId = req.user!.id;
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId }
+  });
+  if (!enrollment || enrollment.studentId !== studentId) throw new AppError("Unauthorized", 403);
+
+  const material = await prisma.readingMaterial.findUnique({ where: { id: materialId } });
+  if (!material) throw new AppError("Reading material not found", 404);
+
+  const progress = await prisma.readingMaterialProgress.upsert({
+    where: { enrollmentId_readingMaterialId: { enrollmentId, readingMaterialId: materialId } },
+    update: { completedAt: new Date() },
+    create: { enrollmentId, readingMaterialId: materialId, completedAt: new Date() }
+  });
+
+  res.json({ status: "success", data: { progress, completed: true } });
 });
 
 export const saveWatchProgress = asyncHandler(async (req: Request, res: Response) => {

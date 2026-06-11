@@ -79,11 +79,7 @@ router.put("/sections/:sectionId/lessons/reorder", authenticate_1.authenticate, 
 router.post("/lessons/:lessonId/upload-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("video"), CC.uploadLessonVideo);
 router.get("/lessons/:lessonId/video-status", authenticate_1.authenticate, CC.getLessonVideoStatus);
 router.post("/lessons/:lessonId/upload-attachment", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("attachment"), CC.uploadLessonAttachment);
-// Assignment
-router.post("/lessons/:lessonId/assignment", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createAssignment);
-router.put("/assignments/:assignmentId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.updateAssignment);
-router.get("/assignments/:assignmentId/submissions", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getAssignmentSubmissions);
-router.put("/submissions/:submissionId/grade", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.gradeSubmission);
+// Removed duplicate Assignment routes; Phase 4 implementation below handles these.
 // Forum
 router.get("/courses/:id/forum/posts", authenticate_1.authenticate, CC.getForumPosts);
 router.post("/courses/:id/forum/posts", authenticate_1.authenticate, CC.createForumPost);

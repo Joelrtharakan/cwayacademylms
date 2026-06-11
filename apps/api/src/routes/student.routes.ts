@@ -14,6 +14,7 @@ router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
 router.get("/enrollments/:enrollmentId/progress", studentCtrl.getProgress);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/complete", studentCtrl.completeLesson);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/progress", studentCtrl.saveWatchProgress);
+router.post("/enrollments/:enrollmentId/reading-materials/:materialId/complete", studentCtrl.completeReadingMaterial);
 
 // Quizzes
 router.get("/quizzes/:quizId/my-attempts", studentCtrl.getMyQuizAttempts);

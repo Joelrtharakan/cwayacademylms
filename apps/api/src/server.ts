@@ -22,7 +22,13 @@ const app = express();
 const PORT = process.env.API_PORT || 4000;
 
 // Security Middlewares
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
+    frameguard: false,
+  })
+);
 app.use(
   cors({
     origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",

@@ -23,7 +23,11 @@ const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
 const PORT = process.env.API_PORT || 4000;
 // Security Middlewares
-app.use((0, helmet_1.default)({ crossOriginResourcePolicy: false }));
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
+    frameguard: false,
+}));
 app.use((0, cors_1.default)({
     origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     credentials: true,

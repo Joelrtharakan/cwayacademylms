@@ -19,7 +19,16 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<Record<string, string>>({}); // moduleId -> tabName
+  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+
+  useEffect(() => {
+    setSelectedMaterial(null);
+  }, [courseId, lessonId]);
+
+  const sectionLookup = enrollment?.course?.sections?.reduce((acc: any, section: any) => {
+    acc[section.id] = section;
+    return acc;
+  }, {} as Record<string, any>) || {};
 
   useEffect(() => {
     // Fetch enrollment and progress
@@ -44,12 +53,15 @@ export default function CoursePlayerLayout({ children }: { children: React.React
           // Expand first if no lesson
           setExpandedModules({ [enr.course.sections[0].id]: true });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load course player data", err);
+        if (err?.response?.status === 401) {
+          router.push("/login");
+        }
       }
     };
     fetchData();
-  }, [courseId, lessonId]);
+  }, [courseId, lessonId, router]);
 
   if (!enrollment || !progress) {
     return (
@@ -86,8 +98,30 @@ export default function CoursePlayerLayout({ children }: { children: React.React
     setExpandedModules(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const setTab = (moduleId: string, tab: string) => {
-    setActiveTab(prev => ({ ...prev, [moduleId]: tab }));
+  const markReadingMaterialComplete = async (materialId: string) => {
+    if (!enrollment) return;
+    try {
+      await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${materialId}/complete`);
+      setEnrollment((prev: any) => {
+        if (!prev) return prev;
+        const updated = { ...prev };
+        updated.course = {
+          ...updated.course,
+          sections: updated.course.sections.map((sec: any) => ({
+            ...sec,
+            readingMaterials: sec.readingMaterials.map((mat: any) =>
+              mat.id === materialId ? { ...mat, isCompleted: true } : mat
+            )
+          }))
+        };
+        return updated;
+      });
+      if (selectedMaterial?.id === materialId) {
+        setSelectedMaterial((prev: any) => prev ? { ...prev, isCompleted: true } : prev);
+      }
+    } catch (err) {
+      console.error("Failed to mark reading material complete", err);
+    }
   };
 
   return (
@@ -224,7 +258,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             const isExpanded = expandedModules[mod.moduleId];
             const isAllComplete = mod.completedLessons === mod.totalLessons && mod.totalLessons > 0;
             const isSomeComplete = mod.completedLessons > 0 && mod.completedLessons < mod.totalLessons;
-            const tab = activeTab[mod.moduleId] || "lessons";
+            const section = sectionLookup[mod.moduleId];
+            const materials = section?.readingMaterials || [];
 
             return (
               <div key={mod.moduleId} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
@@ -259,73 +294,129 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
                 {isExpanded && (
                   <div style={{ background: "rgba(0,0,0,0.2)", paddingBottom: "12px" }}>
-                    <div style={{ display: "flex", padding: "0 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", gap: "16px", overflowX: "auto" }}>
-                      {["lessons", "readings", "assignments", "quizzes"].map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => setTab(mod.moduleId, t)}
-                          style={{
-                            background: "none", border: "none", borderBottom: `2px solid ${tab === t ? "#D4A35B" : "transparent"}`,
-                            padding: "10px 0 8px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-                            color: tab === t ? "#D4A35B" : "rgba(255,255,255,0.4)", cursor: "pointer", transition: "all 0.2s"
-                          }}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-
                     <div style={{ padding: "8px 12px" }}>
-                      {tab === "lessons" && mod.lessons.map((lesson: any) => {
-                        const isActive = lesson.lessonId === lessonId;
-                        let Icon = FileText;
-                        if (lesson.type === "VIDEO") Icon = PlayCircle;
-                        if (lesson.type === "QUIZ") Icon = HelpCircle;
-                        if (lesson.type === "ASSIGNMENT") Icon = ClipboardCheck;
+                      {(() => {
+                        const videoLessons = mod.lessons.filter((lesson: any) => lesson.type === "VIDEO");
+                        const quizLessons = mod.lessons.filter((lesson: any) => lesson.type === "QUIZ");
+                        const assignmentLessons = mod.lessons.filter((lesson: any) => lesson.type === "ASSIGNMENT");
+                        const otherLessons = mod.lessons.filter((lesson: any) => !["VIDEO", "QUIZ", "ASSIGNMENT"].includes(lesson.type));
+                        const orderedItems = [
+                          ...videoLessons,
+                          ...materials.map((material: any) => ({ ...material, itemType: "READING_MATERIAL" })),
+                          ...quizLessons,
+                          ...assignmentLessons,
+                          ...otherLessons,
+                        ];
 
-                        return (
-                          <Link 
-                            key={lesson.lessonId}
-                            href={`/student/courses/${courseId}/learn/${lesson.lessonId}`}
-                            style={{
-                              display: "flex", alignItems: "flex-start", gap: "12px", padding: "10px 12px", borderRadius: "8px",
-                              textDecoration: "none", position: "relative",
-                              background: isActive ? "rgba(184,134,69,0.18)" : "transparent",
-                              marginBottom: "4px"
-                            }}
-                          >
-                            {isActive && (
-                              <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: "3px", background: "#D4A35B", borderRadius: "0 4px 4px 0" }} />
-                            )}
-                            <Icon size={16} style={{ marginTop: "2px", color: isActive ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ 
-                                fontSize: "13px", fontWeight: isActive ? 600 : 500, 
-                                color: isActive ? "#D4A35B" : lesson.isCompleted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)", 
-                                textDecoration: lesson.isCompleted && !isActive ? "line-through" : "none"
-                              }}>
-                                {lesson.lessonTitle}
-                              </div>
-                            </div>
-                            <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-                              {lesson.isCompleted ? (
-                                <CheckCircle size={16} style={{ color: "#4A8C5C" }} />
-                              ) : isActive ? (
-                                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid #D4A35B", position: "relative" }}>
-                                  <div style={{ position: "absolute", inset: 2, background: "#D4A35B", borderRadius: "50%", opacity: 0.5 }} />
+                        return orderedItems.map((item: any) => {
+                          if (item.itemType === "READING_MATERIAL") {
+                            return (
+                              <div
+                                key={`material-${item.id}`}
+                                onClick={() => setSelectedMaterial(item)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  gap: "12px",
+                                  padding: "10px 12px",
+                                  borderRadius: "8px",
+                                  width: "100%",
+                                  textAlign: "left",
+                                  background: selectedMaterial?.id === item.id ? "rgba(212,163,91,0.2)" : "rgba(255,255,255,0.08)",
+                                  color: "rgba(255,255,255,0.9)",
+                                  cursor: "pointer",
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: 0 }}>
+                                  <FileText size={16} style={{ marginTop: "2px", color: selectedMaterial?.id === item.id ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: "13px", fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>
+                                      {item.title}
+                                    </div>
+                                    {item.description && (
+                                      <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.65)", marginTop: "4px" }}>
+                                        {item.description}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              ) : (
-                                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.2)" }} />
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {item.isCompleted ? (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "#A5F3FC" }}>
+                                      <CheckCircle size={14} /> Completed
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        markReadingMaterialComplete(item.id);
+                                      }}
+                                      style={{
+                                        padding: "8px 12px",
+                                        borderRadius: "999px",
+                                        background: "rgba(212,163,91,0.18)",
+                                        border: "1px solid rgba(212,163,91,0.35)",
+                                        color: "#FDFBF7",
+                                        cursor: "pointer",
+                                        fontSize: "11px",
+                                        fontWeight: 700
+                                      }}
+                                    >
+                                      Mark complete
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          const isActive = item.lessonId === lessonId;
+                          let Icon = FileText;
+                          if (item.type === "VIDEO") Icon = PlayCircle;
+                          if (item.type === "QUIZ") Icon = HelpCircle;
+                          if (item.type === "ASSIGNMENT") Icon = ClipboardCheck;
+
+                          return (
+                            <Link
+                              key={item.lessonId}
+                              href={`/student/courses/${courseId}/learn/${item.lessonId}`}
+                              style={{
+                                display: "flex", alignItems: "flex-start", gap: "12px", padding: "10px 12px", borderRadius: "8px",
+                                textDecoration: "none", position: "relative",
+                                background: isActive ? "rgba(184,134,69,0.18)" : "transparent",
+                                marginBottom: "4px"
+                              }}
+                            >
+                              {isActive && (
+                                <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: "3px", background: "#D4A35B", borderRadius: "0 4px 4px 0" }} />
                               )}
-                            </div>
-                          </Link>
-                        );
-                      })}
-                      {tab !== "lessons" && (
-                        <div style={{ padding: "16px", textAlign: "center", fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>
-                          No {tab} in this module.
-                        </div>
-                      )}
+                              <Icon size={16} style={{ marginTop: "2px", color: isActive ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{
+                                  fontSize: "13px", fontWeight: isActive ? 600 : 500,
+                                  color: isActive ? "#D4A35B" : item.isCompleted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)",
+                                  textDecoration: item.isCompleted && !isActive ? "line-through" : "none"
+                                }}>
+                                  {item.lessonTitle}
+                                </div>
+                              </div>
+                              <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
+                                {item.isCompleted ? (
+                                  <CheckCircle size={16} style={{ color: "#4A8C5C" }} />
+                                ) : isActive ? (
+                                  <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid #D4A35B", position: "relative" }}>
+                                    <div style={{ position: "absolute", inset: 2, background: "#D4A35B", borderRadius: "50%", opacity: 0.5 }} />
+                                  </div>
+                                ) : (
+                                  <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.2)" }} />
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 )}
@@ -421,7 +512,73 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
         {/* ── Page Content ─────────────────────────── */}
         <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
-          {children}
+          {selectedMaterial ? (
+            <div style={{ padding: "24px", minHeight: "100%", background: "#FFFFFF" }}>
+              <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: "28px", marginBottom: "16px", color: "#1A261D" }}>
+                {selectedMaterial.title}
+              </h1>
+              {selectedMaterial.description && (
+                <p style={{ fontSize: "15px", color: "#4B5563", marginBottom: "20px" }}>{selectedMaterial.description}</p>
+              )}
+              {selectedMaterial.fileType?.includes("pdf") || selectedMaterial.fileUrl?.toLowerCase().endsWith(".pdf") ? (
+                <iframe
+                  src={selectedMaterial.fileUrl}
+                  title={selectedMaterial.title}
+                  style={{ width: "100%", height: "calc(100vh - 260px)", border: "1px solid #E5E7EB", borderRadius: "16px" }}
+                />
+              ) : (
+                <div style={{ padding: "24px", borderRadius: "16px", border: "1px solid #E5E7EB", background: "#F8FAFC" }}>
+                  <p style={{ fontSize: "15px", color: "#374151", marginBottom: "16px" }}>
+                    This material cannot be previewed inside the player. You can download it instead.
+                  </p>
+                  <a href={selectedMaterial.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "12px 18px", background: "#D4A35B", color: "#1A261D", borderRadius: "999px", fontWeight: 700, textDecoration: "none" }}>
+                    Open / Download
+                  </a>
+                </div>
+              )}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "22px" }}>
+                <button
+                  onClick={() => {
+                    setSelectedMaterial(null);
+                    router.refresh();
+                  }}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: "999px",
+                    background: "#1A261D",
+                    border: "none",
+                    color: "#FFFFFF",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  Back to lesson
+                </button>
+                {selectedMaterial.isCompleted ? (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 18px", borderRadius: "999px", background: "rgba(39, 163, 138, 0.12)", color: "#155E75", fontWeight: 700, fontSize: "13px" }}>
+                    <CheckCircle size={16} /> Reading marked complete
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => markReadingMaterialComplete(selectedMaterial.id)}
+                    style={{
+                      padding: "12px 18px",
+                      borderRadius: "999px",
+                      background: "#D4A35B",
+                      border: "none",
+                      color: "#FFFFFF",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Mark this reading complete
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
 
         {/* NOTES PANEL OVERLAY */}

@@ -1,6 +1,7 @@
 generator client {
   provider   = "prisma-client-js"
   engineType = "library"
+  output     = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -185,7 +186,8 @@ model Enrollment {
   payment       Payment?  @relation(fields: [paymentId], references: [id])
   sponsorshipId String?
 
-  lessonProgress LessonProgress[]
+  lessonProgress          LessonProgress[]
+  readingMaterialProgress ReadingMaterialProgress[]
 
   @@unique([studentId, courseId])
   @@index([studentId])
@@ -503,6 +505,19 @@ model ReadingMaterial {
   fileSize    Int
   order       Int      @default(0)
   createdAt   DateTime @default(now())
+
+  progress    ReadingMaterialProgress[]
+}
+
+model ReadingMaterialProgress {
+  id                String          @id @default(cuid())
+  enrollmentId      String
+  enrollment        Enrollment      @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  readingMaterialId String
+  readingMaterial   ReadingMaterial @relation(fields: [readingMaterialId], references: [id], onDelete: Cascade)
+  completedAt       DateTime?
+
+  @@unique([enrollmentId, readingMaterialId])
 }
 
 model Announcement {

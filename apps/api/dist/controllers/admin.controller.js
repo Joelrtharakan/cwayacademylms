@@ -399,7 +399,7 @@ exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.updateInstructorPayout = (0, errors_1.asyncHandler)(async (req, res) => {
     const { percentage } = req.body;
-    if (typeof percentage !== "number" || percentage < 0 || percentage > 100) {
+    if (typeof percentage !== "number" || isNaN(percentage) || percentage < 0 || percentage > 100) {
         throw new errors_1.AppError("Percentage must be a number between 0 and 100", 400);
     }
     const user = await prisma_1.prisma.user.update({

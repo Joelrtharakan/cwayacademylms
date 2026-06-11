@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/store/auth.store";
-import ReactPlayer from "react-player";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar } from "lucide-react";
 
 export default function LessonPlayerPage() {
@@ -28,6 +27,9 @@ export default function LessonPlayerPage() {
   const [quizAnswers, setQuizAnswers] = useState<any>({});
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [quizResult, setQuizResult] = useState<any>(null);
+  const lastSavedSecond = useRef<number>(0);
+
+  const readingMaterials = lesson?.section?.readingMaterials || [];
 
   // For assignments
   const [assignmentSub, setAssignmentSub] = useState<any>(null);
@@ -88,6 +90,18 @@ export default function LessonPlayerPage() {
     }
   };
 
+  const allLessons = enrollment?.course?.sections?.flatMap((section: any) =>
+    section.lessons.map((lessonItem: any) => ({ ...lessonItem, section }))
+  ) ?? [];
+
+  const currentLessonIndex = lesson ? allLessons.findIndex((item: any) => item.id === lesson.id) : -1;
+  const previousLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
+  const nextLesson = currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1 ? allLessons[currentLessonIndex + 1] : null;
+
+  const goToLesson = (targetLessonId: string) => {
+    router.push(`/student/courses/${courseId}/learn/${targetLessonId}`);
+  };
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== "https://iframe.mediadelivery.net") return;
@@ -112,16 +126,30 @@ export default function LessonPlayerPage() {
   }
 
   const handleVideoProgress = async (state: any) => {
-    if (!lesson.isCompleted && state.playedSeconds > 0 && state.playedSeconds % 10 < 1) {
-      try {
-        await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/progress`, {
-          watchedSeconds: Math.floor(state.playedSeconds)
-        });
-      } catch (err) {}
+    if (!lesson.isCompleted && state.playedSeconds > 0) {
+      const watchedSeconds = Math.floor(state.playedSeconds);
+      if (watchedSeconds % 10 === 0 && watchedSeconds !== lastSavedSecond.current) {
+        lastSavedSecond.current = watchedSeconds;
+        try {
+          await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/progress`, {
+            watchedSeconds
+          });
+        } catch (err) {}
+      }
     }
-    // Auto complete at 80%
-    if (state.played >= 0.8 && !lesson.isCompleted) {
-      markComplete();
+  };
+
+  const handleVideoTimeUpdate = async (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (!lesson.isCompleted) {
+      const currentTime = Math.floor((event.target as HTMLVideoElement).currentTime);
+      if (currentTime > 0 && currentTime - lastSavedSecond.current >= 10) {
+        lastSavedSecond.current = currentTime;
+        try {
+          await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/progress`, {
+            watchedSeconds: currentTime
+          });
+        } catch (err) {}
+      }
     }
   };
 
@@ -151,6 +179,10 @@ export default function LessonPlayerPage() {
     }
   };
 
+  const nextButtonClasses = lesson?.isCompleted
+    ? "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent"
+    : "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB] cursor-not-allowed";
+
   return (
     <div className="w-full h-full flex flex-col relative">
       <div className="flex-1 overflow-y-auto custom-scrollbar relative">
@@ -159,31 +191,28 @@ export default function LessonPlayerPage() {
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
             <div className="w-full h-full relative max-w-7xl mx-auto flex items-center justify-center">
               {lesson.videoUrl ? (
-                hasMounted && (
-                  lesson.videoUrl.includes('youtu') ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${
-                        lesson.videoUrl.includes('youtu.be/') 
-                          ? lesson.videoUrl.split('youtu.be/')[1].split('?')[0] 
-                          : lesson.videoUrl.split('v=')[1]?.split('&')[0]
-                      }?rel=0`}
-                      title={lesson.title}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center [&>div]:!w-full [&>div]:!h-full">
-                      <ReactPlayer 
-                        url={lesson.videoUrl.trim()} 
-                        width="100%" 
-                        height="100%" 
-                        controls 
-                        onProgress={handleVideoProgress}
-                        onEnded={markComplete}
-                      />
-                    </div>
-                  )
+                lesson.videoUrl.includes('youtu') ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${
+                      lesson.videoUrl.includes('youtu.be/')
+                        ? lesson.videoUrl.split('youtu.be/')[1].split('?')[0]
+                        : lesson.videoUrl.split('v=')[1]?.split('&')[0]
+                    }?rel=0&modestbranding=1`}
+                    title={lesson.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={lesson.videoUrl.trim()}
+                    controls
+                    playsInline
+                    poster={lesson.thumbnail || undefined}
+                    className="w-full h-full object-contain"
+                    onTimeUpdate={handleVideoTimeUpdate}
+                    onEnded={markComplete}
+                  />
                 )
               ) : lesson.bunnyVideoId ? (
                 <iframe
@@ -199,6 +228,19 @@ export default function LessonPlayerPage() {
                 </div>
               )}
             </div>
+            {!lesson.isCompleted && (
+              <div className="max-w-7xl mx-auto mt-4 px-4 md:px-0 flex flex-col items-center gap-2 text-center">
+                <button
+                  onClick={markComplete}
+                  className="px-6 py-3 bg-[#C9973A] text-[#1A261D] rounded-full font-semibold shadow-sm hover:bg-[#A8792A] transition-colors"
+                >
+                  Mark Lesson Complete
+                </button>
+                <p className="text-xs text-[#F3F4F6]/90 max-w-xl">
+                  If the video does not auto-complete, press this button after you have watched the full lesson.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -231,6 +273,36 @@ export default function LessonPlayerPage() {
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {readingMaterials.length > 0 && (
+          <div className="max-w-3xl mx-auto py-10 px-6 md:px-12">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <p className="text-sm uppercase tracking-wider text-[#8A9E8C]">Reading Materials</p>
+                <h2 className="text-2xl font-semibold text-[#1A261D]">Recommended materials</h2>
+              </div>
+            </div>
+            <div className="grid gap-4">
+              {readingMaterials.map((material: any) => (
+                <a
+                  key={material.id}
+                  href={material.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group block rounded-3xl border border-[#E5E7EB] bg-white p-5 text-left hover:border-[#C9973A] transition-all"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1A261D]">{material.title}</h3>
+                      {material.description && <p className="mt-2 text-sm text-[#6B7280]">{material.description}</p>}
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.18em] text-[#C9973A] font-semibold">View</span>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         )}
@@ -556,16 +628,22 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-4 md:px-8 z-30">
-        <button className="text-[#8A9E8C] hover:text-[#C9973A] flex items-center gap-2 text-sm font-semibold transition-colors px-6 py-2">
+      <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-12 md:px-20 z-30">
+        <button
+          disabled={!previousLesson}
+          onClick={() => previousLesson && goToLesson(previousLesson.id)}
+          className="bg-[#F7E3B7] text-[#4A3F1F] border border-[#E0C17A] hover:bg-[#F2D685] flex items-center gap-2 text-sm font-semibold transition-colors px-7 py-3 rounded-full shadow-sm shadow-[#D8B657]/20 mr-4 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">Previous Lesson</span>
         </button>
         <div className="text-xs text-[#8A9E8C] font-medium tracking-wide">
           Module · Lesson
         </div>
         <button 
-          disabled={!lesson.isCompleted}
-          className="px-6 py-2 bg-transparent border border-[#C9973A] text-[#C9973A] hover:bg-[#C9973A] hover:text-[#1A261D] rounded-md text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-[#E4E8E0] disabled:text-[#8A9E8C] disabled:hover:bg-transparent"
+          disabled={!lesson.isCompleted || !nextLesson}
+          onClick={() => nextLesson && goToLesson(nextLesson.id)}
+          title={!lesson.isCompleted ? "Watch the full video to unlock the next lesson" : "Continue to next lesson"}
+          className={`${nextButtonClasses} ml-4`}
         >
           Next Lesson <ArrowRight className="w-4 h-4" />
         </button>

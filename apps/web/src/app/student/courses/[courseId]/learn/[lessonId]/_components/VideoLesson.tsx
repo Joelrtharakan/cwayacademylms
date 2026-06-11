@@ -36,16 +36,11 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
         const currentSeconds = videoRef.current?.currentTime || 0;
         if (currentSeconds > 0) {
           progressMutation.mutate(Math.floor(currentSeconds));
-          
-          // Auto complete if 80% watched
-          if (lesson.duration && currentSeconds >= lesson.duration * 0.8) {
-            completeMutation.mutate();
-          }
         }
       }, 10000); // Save progress every 10 seconds
     }
     return () => clearInterval(interval);
-  }, [lesson.id, lesson.duration, completed, markedThisSession, completeMutation, progressMutation]);
+  }, [lesson.id, completed, markedThisSession, progressMutation]);
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
@@ -89,6 +84,7 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
               ref={videoRef}
               src={lesson.videoUrl} 
               controls 
+              onEnded={() => completeMutation.mutate()}
               style={{ width: "100%", height: "100%", objectFit: "contain" }}
               poster={lesson.thumbnail || undefined}
             />

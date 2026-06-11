@@ -1,12 +1,37 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = void 0;
+exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const certificate_service_1 = require("../services/certificate.service");
 // ==========================================
 // PROGRESS TRACKING
 // ==========================================
+exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { courseId } = req.body;
+    const studentId = req.user.id;
+    if (!courseId)
+        throw new errors_1.AppError("Course ID is required", 400);
+    const course = await prisma_1.prisma.course.findUnique({ where: { id: courseId } });
+    if (!course || course.status !== "PUBLISHED") {
+        throw new errors_1.AppError("Course not found or not available", 404);
+    }
+    const existing = await prisma_1.prisma.enrollment.findUnique({
+        where: { studentId_courseId: { studentId, courseId } }
+    });
+    if (existing) {
+        throw new errors_1.AppError("You are already enrolled in this course", 400);
+    }
+    const enrollment = await prisma_1.prisma.enrollment.create({
+        data: {
+            studentId,
+            courseId,
+            status: "ACTIVE",
+            progress: 0
+        }
+    });
+    res.status(201).json({ status: "success", data: enrollment });
+});
 exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { courseId } = req.params;
     const studentId = req.user.id;
@@ -14,6 +39,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { studentId_courseId: { studentId, courseId } },
         include: {
             lessonProgress: true,
+            readingMaterialProgress: true,
             course: {
                 include: {
                     sections: {
@@ -22,6 +48,13 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
                             lessons: {
                                 orderBy: { order: "asc" },
                                 include: { quiz: { select: { id: true } }, assignment: { select: { id: true } } }
+                            },
+                            readingMaterials: {
+                                orderBy: { order: "asc" },
+                            },
+                            discussions: {
+                                orderBy: { createdAt: "asc" },
+                                include: { author: { select: { id: true, name: true } } }
                             }
                         }
                     }
@@ -40,6 +73,13 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
                 ...lesson,
                 isCompleted: !!prog?.completedAt,
                 watchedSeconds: prog?.watchedSeconds || 0
+            };
+        }),
+        readingMaterials: section.readingMaterials.map(material => {
+            const materialProg = enrollment.readingMaterialProgress.find(rmp => rmp.readingMaterialId === material.id);
+            return {
+                ...material,
+                isCompleted: !!materialProg?.completedAt
             };
         })
     }));
@@ -183,6 +223,24 @@ exports.completeLesson = (0, errors_1.asyncHandler)(async (req, res) => {
             courseCompleted
         }
     });
+});
+exports.completeReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { enrollmentId, materialId } = req.params;
+    const studentId = req.user.id;
+    const enrollment = await prisma_1.prisma.enrollment.findUnique({
+        where: { id: enrollmentId }
+    });
+    if (!enrollment || enrollment.studentId !== studentId)
+        throw new errors_1.AppError("Unauthorized", 403);
+    const material = await prisma_1.prisma.readingMaterial.findUnique({ where: { id: materialId } });
+    if (!material)
+        throw new errors_1.AppError("Reading material not found", 404);
+    const progress = await prisma_1.prisma.readingMaterialProgress.upsert({
+        where: { enrollmentId_readingMaterialId: { enrollmentId, readingMaterialId: materialId } },
+        update: { completedAt: new Date() },
+        create: { enrollmentId, readingMaterialId: materialId, completedAt: new Date() }
+    });
+    res.json({ status: "success", data: { progress, completed: true } });
 });
 exports.saveWatchProgress = (0, errors_1.asyncHandler)(async (req, res) => {
     const { enrollmentId, lessonId } = req.params;
