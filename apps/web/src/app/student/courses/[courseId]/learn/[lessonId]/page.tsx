@@ -285,8 +285,12 @@ export default function LessonPlayerPage() {
     }
     
     if (!nextItem) {
-      toast.success("Congratulations! You have completed the course.", { duration: 5000 });
-      router.push(`/student/dashboard`);
+      if (enrollment.completedAt || enrollment.status === "COMPLETED") {
+        router.push(`/student/dashboard`);
+      } else {
+        toast.success("Congratulations! You have completed the course.", { duration: 5000 });
+        router.push(`/student/dashboard`);
+      }
       return;
     }
     
@@ -1383,10 +1387,10 @@ export default function LessonPlayerPage() {
         </div>
         <button 
           onClick={handleNext}
-          title={nextLesson ? "Continue to next lesson" : "You have reached the end of the course"}
+          title={nextLesson ? "Continue to next lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Return to Dashboard" : "You have reached the end of the course")}
           className={`${nextButtonClasses} ml-4`}
         >
-          {nextLesson ? "Next Lesson" : "End of Course"} <ArrowRight className="w-4 h-4" />
+          {nextLesson ? "Next Lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Exit Course" : "End of Course")} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

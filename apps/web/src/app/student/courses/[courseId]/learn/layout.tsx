@@ -20,6 +20,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+  const [courseGrade, setCourseGrade] = useState<any>(null);
+  const [isGradeExpanded, setIsGradeExpanded] = useState(false);
 
   const [myNotes, setMyNotes] = useState<any[]>([]);
   const [noteInput, setNoteInput] = useState("");
@@ -65,6 +67,13 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
         const progResp = await api.get(`/student/enrollments/${enr.id}/progress`);
         setProgress(progResp.data.data);
+
+        try {
+          const gradeResp = await api.get(`/student/courses/${courseId}/grade`);
+          setCourseGrade(gradeResp.data.data);
+        } catch (e) {
+          console.error("Failed to fetch course grade", e);
+        }
         
         // Auto-expand module containing current lesson
         if (lessonId && enr.course.sections) {
@@ -278,6 +287,42 @@ export default function CoursePlayerLayout({ children }: { children: React.React
           <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "6px" }}>
             {progress.completedItems} of {progress.totalItems} items completed
           </div>
+
+          {courseGrade && courseGrade.totalMaxGraded > 0 && (
+            <div style={{ marginTop: "16px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+              <div 
+                onClick={() => setIsGradeExpanded(!isGradeExpanded)}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", cursor: "pointer", transition: "background 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" }}>Total Grade</span>
+                  <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>{courseGrade.totalEarned} / {courseGrade.totalMaxGraded} Pts</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "16px", fontWeight: 700, color: "#10B981" }}>{courseGrade.grade}%</span>
+                  {courseGrade.items && courseGrade.items.length > 0 && (
+                    <ChevronDown size={14} color="rgba(255,255,255,0.4)" style={{ transform: isGradeExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                  )}
+                </div>
+              </div>
+              
+              {isGradeExpanded && courseGrade.items && courseGrade.items.length > 0 && (
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "10px 12px", background: "rgba(0,0,0,0.15)" }}>
+                  <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>Grade Breakdown</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {courseGrade.items.filter((i: any) => i.score !== null && i.score !== undefined).map((item: any, idx: number) => (
+                      <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px" }}>
+                        <span style={{ color: "rgba(255,255,255,0.6)", textTransform: "capitalize" }}>{item.type.toLowerCase()}</span>
+                        <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>{item.score} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>/ {item.maxScore}</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Modules List */}

@@ -20,6 +20,7 @@ router.use(authenticate);
 // Progress
 router.post("/enrollments", studentCtrl.enrollInCourse);
 router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
+router.get("/courses/:courseId/grade", studentCtrl.getMyCourseGrade);
 router.get("/enrollments/:enrollmentId/progress", studentCtrl.getProgress);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/complete", studentCtrl.completeLesson);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/progress", studentCtrl.saveWatchProgress);
