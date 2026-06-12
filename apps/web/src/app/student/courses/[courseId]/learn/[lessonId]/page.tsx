@@ -767,8 +767,8 @@ export default function LessonPlayerPage() {
               
               {/* Left Column: Instructions */}
               <div className="flex-1 lg:max-w-[60%]">
-                <div className="mb-12 pb-8 border-b border-[#E4E8E0]">
-                  <div className="inline-flex items-center gap-2 bg-[#FAFAF7] border border-[#E4E8E0] px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-[0.15em] text-[#4A8C5C] mb-6">
+                <div className="mb-12 pb-10 border-b border-[#E4E8E0]" style={{ marginBottom: "48px" }}>
+                  <div className="inline-flex items-center gap-2 bg-[#FAFAF7] border border-[#E4E8E0] rounded-md text-[11px] font-bold uppercase tracking-[0.15em] text-[#4A8C5C] mb-6" style={{ padding: "8px 16px" }}>
                     <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
                   </div>
                   
@@ -784,7 +784,7 @@ export default function LessonPlayerPage() {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-[#1A261D] uppercase tracking-wider text-[11px] bg-[#FAFAF7] border border-[#E4E8E0] px-3 py-1.5 rounded-md">
+                      <span className="font-bold text-[#1A261D] uppercase tracking-wider text-[11px] bg-[#FAFAF7] border border-[#E4E8E0] rounded-md" style={{ padding: "8px 16px" }}>
                         Max Score: {lesson.assignment?.maxScore} pts
                       </span>
                     </div>
@@ -810,32 +810,31 @@ export default function LessonPlayerPage() {
               <div className="flex-1 lg:max-w-[40%]">
                 <div className="sticky top-24">
                   {!assignmentSub && (
-                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px]" style={{ padding: "40px" }}>
+                    <div className="bg-white rounded-[32px] shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-[#E4E8E0]/60 relative overflow-hidden" style={{ padding: "48px" }}>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C9973A] to-[#E0C17A]" />
                       <h2 className="font-serif text-3xl font-bold mb-8 text-[#1A261D]">Your Submission</h2>
                       
-                      <div className="space-y-6">
+                      <div className="space-y-8">
                         <div>
                           <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Response</label>
                           <textarea 
-                            rows={10}
-                            className="w-full bg-white border border-[#E4E8E0] rounded-2xl p-5 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:border-[#C9973A] focus:ring-1 focus:ring-[#C9973A] transition-all duration-300 placeholder:text-[#8A9E8C]/50 shadow-sm"
+                            rows={8}
+                            className="w-full bg-[#FAFAF7] rounded-2xl p-6 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#C9973A]/50 transition-all duration-300 placeholder:text-[#8A9E8C]/50 border border-transparent focus:border-[#C9973A]/30 resize-none"
                             placeholder="Type your thoughtful response here..."
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Upload File (Optional)</label>
-                          <div className="border-2 border-dashed border-[#E4E8E0] rounded-2xl p-10 text-center hover:border-[#C9973A] hover:bg-white transition-all duration-300 cursor-pointer bg-white shadow-sm">
-                            <div className="w-12 h-12 mx-auto bg-[#FAFAF7] border border-[#E4E8E0] rounded-full flex items-center justify-center mb-4">
-                              <span className="text-[#1A261D] text-xl font-bold">↑</span>
-                            </div>
+                          <label className="block text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em]" style={{ marginBottom: "16px" }}>Attached File <span className="lowercase font-medium tracking-normal">(Optional)</span></label>
+                          <label className="block rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer bg-[#FAFAF7] border border-[#E4E8E0] hover:border-[#C9973A]/50 hover:bg-[#FDFBF7] group">
+                            <input type="file" className="hidden" />
                             <div className="text-[15px] font-bold text-[#1A261D]">Click to browse or drag & drop</div>
                             <div className="text-sm text-[#8A9E8C] mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
-                          </div>
+                          </label>
                         </div>
                         
-                        <div className="pt-4">
-                          <button className="w-full py-4 bg-[#1A261D] text-white rounded-xl font-bold text-[15px] hover:bg-[#C9973A] hover:shadow-[0_4px_14px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-0.5">
+                        <div style={{ marginTop: "32px" }}>
+                          <button className="w-full bg-[#C9973A] text-white rounded-2xl font-bold hover:bg-[#A8792A] hover:shadow-[0_8px_20px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ fontSize: "14px", padding: "14px 0", letterSpacing: "0.02em" }}>
                             Submit Assignment
                           </button>
                         </div>

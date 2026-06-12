@@ -21,9 +21,34 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
 
+  const [myNotes, setMyNotes] = useState<any[]>([]);
+  const [noteInput, setNoteInput] = useState("");
+  const [isSavingNote, setIsSavingNote] = useState(false);
+
   useEffect(() => {
     setSelectedMaterial(null);
-  }, [courseId, lessonId]);
+    if (lessonId && isNotesOpen) {
+      api.get(`/student/lessons/${lessonId}/my-notes`).then((res) => {
+        setMyNotes(res.data.data || []);
+      }).catch((err) => console.error("Failed to load notes", err));
+    }
+  }, [courseId, lessonId, isNotesOpen]);
+
+  const saveNote = async () => {
+    if (!noteInput.trim() || !lessonId) return;
+    setIsSavingNote(true);
+    try {
+      const res = await api.post(`/student/lessons/${lessonId}/notes`, {
+        content: noteInput
+      });
+      setMyNotes((prev) => [res.data.data, ...prev]);
+      setNoteInput("");
+    } catch (err) {
+      console.error("Failed to save note", err);
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
 
   const sectionLookup = enrollment?.course?.sections?.reduce((acc: any, section: any) => {
     acc[section.id] = section;
@@ -443,7 +468,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
       )}
 
       {/* Main column */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative", overflowX: "hidden" }}>
 
         {/* ── Top bar ──────────────────────────────── */}
         <header
@@ -571,7 +596,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
         {/* NOTES PANEL OVERLAY */}
         <div 
           style={{
-            position: "absolute", top: 0, bottom: 0, right: 0, width: "340px",
+            position: "fixed", top: 0, bottom: 0, right: 0, width: "340px",
             background: "#FFFFFF", borderLeft: "1px solid #E4E8E0", boxShadow: "-4px 0 24px rgba(0,0,0,0.05)",
             transform: isNotesOpen ? "translateX(0)" : "translateX(100%)", transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 30, display: "flex", flexDirection: "column"
@@ -587,10 +612,27 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             </button>
           </div>
           <div style={{ flex: 1, padding: "24px", overflowY: "auto", background: "#FAFAF7" }}>
-            <div style={{ fontSize: "13px", color: "#8F9E93", textAlign: "center", marginTop: "40px" }}>No notes yet for this lesson.</div>
+            {myNotes.length === 0 ? (
+              <div style={{ fontSize: "13px", color: "#8F9E93", textAlign: "center", marginTop: "40px" }}>No notes yet for this lesson.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {myNotes.map((note) => (
+                  <div key={note.id} style={{ background: "#FFFFFF", padding: "16px", borderRadius: "12px", border: "1px solid #E4E8E0", boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#B88645", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {new Date(note.createdAt).toLocaleDateString()}
+                    </div>
+                    <p style={{ fontSize: "14px", color: "#1A261D", margin: 0, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                      {note.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div style={{ padding: "20px 24px", borderTop: "1px solid #E4E8E0", background: "#FFFFFF" }}>
             <textarea 
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
               style={{
                 width: "100%", background: "#F7F8F5", border: "1px solid #E4E8E0", borderRadius: "10px", padding: "14px",
                 fontSize: "13px", color: "#1A261D", outline: "none", resize: "none", fontFamily: "inherit"
@@ -601,14 +643,14 @@ export default function CoursePlayerLayout({ children }: { children: React.React
               onBlur={(e) => { e.target.style.borderColor = "#E4E8E0"; }}
             />
             <button 
+              onClick={saveNote}
+              disabled={isSavingNote || !noteInput.trim()}
               style={{
-                width: "100%", marginTop: "12px", background: "#1A261D", color: "#FFFFFF", padding: "14px", borderRadius: "10px",
-                fontSize: "13px", fontWeight: 600, border: "none", cursor: "pointer", transition: "background 0.2s"
+                width: "100%", marginTop: "12px", background: isSavingNote || !noteInput.trim() ? "#A0A0A0" : "#1A261D", color: "#FFFFFF", padding: "14px", borderRadius: "10px",
+                fontSize: "13px", fontWeight: 600, border: "none", cursor: isSavingNote || !noteInput.trim() ? "not-allowed" : "pointer", transition: "background 0.2s"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#2D3E31"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#1A261D"}
             >
-              Save Note
+              {isSavingNote ? "Saving..." : "Save Note"}
             </button>
           </div>
         </div>
