@@ -1374,11 +1374,12 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-16 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between px-12 md:px-20 z-30 sticky bottom-0">
+      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 sticky bottom-0" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
         <button
           disabled={!previousLesson}
           onClick={() => previousLesson && goToLesson(previousLesson.id)}
-          className="bg-[#F7E3B7] text-[#4A3F1F] border border-[#E0C17A] hover:bg-[#F2D685] flex items-center gap-2 text-sm font-semibold transition-colors px-7 py-3 rounded-full shadow-sm shadow-[#D8B657]/20 mr-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#F7E3B7] text-[#4A3F1F] border border-[#E0C17A] hover:bg-[#F2D685] flex items-center gap-2 text-sm font-semibold transition-colors shadow-sm shadow-[#D8B657]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ padding: "12px 24px", borderRadius: "999px" }}
         >
           <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">Previous Lesson</span>
         </button>
@@ -1388,7 +1389,8 @@ export default function LessonPlayerPage() {
         <button 
           onClick={handleNext}
           title={nextLesson ? "Continue to next lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Return to Dashboard" : "You have reached the end of the course")}
-          className={`${nextButtonClasses} ml-4`}
+          className={`${nextButtonClasses}`}
+          style={{ padding: "12px 24px", borderRadius: "999px" }}
         >
           {nextLesson ? "Next Lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Exit Course" : "End of Course")} <ArrowRight className="w-4 h-4" />
         </button>
