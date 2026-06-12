@@ -106,3 +106,75 @@ export const gradeDiscussion = asyncHandler(async (req: Request, res: Response) 
 
   res.json({ status: "success", data: updated });
 });
+
+export const updateDiscussion = asyncHandler(async (req: Request, res: Response) => {
+  const { discussionId } = req.params;
+  const { content } = req.body;
+
+  const discussion = await prisma.discussion.findUnique({ where: { id: discussionId } });
+  if (!discussion) throw new AppError("Discussion not found", 404);
+  if (discussion.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
+    throw new AppError("Not authorized", 403);
+  }
+
+  const updated = await prisma.discussion.update({
+    where: { id: discussionId },
+    data: { content },
+    include: {
+      author: { select: { id: true, name: true, role: true } },
+      replies: {
+        include: { author: { select: { id: true, name: true, role: true } } },
+        orderBy: { createdAt: "asc" }
+      }
+    }
+  });
+
+  res.json({ status: "success", data: updated });
+});
+
+export const deleteDiscussion = asyncHandler(async (req: Request, res: Response) => {
+  const { discussionId } = req.params;
+
+  const discussion = await prisma.discussion.findUnique({ where: { id: discussionId } });
+  if (!discussion) throw new AppError("Discussion not found", 404);
+  if (discussion.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
+    throw new AppError("Not authorized", 403);
+  }
+
+  await prisma.discussion.delete({ where: { id: discussionId } });
+
+  res.json({ status: "success", message: "Discussion deleted" });
+});
+
+export const updateReply = asyncHandler(async (req: Request, res: Response) => {
+  const { replyId } = req.params;
+  const { content } = req.body;
+
+  const reply = await prisma.discussionReply.findUnique({ where: { id: replyId } });
+  if (!reply) throw new AppError("Reply not found", 404);
+  if (reply.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
+    throw new AppError("Not authorized", 403);
+  }
+
+  const updated = await prisma.discussionReply.update({
+    where: { id: replyId },
+    data: { content },
+    include: { author: { select: { id: true, name: true, role: true } } }
+  });
+
+  res.json({ status: "success", data: updated });
+});
+
+export const deleteReply = asyncHandler(async (req: Request, res: Response) => {
+  const { replyId } = req.params;
+
+  const reply = await prisma.discussionReply.findUnique({ where: { id: replyId } });
+  if (!reply) throw new AppError("Reply not found", 404);
+  if (reply.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
+    throw new AppError("Not authorized", 403);
+  }
+
+  await prisma.discussionReply.delete({ where: { id: replyId } });
+
+  res.json({ status: "success", message: "Reply deleted" });
+});

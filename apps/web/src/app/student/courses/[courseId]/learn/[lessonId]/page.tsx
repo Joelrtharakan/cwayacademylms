@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api } from "@/store/auth.store";
-import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown } from "lucide-react";
+import { useAuthStore, api } from "@/store/auth.store";
+import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LessonPlayerPage() {
@@ -12,6 +12,7 @@ export default function LessonPlayerPage() {
   const courseId = params.courseId as string;
   const lessonId = params.lessonId as string;
   const enrollmentId = "mock-enr-id"; // Will be fetched
+  const { user } = useAuthStore();
 
   const [lesson, setLesson] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
@@ -27,6 +28,71 @@ export default function LessonPlayerPage() {
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [isReplying, setIsReplying] = useState<Record<string, boolean>>({});
   const [loadingForum, setLoadingForum] = useState(false);
+
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingPostContent, setEditingPostContent] = useState("");
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editingReplyContent, setEditingReplyContent] = useState("");
+  
+  const handleEditPost = async (postId: string) => {
+    try {
+      const res = await api.put(`/forums/discussions/${postId}`, { content: editingPostContent });
+      setForumPosts(prev => prev.map(p => p.id === postId ? { ...p, content: res.data.data.content } : p));
+      setEditingPostId(null);
+      toast.success("Reply updated successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update reply");
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this reply?")) return;
+    try {
+      await api.delete(`/forums/discussions/${postId}`);
+      setForumPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success("Reply deleted");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete reply");
+    }
+  };
+
+  const handleEditReply = async (postId: string, replyId: string) => {
+    try {
+      const res = await api.put(`/forums/replies/${replyId}`, { content: editingReplyContent });
+      setForumPosts(prev => prev.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            replies: p.replies.map((r: any) => r.id === replyId ? { ...r, content: res.data.data.content } : r)
+          };
+        }
+        return p;
+      }));
+      setEditingReplyId(null);
+      toast.success("Reply updated");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update reply");
+    }
+  };
+
+  const handleDeleteReply = async (postId: string, replyId: string) => {
+    if (!confirm("Are you sure you want to delete this reply?")) return;
+    try {
+      await api.delete(`/forums/replies/${replyId}`);
+      setForumPosts(prev => prev.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            replies: p.replies.filter((r: any) => r.id !== replyId)
+          };
+        }
+        return p;
+      }));
+      toast.success("Reply deleted");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete reply");
+    }
+  };
 
   useEffect(() => {
     setHasMounted(true);
@@ -1060,6 +1126,11 @@ export default function LessonPlayerPage() {
                                   const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
                                   setForumPosts(prev => [res.data.data, ...prev]);
                                   setNewPostContent("");
+                                  
+                                  // Mark lesson as complete since student replied
+                                  if (!lesson.isCompleted) {
+                                    await markComplete();
+                                  }
                                 } catch (err: any) {
                                   console.error(err);
                                   toast.error(err.response?.data?.message || "Failed to post reply");
@@ -1103,7 +1174,7 @@ export default function LessonPlayerPage() {
                   ) : (
                     <div className="space-y-6">
                       {forumPosts.map((post: any) => (
-                        <div key={post.id} className="bg-white rounded-[24px] border border-[#E4E8E0] shadow-sm" style={{ padding: '28px 36px' }}>
+                        <div key={post.id} className="group bg-white rounded-[24px] border border-[#E4E8E0] shadow-sm" style={{ padding: '28px 36px' }}>
                           {/* Post Header */}
                           <div className="flex items-center gap-4 mb-5">
                             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] flex items-center justify-center text-[#9A6C1A] font-bold text-[14px] border-2 border-white shadow-sm">
@@ -1120,10 +1191,47 @@ export default function LessonPlayerPage() {
                                 {new Date(post.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                               </div>
                             </div>
+                            
+                            {/* Edit/Delete Actions for Author */}
+                            {(post.authorId === user?.id || post.author?.id === user?.id) && (
+                              <div className="flex items-center gap-2 self-start opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => {
+                                    setEditingPostId(post.id);
+                                    setEditingPostContent(post.content);
+                                  }}
+                                  className="p-1.5 text-[#8A9E8C] hover:text-[#B88645] hover:bg-[#FBF6EC] rounded-md transition-colors"
+                                  title="Edit Post"
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="p-1.5 text-[#8A9E8C] hover:text-[#B03A2E] hover:bg-[#FDF0EE] rounded-md transition-colors"
+                                  title="Delete Post"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Post Content */}
-                          <p className="text-[16px] text-[#2C3E30] leading-[1.8] mb-6 pl-[60px]">{post.content}</p>
+                          {editingPostId === post.id ? (
+                            <div className="mb-6 pl-[60px]">
+                              <textarea
+                                value={editingPostContent}
+                                onChange={e => setEditingPostContent(e.target.value)}
+                                className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] outline-none focus:border-[#C9973A] transition-all p-4 min-h-[100px]"
+                              />
+                              <div className="flex gap-2 mt-2 justify-end">
+                                <button onClick={() => setEditingPostId(null)} className="px-4 py-2 text-sm font-medium text-[#526658] hover:bg-[#F7F8F5] rounded-xl transition-colors">Cancel</button>
+                                <button onClick={() => handleEditPost(post.id)} className="px-4 py-2 text-sm font-bold text-white bg-[#1A261D] hover:bg-[#2C3E30] rounded-xl transition-colors">Save</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[16px] text-[#2C3E30] leading-[1.8] mb-6 pl-[60px]">{post.content}</p>
+                          )}
 
                           {/* Replies Section */}
                           <div className="ml-[60px]">
@@ -1139,7 +1247,7 @@ export default function LessonPlayerPage() {
                               <div className="space-y-4">
                                 {/* Existing Replies */}
                                 {post.replies?.map((reply: any) => (
-                                  <div key={reply.id} className="flex gap-4 bg-[#FAFAF7] p-5 rounded-[20px] border border-[#E4E8E0]">
+                                  <div key={reply.id} className="group flex gap-4 bg-[#FAFAF7] p-5 rounded-[20px] border border-[#E4E8E0]">
                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 border-2 border-white shadow-sm ${reply.isInstructor ? "bg-[#1A261D] text-[#C9973A]" : "bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] text-[#9A6C1A]"}`}>
                                       {getInitials(reply.author?.name)}
                                     </div>
@@ -1153,8 +1261,46 @@ export default function LessonPlayerPage() {
                                           {new Date(reply.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                                         </span>
                                       </div>
-                                      <p className="text-[15px] text-[#526658] leading-relaxed">{reply.content}</p>
+                                      
+                                      {editingReplyId === reply.id ? (
+                                        <div className="mt-2">
+                                          <textarea
+                                            value={editingReplyContent}
+                                            onChange={e => setEditingReplyContent(e.target.value)}
+                                            className="w-full bg-white border border-[#E4E8E0] rounded-[12px] text-[14px] text-[#1A261D] outline-none focus:border-[#C9973A] transition-all p-3 min-h-[60px]"
+                                          />
+                                          <div className="flex gap-2 mt-2 justify-end">
+                                            <button onClick={() => setEditingReplyId(null)} className="px-3 py-1.5 text-xs font-medium text-[#526658] hover:bg-[#F7F8F5] rounded-lg transition-colors">Cancel</button>
+                                            <button onClick={() => handleEditReply(post.id, reply.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#1A261D] hover:bg-[#2C3E30] rounded-lg transition-colors">Save</button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <p className="text-[15px] text-[#526658] leading-relaxed">{reply.content}</p>
+                                      )}
                                     </div>
+                                    
+                                    {/* Edit/Delete Actions for Reply Author */}
+                                    {(reply.authorId === user?.id || reply.author?.id === user?.id) && (
+                                      <div className="flex flex-col items-center gap-1 self-start opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                          onClick={() => {
+                                            setEditingReplyId(reply.id);
+                                            setEditingReplyContent(reply.content);
+                                          }}
+                                          className="p-1 text-[#8A9E8C] hover:text-[#B88645] hover:bg-[#FBF6EC] rounded-md transition-colors"
+                                          title="Edit Reply"
+                                        >
+                                          <Pencil size={13} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteReply(post.id, reply.id)}
+                                          className="p-1 text-[#8A9E8C] hover:text-[#B03A2E] hover:bg-[#FDF0EE] rounded-md transition-colors"
+                                          title="Delete Reply"
+                                        >
+                                          <Trash2 size={13} />
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 ))}
 
@@ -1232,10 +1378,10 @@ export default function LessonPlayerPage() {
         <button 
           disabled={!nextLesson}
           onClick={handleNext}
-          title={nextLesson ? "Continue to next lesson" : "No next lesson available"}
+          title={nextLesson ? "Continue to next lesson" : "You have reached the end of the course"}
           className={`${nextButtonClasses} ml-4 ${!nextLesson ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          Next Lesson <ArrowRight className="w-4 h-4" />
+          {nextLesson ? "Next Lesson" : "End of Course"} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
