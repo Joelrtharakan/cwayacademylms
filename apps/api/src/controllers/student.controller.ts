@@ -220,17 +220,28 @@ export const completeLesson = asyncHandler(async (req: Request, res: Response) =
     create: { enrollmentId, lessonId, completedAt: new Date(), watchedSeconds: 0 }
   });
 
-  // Recalculate progress
-  const totalLessons = enrollment.course.sections.reduce((acc, sec) => acc + sec.lessons.length, 0);
-  const completedCount = enrollment.lessonProgress.filter(lp => lp.completedAt && lp.lessonId !== lessonId).length + 1; // Add 1 for the one we just completed
-  const overallProgress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+  // Recalculate progress consistently: count BOTH lessons AND reading materials
+  const enrollment2 = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    include: {
+      course: { include: { sections: { include: { lessons: true, readingMaterials: true } } } },
+      lessonProgress: { where: { completedAt: { not: null } } },
+      readingMaterialProgress: { where: { completedAt: { not: null } } }
+    }
+  });
 
-  let courseCompleted = false;
+  const totalItems = enrollment2!.course.sections.reduce(
+    (sum, sec) => sum + sec.lessons.length + sec.readingMaterials.length, 0
+  );
+  const completedItems = enrollment2!.lessonProgress.length + enrollment2!.readingMaterialProgress.length;
+  const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
   await prisma.enrollment.update({
     where: { id: enrollmentId },
     data: { progress: overallProgress }
   });
+
+  let courseCompleted = false;
 
   if (overallProgress >= 100 && !enrollment.completedAt) {
     courseCompleted = true;
