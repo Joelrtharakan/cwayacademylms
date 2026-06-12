@@ -1,65 +1,97 @@
-# CWAY Academy Web Platform
+# CWAY Academy LMS - Project & Deployment Report
 
-A premium, modern, and fully responsive web platform built for **CWAY Academy** to train and commission church leaders and pastors. The application features a hybrid SPA-style tab system combined with rich Next.js dynamic routing, modern glassmorphic aesthetics, and highly optimized performance assets.
+Welcome to the CWAY Academy LMS! This is a modern, full-stack Learning Management System (LMS) built with a scalable monorepo architecture.
 
----
+## 🏗️ Architecture Overview
+This project uses **Turborepo** to manage multiple applications and packages within a single repository.
 
-## 🚀 Tech Stack & Design System
-
-- **Frontend Framework**: Next.js 15+ (App Router), React 19, TypeScript
-- **Styling**: Tailwind CSS & Vanilla CSS (Harmonious Cream, Forest Green, and Gold Palette)
-- **Animations & Effects**: Framer Motion (micro-interactions & page transitions), Lenis (smooth inertia scrolling)
-- **Iconography**: Lucide React
-- **Typography**: Jost & Karla (Sans-serif bodies), Fraunces & Cinzel (Serif headlines), JetBrains Mono (Monospace)
+- **Frontend (`apps/web`)**: Built with **Next.js**, React, and Tailwind CSS. It serves the UI for Students, Instructors, and Administrators.
+- **Backend (`apps/api`)**: Built with **Node.js** and **Express**. It handles all API requests, authentication, and business logic.
+- **Database Layer (`packages/db`)**: Built with **Prisma ORM** connecting to an **SQLite** database.
 
 ---
 
-## 🛠 Key Features & Components Developed
+## 🚀 Deployment Guide (Custom Domain)
 
-### 1. Hybrid Navigation & Page Architecture
-- Engineered a hybrid routing solution combining SPA-style tabbed hash-routing (`#home`, `#about`, `#courses`, `#involved`, `#blog`, `#contact`) on the landing page with separate dedicated pages for dynamic deep-linking (e.g., `/blog/[slug]`, `/courses/[slug]`, `/leadership`).
-- Implemented a sticky, responsive navigation header that adjusts height and depth dynamically on scroll.
+If you want to deploy this platform to your own domain (e.g., `academy.yourdomain.com`), you will need to host both the Frontend and the Backend, and configure your DNS settings.
 
-### 2. Multi-Action Interactive Email Card (`EmailCard.tsx`)
-- Designed and built a premium contact widget styled with warm cream base tokens, gold-gradient gradients, and smooth shadow elevations.
-- **Direct Gmail Compose**: Utilizes direct web URL intents (`mail.google.com/mail/?view=cm...`) to instantly trigger a draft compose window pre-filled with the support address, bypassing native pop-up blockers.
-- **Native Mail Client Fallback**: Implements standard `mailto:` schema triggers.
-- **Clipboard Utility**: Integrated a clipboard copy button showing real-time feedback state (check/copy icon transitions) when saving the contact email.
+### 1. What You Need
+To successfully deploy, you will need:
+- **A Domain Name**: Registered via GoDaddy, Namecheap, Cloudflare, etc.
+- **Frontend Hosting**: Platforms like **Vercel**, **Netlify**, or AWS Amplify are highly recommended for Next.js.
+- **Backend Hosting**: Platforms like **Render** or **Railway** (using persistent volumes), **DigitalOcean App Platform**, or a traditional AWS EC2 instance.
+- **Persistent Storage Volume (CRITICAL)**: Because SQLite is a file-based database, your backend host MUST provide a persistent disk volume. If you deploy on an ephemeral service without a disk, your database will be completely wiped out every time the server restarts.
+- **Cloud Storage (CRITICAL)**: An AWS S3 bucket (or Cloudinary/Google Cloud Storage) to handle file uploads.
 
-### 3. Responsive Layout Safeguards
-- Restructured CSS layouts by replacing inline grid sizing with media-query-driven classes (`.contact-layout-grid`), allowing dynamic side-by-side structures on desktop to collapse to single column viewports cleanly.
-- Added a `5rem` top padding safety system to contact page content containers to prevent overlap with the fixed header navbar on short viewports.
+### 2. Environment Variables Required
+Both your Frontend and Backend environments will require specific `.env` variables to function securely.
 
-### 4. Performance & Preload Optimizations
-- Resolved Chrome console warnings related to unused preloads by opting out of Next.js automatic route prefetching (`prefetch={false}`) on primary links. This reduced initial load footprint and prevented background network request bloat for unvisited tabs.
-
----
-
-## 📄 Resume Bullet Points (Copy & Paste)
-
-Here are bullet points tailored for your resume, highlighting technical achievements, design, and performance optimizations:
-
-```markdown
-* Designed and built a hybrid SPA/multi-page web application using Next.js 15+, React 19, and TypeScript, resulting in a seamless, high-performance user experience.
-* Engineered a custom theme design system featuring warm cream, forest green, and gold palettes, utilizing Jost and Fraunces font pairings, Framer Motion transitions, and Lenis smooth scroll inertia.
-* Built a custom, multi-action email communications widget (EmailCard) featuring direct Gmail compose intents, a native mail client launcher (mailto), and an interactive clipboard copy utility.
-* Resolved layout constraints and improved viewport responsiveness on mobile screens by replacing inline column overrides with fluid CSS grids and adding fixed-header padding safety zones.
-* Optimized web performance and eliminated browser asset preload warnings by disabling automatic route prefetching (prefetch={false}) on viewport-visible links, reducing background asset loading footprint.
+**Frontend (`apps/web/.env`)**:
+```env
+NEXT_PUBLIC_API_URL="https://api.yourdomain.com" # The URL of your deployed backend
 ```
 
+**Backend (`apps/api/.env`)**:
+```env
+PORT=5000
+DATABASE_URL="file:./dev.db" # Ensure this path points to your persistent storage volume in production
+JWT_SECRET="your_highly_secure_random_string"
+CLIENT_URL="https://academy.yourdomain.com" # To configure CORS for your frontend
+```
+
+### 3. Domain & DNS Routing
+You will need to set up DNS records on your domain registrar:
+- **Frontend (Main App)**: Create a `CNAME` or `A` record pointing `academy.yourdomain.com` to your Vercel/Netlify deployment.
+- **Backend (API)**: Create a `CNAME` pointing `api.yourdomain.com` to your Render/Railway backend server.
+
 ---
 
-## 💻 Running Locally
+## 📁 File Uploads & Storage (IMPORTANT)
 
-1. Clone the repository and install dependencies:
+A major feature of the LMS is file handling. This includes:
+- **Teachers**: Uploading reading materials, PDFs, and course attachments.
+- **Students**: Uploading assignment submissions (PDFs, ZIPs, Docs).
+
+### Current Development State
+Currently, in development, the system uses **Multer (Local Disk Storage)**. Files are saved directly to `apps/web/public/uploads`. 
+
+### Production Deployment Changes Required
+You **cannot** use local disk storage in modern serverless hosting (like Vercel or Render) because their file systems are ephemeral (they wipe out on every restart). 
+
+**Before deploying to production**, the backend file upload routes must be updated to upload files directly to a cloud storage provider. 
+
+**Recommended Setup:**
+1. Create an **AWS S3 Bucket** (or use Cloudinary).
+2. Update the `apps/api/src/routes/student.routes.ts` and `courses.routes.ts` files to use `multer-s3` instead of `multer.diskStorage()`.
+3. Add your S3 credentials to your backend `.env`:
+   ```env
+   AWS_ACCESS_KEY_ID="your_key"
+   AWS_SECRET_ACCESS_KEY="your_secret"
+   AWS_REGION="us-east-1"
+   AWS_S3_BUCKET="cway-academy-uploads"
+   ```
+4. The database (`Submission` and `ReadingMaterial` models) will securely store the public URL (e.g., `https://cway-academy-uploads.s3.amazonaws.com/assignment.pdf`) pointing to the hosted file.
+
+---
+
+## 🛠️ Local Development Commands
+
+To run the platform locally or test changes before deployment:
+
+1. **Install Dependencies**:
    ```bash
    npm install
    ```
-2. Start the development server:
+
+2. **Sync Database**:
+   ```bash
+   npm run db:push
+   npm run db:generate
+   ```
+
+3. **Start Development Servers** (Frontend & Backend):
    ```bash
    npm run dev
    ```
-3. Build for production:
-   ```bash
-   npm run build
-   ```
+   - Frontend runs on: `http://localhost:3000`
+   - Backend API runs on: `http://localhost:5000`
