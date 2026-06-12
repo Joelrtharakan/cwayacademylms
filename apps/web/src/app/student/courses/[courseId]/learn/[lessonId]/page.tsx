@@ -913,7 +913,7 @@ export default function LessonPlayerPage() {
                   {assignmentSub && assignmentSub.isGraded && (
                     <div style={{ background: "#fff", borderRadius: 24, border: "1px solid #E4E8E0", overflow: "hidden" }}>
                       {/* Top: Score row */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 24, padding: "28px 36px", borderBottom: "1px solid #E4E8E0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 24, padding: "36px 36px", borderBottom: "1px solid #E4E8E0" }}>
                         {/* Score number */}
                         <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontFamily: "var(--font-cormorant, Georgia, serif)", fontWeight: 700, color: "#1A261D", lineHeight: 1, flexShrink: 0 }}>
                           <span style={{ fontSize: 64 }}>{assignmentSub.grade}</span>
@@ -938,7 +938,7 @@ export default function LessonPlayerPage() {
                       </div>
 
                       {/* Bottom: Feedback */}
-                      <div style={{ padding: "24px 36px" }}>
+                      <div style={{ padding: "32px 36px" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#8A9E8C", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
                           Instructor Feedback
                         </div>
