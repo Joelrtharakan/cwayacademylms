@@ -56,6 +56,8 @@ router.get("/instructor/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), 
 router.get("/instructor/courses/:id/analytics", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
 router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR"), CC.getInstructorAssignments);
 
+router.get("/instructor/courses/:id/students", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
+
 import * as MC from "../controllers/modules.controller";
 
 // ─── Phase 4: Modules & Content ──────────────────────────────────────────────

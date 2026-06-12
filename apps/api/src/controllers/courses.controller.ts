@@ -687,18 +687,24 @@ export const getMyCourses = asyncHandler(async (req: Request, res: Response) => 
     include: {
       instructor: { select: { id: true, name: true, avatar: true } },
       category: { select: { name: true } },
-      _count: { select: { enrollments: true } },
+      _count: { select: { enrollments: true, sections: true } },
       reviews: { select: { rating: true } },
+      enrollments: { select: { progress: true } },
     },
   });
 
   const enriched = courses.map((c) => {
     const ratings = c.reviews.map((r) => r.rating);
+    const totalProgress = c.enrollments.reduce((sum, e) => sum + (e.progress || 0), 0);
+    const avgProgress = c.enrollments.length ? totalProgress / c.enrollments.length : 0;
+    
     return {
       ...c,
       avgRating: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0,
       reviewCount: ratings.length,
+      avgProgress,
       reviews: undefined,
+      enrollments: undefined,
     };
   });
 
@@ -731,6 +737,53 @@ export const getInstructorStats = asyncHandler(async (req: Request, res: Respons
   const revenueThisMonth = monthPayments.reduce((sum, p) => sum + p.amount * ((instructor?.payoutPercentage || 70) / 100), 0);
 
   res.json({ status: "success", data: { totalStudents: enrollments, totalRevenue, revenueThisMonth, avgRating, totalCompletions: completions, pendingSubmissions, publishedCourses } });
+});
+
+export const getInstructorCourseStudents = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const course = await prisma.course.findUnique({ where: { id } });
+  if (!course) throw new AppError("Course not found", 404);
+  if (req.user!.role === "INSTRUCTOR" && course.instructorId !== req.user!.id) throw new AppError("Not authorized", 403);
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { courseId: id },
+    include: {
+      student: { select: { id: true, name: true, email: true, avatar: true } },
+      lessonProgress: {
+        where: { completedAt: { not: null } },
+        include: { lesson: { select: { title: true } } }
+      },
+      readingMaterialProgress: {
+        where: { completedAt: { not: null } },
+        include: { readingMaterial: { select: { title: true } } }
+      }
+    },
+    orderBy: { enrolledAt: "desc" }
+  });
+
+  const enriched = enrollments.map(e => {
+    let lastCompleted: { title: string; date: Date } | null = null;
+    
+    for (const lp of e.lessonProgress) {
+      if (lp.completedAt && (!lastCompleted || lp.completedAt > lastCompleted.date)) {
+        lastCompleted = { title: lp.lesson.title, date: lp.completedAt };
+      }
+    }
+    for (const rp of e.readingMaterialProgress) {
+      if (rp.completedAt && (!lastCompleted || rp.completedAt > lastCompleted.date)) {
+        lastCompleted = { title: rp.readingMaterial.title, date: rp.completedAt };
+      }
+    }
+
+    return {
+      ...e,
+      lastCompleted,
+      lessonProgress: undefined,
+      readingMaterialProgress: undefined
+    };
+  });
+
+  res.json({ status: "success", data: enriched });
 });
 
 // ─── COURSE ANALYTICS ────────────────────────────────────────────────────────

@@ -762,98 +762,122 @@ export default function LessonPlayerPage() {
 
         {/* ASSIGNMENT LESSON */}
         {lesson.type === "ASSIGNMENT" && (
-          <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D] px-6 py-12 md:py-16">
-            <div className="max-w-3xl mx-auto space-y-8">
+          <div className="w-full min-h-full bg-white text-[#1A261D]" style={{ padding: "40px 8%" }}>
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
               
-              <div className="bg-white border border-[#E4E8E0] rounded-2xl p-8 md:p-10 shadow-sm">
-                <div className="w-12 h-12 bg-[#4A8C5C]/10 rounded-full flex items-center justify-center mb-6">
-                  <ClipboardCheck className="w-6 h-6 text-[#4A8C5C]" />
-                </div>
-                <h1 className="font-serif text-3xl md:text-4xl text-[#1A261D] font-bold mb-4">{lesson.assignment?.title}</h1>
-                <div className="flex flex-wrap gap-4 text-sm text-[#8A9E8C] mb-8 pb-8 border-b border-[#E4E8E0]">
-                  {lesson.assignment?.dueDate && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" /> 
-                      Due: {new Date(lesson.assignment.dueDate).toLocaleDateString()}
-                    </span>
-                  )}
-                  <span className="bg-[#FAFAF7]/5 px-2 py-0.5 rounded font-medium text-[#1A261D]">
-                    Max Score: {lesson.assignment?.maxScore} pts
-                  </span>
+              {/* Left Column: Instructions */}
+              <div className="flex-1 lg:max-w-[60%]">
+                <div className="mb-12 pb-8 border-b border-[#E4E8E0]">
+                  <div className="inline-flex items-center gap-2 bg-[#FAFAF7] border border-[#E4E8E0] px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-[0.15em] text-[#4A8C5C] mb-6">
+                    <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
+                  </div>
+                  
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A261D] font-bold mb-8 leading-[1.15] tracking-tight">
+                    {lesson.assignment?.title}
+                  </h1>
+                  
+                  <div className="flex flex-wrap items-center gap-6 text-sm text-[#8A9E8C]">
+                    {lesson.assignment?.dueDate && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[#C9973A]" /> 
+                        <span className="font-semibold text-[#1A261D]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#1A261D] uppercase tracking-wider text-[11px] bg-[#FAFAF7] border border-[#E4E8E0] px-3 py-1.5 rounded-md">
+                        Max Score: {lesson.assignment?.maxScore} pts
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="prose prose-sm max-w-none text-[#1A261D]/80" dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
+                <div className="prose prose-lg max-w-none text-[#1A261D]/80 leading-[1.8] whitespace-pre-wrap font-medium" 
+                     style={{ fontSize: "17px", marginTop: "40px" }}
+                     dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
 
                 {lesson.assignment?.attachmentUrl && (
-                  <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-6 px-4 py-2 border border-[#C9973A] text-[#C9973A] rounded-lg hover:bg-[#C9973A]/10 transition-colors text-sm font-semibold">
-                    <Download className="w-4 h-4" /> Download Attached Resource
-                  </a>
+                  <div className="mt-16 pt-10 border-t border-[#E4E8E0]">
+                    <h3 className="text-xs font-bold text-[#8A9E8C] uppercase tracking-[0.15em] mb-6">Included Resources</h3>
+                    <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" 
+                       className="inline-flex items-center gap-3 px-6 py-4 bg-[#FAFAF7] border border-[#E4E8E0] text-[#1A261D] rounded-xl hover:bg-white hover:border-[#C9973A] hover:text-[#C9973A] hover:shadow-sm transition-all duration-300 text-[15px] font-bold">
+                      <Download className="w-5 h-5" /> Download Attached File
+                    </a>
+                  </div>
                 )}
               </div>
 
-              {!assignmentSub && (
-                <div className="bg-white border border-[#E4E8E0] rounded-2xl p-8 md:p-10 shadow-sm">
-                  <h2 className="font-serif text-2xl font-bold mb-6">Your Submission</h2>
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-[#1A261D] mb-2">Response</label>
-                      <textarea 
-                        rows={6}
-                        className="w-full bg-[#FAFAF7]/50 border border-[#E4E8E0] rounded-xl p-4 focus:outline-none focus:border-[#C9973A] focus:ring-1 focus:ring-[#C9973A] transition-all placeholder:text-[#8A9E8C]"
-                        placeholder="Write your response here..."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-[#1A261D] mb-2">Upload File (Optional)</label>
-                      <div className="border-2 border-dashed border-[#E4E8E0] rounded-xl p-8 text-center hover:border-[#C9973A] transition-colors cursor-pointer bg-[#FAFAF7]/30">
-                        <div className="text-[#A8792A] mb-2">↑</div>
-                        <div className="text-sm font-semibold text-[#1A261D]">Click to upload or drag and drop</div>
-                        <div className="text-xs text-[#8A9E8C] mt-1">PDF, DOC, ZIP up to 50MB</div>
-                      </div>
-                    </div>
-                    <button className="w-full md:w-auto px-8 py-4 bg-[#C9973A] text-[#1A261D] rounded-lg font-bold shadow-lg shadow-[#C9973A]/20 hover:bg-[#A8792A] transition-colors">
-                      Submit Assignment
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {assignmentSub && !assignmentSub.isGraded && (
-                <div className="bg-white border-l-4 border-l-[#4A8C5C] rounded-2xl p-8 shadow-sm flex items-start gap-4">
-                  <CheckCircle className="w-6 h-6 text-[#4A8C5C] shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-serif text-xl font-bold text-[#1A261D] mb-2">Assignment Submitted!</h3>
-                    <p className="text-[#8A9E8C] text-sm leading-relaxed">
-                      Your work has been successfully submitted and is awaiting instructor review. You will receive a notification once it has been graded.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {assignmentSub && assignmentSub.isGraded && (
-                <div className="bg-white border border-[#E4E8E0] rounded-2xl overflow-hidden shadow-sm">
-                  <div className="bg-[#FAFAF7] p-6 text-center text-[#1A261D] relative">
-                    <div className="absolute top-4 right-4 bg-[#4A8C5C] text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">Graded ✓</div>
-                    <h3 className="text-sm uppercase tracking-wider text-[#8A9E8C] mb-2 font-semibold">Your Score</h3>
-                    <div className="font-serif text-6xl text-[#C9973A] font-bold">
-                      {assignmentSub.grade} <span className="text-2xl text-[#8A9E8C]">/ {lesson.assignment?.maxScore}</span>
-                    </div>
-                  </div>
-                  {assignmentSub.feedback && (
-                    <div className="p-8">
-                      <div className="bg-[#C9973A]/5 border-l-4 border-[#C9973A] p-6 rounded-r-lg">
-                        <h4 className="font-serif text-lg font-bold text-[#1A261D] mb-2">Instructor Feedback</h4>
-                        <div className="text-sm text-[#1A261D]/80 leading-relaxed" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+              {/* Right Column: Submission Area */}
+              <div className="flex-1 lg:max-w-[40%]">
+                <div className="sticky top-24">
+                  {!assignmentSub && (
+                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px]" style={{ padding: "40px" }}>
+                      <h2 className="font-serif text-3xl font-bold mb-8 text-[#1A261D]">Your Submission</h2>
+                      
+                      <div className="space-y-6">
+                        <div>
+                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Response</label>
+                          <textarea 
+                            rows={10}
+                            className="w-full bg-white border border-[#E4E8E0] rounded-2xl p-5 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:border-[#C9973A] focus:ring-1 focus:ring-[#C9973A] transition-all duration-300 placeholder:text-[#8A9E8C]/50 shadow-sm"
+                            placeholder="Type your thoughtful response here..."
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Upload File (Optional)</label>
+                          <div className="border-2 border-dashed border-[#E4E8E0] rounded-2xl p-10 text-center hover:border-[#C9973A] hover:bg-white transition-all duration-300 cursor-pointer bg-white shadow-sm">
+                            <div className="w-12 h-12 mx-auto bg-[#FAFAF7] border border-[#E4E8E0] rounded-full flex items-center justify-center mb-4">
+                              <span className="text-[#1A261D] text-xl font-bold">↑</span>
+                            </div>
+                            <div className="text-[15px] font-bold text-[#1A261D]">Click to browse or drag & drop</div>
+                            <div className="text-sm text-[#8A9E8C] mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-4">
+                          <button className="w-full py-4 bg-[#1A261D] text-white rounded-xl font-bold text-[15px] hover:bg-[#C9973A] hover:shadow-[0_4px_14px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-0.5">
+                            Submit Assignment
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
-                  <div className="p-6 bg-[#FAFAF7]/50 border-t border-[#E4E8E0] text-center">
-                    <button className="px-6 py-3 bg-[#4A8C5C] text-white rounded-lg font-bold">
-                      Continue to Next Lesson &rarr;
-                    </button>
-                  </div>
+
+                  {assignmentSub && !assignmentSub.isGraded && (
+                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px] p-12 text-center relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-[#4A8C5C]" />
+                      <div className="w-20 h-20 bg-white border border-[#E4E8E0] shadow-sm rounded-full flex items-center justify-center mx-auto mb-8">
+                        <CheckCircle className="w-10 h-10 text-[#4A8C5C]" />
+                      </div>
+                      <h3 className="font-serif text-3xl font-bold text-[#1A261D] mb-4">Submitted!</h3>
+                      <p className="text-[#8A9E8C] text-[16px] leading-relaxed font-medium">
+                        Your work is securely uploaded and awaiting instructor review. We will notify you once it has been graded.
+                      </p>
+                    </div>
+                  )}
+
+                  {assignmentSub && assignmentSub.isGraded && (
+                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px] overflow-hidden">
+                      <div className="p-12 text-center border-b border-[#E4E8E0] bg-white">
+                        <div className="inline-block bg-[#4A8C5C] text-white text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-[0.2em] mb-6 shadow-sm">Graded ✓</div>
+                        <h3 className="text-xs uppercase tracking-[0.2em] text-[#8A9E8C] mb-4 font-bold">Your Official Score</h3>
+                        <div className="font-serif text-7xl text-[#1A261D] font-bold tracking-tight">
+                          {assignmentSub.grade} <span className="text-3xl text-[#8A9E8C]">/ {lesson.assignment?.maxScore}</span>
+                        </div>
+                      </div>
+                      
+                      {assignmentSub.feedback && (
+                        <div className="p-10 bg-[#FAFAF7]">
+                          <h4 className="text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em] mb-5 flex items-center gap-3">
+                            <span className="text-[#C9973A] text-lg">✍️</span> Instructor Feedback
+                          </h4>
+                          <div className="text-[16px] text-[#1A261D]/85 leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}
