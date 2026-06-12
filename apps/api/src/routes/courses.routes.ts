@@ -29,15 +29,7 @@ router.put("/courses/:id/sections/:sectionId", authenticate, authorize("INSTRUCT
 router.delete("/courses/:id/sections/:sectionId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteSection);
 router.put("/courses/:id/sections/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.reorderSections);
 
-// Lessons
-router.post("/sections/:sectionId/lessons", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createLesson);
-router.put("/lessons/:lessonId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.updateLesson);
-router.delete("/lessons/:lessonId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteLesson);
-router.put("/sections/:sectionId/lessons/reorder", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.reorderLessons);
-router.post("/lessons/:lessonId/upload-video", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("video"), CC.uploadLessonVideo);
-router.get("/lessons/:lessonId/video-status", authenticate, CC.getLessonVideoStatus);
-router.post("/lessons/:lessonId/upload-attachment", authenticate, authorize("INSTRUCTOR", "ADMIN"), upload.single("attachment"), CC.uploadLessonAttachment);
-
+// Legacy Lesson routes removed in favor of Phase 4 modules.controller.ts (MC)
 
 
 // Removed duplicate Assignment routes; Phase 4 implementation below handles these.
@@ -57,6 +49,7 @@ router.get("/instructor/courses/:id/analytics", authenticate, authorize("INSTRUC
 router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR"), CC.getInstructorAssignments);
 
 router.get("/instructor/courses/:id/students", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
+router.get("/instructor/courses/:id/gradebook", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorGradebook);
 
 import * as MC from "../controllers/modules.controller";
 

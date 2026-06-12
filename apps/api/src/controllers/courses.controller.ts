@@ -1017,3 +1017,159 @@ export const deleteAnnouncement = asyncHandler(async (req: Request, res: Respons
   await prisma.announcement.delete({ where: { id: announcement.id } });
   res.json({ status: "success", message: "Announcement deleted" });
 });
+
+// ── GRADEBOOK ───────────────────────────────────────────────────────────────
+
+export const getInstructorGradebook = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const course = await prisma.course.findUnique({ where: { id } });
+  if (!course) throw new AppError("Course not found", 404);
+  if (req.user!.role === "INSTRUCTOR" && course.instructorId !== req.user!.id) throw new AppError("Not authorized", 403);
+
+  // 1. Fetch graded items (Assignments and Quizzes)
+  const modules = await prisma.section.findMany({
+    where: { courseId: id },
+    include: {
+      lessons: {
+        include: {
+          assignment: true,
+          quiz: true
+        }
+      }
+    },
+    orderBy: { order: "asc" }
+  });
+
+  const gradedItems: any[] = [];
+  for (const mod of modules) {
+    for (const lesson of mod.lessons.sort((a: any, b: any) => a.order - b.order)) {
+      if (lesson.assignment) {
+        gradedItems.push({
+          id: lesson.assignment.id,
+          title: lesson.assignment.title,
+          type: "ASSIGNMENT",
+          maxScore: lesson.assignment.maxScore
+        });
+      }
+      if (lesson.quiz) {
+        gradedItems.push({
+          id: lesson.quiz.id,
+          title: lesson.quiz.title,
+          type: "QUIZ",
+          maxScore: 100 // Default or specific to quiz if maxScore added later
+        });
+      }
+      if (lesson.type === "FORUM") {
+        gradedItems.push({
+          id: lesson.id,
+          title: lesson.title,
+          type: "FORUM",
+          maxScore: lesson.forumMarks || 100
+        });
+      }
+    }
+  }
+
+  // 2. Fetch all students (Enrollments)
+  const enrollments = await prisma.enrollment.findMany({
+    where: { courseId: id },
+    include: {
+      student: { select: { id: true, name: true, email: true, avatar: true } },
+    },
+    orderBy: { enrolledAt: "desc" }
+  });
+
+  // Extract student IDs
+  const studentIds = enrollments.map(e => e.student.id);
+
+  // 3. Fetch submissions and quiz attempts for these students & items
+  const assignmentIds = gradedItems.filter(i => i.type === "ASSIGNMENT").map(i => i.id);
+  const quizIds = gradedItems.filter(i => i.type === "QUIZ").map(i => i.id);
+
+  const submissions = await prisma.submission.findMany({
+    where: {
+      studentId: { in: studentIds },
+      assignmentId: { in: assignmentIds }
+    }
+  });
+
+  const quizAttempts = await prisma.quizAttempt.findMany({
+    where: {
+      studentId: { in: studentIds },
+      quizId: { in: quizIds }
+    }
+  });
+
+  const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+  const forumDiscussions = await prisma.discussion.findMany({
+    where: {
+      lessonId: { in: forumIds },
+      authorId: { in: studentIds },
+      score: { not: null }
+    }
+  });
+
+  // 4. Map the data
+  const studentsWithGrades = enrollments.map(e => {
+    const grades: Record<string, number | null> = {};
+    
+    // Initialize all to null
+    gradedItems.forEach(item => grades[item.id] = null);
+
+    // Map Assignments
+    const studentSubmissions = submissions.filter(s => s.studentId === e.student.id);
+    studentSubmissions.forEach(sub => {
+      if (sub.grade !== null && sub.grade !== undefined) {
+        grades[sub.assignmentId] = sub.grade;
+      }
+    });
+
+    // Map Quizzes (Take the highest score if multiple attempts)
+    const studentQuizAttempts = quizAttempts.filter(q => q.studentId === e.student.id);
+    studentQuizAttempts.forEach(qa => {
+      if (grades[qa.quizId] === null || qa.score > grades[qa.quizId]!) {
+        grades[qa.quizId] = qa.score;
+      }
+    });
+
+    // Map Forums (Take the highest score if multiple posts)
+    const studentForums = forumDiscussions.filter(f => f.authorId === e.student.id && f.lessonId);
+    studentForums.forEach(sf => {
+      if (sf.lessonId && (grades[sf.lessonId] === null || sf.score! > grades[sf.lessonId]!)) {
+        grades[sf.lessonId] = sf.score!;
+      }
+    });
+
+    // Calculate Course Grade (Total Points of Graded Items)
+    let totalEarned = 0;
+    let totalMaxGraded = 0;
+
+    gradedItems.forEach(item => {
+      const score = grades[item.id];
+      if (score !== null && score !== undefined) {
+        totalEarned += score;
+        totalMaxGraded += item.maxScore;
+      }
+    });
+    
+    // Return exact percentage rounded to 1 decimal place (e.g. 99.5)
+    const courseGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+
+    return {
+      id: e.student.id,
+      name: e.student.name,
+      email: e.student.email,
+      avatar: e.student.avatar,
+      grades,
+      courseGrade
+    };
+  });
+
+  res.json({
+    status: "success",
+    data: {
+      items: gradedItems,
+      students: studentsWithGrades
+    }
+  });
+});

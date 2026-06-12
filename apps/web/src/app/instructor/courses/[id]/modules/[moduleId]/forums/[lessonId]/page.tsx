@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
-import { ArrowLeft, Users, MessageSquare, CheckCircle, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
+import { updateLesson } from "@/lib/api/modules";
+import { ArrowLeft, Users, MessageSquare, CheckCircle, ChevronDown, ChevronUp, Edit3, X, Save } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -26,6 +27,12 @@ export default function GradeForumPage() {
   const [expandedDiscussionId, setExpandedDiscussionId] = useState<string | null>(null);
   const [grades, setGrades] = useState<Record<string, number | "">>({});
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({});
+
+  // Edit states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editPrompt, setEditPrompt] = useState("");
+  const [editMarks, setEditMarks] = useState<number | "">("");
 
   const { data: modules, isLoading: isModuleLoading } = useQuery({
     queryKey: ["modules", courseId],
@@ -63,6 +70,24 @@ export default function GradeForumPage() {
       toast.success("Grade saved successfully!");
     },
     onError: () => toast.error("Failed to save grade"),
+  });
+
+  const updateForumMut = useMutation({
+    mutationFn: () => updateLesson(lessonId, {
+      title: editTitle,
+      type: "FORUM",
+      content: editPrompt,
+      duration: 0,
+      isFree: false,
+      isPreview: false,
+      forumMarks: editMarks === "" ? null : Number(editMarks)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      setIsEditing(false);
+      toast.success("Forum details updated!");
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update forum"),
   });
 
   const handleSaveGrade = (discussionId: string) => {
@@ -105,21 +130,81 @@ export default function GradeForumPage() {
           <ArrowLeft size={16} /> Back to Module
         </Link>
         
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8 bg-white rounded-3xl border border-[#E4E8E0] shadow-sm" style={{ padding: "40px" }}>
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold font-serif text-[#1A261D] mb-4 leading-tight" style={{ marginBottom: "16px" }}>
-              {lesson.title}
-            </h1>
-            <p className="text-[#526658] text-[16px] leading-relaxed max-w-3xl">
-              {lesson.content}
-            </p>
-          </div>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8 bg-white rounded-3xl border border-[#E4E8E0] shadow-sm relative group" style={{ padding: "40px" }}>
           
-          {maxMarks && (
-            <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-2xl flex flex-col items-center shrink-0" style={{ padding: "20px 32px" }}>
-              <span className="text-[11px] uppercase font-bold text-[#8A9E8C] tracking-widest mb-1">Max Points</span>
-              <span className="text-3xl font-serif font-bold text-[#C9973A]">{maxMarks}</span>
+          {!isEditing && (
+            <button 
+              onClick={() => {
+                setEditTitle(lesson.title);
+                setEditPrompt(lesson.content || "");
+                setEditMarks(lesson.forumMarks || "");
+                setIsEditing(true);
+              }}
+              className="absolute top-6 right-6 p-2 text-[#8A9E8C] hover:bg-[#F3F4F0] rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+              title="Edit Forum"
+            >
+              <Edit3 size={18} />
+            </button>
+          )}
+
+          {isEditing ? (
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-serif font-bold text-xl text-[#1A261D]">Edit Forum Settings</h3>
+                <button onClick={() => setIsEditing(false)} className="text-[#8A9E8C] hover:text-[#1A261D]"><X size={18} /></button>
+              </div>
+              
+              <div>
+                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Title</label>
+                <input 
+                  type="text" 
+                  value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Prompt / Instructions</label>
+                <textarea 
+                  value={editPrompt} onChange={e => setEditPrompt(e.target.value)}
+                  rows={4}
+                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7] resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Total Marks for Grading</label>
+                <input 
+                  type="number" 
+                  value={editMarks} onChange={e => setEditMarks(e.target.value ? Number(e.target.value) : "")}
+                  placeholder="e.g. 100"
+                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setIsEditing(false)} className="px-5 py-2 text-[#8A9E8C] font-bold text-sm">Cancel</button>
+                <button onClick={() => updateForumMut.mutate()} disabled={updateForumMut.isPending} className="flex items-center gap-2 bg-[#1A261D] text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-[#2C3E30] transition-colors disabled:opacity-50">
+                  <Save size={16} /> {updateForumMut.isPending ? "Saving..." : "Save Settings"}
+                </button>
+              </div>
             </div>
+          ) : (
+            <>
+              <div className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold font-serif text-[#1A261D] mb-4 leading-tight" style={{ marginBottom: "16px" }}>
+                  {lesson.title}
+                </h1>
+                <p className="text-[#526658] text-[16px] leading-relaxed max-w-3xl">
+                  {lesson.content}
+                </p>
+              </div>
+              
+              <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-2xl flex flex-col items-center shrink-0" style={{ padding: "20px 32px" }}>
+                <span className="text-[11px] uppercase font-bold text-[#8A9E8C] tracking-widest mb-1">Max Points</span>
+                <span className="text-3xl font-serif font-bold text-[#C9973A]">{maxMarks || "—"}</span>
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -127,11 +127,11 @@ export default function ForumsPanel({ module }: { module: any }) {
           </div>
 
           <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Maximum Marks (Optional)</label>
+            <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Total Marks for Grading</label>
             <input 
               type="number"
               value={forumMarks} onChange={e => setForumMarks(e.target.value ? Number(e.target.value) : "")}
-              placeholder="Leave blank if ungraded"
+              placeholder="e.g. 100 (Leave blank for default 100)"
               style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D" }}
             />
           </div>
@@ -172,15 +172,19 @@ export default function ForumsPanel({ module }: { module: any }) {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                     <MessageSquare size={16} color="#B88645" />
                     <h4 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1A261D" }}>{forum.title}</h4>
-                    {forum.forumMarks && (
-                      <span style={{ padding: "2px 8px", background: "#FDF8F3", color: "#B88645", border: "1px solid #F3E8D6", borderRadius: "12px", fontSize: "11px", fontWeight: 700 }}>
-                        {forum.forumMarks} Marks
+                    {forum.forumMarks ? (
+                      <span style={{ padding: "2px 8px", background: "#FDF8F3", color: "#B88645", border: "1px solid #F3E8D6", borderRadius: "12px", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>
+                        Max: {forum.forumMarks} Marks
+                      </span>
+                    ) : (
+                      <span style={{ padding: "2px 8px", background: "#F3F4F0", color: "#8A9E8C", border: "1px solid #E4E8E0", borderRadius: "12px", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>
+                        Max: 100 Marks (Default)
                       </span>
                     )}
                   </div>
                   <p style={{ margin: 0, color: "#8A9E8C", fontSize: "14px", lineHeight: "1.5" }}>{forum.content}</p>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   <button 
                     onClick={() => {
                       setEditingForumId(forum.id);
@@ -189,12 +193,11 @@ export default function ForumsPanel({ module }: { module: any }) {
                       setForumMarks(forum.forumMarks || "");
                       setIsCreating(false);
                     }}
-                    style={{ background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", transition: "background 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#F3F4F0"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                    title="Edit Forum"
+                    style={{ background: "#F3F4F0", border: "1px solid #E4E8E0", color: "#526658", cursor: "pointer", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", borderRadius: "6px", transition: "all 0.2s", fontSize: "12px", fontWeight: 600 }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#F3F4F0"}
                   >
-                    <Edit size={16} />
+                    <Edit size={14} /> Edit Prompt
                   </button>
                   <button 
                     onClick={() => {
@@ -203,12 +206,11 @@ export default function ForumsPanel({ module }: { module: any }) {
                       }
                     }}
                     disabled={deleteMut.isPending}
-                    style={{ background: "transparent", border: "none", color: "#F87171", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", transition: "background 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#FEF2F2"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                    title="Delete Forum"
+                    style={{ background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", cursor: "pointer", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", borderRadius: "6px", transition: "all 0.2s", fontSize: "12px", fontWeight: 600 }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#FEF2F2"}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} /> Delete
                   </button>
                 </div>
               </div>

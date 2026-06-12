@@ -34,7 +34,7 @@ NEXT_PUBLIC_API_URL="https://api.yourdomain.com" # The URL of your deployed back
 **Backend (`apps/api/.env`)**:
 ```env
 PORT=5000
-DATABASE_URL="file:./dev.db" # Ensure this path points to your persistent storage volume in production
+DATABASE_URL="file:../../packages/db/prisma/dev.db" # Ensure this path points to your persistent storage volume in production
 JWT_SECRET="your_highly_secure_random_string"
 CLIENT_URL="https://academy.yourdomain.com" # To configure CORS for your frontend
 ```

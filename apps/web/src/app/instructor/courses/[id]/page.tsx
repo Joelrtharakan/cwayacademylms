@@ -120,6 +120,9 @@ export default function CourseManagementPage() {
           <p style={{ margin: 0, fontSize: "14px", color: "#8F9E93" }}>Manage modules, videos, assignments, and quizzes for this course.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button onClick={() => router.push(`/instructor/courses/${id}/gradebook`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", color: "#1A261D", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
+            <BookOpen size={16} /> Gradebook
+          </button>
           <button onClick={() => router.push(`/instructor/courses/${id}/announcements`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", color: "#1A261D", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
             <BookOpen size={16} /> Announcements
           </button>
