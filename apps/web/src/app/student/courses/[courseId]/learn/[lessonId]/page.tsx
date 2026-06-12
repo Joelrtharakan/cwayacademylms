@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/store/auth.store";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LessonPlayerPage() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function LessonPlayerPage() {
 
   const [lesson, setLesson] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
+  const [instructor, setInstructor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -107,6 +109,12 @@ export default function LessonPlayerPage() {
         const enrRes = await api.get(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
         setEnrollment(enr);
+
+        // Fetch instructor explicitly just in case enrollment doesn't have it
+        try {
+          const cRes = await api.get(`/courses/${courseId}`);
+          setInstructor(cRes.data.data.instructor);
+        } catch {}
         
         // Find lesson in sections
         let foundLesson = null;
@@ -977,163 +985,221 @@ export default function LessonPlayerPage() {
         )}
 
         {/* FORUM LESSON */}
-        {lesson.type === "FORUM" && (
-          <div className="w-full min-h-full" style={{ background: "#FAFAF7" }}>
+        {lesson.type === "FORUM" && (() => {
+          const getInitials = (name: string | undefined | null) => {
+            if (!name) return "U";
+            const parts = name.trim().split(" ");
+            if (parts.length >= 2) {
+              return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.slice(0, 2).toUpperCase();
+          };
 
-            {/* Hero Header */}
-            <div className="bg-white border-b border-[#E4E8E0]" style={{ padding: "56px 8% 48px" }}>
-              <div className="max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2 border border-[#C9973A]/40 text-[#C9973A] rounded-full text-[11px] font-bold uppercase tracking-[0.15em] mb-6" style={{ padding: "6px 14px", background: "rgba(201,151,58,0.06)" }}>
-                  <MessageSquare size={12} /> Learning Forum
-                </div>
-                <h1 className="font-serif text-5xl md:text-6xl text-[#1A261D] font-bold leading-[1.1] tracking-tight mb-6">{lesson.title}</h1>
-                {lesson.content && (
-                  <p className="text-[#526658] text-[17px] leading-[1.8] max-w-2xl">{lesson.content}</p>
-                )}
-                <div className="flex items-center gap-3 mt-8 pt-6 border-t border-[#E4E8E0]">
-                  <div className="flex items-center gap-2 text-[13px] text-[#8A9E8C] font-medium">
-                    <MessageSquare size={14} /> {forumPosts.length} {forumPosts.length === 1 ? "response" : "responses"}
+          return (
+            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: "56px 8%" }}>
+              <div className="max-w-3xl mx-auto">
+                
+                {/* Instructor Question Block */}
+                <div className="bg-white border border-[#E4E8E0] rounded-[24px] shadow-sm overflow-hidden" style={{ marginBottom: '48px' }}>
+                  <div style={{ padding: '32px 40px' }}>
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-12 h-12 rounded-full bg-[#1A261D] flex items-center justify-center text-[#C9973A] font-bold text-[15px] shadow-sm border-2 border-white">
+                        {getInitials(instructor?.name || enrollment?.course?.instructor?.name || "Course Instructor")}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#1A261D] text-[16px] flex items-center gap-2">
+                          {instructor?.name || enrollment?.course?.instructor?.name || "Course Instructor"}
+                          <span className="px-2 py-0.5 bg-[#FBF6EC] border border-[#C9973A]/20 text-[#C9973A] text-[9px] font-bold uppercase tracking-widest rounded-md">Instructor</span>
+                        </h4>
+                        <div className="text-[13px] text-[#8A9E8C] mt-0.5">Posted a discussion prompt</div>
+                      </div>
+                    </div>
+
+                    <h1 className="font-serif text-3xl md:text-4xl text-[#1A261D] font-bold mb-6 leading-tight tracking-tight">{lesson.title}</h1>
+                    {lesson.content && (
+                      <div className="text-[#2C3E30] text-[17px] leading-[1.8]">
+                        {lesson.content}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Direct Reply to Instructor Input */}
+                  <div className="bg-[#FAFAF7] border-t border-[#E4E8E0]" style={{ padding: '24px 40px' }}>
+                    <div className="flex gap-5">
+                      <div className="w-11 h-11 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[13px] shrink-0 shadow-sm">
+                        ME
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-white rounded-[20px] border border-[#E4E8E0] shadow-sm overflow-hidden focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all relative">
+                          <textarea
+                            value={newPostContent}
+                            onChange={e => setNewPostContent(e.target.value)}
+                            placeholder="Write your reply to this prompt..."
+                            rows={4}
+                            className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed"
+                            style={{ padding: '24px 24px 64px 24px', overflowY: "auto" }}
+                            onWheel={(e) => {
+                              const target = e.currentTarget;
+                              const isScrollingDown = e.deltaY > 0;
+                              const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
+                              const isAtTop = target.scrollTop <= 0;
+                              
+                              if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
+                                e.stopPropagation();
+                              }
+                            }}
+                          />
+                          <div className="absolute bottom-3 right-3 flex items-center gap-3 z-10">
+                            <span className="text-[12px] text-[#8A9E8C] font-medium">{newPostContent.length > 0 ? `${newPostContent.length} chars` : ""}</span>
+                            <button
+                              disabled={!newPostContent.trim() || isPostingForum}
+                              onClick={async () => {
+                                if (!newPostContent.trim()) return;
+                                setIsPostingForum(true);
+                                try {
+                                  const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
+                                  setForumPosts(prev => [res.data.data, ...prev]);
+                                  setNewPostContent("");
+                                } catch (err: any) {
+                                  console.error(err);
+                                  toast.error(err.response?.data?.message || "Failed to post reply");
+                                } finally {
+                                  setIsPostingForum(false);
+                                }
+                              }}
+                              className="flex items-center justify-center w-10 h-10 bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                            >
+                              <Send size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Main Body */}
-            <div style={{ padding: "48px 8%", maxWidth: "calc(100% - 0px)" }}>
-              <div className="max-w-4xl mx-auto">
-
-                {/* Compose card */}
-                <div className="bg-white rounded-3xl border border-[#E4E8E0] shadow-[0_2px_16px_rgba(0,0,0,0.04)] mb-10 overflow-hidden">
-                  <div style={{ padding: "32px 36px 0" }}>
-                    <h3 className="font-serif text-xl font-bold text-[#1A261D] mb-2">Share Your Response</h3>
-                    <p className="text-[#8A9E8C] text-[13px] mb-5">Your thoughts help build a richer learning community.</p>
-                    <textarea
-                      value={newPostContent}
-                      onChange={e => setNewPostContent(e.target.value)}
-                      placeholder="Write your response to the prompt above..."
-                      rows={5}
-                      className="w-full bg-[#FAFAF7] border border-[#E4E8E0] rounded-2xl text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed focus:border-[#C9973A] transition-colors"
-                      style={{ padding: "18px 20px" }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between" style={{ padding: "16px 36px 28px" }}>
-                    <span className="text-[12px] text-[#8A9E8C]">{newPostContent.length > 0 ? `${newPostContent.length} characters` : "Be thoughtful and respectful"}</span>
-                    <button
-                      disabled={!newPostContent.trim() || isPostingForum}
-                      onClick={async () => {
-                        if (!newPostContent.trim()) return;
-                        setIsPostingForum(true);
-                        try {
-                          const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
-                          setForumPosts(prev => [res.data.data, ...prev]);
-                          setNewPostContent("");
-                        } catch {}
-                        setIsPostingForum(false);
-                      }}
-                      className="flex items-center gap-2 text-white font-bold rounded-2xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_4px_12px_rgba(201,151,58,0.3)] hover:-translate-y-0.5"
-                      style={{ fontSize: 13, padding: "12px 28px", background: newPostContent.trim() ? "#C9973A" : "#D4C5A9" }}
-                    >
-                      <Send size={14} /> {isPostingForum ? "Posting..." : "Post Response"}
-                    </button>
-                  </div>
+                {/* Classmate Replies Header */}
+                <div className="flex items-center gap-4" style={{ marginTop: '32px', marginBottom: '32px' }}>
+                  <h3 className="font-serif text-2xl font-bold text-[#1A261D]">Classmate Replies</h3>
+                  <span className="px-3 py-1 bg-white border border-[#E4E8E0] text-[#526658] text-[13px] font-bold rounded-full shadow-sm">{forumPosts.length}</span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E4E8E0] to-transparent" />
                 </div>
 
-                {/* Posts */}
+                {/* Discussions Section */}
                 <div>
-                  <h3 className="text-[12px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em] mb-6">{forumPosts.length > 0 ? `${forumPosts.length} Community Response${forumPosts.length > 1 ? "s" : ""}` : "Discussions"}</h3>
-
                   {loadingForum ? (
-                    <div className="text-center py-20 text-[#8A9E8C]">
-                      <div className="w-8 h-8 border-2 border-[#C9973A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                      Loading discussions...
+                    <div className="py-20 flex flex-col items-center justify-center text-[#8A9E8C]">
+                      <div className="w-8 h-8 border-2 border-[#E4E8E0] border-t-[#C9973A] rounded-full animate-spin mb-4" />
+                      <p className="font-medium text-[15px]">Loading replies...</p>
                     </div>
                   ) : forumPosts.length === 0 ? (
-                    <div className="bg-white rounded-3xl border border-dashed border-[#D4C5A9] flex flex-col items-center justify-center" style={{ padding: "72px 48px" }}>
-                      <div className="w-16 h-16 rounded-full bg-[#FBF6EC] flex items-center justify-center mb-6">
-                        <MessageSquare size={28} className="text-[#C9973A]" />
+                    <div className="py-20 flex flex-col items-center justify-center text-center bg-white rounded-[24px] border border-dashed border-[#E4E8E0] shadow-sm">
+                      <div className="w-16 h-16 rounded-full bg-[#FAFAF7] border border-[#E4E8E0] flex items-center justify-center mb-6">
+                        <MessageSquare size={24} className="text-[#8A9E8C]" />
                       </div>
-                      <p className="font-serif text-2xl text-[#1A261D] font-bold mb-2">Start the Conversation</p>
-                      <p className="text-[#8A9E8C] text-[14px] text-center max-w-xs leading-relaxed">Be the first to share your thoughts and inspire your classmates!</p>
+                      <h4 className="font-serif text-2xl text-[#1A261D] font-bold mb-3">No replies yet</h4>
+                      <p className="text-[#8A9E8C] text-[15px] max-w-sm mx-auto leading-relaxed">Be the first to share your thoughts and answer the instructor's prompt!</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-5">
+                    <div className="space-y-6">
                       {forumPosts.map((post: any) => (
-                        <div key={post.id} className="bg-white rounded-3xl border border-[#E4E8E0] shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
-                          {/* Post body */}
-                          <div style={{ padding: "32px 36px" }}>
-                            <div className="flex items-start gap-4 mb-5">
-                              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] flex items-center justify-center text-[#9A6C1A] font-bold text-[15px] flex-shrink-0 shadow-sm">
-                                {post.author?.name?.slice(0, 2).toUpperCase()}
+                        <div key={post.id} className="bg-white rounded-[24px] border border-[#E4E8E0] shadow-sm" style={{ padding: '28px 36px' }}>
+                          {/* Post Header */}
+                          <div className="flex items-center gap-4 mb-5">
+                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] flex items-center justify-center text-[#9A6C1A] font-bold text-[14px] border-2 border-white shadow-sm">
+                              {getInitials(post.author?.name)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-bold text-[#1A261D] text-[15px]">{post.author?.name}</h4>
+                                {post.author?.role !== "STUDENT" && (
+                                  <span className="px-2 py-0.5 bg-[#FBF6EC] text-[#C9973A] text-[9px] font-bold uppercase tracking-wider rounded-md">{post.author?.role}</span>
+                                )}
                               </div>
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-bold text-[#1A261D] text-[15px]">{post.author?.name}</span>
-                                  <span className="text-[11px] text-[#8A9E8C]">{new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                                </div>
-                                <div className="text-[11px] text-[#8A9E8C] mt-0.5">{post.author?.role === "STUDENT" ? "Student" : post.author?.role}</div>
+                              <div className="text-[12px] text-[#8A9E8C] mt-0.5">
+                                {new Date(post.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                               </div>
                             </div>
-                            <p className="text-[16px] text-[#1A261D] leading-[1.8] pl-[60px]">{post.content}</p>
                           </div>
 
-                          {/* Reply toggle */}
-                          <div className="border-t border-[#F0EDE8]" style={{ background: "#FAFAF7" }}>
+                          {/* Post Content */}
+                          <p className="text-[16px] text-[#2C3E30] leading-[1.8] mb-6 pl-[60px]">{post.content}</p>
+
+                          {/* Replies Section */}
+                          <div className="ml-[60px]">
                             <button
                               onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
-                              className="w-full flex items-center gap-2 text-[12px] font-bold text-[#8A9E8C] hover:text-[#C9973A] transition-colors"
-                              style={{ padding: "14px 36px" }}
+                              className="flex items-center gap-1.5 text-[13px] font-bold text-[#8A9E8C] hover:text-[#1A261D] transition-colors mb-4"
                             >
-                              <ChevronDown size={14} className={`transition-transform duration-200 ${expandedPost === post.id ? "rotate-180" : ""}`} />
+                              <ChevronDown size={14} className={`transition-transform duration-300 ${expandedPost === post.id ? "rotate-180" : ""}`} />
                               {post.replies?.length || 0} {post.replies?.length === 1 ? "Reply" : "Replies"}
                             </button>
 
                             {expandedPost === post.id && (
-                              <div style={{ padding: "0 36px 24px" }}>
+                              <div className="space-y-4">
+                                {/* Existing Replies */}
                                 {post.replies?.map((reply: any) => (
-                                  <div key={reply.id} className="flex items-start gap-3 py-4 border-t border-[#E4E8E0] first:border-t-0">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${reply.isInstructor ? "bg-[#1A261D] text-[#C9973A]" : "bg-[#F5E6C8] text-[#9A6C1A]"}`}>
-                                      {reply.author?.name?.slice(0, 2).toUpperCase()}
+                                  <div key={reply.id} className="flex gap-4 bg-[#FAFAF7] p-5 rounded-[20px] border border-[#E4E8E0]">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 border-2 border-white shadow-sm ${reply.isInstructor ? "bg-[#1A261D] text-[#C9973A]" : "bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] text-[#9A6C1A]"}`}>
+                                      {getInitials(reply.author?.name)}
                                     </div>
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-bold text-[#1A261D] text-[13px]">{reply.author?.name}</span>
+                                      <div className="flex items-center gap-2 mb-1.5">
+                                        <span className="font-bold text-[#1A261D] text-[14px]">{reply.author?.name}</span>
                                         {reply.isInstructor && (
-                                          <span className="text-[10px] bg-[#1A261D] text-[#C9973A] rounded-full px-2 py-0.5 font-bold uppercase tracking-wider">Instructor</span>
+                                          <span className="px-1.5 py-0.5 rounded-md bg-[#1A261D] text-[#C9973A] text-[9px] font-bold uppercase tracking-wider">Instructor</span>
                                         )}
+                                        <span className="text-[11px] text-[#8A9E8C] ml-auto">
+                                          {new Date(reply.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                                        </span>
                                       </div>
-                                      <p className="text-[14px] text-[#526658] leading-relaxed">{reply.content}</p>
+                                      <p className="text-[15px] text-[#526658] leading-relaxed">{reply.content}</p>
                                     </div>
                                   </div>
                                 ))}
 
-                                {/* Reply compose */}
-                                <div className="flex gap-3 mt-4 pt-4 border-t border-[#E4E8E0]">
-                                  <textarea
-                                    value={replyContent[post.id] || ""}
-                                    onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                    placeholder="Write a thoughtful reply..."
-                                    rows={2}
-                                    className="flex-1 bg-white border border-[#E4E8E0] rounded-2xl text-[14px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none focus:border-[#C9973A] transition-colors"
-                                    style={{ padding: "12px 16px" }}
-                                  />
-                                  <button
-                                    disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
-                                    onClick={async () => {
-                                      const content = replyContent[post.id]?.trim();
-                                      if (!content) return;
-                                      setIsReplying(prev => ({ ...prev, [post.id]: true }));
-                                      try {
-                                        const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
-                                        setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
-                                        setReplyContent(prev => ({ ...prev, [post.id]: "" }));
-                                      } catch {}
-                                      setIsReplying(prev => ({ ...prev, [post.id]: false }));
-                                    }}
-                                    className="self-end flex items-center gap-1.5 bg-[#1A261D] text-white font-bold rounded-2xl hover:bg-[#2C3E30] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                    style={{ fontSize: 12, padding: "12px 20px", whiteSpace: "nowrap" }}
-                                  >
-                                    <Send size={12} /> {isReplying[post.id] ? "..." : "Reply"}
-                                  </button>
+                                {/* Reply Input */}
+                                <div className="flex gap-4 items-start mt-4">
+                                  <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-1 shadow-sm">
+                                    ME
+                                  </div>
+                                  <div className="flex-1 relative">
+                                    <textarea
+                                      value={replyContent[post.id] || ""}
+                                      onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                      placeholder="Write a reply..."
+                                      rows={2}
+                                      className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none focus:border-[#C9973A] transition-all p-4 pr-14 min-h-[52px]"
+                                      style={{ overflowY: "auto" }}
+                                      onWheel={(e) => {
+                                        const target = e.currentTarget;
+                                        const isScrollingDown = e.deltaY > 0;
+                                        const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
+                                        const isAtTop = target.scrollTop <= 0;
+                                        
+                                        if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
+                                          e.stopPropagation();
+                                        }
+                                      }}
+                                    />
+                                    <button
+                                      disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
+                                      onClick={async () => {
+                                        const content = replyContent[post.id]?.trim();
+                                        if (!content) return;
+                                        setIsReplying(prev => ({ ...prev, [post.id]: true }));
+                                        try {
+                                          const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
+                                          setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
+                                          setReplyContent(prev => ({ ...prev, [post.id]: "" }));
+                                        } catch {}
+                                        setIsReplying(prev => ({ ...prev, [post.id]: false }));
+                                      }}
+                                      className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                      <Send size={14} />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -1146,8 +1212,8 @@ export default function LessonPlayerPage() {
 
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
 

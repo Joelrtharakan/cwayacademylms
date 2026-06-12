@@ -137,7 +137,7 @@ export const reorderModules = asyncHandler(async (req: Request, res: Response) =
 
 export const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const { moduleId } = req.params;
-  const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
+  const { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks } = req.body;
 
   const section = await prisma.section.findUnique({
     where: { id: moduleId },
@@ -168,6 +168,7 @@ export const createLesson = asyncHandler(async (req: Request, res: Response) => 
       order: nextOrder,
       isFree: isFree ?? false,
       isPreview: isPreview ?? false,
+      forumMarks: forumMarks ? Number(forumMarks) : null,
     },
   });
 
@@ -176,7 +177,7 @@ export const createLesson = asyncHandler(async (req: Request, res: Response) => 
 
 export const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
-  const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
+  const { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks } = req.body;
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
@@ -189,7 +190,7 @@ export const updateLesson = asyncHandler(async (req: Request, res: Response) => 
 
   const updated = await prisma.lesson.update({
     where: { id: lessonId },
-    data: { title, type, content, videoUrl, duration, order, isFree, isPreview },
+    data: { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks: forumMarks !== undefined ? Number(forumMarks) : undefined },
   });
 
   res.json({ status: "success", data: updated });

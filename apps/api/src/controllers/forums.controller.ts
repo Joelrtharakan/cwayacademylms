@@ -77,3 +77,32 @@ export const createForumReply = asyncHandler(async (req: Request, res: Response)
 
   res.status(201).json({ status: "success", data: reply });
 });
+
+export const gradeDiscussion = asyncHandler(async (req: Request, res: Response) => {
+  const { discussionId } = req.params;
+  const { score, feedback } = req.body;
+
+  const discussion = await prisma.discussion.findUnique({
+    where: { id: discussionId },
+    include: { course: true }
+  });
+
+  if (!discussion) throw new AppError("Discussion not found", 404);
+  if (req.user!.role !== "ADMIN" && discussion.course.instructorId !== req.user!.id) {
+    throw new AppError("Not authorized to grade", 403);
+  }
+
+  const updated = await prisma.discussion.update({
+    where: { id: discussionId },
+    data: { score: score !== undefined ? Number(score) : null, feedback },
+    include: {
+      author: { select: { id: true, name: true, role: true } },
+      replies: {
+        include: { author: { select: { id: true, name: true, role: true } } },
+        orderBy: { createdAt: "asc" }
+      }
+    }
+  });
+
+  res.json({ status: "success", data: updated });
+});

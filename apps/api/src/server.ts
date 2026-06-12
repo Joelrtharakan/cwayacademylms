@@ -60,7 +60,7 @@ app.use("/uploads", express.static(uploadsDir));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1", coursesRoutes);
-app.use("/api/v1", forumsRoutes);
+app.use("/api/v1/forums", forumsRoutes);
 app.use("/api/v1/student", studentRoutes);
 
 // Catch-all unhandled routes

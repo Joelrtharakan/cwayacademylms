@@ -162,6 +162,7 @@ model Lesson {
   isFree       Boolean @default(false)
   isPreview    Boolean @default(false)
   bunnyVideoId String?
+  forumMarks   Int?
 
   quiz             Quiz?
   assignment       Assignment?
@@ -549,6 +550,8 @@ model Discussion {
   content   String
   isPinned  Boolean           @default(false)
   isLocked  Boolean           @default(false)
+  score     Int?
+  feedback  String?
   createdAt DateTime          @default(now())
   replies   DiscussionReply[]
 }
