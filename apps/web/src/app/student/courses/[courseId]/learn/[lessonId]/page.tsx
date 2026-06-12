@@ -66,6 +66,29 @@ export default function LessonPlayerPage() {
 
   // For assignments
   const [assignmentSub, setAssignmentSub] = useState<any>(null);
+  const [submissionResponse, setSubmissionResponse] = useState("");
+  const [submissionFile, setSubmissionFile] = useState<File | null>(null);
+  const [isSubmittingAssig, setIsSubmittingAssig] = useState(false);
+
+  const onSubmitAssignment = async () => {
+    if (!lesson?.assignment?.id || (!submissionResponse.trim() && !submissionFile)) return;
+    setIsSubmittingAssig(true);
+    try {
+      const formData = new FormData();
+      formData.append("content", submissionResponse);
+      if (submissionFile) {
+        formData.append("file", submissionFile);
+      }
+      const res = await api.post(`/student/assignments/${lesson.assignment.id}/submit`, formData);
+      setAssignmentSub(res.data.data);
+      // Mark as complete in progress
+      markComplete();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to submit assignment");
+    } finally {
+      setIsSubmittingAssig(false);
+    }
+  };
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -136,6 +159,22 @@ export default function LessonPlayerPage() {
         await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
       }
       setLesson((prev: any) => ({ ...prev, isCompleted: true }));
+      setEnrollment((prev: any) => {
+        if (!prev) return prev;
+        const newProgress = [...(prev.lessonProgress || [])];
+        if (lesson.type === "READING_MATERIAL") {
+          const newRmProgress = [...(prev.readingMaterialProgress || [])];
+          if (!newRmProgress.find((p: any) => p.readingMaterialId === lesson.id)) {
+            newRmProgress.push({ readingMaterialId: lesson.id, completedAt: new Date() });
+          }
+          return { ...prev, readingMaterialProgress: newRmProgress };
+        } else {
+          if (!newProgress.find((p: any) => p.lessonId === lesson.id)) {
+            newProgress.push({ lessonId: lesson.id, completedAt: new Date() });
+          }
+          return { ...prev, lessonProgress: newProgress };
+        }
+      });
     } catch (err) {
       console.error(err);
     }
@@ -819,6 +858,8 @@ export default function LessonPlayerPage() {
                           <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Response</label>
                           <textarea 
                             rows={8}
+                            value={submissionResponse}
+                            onChange={(e) => setSubmissionResponse(e.target.value)}
                             className="w-full bg-[#FAFAF7] rounded-2xl p-6 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#C9973A]/50 transition-all duration-300 placeholder:text-[#8A9E8C]/50 border border-transparent focus:border-[#C9973A]/30 resize-none"
                             placeholder="Type your thoughtful response here..."
                           />
@@ -827,15 +868,22 @@ export default function LessonPlayerPage() {
                         <div>
                           <label className="block text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em]" style={{ marginBottom: "16px" }}>Attached File <span className="lowercase font-medium tracking-normal">(Optional)</span></label>
                           <label className="block rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer bg-[#FAFAF7] border border-[#E4E8E0] hover:border-[#C9973A]/50 hover:bg-[#FDFBF7] group">
-                            <input type="file" className="hidden" />
-                            <div className="text-[15px] font-bold text-[#1A261D]">Click to browse or drag & drop</div>
-                            <div className="text-sm text-[#8A9E8C] mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
+                            <input type="file" className="hidden" onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
+                            <div className="text-[15px] font-bold text-[#1A261D]">
+                              {submissionFile ? submissionFile.name : "Click to browse or drag & drop"}
+                            </div>
+                            {!submissionFile && (
+                              <div className="text-sm text-[#8A9E8C] mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
+                            )}
                           </label>
                         </div>
                         
                         <div style={{ marginTop: "32px" }}>
-                          <button className="w-full bg-[#C9973A] text-white rounded-2xl font-bold hover:bg-[#A8792A] hover:shadow-[0_8px_20px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ fontSize: "14px", padding: "14px 0", letterSpacing: "0.02em" }}>
-                            Submit Assignment
+                          <button 
+                            onClick={onSubmitAssignment}
+                            disabled={isSubmittingAssig || (!submissionResponse.trim() && !submissionFile)}
+                            className="w-full bg-[#C9973A] text-white rounded-2xl font-bold hover:bg-[#A8792A] hover:shadow-[0_8px_20px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0" style={{ fontSize: "14px", padding: "14px 0", letterSpacing: "0.02em" }}>
+                            {isSubmittingAssig ? "Submitting..." : "Submit Assignment"}
                           </button>
                         </div>
                       </div>
@@ -843,36 +891,63 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && !assignmentSub.isGraded && (
-                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px] p-12 text-center relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-[#4A8C5C]" />
-                      <div className="w-20 h-20 bg-white border border-[#E4E8E0] shadow-sm rounded-full flex items-center justify-center mx-auto mb-8">
-                        <CheckCircle className="w-10 h-10 text-[#4A8C5C]" />
+                    <div className="bg-white rounded-3xl shadow-sm border border-[#E4E8E0] relative overflow-hidden flex flex-col items-center justify-center text-center" style={{ padding: "48px" }}>
+                      <div className="w-20 h-20 bg-[#F2F6F3] rounded-full flex items-center justify-center mb-6 ring-8 ring-[#FAFAF7]">
+                        <CheckCircle className="w-10 h-10 text-[#4A8C5C]" strokeWidth={2.5} />
                       </div>
-                      <h3 className="font-serif text-3xl font-bold text-[#1A261D] mb-4">Submitted!</h3>
-                      <p className="text-[#8A9E8C] text-[16px] leading-relaxed font-medium">
-                        Your work is securely uploaded and awaiting instructor review. We will notify you once it has been graded.
+                      <h3 className="font-serif text-3xl font-bold text-[#1A261D] mb-3">Submission Received</h3>
+                      <p className="text-[#8A9E8C] text-[16px] leading-relaxed font-medium max-w-sm mb-8">
+                        Your work is safely uploaded and awaiting review. We will notify you once your instructor posts a grade.
                       </p>
+                      <button 
+                        onClick={() => {
+                          setSubmissionResponse(assignmentSub.content || "");
+                          setAssignmentSub(null);
+                        }}
+                        className="bg-white border border-[#E4E8E0] text-[#1A261D] rounded-xl font-bold hover:bg-[#FAFAF7] hover:border-[#C9973A] transition-all duration-300" style={{ fontSize: "14px", padding: "12px 28px", letterSpacing: "0.02em" }}>
+                        Resubmit Assignment
+                      </button>
                     </div>
                   )}
 
                   {assignmentSub && assignmentSub.isGraded && (
-                    <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-[32px] overflow-hidden">
-                      <div className="p-12 text-center border-b border-[#E4E8E0] bg-white">
-                        <div className="inline-block bg-[#4A8C5C] text-white text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-[0.2em] mb-6 shadow-sm">Graded ✓</div>
-                        <h3 className="text-xs uppercase tracking-[0.2em] text-[#8A9E8C] mb-4 font-bold">Your Official Score</h3>
-                        <div className="font-serif text-7xl text-[#1A261D] font-bold tracking-tight">
-                          {assignmentSub.grade} <span className="text-3xl text-[#8A9E8C]">/ {lesson.assignment?.maxScore}</span>
+                    <div style={{ background: "#fff", borderRadius: 24, border: "1px solid #E4E8E0", overflow: "hidden" }}>
+                      {/* Top: Score row */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 24, padding: "28px 36px", borderBottom: "1px solid #E4E8E0" }}>
+                        {/* Score number */}
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontFamily: "var(--font-cormorant, Georgia, serif)", fontWeight: 700, color: "#1A261D", lineHeight: 1, flexShrink: 0 }}>
+                          <span style={{ fontSize: 64 }}>{assignmentSub.grade}</span>
+                          <span style={{ fontSize: 22, color: "#8A9E8C", fontWeight: 400 }}>/ {lesson.assignment?.maxScore}</span>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ width: 1, height: 52, background: "#E4E8E0", flexShrink: 0, marginLeft: 8 }} />
+
+                        {/* Score label + badge */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0, paddingLeft: 8 }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#4A8C5C", fontWeight: 700, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                            <CheckCircle size={13} strokeWidth={2.5} /> Graded
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#1A261D", whiteSpace: "nowrap" }}>Your Official Score</div>
+                          <div style={{ fontSize: 12, color: "#8A9E8C", whiteSpace: "nowrap" }}>
+                            {assignmentSub.grade >= (lesson.assignment?.maxScore * 0.9) ? "Excellent work!" :
+                             assignmentSub.grade >= (lesson.assignment?.maxScore * 0.75) ? "Good job!" :
+                             "Keep it up!"}
+                          </div>
                         </div>
                       </div>
-                      
-                      {assignmentSub.feedback && (
-                        <div className="p-10 bg-[#FAFAF7]">
-                          <h4 className="text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em] mb-5 flex items-center gap-3">
-                            <span className="text-[#C9973A] text-lg">✍️</span> Instructor Feedback
-                          </h4>
-                          <div className="text-[16px] text-[#1A261D]/85 leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+
+                      {/* Bottom: Feedback */}
+                      <div style={{ padding: "24px 36px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#8A9E8C", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                          Instructor Feedback
                         </div>
-                      )}
+                        {assignmentSub.feedback ? (
+                          <div style={{ fontSize: 15, color: "#1A261D", lineHeight: 1.8, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                        ) : (
+                          <div style={{ fontSize: 15, color: "#8A9E8C", fontStyle: "italic", lineHeight: 1.7 }}>No additional feedback provided.</div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -542,24 +542,43 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
   const { assignmentId } = req.params;
   const { content } = req.body;
   const studentId = req.user!.id;
-  const fileUrl = req.file ? (req.file as any).location : null; // Assuming multer-s3 sets location
+  const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   if (!content && !fileUrl) throw new AppError("Either content or file is required", 400);
 
   const existing = await prisma.submission.findFirst({
     where: { assignmentId, studentId }
   });
-  if (existing) throw new AppError("Already submitted", 400);
 
-  const submission = await prisma.submission.create({
-    data: {
-      assignmentId,
-      studentId,
-      content,
-      fileUrl,
-      isGraded: false
-    }
-  });
+  if (existing && existing.isGraded) {
+    throw new AppError("Cannot resubmit a graded assignment", 400);
+  }
+
+  let submission;
+  if (existing) {
+    // Determine the final fileUrl. If no new file was uploaded, keep the old one.
+    // If the user wants to remove the file, the frontend would need to explicitly tell us,
+    // but for now, any new upload overwrites, and no upload keeps the old one.
+    const finalFileUrl = req.file ? fileUrl : existing.fileUrl;
+    submission = await prisma.submission.update({
+      where: { id: existing.id },
+      data: {
+        content,
+        fileUrl: finalFileUrl,
+        submittedAt: new Date()
+      }
+    });
+  } else {
+    submission = await prisma.submission.create({
+      data: {
+        assignmentId,
+        studentId,
+        content,
+        fileUrl,
+        isGraded: false
+      }
+    });
+  }
 
   const assignment = await prisma.assignment.findUnique({ where: { id: assignmentId }, include: { lesson: { include: { section: { include: { course: true } } } } } });
   

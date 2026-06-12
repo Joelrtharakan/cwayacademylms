@@ -555,7 +555,7 @@ export const getAssignmentSubmissions = asyncHandler(async (req: Request, res: R
   const { isGraded } = req.query as any;
   const where: any = { assignmentId };
   if (isGraded !== undefined) where.isGraded = isGraded === "true";
-  const submissions = await prisma.submission.findMany({ where, include: { student: { select: { name: true, avatar: true, church: true } } } });
+  const submissions = await prisma.submission.findMany({ where, include: { student: { select: { name: true, email: true, avatar: true, church: true } } } });
   res.json({ status: "success", data: submissions });
 });
 

@@ -113,6 +113,16 @@ export const uploadAssignmentAttachment = async (assignmentId: string, file: Fil
   return res.data.data;
 };
 
+export const getAssignmentSubmissions = async (assignmentId: string) => {
+  const res = await api.get(`/assignments/${assignmentId}/submissions`);
+  return res.data.data;
+};
+
+export const gradeSubmission = async (submissionId: string, grade: number, feedback: string) => {
+  const res = await api.put(`/submissions/${submissionId}/grade`, { grade, feedback });
+  return res.data.data;
+};
+
 // Quizzes
 export const createQuiz = async (moduleId: string, data: any) => {
   const res = await api.post(`/modules/${moduleId}/quiz`, data);

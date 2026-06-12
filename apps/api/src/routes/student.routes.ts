@@ -4,7 +4,16 @@ import * as studentCtrl from "../controllers/student.controller";
 import multer from "multer";
 
 const router = Router();
-const upload = multer(); // Mock multer since S3 integration handles real uploads elsewhere, or use it for parsing multipart forms
+import path from "path";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, "../../../web/public/uploads")),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + "-" + file.originalname.replace(/\s+/g, '-'));
+  }
+});
+const upload = multer({ storage });
 
 router.use(authenticate);
 

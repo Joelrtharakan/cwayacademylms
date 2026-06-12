@@ -18,6 +18,7 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
   const [expanded, setExpanded] = useState(!sub.isGraded);
   const [grade, setGrade] = useState(sub.grade ?? "");
   const [feedback, setFeedback] = useState(sub.feedback ?? "");
+  const [showFile, setShowFile] = useState(false);
   const maxScore = sub.assignment?.maxScore || 100;
 
   return (
@@ -55,9 +56,19 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
             </div>
           )}
           {sub.fileUrl && (
-            <a href={sub.fileUrl} target="_blank" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 16, padding: "8px 16px", background: "rgba(201,168,76,0.1)", borderRadius: 8, color: "var(--gold-dark, #A68A3D)", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
-              <Download size={16} /> Download Submission File
-            </a>
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button onClick={() => setShowFile(!showFile)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", background: "rgba(201,168,76,0.1)", borderRadius: 8, color: "var(--gold-dark, #A68A3D)", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                  <FileText size={16} /> {showFile ? "Hide File" : "View File"}
+                </button>
+                <a href={sub.fileUrl} target="_blank" download style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", background: "transparent", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: 8, color: MUTED, textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+                  <Download size={16} /> Download
+                </a>
+              </div>
+              {showFile && (
+                <iframe src={sub.fileUrl} style={{ width: "100%", height: 500, border: "1px solid var(--border-light, #E2E8F0)", borderRadius: 8, background: "#FFFFFF" }} />
+              )}
+            </div>
           )}
 
           {/* Grading */}
