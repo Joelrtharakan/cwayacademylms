@@ -31,6 +31,7 @@ router.post("/quizzes/:quizId/attempt", studentCtrl.attemptQuiz);
 router.post("/quizzes/:quizId/submit", studentCtrl.submitQuiz);
 
 // Assignments
+router.get("/assignments", studentCtrl.getMyAssignments);
 router.get("/assignments/:assignmentId/my-submission", studentCtrl.getMySubmission);
 router.post("/assignments/:assignmentId/submit", upload.single("file"), studentCtrl.submitAssignment);
 

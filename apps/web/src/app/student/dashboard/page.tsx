@@ -110,14 +110,14 @@ export default function StudentDashboardPage() {
         />
         <StatCard
           label="Certificates Earned"
-          value={isLoading ? "—" : "0"}
+          value={isLoading ? "—" : data?.certificatesCount || 0}
           icon={Award}
           loading={isLoading}
           color="purple"
         />
         <StatCard
           label="Pending Assignments"
-          value={isLoading ? "—" : "0"}
+          value={isLoading ? "—" : data?.pendingAssignmentsCount || 0}
           icon={ClipboardCheck}
           loading={isLoading}
           color="blue"

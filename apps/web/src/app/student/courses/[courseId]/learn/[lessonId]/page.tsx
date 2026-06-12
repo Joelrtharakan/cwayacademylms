@@ -275,13 +275,19 @@ export default function LessonPlayerPage() {
   };
 
   const handleNext = async () => {
-    if (!nextItem || !enrollment || !lesson) return;
+    if (!enrollment || !lesson) return;
     
     if (lesson.type === "READING_MATERIAL") {
       await markComplete();
     } else if (lesson.type === "QUIZ" && quizResult?.passed && !lesson.isCompleted) {
       // Fallback in case submitQuiz failed to mark complete
       await markComplete();
+    }
+    
+    if (!nextItem) {
+      toast.success("Congratulations! You have completed the course.", { duration: 5000 });
+      router.push(`/student/dashboard`);
+      return;
     }
     
     goToItem(nextItem);
@@ -1376,10 +1382,9 @@ export default function LessonPlayerPage() {
           Module · Lesson
         </div>
         <button 
-          disabled={!nextLesson}
           onClick={handleNext}
           title={nextLesson ? "Continue to next lesson" : "You have reached the end of the course"}
-          className={`${nextButtonClasses} ml-4 ${!nextLesson ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`${nextButtonClasses} ml-4`}
         >
           {nextLesson ? "Next Lesson" : "End of Course"} <ArrowRight className="w-4 h-4" />
         </button>

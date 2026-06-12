@@ -923,25 +923,102 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
         select: {
           id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
           instructor: { select: { name: true } },
-          _count: { select: { sections: true } }
+          _count: { select: { sections: true } },
+          sections: {
+            include: {
+              lessons: {
+                where: { type: "ASSIGNMENT" },
+                include: { assignment: true }
+              }
+            }
+          }
         }
       }
     },
     orderBy: { enrolledAt: "desc" }
   });
 
+  const certificatesCount = await prisma.certificate.count({
+    where: { studentId }
+  });
+
+  const submissions = await prisma.submission.findMany({
+    where: { studentId }
+  });
+
+  let pendingAssignmentsCount = 0;
+  enrollments.forEach(enr => {
+    enr.course.sections?.forEach(sec => {
+      sec.lessons?.forEach(lesson => {
+        if (lesson.assignment) {
+          const hasSubmission = submissions.some(s => s.assignmentId === lesson.assignment?.id);
+          if (!hasSubmission) {
+            pendingAssignmentsCount++;
+          }
+        }
+      });
+    });
+  });
+
   // Simplified "Continue Learning"
   const activeEnrollment = enrollments.find(e => e.status === "ACTIVE" && e.progress < 100) || enrollments[0];
 
-  // Upcoming deadlines (assignments with dueDate > now)
-  // Assuming assignment dueDates exist in schema. Wait, schema doesn't have dueDate on Assignment? Let's check schema.
-  // Actually, we'll skip upcoming deadlines for the backend payload if dueDate isn't in schema, or send empty.
-  
   res.json({
     status: "success",
     data: {
       enrollments,
-      activeEnrollment
+      activeEnrollment,
+      certificatesCount,
+      pendingAssignmentsCount
     }
   });
+});
+
+export const getMyAssignments = asyncHandler(async (req: Request, res: Response) => {
+  const studentId = req.user!.id;
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId },
+    include: {
+      course: {
+        include: {
+          sections: {
+            include: {
+              lessons: {
+                where: { type: "ASSIGNMENT" },
+                include: { assignment: true }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const submissions = await prisma.submission.findMany({
+    where: { studentId }
+  });
+
+  const assignments: any[] = [];
+  
+  enrollments.forEach(enr => {
+    enr.course.sections.forEach(sec => {
+      sec.lessons.forEach(lesson => {
+        if (lesson.assignment) {
+          const submission = submissions.find(s => s.assignmentId === lesson.assignment?.id);
+          assignments.push({
+            id: lesson.assignment.id,
+            title: lesson.assignment.title,
+            courseName: enr.course.title,
+            courseId: enr.course.id,
+            lessonId: lesson.id,
+            totalPoints: lesson.assignment.maxScore,
+            submission
+          });
+        }
+      });
+    });
+  });
+
+  res.json({ status: "success", data: assignments });
 });
