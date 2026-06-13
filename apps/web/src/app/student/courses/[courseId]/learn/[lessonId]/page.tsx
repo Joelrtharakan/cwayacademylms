@@ -445,7 +445,7 @@ export default function LessonPlayerPage() {
   const nextButtonClasses = "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent";
 
   return (
-    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative">
+    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative pb-24">
       <div className="flex-1 w-full relative">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
@@ -507,7 +507,7 @@ export default function LessonPlayerPage() {
 
         {/* READING MATERIAL */}
         {lesson.type === "READING_MATERIAL" && (
-          <div className="w-full min-h-full bg-[#F7F8F5] text-[#1A261D] px-6 py-16 md:px-12 md:py-20">
+          <div className="w-full min-h-full bg-[#F7F8F5] text-[#1A261D] px-6 pt-16 pb-32 md:px-12 md:pt-20 md:pb-40">
             <div className="mx-auto w-full max-w-[1280px] space-y-10 px-6 md:px-10 lg:px-12">
               <div className="pt-4 text-center">
                 <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#111827] mb-6">
@@ -580,7 +580,7 @@ export default function LessonPlayerPage() {
 
         {/* QUIZ LESSON */}
         {lesson.type === "QUIZ" && (
-          <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: '3rem 1.5rem' }}>
+          <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D] pb-[120px]" style={{ padding: '3rem 1.5rem 8rem 1.5rem' }}>
             <div className="mx-auto w-full" style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               {quizState === "not_started" && (
                 <section className="relative overflow-hidden rounded-[24px] border border-[#E4E8E0] bg-white shadow-sm" style={{ padding: '1.5rem 2rem' }}>
@@ -905,7 +905,7 @@ export default function LessonPlayerPage() {
 
         {/* ASSIGNMENT LESSON */}
         {lesson.type === "ASSIGNMENT" && (
-          <div className="w-full min-h-full bg-white text-[#1A261D]" style={{ padding: "40px 8%" }}>
+          <div className="w-full min-h-full bg-white text-[#1A261D]" style={{ padding: "40px 8% 120px 8%" }}>
             <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
               
               {/* Left Column: Instructions */}
@@ -1072,7 +1072,7 @@ export default function LessonPlayerPage() {
           };
 
           return (
-            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: "56px 8%" }}>
+            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: "56px 8% 120px 8%" }}>
               <div className="max-w-3xl mx-auto">
                 
                 {/* Instructor Question Block */}
@@ -1162,7 +1162,7 @@ export default function LessonPlayerPage() {
                 {/* Classmate Replies Header */}
                 <div className="flex items-center gap-4" style={{ marginTop: '32px', marginBottom: '32px' }}>
                   <h3 className="font-serif text-2xl font-bold text-[#1A261D]">Classmate Replies</h3>
-                  <span className="px-3 py-1 bg-white border border-[#E4E8E0] text-[#526658] text-[13px] font-bold rounded-full shadow-sm">{forumPosts.length}</span>
+                  <span className="bg-white border border-[#E4E8E0] text-[#526658] text-[14px] font-bold rounded-full shadow-sm" style={{ padding: "4px 14px" }}>{forumPosts.length}</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-[#E4E8E0] to-transparent" />
                 </div>
 
@@ -1374,7 +1374,7 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 sticky bottom-0" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
+      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 fixed bottom-0 left-0 md:left-[320px] right-0" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
         <button
           disabled={!previousLesson}
           onClick={() => previousLesson && goToLesson(previousLesson.id)}
