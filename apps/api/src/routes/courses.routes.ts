@@ -1,11 +1,10 @@
 import { Router } from "express";
-import multer from "multer";
+import { upload } from "../middleware/upload.middleware";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 import * as CC from "../controllers/courses.controller";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 // ── PUBLIC ──────────────────────────────────────────────────────────────────
 router.get("/courses", (req, res, next) => { try { authenticate(req, res, () => next()); } catch { next(); } }, CC.listCourses);

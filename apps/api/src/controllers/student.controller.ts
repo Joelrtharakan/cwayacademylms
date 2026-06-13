@@ -7,13 +7,20 @@ import { CertificateService } from "../services/certificate.service";
 // PROGRESS TRACKING
 // ==========================================
 
+import { sendEnrollmentConfirmationEmail } from "../services/email.service";
+
 export const enrollInCourse = asyncHandler(async (req: Request, res: Response) => {
   const { courseId } = req.body;
   const studentId = req.user!.id;
+  const user = req.user!;
 
   if (!courseId) throw new AppError("Course ID is required", 400);
 
-  const course = await prisma.course.findUnique({ where: { id: courseId } });
+  const course = await prisma.course.findUnique({ 
+    where: { id: courseId },
+    include: { instructor: { select: { name: true } } }
+  });
+  
   if (!course || course.status !== "PUBLISHED") {
     throw new AppError("Course not found or not available", 404);
   }
@@ -34,6 +41,23 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
       progress: 0
     }
   });
+
+  try {
+    await sendEnrollmentConfirmationEmail(
+      { name: (user as any).name || "Student", email: user.email },
+      {
+        title: course.title,
+        id: course.id,
+        moduleNumber: course.moduleNumber,
+        weeksDuration: course.weeksDuration,
+        instructorName: course.instructor.name,
+        welcomeMessage: course.welcomeMessage,
+        scriptureRef: course.scriptureRef
+      }
+    );
+  } catch (e) {
+    console.error("[Email] Failed to send enrollment confirmation:", e);
+  }
 
   res.status(201).json({ status: "success", data: enrollment });
 });
@@ -550,11 +574,22 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
 // ASSIGNMENTS
 // ==========================================
 
+import { uploadToR2, generateKey } from "../services/storage.service";
+
 export const submitAssignment = asyncHandler(async (req: Request, res: Response) => {
   const { assignmentId } = req.params;
   const { content } = req.body;
   const studentId = req.user!.id;
-  const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+  let fileUrl: string | null = null;
+  if (req.file) {
+    const { url } = await uploadToR2(
+      req.file.buffer,
+      generateKey("submissions", req.file.originalname),
+      req.file.mimetype
+    );
+    fileUrl = url;
+  }
 
   if (!content && !fileUrl) throw new AppError("Either content or file is required", 400);
 

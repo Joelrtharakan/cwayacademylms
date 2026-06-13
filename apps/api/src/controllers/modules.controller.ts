@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 import { AppError, asyncHandler } from "../utils/errors";
-import { StorageService } from "../services/storage.service";
+import { uploadToR2, generateKey, deleteFromR2 } from "../services/storage.service";
 import { VideoService } from "../services/video.service";
 
 // ─── MODULES (SECTIONS) ──────────────────────────────────────────────────────
@@ -445,8 +445,8 @@ export const createReadingMaterial = asyncHandler(async (req: Request, res: Resp
 
   // Upload to R2
   const ext = file.originalname.split('.').pop() || '';
-  const fileKey = StorageService.generateUploadKey(`reading-materials/${moduleId}`, file.originalname);
-  const { url } = await StorageService.uploadFile(file.buffer, fileKey, file.mimetype);
+  const fileKey = generateKey(`reading-materials/${moduleId}`, file.originalname);
+  const { url } = await uploadToR2(file.buffer, fileKey, file.mimetype);
 
   const lastMat = await prisma.readingMaterial.findFirst({
     where: { sectionId: moduleId },
@@ -515,7 +515,7 @@ export const deleteReadingMaterial = asyncHandler(async (req: Request, res: Resp
   }
 
   // Delete from R2
-  await StorageService.deleteFile(material.fileKey);
+  await deleteFromR2(material.fileKey);
 
   // Delete from DB
   await prisma.readingMaterial.delete({ where: { id } });
@@ -934,8 +934,8 @@ export const uploadAssignmentAttachment = asyncHandler(async (req: Request, res:
     throw new AppError("Not authorized", 403);
   }
 
-  const fileKey = StorageService.generateUploadKey(`assignments/${assignmentId}`, file.originalname);
-  const { url } = await StorageService.uploadFile(file.buffer, fileKey, file.mimetype);
+  const fileKey = generateKey(`assignments/${assignmentId}`, file.originalname);
+  const { url } = await uploadToR2(file.buffer, fileKey, file.mimetype);
 
   const updated = await prisma.assignment.update({
     where: { id: assignmentId },

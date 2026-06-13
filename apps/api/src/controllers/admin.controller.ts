@@ -7,7 +7,7 @@ import { ExportService } from "../services/export.service";
 import { TokenService } from "../services/token.service";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { EmailService } from "../services/email.service";
+import { sendCourseApprovedEmail, sendInstructorWelcomeEmail } from "../services/email.service";
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
 
@@ -425,7 +425,7 @@ export const createInstructor = asyncHandler(async (req: Request, res: Response)
   });
 
   // Send the email asynchronously
-  EmailService.sendInstructorWelcomeEmail(user, password).catch(err => {
+  sendInstructorWelcomeEmail(user, password).catch((err: any) => {
     console.error("Failed to send instructor welcome email:", err);
   });
 
@@ -506,6 +506,15 @@ export const approveCourse = asyncHandler(async (req: Request, res: Response) =>
     `'${course.title}' is now live on CWAY Academy`,
     `/courses/${course.slug}`
   );
+
+  try {
+    await sendCourseApprovedEmail(
+      { name: course.instructor.name, email: course.instructor.email },
+      { title: course.title, slug: course.slug, id: course.id }
+    );
+  } catch (e) {
+    console.error("[Email] Failed to send course approved email:", e);
+  }
 
   res.json({ status: "success", message: "Course approved and published" });
 });

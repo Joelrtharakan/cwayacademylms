@@ -1,19 +1,9 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
 import * as studentCtrl from "../controllers/student.controller";
-import multer from "multer";
+import { upload } from "../middleware/upload.middleware";
 
 const router = Router();
-import path from "path";
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, "../../../web/public/uploads")),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + "-" + file.originalname.replace(/\s+/g, '-'));
-  }
-});
-const upload = multer({ storage });
 
 router.use(authenticate);
 

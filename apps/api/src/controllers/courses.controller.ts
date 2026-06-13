@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
-import { StorageService } from "../services/storage.service";
+import { uploadToR2, generateKey, deleteFromR2 } from "../services/storage.service";
 import { VideoService } from "../services/video.service";
 import { NotificationService } from "../services/notification.service";
 
@@ -305,8 +305,8 @@ export const uploadThumbnail = asyncHandler(async (req: Request, res: Response) 
   const { id } = req.params;
   if (!req.file) throw new AppError("No file uploaded", 400);
   const ext = req.file.mimetype.split("/")[1];
-  const key = StorageService.generateUploadKey("thumbnails", `${id}-${Date.now()}.${ext}`);
-  const { url } = await StorageService.uploadFile(req.file.buffer, key, req.file.mimetype);
+  const key = generateKey("thumbnails", `${id}-${Date.now()}.${ext}`);
+  const { url } = await uploadToR2(req.file.buffer, key, req.file.mimetype);
   await prisma.course.update({ where: { id }, data: { thumbnail: url } });
   res.json({ status: "success", data: { thumbnailUrl: url } });
 });
@@ -433,8 +433,8 @@ export const getLessonVideoStatus = asyncHandler(async (req: Request, res: Respo
 export const uploadLessonAttachment = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
   if (!req.file) throw new AppError("No file uploaded", 400);
-  const key = StorageService.generateUploadKey("attachments", req.file.originalname);
-  const { url } = await StorageService.uploadFile(req.file.buffer, key, req.file.mimetype);
+  const key = generateKey("attachments", req.file.originalname);
+  const { url } = await uploadToR2(req.file.buffer, key, req.file.mimetype);
   // Update assignment attachmentUrl
   await prisma.assignment.updateMany({ where: { lessonId }, data: { attachmentUrl: url } });
   res.json({ status: "success", data: { attachmentUrl: url } });
@@ -924,8 +924,8 @@ export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
 
 export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) throw new AppError("No file uploaded", 400);
-  const key = StorageService.generateUploadKey("avatars", `${req.user!.id}.${req.file.mimetype.split("/")[1]}`);
-  const { url } = await StorageService.uploadFile(req.file.buffer, key, req.file.mimetype);
+  const key = generateKey("avatars", `${req.user!.id}.${req.file.mimetype.split("/")[1]}`);
+  const { url } = await uploadToR2(req.file.buffer, key, req.file.mimetype);
   await prisma.user.update({ where: { id: req.user!.id }, data: { avatar: url } });
   res.json({ status: "success", data: { avatarUrl: url } });
 });

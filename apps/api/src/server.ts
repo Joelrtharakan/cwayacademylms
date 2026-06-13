@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
@@ -16,25 +17,44 @@ import adminRoutes from "./routes/admin.routes";
 import coursesRoutes from "./routes/courses.routes";
 import forumsRoutes from "./routes/forums.routes";
 import studentRoutes from "./routes/student.routes";
+import blogRoutes from "./routes/blog.routes";
 import { AppError } from "./utils/errors";
 
 const app = express();
-const PORT = process.env.API_PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
 // Security Middlewares
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: false,
-    frameguard: false,
-  })
-);
-app.use(
-  cors({
-    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", "js.stripe.com"],
+      styleSrc:    ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      fontSrc:     ["'self'", "fonts.gstatic.com"],
+      imgSrc:      ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
+      frameSrc:    ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
+      connectSrc:  ["'self'", "api.stripe.com"],
+    }
+  }
+}));
+
+// CORS — only allow your domains
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://learn.cwayacademy.com'
+  ],
+  credentials: true
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', limiter);
 
 // Logging & Parsing
 if (process.env.NODE_ENV === "development") {
@@ -62,6 +82,7 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1", coursesRoutes);
 app.use("/api/v1/forums", forumsRoutes);
 app.use("/api/v1/student", studentRoutes);
+app.use("/api/v1/blog", blogRoutes);
 
 // Catch-all unhandled routes
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

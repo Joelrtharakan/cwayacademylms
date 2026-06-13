@@ -307,8 +307,23 @@ export class CertificateService {
         templateId: template?.id,
         // The prisma schema doesn't have uniqueCode in Certificate model?
         // Wait, let's check schema.prisma
+      },
+      include: {
+        student: { select: { name: true, email: true } },
+        course: { select: { title: true } }
       }
     });
+
+    try {
+      const { sendCertificateIssuedEmail } = await import("./email.service");
+      await sendCertificateIssuedEmail(
+        { name: certificate.student.name, email: certificate.student.email },
+        { title: certificate.course.title },
+        certificate.uniqueCode
+      );
+    } catch (e) {
+      console.error("[Email] Failed to send certificate email:", e);
+    }
 
     return certificate;
   }

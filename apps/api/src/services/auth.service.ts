@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../utils/prisma";
 import { AppError } from "../utils/errors";
 import { TokenService } from "./token.service";
-import { EmailService } from "./email.service";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email.service";
 
 export class AuthService {
   private static hashToken(token: string): string {
@@ -22,6 +22,9 @@ export class AuthService {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const emailVerifyToken = this.hashToken(rawToken);
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -32,13 +35,17 @@ export class AuthService {
         church,
         location,
         preferredLanguage: preferredLanguage || "ENGLISH",
-        isVerified: true,
-        emailVerifyToken: null,
+        isVerified: false,
+        emailVerifyToken,
       },
     });
 
-    // Send welcome email directly
-    await EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
+    // Send verification email
+    try {
+      await sendVerificationEmail({ name: user.name, email: user.email }, rawToken);
+    } catch (e) {
+      console.error("[Email] Failed to send verification email:", e);
+    }
 
     return { message: "Account created successfully" };
   }
@@ -63,7 +70,11 @@ export class AuthService {
     });
 
     // Send Welcome Email
-    await EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
+    try {
+      await sendWelcomeEmail({ name: user.name, email: user.email });
+    } catch (e) {
+      console.error("[Email] Failed to send welcome email:", e);
+    }
 
     return { message: "Email verified" };
   }
@@ -159,7 +170,11 @@ export class AuthService {
       },
     });
 
-    await EmailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
+    try {
+      await sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
+    } catch (e) {
+      console.error("[Email] Failed to send password reset email:", e);
+    }
 
     return { message: "If that email exists, a reset link was sent" };
   }
