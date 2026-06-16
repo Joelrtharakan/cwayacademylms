@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key')
 const FROM   = process.env.EMAIL_FROM!
-const APP    = process.env.APP_URL!
+const APP    = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 // Base HTML wrapper — CWAY branded
 function wrap(content: string, preview: string): string {
@@ -33,7 +33,7 @@ function wrap(content: string, preview: string): string {
   <div style="display:none;max-height:0;overflow:hidden">${preview}</div>
   <div class="w">
     <div class="h">
-      <img src="${process.env.CWAY_LOGO_URL}" height="38" alt="CWAY Academy">
+      <img src="${process.env.CWAY_LOGO_URL || 'https://cwayacademy.netlify.app/logo.png?v=3'}" height="38" alt="CWAY Academy">
       <div class="tag">Coach · Challenge · Commission</div>
     </div>
     <div class="b">${content}</div>

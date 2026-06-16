@@ -127,7 +127,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
     include: {
       instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
       category: { select: { id: true, name: true, slug: true } },
-      sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
+      sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } }, readingMaterials: { orderBy: { order: "asc" } } } },
       reviews: { select: { rating: true } },
       announcements: { orderBy: { createdAt: "desc" } },
       _count: { select: { enrollments: true } },
@@ -156,13 +156,18 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
   const ratings = course.reviews.map((r) => r.rating);
 
   // Strip private content for non-enrolled students
-  const sections = course.sections.map((s) => ({
+  const sections = course.sections.map((s: any) => ({
     ...s,
-    lessons: s.lessons.map((l) => ({
+    lessons: s.lessons.map((l: any) => ({
       ...l,
       content: (isInstructor || isEnrolled || l.isFree || l.isPreview) ? l.content : undefined,
       videoUrl: (isInstructor || isEnrolled || l.isFree || l.isPreview) ? l.videoUrl : undefined,
     })),
+    readingMaterials: s.readingMaterials?.map((rm: any) => ({
+      ...rm,
+      fileUrl: (isInstructor || isEnrolled) ? rm.fileUrl : undefined,
+      fileKey: (isInstructor || isEnrolled) ? rm.fileKey : undefined,
+    })) || [],
   }));
 
   res.json({

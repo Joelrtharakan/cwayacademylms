@@ -122,9 +122,7 @@ export default function CourseManagementPage() {
           <p style={{ margin: 0, fontSize: "14px", color: "#8F9E93" }}>Manage modules, videos, assignments, and quizzes for this course.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <button onClick={() => router.push(`/instructor/courses/${id}/curriculum`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#C9973A", border: "none", borderRadius: "8px", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(201,151,58,0.25)", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#E8B85A"} onMouseLeave={e => e.currentTarget.style.background = "#C9973A"}>
-            <BookOpen size={16} /> Build Curriculum
-          </button>
+
           <button onClick={() => router.push(`/instructor/courses/${id}/gradebook`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", color: "#1A261D", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
             <BookOpen size={16} /> Gradebook
           </button>
@@ -293,7 +291,7 @@ export default function CourseManagementPage() {
                         </div>
                       </div>
                       <button 
-                        onClick={() => router.push(`/instructor/courses/${id}/curriculum`)}
+                        onClick={() => router.push(`/instructor/courses/${id}/modules/${mod.id}`)}
                         style={{ padding: "8px 16px", background: "rgba(184,134,69,0.1)", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "6px", color: "#B88645", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(184,134,69,0.2)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "rgba(184,134,69,0.1)"; }}
