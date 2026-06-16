@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createQuestion, updateQuestion, deleteQuestion } from "@/lib/api/modules";
 import { X, Plus, Trash2, CheckCircle2, GripVertical, Save, Edit2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 type Answer = { id?: string; text: string; isCorrect: boolean };
 type Question = {
@@ -18,6 +19,7 @@ type Question = {
 
 export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz: any; moduleId: string; onClose: () => void }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Question>({ text: "", type: "MCQ", points: 1, order: 0, answers: [{ text: "", isCorrect: true }] });
@@ -237,7 +239,7 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
                           <button onClick={() => handleEdit(q)} style={{ width: "32px", height: "32px", background: "transparent", border: "1px solid #E4E8E0", color: "#8F9E93", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                             <Edit2 size={14} />
                           </button>
-                          <button onClick={() => { if(confirm("Delete question?")) deleteMut.mutate(q.id!); }} style={{ width: "32px", height: "32px", background: "transparent", border: "1px solid #E4E8E0", color: "#E53E3E", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          <button onClick={async () => { if(await confirm("Delete question?")) deleteMut.mutate(q.id!); }} style={{ width: "32px", height: "32px", background: "transparent", border: "1px solid #E4E8E0", color: "#E53E3E", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                             <Trash2 size={14} />
                           </button>
                         </div>

@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Layers,
 } from "lucide-react";
 
 interface NavItem {
@@ -53,6 +54,7 @@ const NAV: NavSection[] = [
   {
     title: "Content",
     items: [
+      { name: "Programs", href: "/admin/programs", icon: Layers },
       { name: "Courses", href: "/admin/courses", icon: BookOpen },
       { name: "Categories", href: "/admin/categories", icon: FolderKanban },
       { name: "Blog Posts", href: "/admin/blog", icon: FileText },

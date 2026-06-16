@@ -119,4 +119,9 @@ router.get("/instructor/courses/:id/announcements", authenticate, authorize("INS
 router.post("/instructor/courses/:id/announcements", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createAnnouncement);
 router.delete("/instructor/courses/:id/announcements/:announcementId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteAnnouncement);
 
+// ─── INSTRUCTOR INVITATIONS ───────────────────────────────────────────────────
+router.get("/instructor/invitations", authenticate, authorize("INSTRUCTOR"), CC.getInvitations);
+router.post("/instructor/invitations/:id/accept", authenticate, authorize("INSTRUCTOR"), CC.acceptInvitation);
+router.post("/instructor/invitations/:id/decline", authenticate, authorize("INSTRUCTOR"), CC.declineInvitation);
+
 export default router;

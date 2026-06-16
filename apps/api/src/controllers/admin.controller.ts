@@ -994,3 +994,179 @@ export const updateSettings = asyncHandler(async (req: Request, res: Response) =
 
   res.json({ status: "success", data: settings });
 });
+
+// ─── PROGRAM MANAGEMENT (LMS WORKFLOW) ───────────────────────────────────────
+
+export const getPrograms = asyncHandler(async (req: Request, res: Response) => {
+  const { status, search, page = "1", limit = "20" } = req.query as Record<string, string>;
+  const pageNum = Math.max(1, parseInt(page));
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+  const skip = (pageNum - 1) * limitNum;
+
+  const where: any = {};
+  if (status) where.status = status;
+  if (search) where.title = { contains: search, mode: "insensitive" };
+
+  const [programs, total] = await Promise.all([
+    prisma.program.findMany({
+      where,
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: { select: { courses: true } },
+        courses: {
+          select: { id: true, title: true, status: true, invitationStatus: true, thumbnail: true,
+            instructor: { select: { id: true, name: true } } },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    }),
+    prisma.program.count({ where }),
+  ]);
+
+  res.json({ status: "success", data: { programs, total, page: pageNum, pages: Math.ceil(total / limitNum) } });
+});
+
+export const getProgramById = asyncHandler(async (req: Request, res: Response) => {
+  const program = await prisma.program.findUnique({
+    where: { id: req.params.id },
+    include: {
+      _count: { select: { courses: true } },
+      courses: {
+        select: {
+          id: true, title: true, slug: true, status: true, invitationStatus: true,
+          thumbnail: true, price: true, isFree: true, createdAt: true,
+          instructor: { select: { id: true, name: true, email: true, avatar: true } },
+          invitation: { select: { id: true, status: true, adminNote: true,
+            instructor: { select: { id: true, name: true, email: true } } } },
+          _count: { select: { enrollments: true, sections: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+  if (!program) throw new AppError("Program not found", 404);
+  res.json({ status: "success", data: program });
+});
+
+export const createProgram = asyncHandler(async (req: Request, res: Response) => {
+  const { title, description, duration, tags, status } = req.body;
+  if (!title) throw new AppError("Title is required", 400);
+
+  const program = await prisma.program.create({
+    data: {
+      title,
+      description: description || null,
+      duration: duration || null,
+      tags: tags ? JSON.stringify(tags) : "[]",
+      status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+    },
+  });
+
+  res.status(201).json({ status: "success", data: program });
+});
+
+export const updateProgram = asyncHandler(async (req: Request, res: Response) => {
+  const { title, description, duration, tags, status } = req.body;
+  const program = await prisma.program.update({
+    where: { id: req.params.id },
+    data: {
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(duration !== undefined && { duration }),
+      ...(tags !== undefined && { tags: JSON.stringify(tags) }),
+      ...(status !== undefined && { status }),
+    },
+    include: { _count: { select: { courses: true } } },
+  });
+  res.json({ status: "success", data: program });
+});
+
+export const deleteProgram = asyncHandler(async (req: Request, res: Response) => {
+  const program = await prisma.program.findUnique({
+    where: { id: req.params.id },
+    include: { _count: { select: { courses: true } } },
+  });
+  if (!program) throw new AppError("Program not found", 404);
+
+  // Unlink courses from this program instead of deleting them
+  await prisma.course.updateMany({
+    where: { programId: req.params.id },
+    data: { programId: null },
+  });
+  await prisma.program.delete({ where: { id: req.params.id } });
+  res.json({ status: "success", message: "Program deleted" });
+});
+
+export const addCourseToProgram = asyncHandler(async (req: Request, res: Response) => {
+  const { programId } = req.params;
+  const { title, description, price, requirements, instructorId } = req.body;
+  if (!title) throw new AppError("Course title is required", 400);
+
+  // Find or use provided instructorId; fallback to admin's own id
+  const resolvedInstructorId = instructorId || req.user!.id;
+
+  const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") + "-" + Date.now();
+
+  const course = await prisma.course.create({
+    data: {
+      title,
+      slug,
+      description: description || null,
+      price: price ? parseFloat(price) : 0,
+      requirements: requirements ? JSON.stringify(requirements) : "[]",
+      instructorId: resolvedInstructorId,
+      programId,
+      weeksDuration: 6,
+      status: "DRAFT",
+      invitationStatus: "UNASSIGNED",
+    },
+    include: {
+      instructor: { select: { id: true, name: true, email: true } },
+      _count: { select: { sections: true } },
+    },
+  });
+
+  res.status(201).json({ status: "success", data: course });
+});
+
+export const assignInstructorToCourse = asyncHandler(async (req: Request, res: Response) => {
+  const { courseId } = req.params;
+  const { instructorId, adminNote } = req.body;
+  if (!instructorId) throw new AppError("instructorId is required", 400);
+
+  const [course, instructor] = await Promise.all([
+    prisma.course.findUnique({ where: { id: courseId } }),
+    prisma.user.findUnique({ where: { id: instructorId, role: "INSTRUCTOR" } }),
+  ]);
+
+  if (!course) throw new AppError("Course not found", 404);
+  if (!instructor) throw new AppError("Instructor not found", 404);
+
+  // Delete any existing invitation for this course
+  await prisma.courseInvitation.deleteMany({ where: { courseId } });
+
+  // Create new invitation and update course
+  const [invitation] = await prisma.$transaction([
+    prisma.courseInvitation.create({
+      data: { courseId, instructorId, adminNote: adminNote || null, status: "PENDING" },
+      include: { instructor: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.course.update({
+      where: { id: courseId },
+      data: { instructorId, invitationStatus: "PENDING" },
+    }),
+  ]);
+
+  await NotificationService.createNotification(
+    instructorId,
+    "COURSE_INVITATION",
+    "You've been assigned a course",
+    `You have a new course invitation: "${course.title}"`,
+    `/instructor/courses`
+  );
+
+  res.json({ status: "success", data: invitation, message: "Invitation sent to instructor" });
+});
+

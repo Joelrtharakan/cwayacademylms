@@ -27,10 +27,10 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
   const updateMut = useMutation({
     mutationFn: (data: any) => api.put(`/courses/${course.id}/curriculum`, data).then(r => r.data.data),
     onSuccess: () => {
-      toast.success("Curriculum saved");
+      toast.success("Description saved");
       onSave();
     },
-    onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to save curriculum"),
+    onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to save description"),
   });
 
   const addObjective = () => setObjectives([...objectives, ""]);
@@ -43,8 +43,8 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: "16px", padding: "32px", boxShadow: "0 4px 12px #E4E8E0" }}>
-      <h2 style={{ fontFamily: "Georgia, serif", fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: "0 0 8px 0" }}>Curriculum Planner</h2>
-      <p style={{ fontSize: "14px", color: "#8F9E93", marginBottom: "32px" }}>Plan your course structure at a high level before building the actual modules.</p>
+      <h2 style={{ fontFamily: "Georgia, serif", fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: "0 0 8px 0" }}>Course Description</h2>
+      <p style={{ fontSize: "14px", color: "#8F9E93", marginBottom: "32px" }}>Provide a high-level overview of your course and its learning objectives.</p>
 
       {isLoading ? (
         <Loader2 className="animate-spin text-cway-gold" />
@@ -52,7 +52,23 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
         <div style={{ display: "grid", gap: "32px" }}>
           <div>
             <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", marginBottom: "8px" }}>Course Overview</label>
-            <textarea value={overview} onChange={e => setOverview(e.target.value)} rows={4} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", resize: "vertical" }} placeholder="Briefly describe what this course is about..." />
+            <textarea 
+              value={overview} 
+              onChange={e => {
+                setOverview(e.target.value);
+                e.target.style.height = 'inherit';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }} 
+              rows={4} 
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", resize: "none", overflow: "hidden", minHeight: "120px" }} 
+              placeholder="Briefly describe what this course is about..." 
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'inherit';
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
+            />
           </div>
 
           <div>
@@ -71,8 +87,26 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
       )}
 
       <div style={{ marginTop: "32px", display: "flex", justifyContent: "flex-end" }}>
-        <button onClick={() => updateMut.mutate({ overview, objectives, weeklyPlan })} disabled={updateMut.isPending} style={{ padding: "12px 24px", borderRadius: "8px", background: "#FFFFFF", color: "#1A261D", fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-          {updateMut.isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save Curriculum
+        <button 
+          onClick={() => updateMut.mutate({ overview, objectives, weeklyPlan })} 
+          disabled={updateMut.isPending} 
+          style={{ 
+            padding: "12px 24px", 
+            borderRadius: "8px", 
+            background: updateMut.isPending ? "#E4E8E0" : "#C9973A", 
+            color: updateMut.isPending ? "#8A9E8C" : "#FFFFFF", 
+            fontWeight: 700, 
+            border: "none", 
+            cursor: updateMut.isPending ? "not-allowed" : "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "8px",
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) => { if (!updateMut.isPending) e.currentTarget.style.background = "#E8B85A"; }}
+          onMouseLeave={(e) => { if (!updateMut.isPending) e.currentTarget.style.background = "#C9973A"; }}
+        >
+          {updateMut.isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save Description
         </button>
       </div>
     </div>

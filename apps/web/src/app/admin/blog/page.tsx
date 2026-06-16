@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { api } from "@/store/auth.store";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 type BlogPost = {
   id: string;
@@ -18,6 +18,7 @@ type BlogPost = {
 export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const confirm = useConfirm();
 
   const fetchPosts = async () => {
     try {
@@ -35,7 +36,7 @@ export default function AdminBlogPage() {
   }, []);
 
   const deletePost = async (slug: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!(await confirm("Are you sure you want to delete this post?"))) return;
     try {
       await api.delete(`/blog/posts/${slug}`);
       fetchPosts();
@@ -49,10 +50,10 @@ export default function AdminBlogPage() {
       <div className="flex justify-between items-start mb-6">
         <PageHeader title="Blog Posts" subtitle="Manage editorial content published on CWAY Academy" />
         <Link href="/admin/blog/new">
-          <Button className="bg-[#B88645] hover:bg-[#A3753A] text-white">
+          <button className="flex items-center px-4 py-2 rounded-md bg-[#B88645] hover:bg-[#A3753A] text-white">
             <Plus size={16} className="mr-2" />
             New Post
-          </Button>
+          </button>
         </Link>
       </div>
 
@@ -89,13 +90,13 @@ export default function AdminBlogPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link href={`/admin/blog/${post.slug}`}>
-                      <Button variant="ghost" size="sm" className="mr-2">
+                      <button className="p-1 hover:bg-[#F5F7F3] rounded mr-2">
                         <Edit2 size={16} className="text-[#8F9E93]" />
-                      </Button>
+                      </button>
                     </Link>
-                    <Button variant="ghost" size="sm" onClick={() => deletePost(post.slug)}>
+                    <button className="p-1 hover:bg-[#F5F7F3] rounded" onClick={() => deletePost(post.slug)}>
                       <Trash2 size={16} className="text-red-500" />
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -53,7 +53,7 @@ export default function CourseStudentsPage() {
       `"${e.lastCompleted ? format(new Date(e.lastCompleted.date), "MMM d, yyyy") : ''}"`
     ]);
     
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const csvContent = [headers.join(","), ...rows.map((r: any[]) => r.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");

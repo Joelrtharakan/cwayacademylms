@@ -7,12 +7,14 @@ import { api } from "@/store/auth.store";
 import { getModules, createModule, updateModule, deleteModule, reorderModules } from "@/lib/api/modules";
 import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, ExternalLink, Loader2, Save, X } from "lucide-react";
 import Link from "next/link";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 import { toast } from "react-hot-toast";
 
 export default function CourseManagementPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
 
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
@@ -120,6 +122,9 @@ export default function CourseManagementPage() {
           <p style={{ margin: 0, fontSize: "14px", color: "#8F9E93" }}>Manage modules, videos, assignments, and quizzes for this course.</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button onClick={() => router.push(`/instructor/courses/${id}/curriculum`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#C9973A", border: "none", borderRadius: "8px", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(201,151,58,0.25)", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#E8B85A"} onMouseLeave={e => e.currentTarget.style.background = "#C9973A"}>
+            <BookOpen size={16} /> Build Curriculum
+          </button>
           <button onClick={() => router.push(`/instructor/courses/${id}/gradebook`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", color: "#1A261D", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
             <BookOpen size={16} /> Gradebook
           </button>
@@ -271,7 +276,7 @@ export default function CourseManagementPage() {
                         <button onClick={() => setEditingModuleId(mod.id)} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", transition: "background 0.2s" }} onMouseEnter={e => { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.color = "#F5F0E8"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8A9E8C"; }}>
                           <Edit2 size={16} />
                         </button>
-                        <button onClick={() => { if(confirm("Are you sure you want to delete this module?")) deleteModuleMut.mutate(mod.id); }} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", transition: "background 0.2s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,62,62,0.1)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                        <button onClick={async () => { if(await confirm("Are you sure you want to delete this module?")) deleteModuleMut.mutate(mod.id); }} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", transition: "background 0.2s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,62,62,0.1)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -288,7 +293,7 @@ export default function CourseManagementPage() {
                         </div>
                       </div>
                       <button 
-                        onClick={() => router.push(`/instructor/courses/${id}/modules/${mod.id}`)}
+                        onClick={() => router.push(`/instructor/courses/${id}/curriculum`)}
                         style={{ padding: "8px 16px", background: "rgba(184,134,69,0.1)", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "6px", color: "#B88645", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(184,134,69,0.2)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "rgba(184,134,69,0.1)"; }}

@@ -20,7 +20,7 @@ import PublicationSection from "@/components/instructor/setup/PublicationSection
 const SECTIONS = [
   { id: "basic", label: "Basic Info", icon: BookOpen },
   { id: "media", label: "Thumbnail & Promo", icon: ImageIcon },
-  { id: "curriculum", label: "Curriculum Planner", icon: FileText },
+  { id: "curriculum", label: "Course Description", icon: FileText },
   { id: "publication", label: "Publication", icon: CheckCircle2 },
 ];
 
@@ -67,8 +67,8 @@ export default function CourseSetupPage() {
       {/* Header */}
       <header style={{ position: "sticky", top: "70px", zIndex: 50, background: "#FFFFFF", padding: "20px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link href="/instructor/dashboard" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
-            <ArrowLeft size={20} /> Back to Dashboard
+          <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#1A261D"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
+            <ArrowLeft size={20} /> Back to Course
           </Link>
           <div style={{ height: "24px", width: "1px", background: "rgba(184,134,69,0.3)" }}></div>
           <div>

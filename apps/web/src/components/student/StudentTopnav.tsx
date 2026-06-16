@@ -11,7 +11,7 @@ import { api } from "@/store/auth.store";
 
 export default function StudentTopnav() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -109,7 +109,7 @@ export default function StudentTopnav() {
                   <Link href="/student/settings" onClick={() => setDropdownOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", color: THEME.LIGHT, textDecoration: "none", fontSize: 14, borderRadius: 6 }}>
                     <Settings size={16} color={THEME.MUTED} /> Profile & Settings
                   </Link>
-                  <button onClick={() => { setDropdownOpen(false); logout(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", color: THEME.DANGER, background: "none", border: "none", cursor: "pointer", fontSize: 14, borderRadius: 6, textAlign: "left" }}>
+                  <button onClick={() => { setDropdownOpen(false); clearAuth(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", color: THEME.DANGER, background: "none", border: "none", cursor: "pointer", fontSize: 14, borderRadius: 6, textAlign: "left" }}>
                     <LogOut size={16} /> Sign Out
                   </button>
                 </div>
@@ -150,7 +150,7 @@ export default function StudentTopnav() {
           <Link href="/student/settings" onClick={() => setMobileMenuOpen(false)} style={{ color: THEME.LIGHT, fontFamily: "Inter, sans-serif", fontSize: 16, textDecoration: "none", padding: "12px 0", borderBottom: `1px solid rgba(201,151,58,0.1)`, display: "flex", alignItems: "center", gap: 12 }}>
             <Settings size={18} color={THEME.MUTED} /> Profile & Settings
           </Link>
-          <button onClick={() => { setMobileMenuOpen(false); logout(); }} style={{ color: THEME.DANGER, fontFamily: "Inter, sans-serif", fontSize: 16, textAlign: "left", padding: "12px 0", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => { setMobileMenuOpen(false); clearAuth(); }} style={{ color: THEME.DANGER, fontFamily: "Inter, sans-serif", fontSize: 16, textAlign: "left", padding: "12px 0", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
             <LogOut size={18} /> Sign Out
           </button>
         </div>

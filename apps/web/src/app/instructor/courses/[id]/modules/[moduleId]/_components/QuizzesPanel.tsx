@@ -4,9 +4,11 @@ import { createQuiz, getQuizzes, deleteQuiz } from "@/lib/api/modules";
 import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import QuestionBuilderModal from "./QuestionBuilderModal";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function QuizzesPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", instructions: "", passingScore: 70, timeLimit: 0, maxAttempts: 3 });
@@ -177,7 +179,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                   </div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "6px 12px", background: "#B88645", border: "none", color: "#FFFFFF", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Edit Questions</button>
-                    <button onClick={() => { if(confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                       <Trash2 size={14} />
                     </button>
                   </div>

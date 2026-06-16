@@ -179,3 +179,14 @@ export const createAnnouncement = (courseId: string, data: { title: string; cont
 
 export const deleteAnnouncement = (courseId: string, announcementId: string) =>
   api.delete(`/instructor/courses/${courseId}/announcements/${announcementId}`).then((r) => r.data.data);
+
+// ─── Invitations ─────────────────────────────────────────────────────────────
+export const getInvitations = (status?: string) =>
+  api.get("/instructor/invitations", { params: status ? { status } : {} }).then((r) => r.data.data);
+
+export const acceptInvitation = (id: string) =>
+  api.post(`/instructor/invitations/${id}/accept`).then((r) => r.data);
+
+export const declineInvitation = (id: string) =>
+  api.post(`/instructor/invitations/${id}/decline`).then((r) => r.data);
+

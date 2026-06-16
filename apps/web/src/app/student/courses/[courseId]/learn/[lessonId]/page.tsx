@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuthStore, api } from "@/store/auth.store";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function LessonPlayerPage() {
   const params = useParams();
@@ -19,6 +20,7 @@ export default function LessonPlayerPage() {
   const [instructor, setInstructor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
+  const confirm = useConfirm();
 
   // Forum state
   const [forumPosts, setForumPosts] = useState<any[]>([]);
@@ -46,7 +48,7 @@ export default function LessonPlayerPage() {
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm("Are you sure you want to delete this reply?")) return;
+    if (!(await confirm("Are you sure you want to delete this reply?"))) return;
     try {
       await api.delete(`/forums/discussions/${postId}`);
       setForumPosts(prev => prev.filter(p => p.id !== postId));
@@ -76,7 +78,7 @@ export default function LessonPlayerPage() {
   };
 
   const handleDeleteReply = async (postId: string, replyId: string) => {
-    if (!confirm("Are you sure you want to delete this reply?")) return;
+    if (!(await confirm("Are you sure you want to delete this reply?"))) return;
     try {
       await api.delete(`/forums/replies/${replyId}`);
       setForumPosts(prev => prev.map(p => {

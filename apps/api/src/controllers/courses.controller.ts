@@ -194,7 +194,7 @@ export const updateCourse = asyncHandler(async (req: Request, res: Response) => 
   if (title !== undefined) { data.title = title; data.slug = await uniqueSlug(title); }
   if (subtitle !== undefined) data.subtitle = subtitle;
   if (description !== undefined) data.description = description;
-  if (categoryId !== undefined) data.categoryId = categoryId;
+  if (categoryId !== undefined) data.categoryId = categoryId === "" ? null : categoryId;
   if (level !== undefined) data.level = level;
   if (language !== undefined) data.language = language;
   if (moduleNumber !== undefined) data.moduleNumber = moduleNumber ? Number(moduleNumber) : null;
@@ -682,7 +682,13 @@ export const deleteForumReply = asyncHandler(async (req: Request, res: Response)
 
 export const getMyCourses = asyncHandler(async (req: Request, res: Response) => {
   const courses = await prisma.course.findMany({
-    where: { instructorId: req.user!.id },
+    where: { 
+      instructorId: req.user!.id,
+      OR: [
+        { invitation: null },
+        { invitation: { status: "ACCEPTED" } }
+      ]
+    },
     orderBy: { createdAt: "desc" },
     include: {
       instructor: { select: { id: true, name: true, avatar: true } },
@@ -714,7 +720,16 @@ export const getMyCourses = asyncHandler(async (req: Request, res: Response) => 
 export const getInstructorStats = asyncHandler(async (req: Request, res: Response) => {
   const instructorId = req.user!.id;
 
-  const courses = await prisma.course.findMany({ where: { instructorId }, select: { id: true, status: true } });
+  const courses = await prisma.course.findMany({ 
+    where: { 
+      instructorId,
+      OR: [
+        { invitation: null },
+        { invitation: { status: "ACCEPTED" } }
+      ]
+    }, 
+    select: { id: true, status: true } 
+  });
   const courseIds = courses.map((c) => c.id);
   const publishedCourses = courses.filter((c) => c.status === "PUBLISHED").length;
 
@@ -1173,3 +1188,68 @@ export const getInstructorGradebook = asyncHandler(async (req: Request, res: Res
     }
   });
 });
+
+// ─── INSTRUCTOR INVITATIONS ──────────────────────────────────────────────────
+
+export const getInvitations = asyncHandler(async (req: Request, res: Response) => {
+  const { status } = req.query as Record<string, string>;
+  const where: any = { instructorId: req.user!.id };
+  if (status) where.status = status;
+
+  const invitations = await prisma.courseInvitation.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    include: {
+      course: {
+        select: {
+          id: true, title: true, slug: true, description: true, thumbnail: true,
+          weeksDuration: true, status: true, invitationStatus: true, price: true,
+          program: { select: { id: true, title: true } },
+        },
+      },
+    },
+  });
+
+  res.json({ status: "success", data: invitations });
+});
+
+export const acceptInvitation = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const invitation = await prisma.courseInvitation.findUnique({
+    where: { id },
+    include: { course: true },
+  });
+
+  if (!invitation) throw new AppError("Invitation not found", 404);
+  if (invitation.instructorId !== req.user!.id) throw new AppError("Not authorized", 403);
+  if (invitation.status !== "PENDING") throw new AppError("Invitation is no longer pending", 400);
+
+  await prisma.$transaction([
+    prisma.courseInvitation.update({ where: { id }, data: { status: "ACCEPTED" } }),
+    prisma.course.update({
+      where: { id: invitation.courseId },
+      data: { invitationStatus: "ACCEPTED", instructorId: req.user!.id },
+    }),
+  ]);
+
+  res.json({ status: "success", message: "Invitation accepted. The course is now in your dashboard." });
+});
+
+export const declineInvitation = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const invitation = await prisma.courseInvitation.findUnique({ where: { id } });
+  if (!invitation) throw new AppError("Invitation not found", 404);
+  if (invitation.instructorId !== req.user!.id) throw new AppError("Not authorized", 403);
+  if (invitation.status !== "PENDING") throw new AppError("Invitation is no longer pending", 400);
+
+  await prisma.$transaction([
+    prisma.courseInvitation.update({ where: { id }, data: { status: "DECLINED" } }),
+    prisma.course.update({
+      where: { id: invitation.courseId },
+      data: { invitationStatus: "DECLINED" },
+    }),
+  ]);
+
+  res.json({ status: "success", message: "Invitation declined." });
+});
+

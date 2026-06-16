@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createReadingMaterial, getReadingMaterials, deleteReadingMaterial } from "@/lib/api/modules";
 import { BookOpen, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, FileText } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function ReadingsPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState({ title: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -151,7 +153,7 @@ export default function ReadingsPanel({ module }: { module: any }) {
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 <button onClick={() => window.open(mat.fileUrl, "_blank")} style={{ padding: "6px 12px", background: "#F7F8F5", border: "none", color: "#B88645", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>View</button>
-                <button onClick={() => { if(confirm("Delete material?")) deleteMut.mutate(mat.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <button onClick={async () => { if(await confirm("Delete material?")) deleteMut.mutate(mat.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <Trash2 size={14} />
                 </button>
               </div>

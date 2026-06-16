@@ -5,6 +5,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { GlobalReveal } from "@/components/GlobalReveal";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/QueryProvider";
+import { ConfirmProvider } from "@/components/shared/ConfirmContext";
 
 /* ── Self-hosted fonts via next/font (no external network requests) ── */
 const plusJakarta = Jost({
@@ -157,11 +158,13 @@ export default function RootLayout({
       </head>
       <body>
         <QueryProvider>
-          <Toaster position="top-right" richColors />
-          <GlobalReveal />
-          <SmoothScroll>
-            {children}
-          </SmoothScroll>
+          <ConfirmProvider>
+            <Toaster position="top-right" richColors />
+            <GlobalReveal />
+            <SmoothScroll>
+              {children}
+            </SmoothScroll>
+          </ConfirmProvider>
         </QueryProvider>
       </body>
     </html>

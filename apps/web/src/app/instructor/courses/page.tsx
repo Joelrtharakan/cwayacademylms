@@ -6,6 +6,7 @@ import { Plus, BookOpen, Edit2, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { getInstructorCourses, deleteCourse } from "@/lib/api/instructor";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 type StatusFilter = "ALL" | "PUBLISHED" | "DRAFT" | "PENDING" | "REJECTED" | "ARCHIVED";
 
@@ -100,6 +101,7 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) 
 export default function InstructorCoursesPage() {
   const [filter, setFilter] = useState<StatusFilter>("ALL");
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const { data, isLoading } = useQuery({ queryKey: ["instructor-courses"], queryFn: () => getInstructorCourses() });
   const courses = (data?.courses || []).filter((c: any) => filter === "ALL" || c.status === filter);
@@ -218,7 +220,7 @@ export default function InstructorCoursesPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {courses.map((c: any) => (
-            <CourseCard key={c.id} course={c} onDelete={(id) => { if (confirm("Delete this course?")) deleteMut.mutate(id); }} />
+            <CourseCard key={c.id} course={c} onDelete={async (id) => { if (await confirm("Delete this course?")) deleteMut.mutate(id); }} />
           ))}
         </div>
       )}

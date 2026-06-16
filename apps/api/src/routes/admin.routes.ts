@@ -82,4 +82,13 @@ router.post("/notifications/broadcast", AdminController.broadcastNotification);
 router.get("/settings", AdminController.getSettings);
 router.put("/settings", AdminController.updateSettings);
 
+// ─── PROGRAM MANAGEMENT (LMS WORKFLOW) ───────────────────────────────────────
+router.get("/programs", AdminController.getPrograms);
+router.post("/programs", AdminController.createProgram);
+router.get("/programs/:id", AdminController.getProgramById);
+router.put("/programs/:id", AdminController.updateProgram);
+router.delete("/programs/:id", AdminController.deleteProgram);
+router.post("/programs/:programId/courses", AdminController.addCourseToProgram);
+router.post("/courses/:courseId/assign-instructor", AdminController.assignInstructorToCourse);
+
 export default router;

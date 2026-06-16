@@ -115,7 +115,7 @@ export default function InstructorGradebookPage() {
         ) : (
           <div style={{ background: "white", borderRadius: "16px", border: "1px solid #E4E8E0", overflow: "hidden", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ w: "100%", minWidth: "1000px", borderCollapse: "collapse", textAlign: "left" }}>
+              <table style={{ width: "100%", minWidth: "1000px", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ background: "#FAFAF7", borderBottom: "2px solid #E4E8E0" }}>
                     <th style={{ padding: "20px 24px", fontFamily: "Georgia, serif", fontSize: "16px", fontWeight: 700, color: DARK, borderRight: "1px solid #E4E8E0", position: "sticky", left: 0, background: "#FAFAF7", zIndex: 10 }}>Student</th>
@@ -133,7 +133,7 @@ export default function InstructorGradebookPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody style={{ divideY: "1px solid #E4E8E0" }}>
+                <tbody>
                   {students.map((student: any, idx: number) => (
                     <tr key={student.id} style={{ borderBottom: idx === students.length - 1 ? "none" : "1px solid #E4E8E0", transition: "background 0.2s" }} className="hover:bg-[#F7F8F5]">
                       <td style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", position: "sticky", left: 0, background: "white", zIndex: 10 }}>

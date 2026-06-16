@@ -3,7 +3,6 @@
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface Post {
   slug: string;
@@ -42,9 +41,9 @@ export default function SingleBlogPage({ params }: { params: Promise<{ slug: str
     <div className="min-h-screen bg-[var(--cream-base)] py-12">
       <div className="container max-w-3xl">
         <Link href="/blog">
-          <Button variant="ghost" className="mb-6 hover:bg-transparent pl-0 text-[var(--navy-mid)]">
+          <button className="flex items-center mb-6 hover:bg-transparent pl-0 text-[var(--navy-mid)]">
             <ArrowLeft size={16} className="mr-2" /> Back to Blog
-          </Button>
+          </button>
         </Link>
         <span className="badge badge-gold mb-4 inline-block">{post.category || "General"}</span>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-[var(--navy-deep)] leading-tight mb-6">

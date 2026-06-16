@@ -218,3 +218,50 @@ export const getSettings = () =>
 
 export const updateSettings = (data: Record<string, any>) =>
   api.put(`${BASE}/settings`, data).then((r) => r.data.data);
+
+// ─── PROGRAMS (LMS WORKFLOW) ──────────────────────────────────────────────────
+
+export interface ProgramFilters {
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export const getPrograms = (filters: ProgramFilters = {}) =>
+  api.get(`${BASE}/programs`, { params: filters }).then((r) => r.data.data);
+
+export const getProgramById = (id: string) =>
+  api.get(`${BASE}/programs/${id}`).then((r) => r.data.data);
+
+export const createProgram = (data: {
+  title: string;
+  description?: string;
+  duration?: string;
+  tags?: string[];
+  status?: string;
+}) => api.post(`${BASE}/programs`, data).then((r) => r.data.data);
+
+export const updateProgram = (id: string, data: {
+  title?: string;
+  description?: string;
+  duration?: string;
+  tags?: string[];
+  status?: string;
+}) => api.put(`${BASE}/programs/${id}`, data).then((r) => r.data.data);
+
+export const deleteProgram = (id: string) =>
+  api.delete(`${BASE}/programs/${id}`).then((r) => r.data);
+
+export const addCourseToProgram = (programId: string, data: {
+  title: string;
+  description?: string;
+  price?: number;
+  instructorId?: string;
+}) => api.post(`${BASE}/programs/${programId}/courses`, data).then((r) => r.data.data);
+
+export const assignInstructorToCourse = (courseId: string, data: {
+  instructorId: string;
+  adminNote?: string;
+}) => api.post(`${BASE}/courses/${courseId}/assign-instructor`, data).then((r) => r.data);
+

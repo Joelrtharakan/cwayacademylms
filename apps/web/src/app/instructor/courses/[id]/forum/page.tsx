@@ -8,6 +8,7 @@ import { getForumPosts, createForumPost, createForumReply, pinForumPost, deleteF
 import { useAuthStore, api } from "@/store/auth.store";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 const GOLD = "#B88645";
 const SURFACE = "#243825";
@@ -19,6 +20,7 @@ export default function CourseForumPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -94,7 +96,7 @@ export default function CourseForumPage() {
                   <button onClick={() => pinMut.mutate(selectedPost.id)} style={{ background: selectedPost.isPinned ? "rgba(184,134,69,0.2)" : "#F7F8F5", color: selectedPost.isPinned ? GOLD : MUTED, border: "none", borderRadius: 8, padding: 8, cursor: "pointer", transition: "all 0.15s" }}>
                     <Pin size={16} />
                   </button>
-                  <button onClick={() => { if (confirm("Delete this post?")) deletePostMut.mutate(selectedPost.id); }} style={{ background: "rgba(248,113,113,0.1)", color: "#F87171", border: "none", borderRadius: 8, padding: 8, cursor: "pointer" }}>
+                  <button onClick={async () => { if (await confirm("Delete this post?")) deletePostMut.mutate(selectedPost.id); }} style={{ background: "rgba(248,113,113,0.1)", color: "#F87171", border: "none", borderRadius: 8, padding: 8, cursor: "pointer" }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -117,7 +119,7 @@ export default function CourseForumPage() {
                         <span>•</span>
                         <span>{formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}</span>
                       </div>
-                      <button onClick={() => { if (confirm("Delete reply?")) deleteReplyMut.mutate(r.id); }} style={{ background: "transparent", border: "none", color: "#F87171", cursor: "pointer", opacity: 0.5 }}>
+                      <button onClick={async () => { if (await confirm("Delete reply?")) deleteReplyMut.mutate(r.id); }} style={{ background: "transparent", border: "none", color: "#F87171", cursor: "pointer", opacity: 0.5 }}>
                         <Trash2 size={14} />
                       </button>
                     </div>

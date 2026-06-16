@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import { createLesson, updateLesson, deleteLesson } from "@/lib/api/modules";
 import { api } from "@/store/auth.store";
 import Link from "next/link";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function ForumsPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [editingForumId, setEditingForumId] = useState<string | null>(null);
   
@@ -200,8 +202,8 @@ export default function ForumsPanel({ module }: { module: any }) {
                     <Edit size={14} /> Edit Prompt
                   </button>
                   <button 
-                    onClick={() => {
-                      if(confirm("Delete this forum? All student posts will be lost.")) {
+                    onClick={async () => {
+                      if(await confirm("Delete this forum? All student posts will be lost.")) {
                         deleteMut.mutate(forum.id);
                       }
                     }}

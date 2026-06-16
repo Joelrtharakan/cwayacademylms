@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Mail,
 } from "lucide-react";
 
 interface NavItem {
@@ -37,7 +38,10 @@ const NAV: NavSection[] = [
   },
   {
     title: "My Courses",
-    items: [{ name: "All Courses", href: "/instructor/courses", icon: BookOpen }],
+    items: [
+      { name: "All Courses", href: "/instructor/courses", icon: BookOpen },
+      { name: "Invitations", href: "/instructor/invitations", icon: Mail },
+    ],
   },
   {
     title: "Students & Grading",

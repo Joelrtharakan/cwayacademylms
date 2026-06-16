@@ -57,7 +57,8 @@ model User {
   yearsExperience   Int?
   expertise         String             @default("[]")
   notificationPrefs String             @default("{}")
-  notes             Note[]
+  notes                Note[]
+  courseInvitations    CourseInvitation[]  @relation("InstructorInvitations")
 
   @@index([email])
   @@index([role])
@@ -109,6 +110,12 @@ model Course {
   categoryId   String?
   category     Category? @relation(fields: [categoryId], references: [id])
 
+  // Program relationship (new LMS workflow)
+  programId        String?
+  program          Program?          @relation("ProgramCourses", fields: [programId], references: [id])
+  invitationStatus String            @default("UNASSIGNED") // UNASSIGNED | PENDING | ACCEPTED | DECLINED
+  invitation       CourseInvitation?
+
   sections           Section[]
   enrollments        Enrollment[]
   reviews            Review[]
@@ -128,6 +135,7 @@ model Course {
   @@index([status])
   @@index([instructorId])
   @@index([slug])
+  @@index([programId])
 }
 
 model Section {
@@ -200,7 +208,7 @@ model LessonProgress {
   enrollmentId   String
   enrollment     Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   lessonId       String
-  lesson         Lesson     @relation(fields: [lessonId], references: [id])
+  lesson         Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   completedAt    DateTime?
   watchedSeconds Int        @default(0)
 
@@ -527,7 +535,7 @@ model Announcement {
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   sectionId String?
-  section   Section? @relation(fields: [sectionId], references: [id])
+  section   Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title     String
@@ -542,9 +550,9 @@ model Discussion {
   courseId  String
   course    Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   sectionId String?
-  section   Section?          @relation(fields: [sectionId], references: [id])
+  section   Section?          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   lessonId  String?
-  lesson    Lesson?           @relation(fields: [lessonId], references: [id])
+  lesson    Lesson?           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   authorId  String
   author    User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title     String
@@ -608,7 +616,7 @@ model AttendanceSession {
   courseId    String
   course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
   sectionId   String?
-  section     Section?           @relation(fields: [sectionId], references: [id])
+  section     Section?           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   title       String
   description String?
   sessionDate DateTime
@@ -646,11 +654,44 @@ model Note {
   studentId  String
   student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   lessonId   String
-  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   content    String
   timestamp  Int?     // video timestamp in seconds
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@unique([studentId, lessonId])
+}
+
+// ─── LMS PROGRAM WORKFLOW (new) ──────────────────────────────────────────────
+
+model Program {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  thumbnail   String?
+  thumbnailKey String?
+  duration    String?   // e.g. "6 months", "4 courses"
+  tags        String    @default("[]")
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED
+  courses     Course[]  @relation("ProgramCourses")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+}
+
+model CourseInvitation {
+  id           String   @id @default(cuid())
+  courseId     String   @unique
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   User     @relation("InstructorInvitations", fields: [instructorId], references: [id], onDelete: Cascade)
+  adminNote    String?
+  status       String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([instructorId])
+  @@index([status])
 }

@@ -8,11 +8,13 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { getInstructorAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/api/instructor";
 import { api } from "@/store/auth.store";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function CourseAnnouncementsPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState({ title: "", content: "" });
@@ -156,7 +158,7 @@ export default function CourseAnnouncementsPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => { if(confirm("Are you sure you want to delete this announcement?")) deleteMut.mutate(ann.id); }}
+                  onClick={async () => { if(await confirm("Are you sure you want to delete this announcement?")) deleteMut.mutate(ann.id); }}
                   style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", transition: "background 0.2s" }} 
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} 
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}

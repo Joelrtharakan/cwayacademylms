@@ -110,7 +110,7 @@ export default function NotesPanel({ lessonId }: NotesPanelProps) {
           </div>
         ) : (
           notes?.map((note: any) => (
-            <div key={note.id} style={{ background: "rgba(0,0,0,0.02)", borderRadius: 8, padding: 16, position: "relative", group: "note-item" }}>
+            <div key={note.id} className="group note-item" style={{ background: "rgba(0,0,0,0.02)", borderRadius: 8, padding: 16, position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, color: THEME.MUTED, fontSize: 11 }}>
                   <Clock size={12} /> {format(new Date(note.updatedAt), "MMM d, h:mm a")}

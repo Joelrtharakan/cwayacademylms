@@ -4,9 +4,11 @@ import { api } from "@/store/auth.store";
 import { createLesson, updateLesson, deleteLesson } from "@/lib/api/modules";
 import { Play, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function VideosPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", isFree: false, videoUrl: "" });
@@ -185,7 +187,7 @@ export default function VideosPanel({ module }: { module: any }) {
                 <button onClick={() => handleEdit(vid)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <Edit2 size={16} />
                 </button>
-                <button onClick={() => { if(confirm("Delete video?")) deleteMut.mutate(vid.id); }} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <button onClick={async () => { if(await confirm("Delete video?")) deleteMut.mutate(vid.id); }} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <Trash2 size={16} />
                 </button>
               </div>

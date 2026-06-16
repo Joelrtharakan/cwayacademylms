@@ -4,7 +4,6 @@ import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/store/auth.store";
 import { PageHeader } from "@/components/admin/PageHeader";
-import { Button } from "@/components/ui/button";
 
 export default function EditBlogPage({ params }: { params: Promise<{ slug: string }> }) {
   const router = useRouter();
@@ -132,12 +131,12 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
         </div>
 
         <div className="pt-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => router.push("/admin/blog")} disabled={saving}>
+          <button className="px-4 py-2 rounded-md border border-[#E8EBE4] hover:bg-[#F5F7F3]" onClick={() => router.push("/admin/blog")} disabled={saving}>
             Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-[#B88645] hover:bg-[#A3753A] text-white">
+          </button>
+          <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-md bg-[#B88645] hover:bg-[#A3753A] text-white">
             {saving ? "Saving..." : "Save Post"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

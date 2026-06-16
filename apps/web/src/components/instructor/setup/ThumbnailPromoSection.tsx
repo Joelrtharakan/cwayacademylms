@@ -136,7 +136,25 @@ export default function ThumbnailPromoSection({ course, onSave }: { course: any,
       </div>
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button onClick={() => updateMut.mutate({ thumbnail: thumbnailUrl, promoVideoUrl: promoUrl })} style={{ padding: "12px 24px", borderRadius: "8px", background: "#FFFFFF", color: "#1A261D", fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+        <button 
+          onClick={() => updateMut.mutate({ thumbnail: thumbnailUrl, promoVideoUrl: promoUrl })} 
+          disabled={updateMut.isPending} 
+          style={{ 
+            padding: "12px 24px", 
+            borderRadius: "8px", 
+            background: updateMut.isPending ? "#E4E8E0" : "#C9973A", 
+            color: updateMut.isPending ? "#8A9E8C" : "#FFFFFF", 
+            fontWeight: 700, 
+            border: "none", 
+            cursor: updateMut.isPending ? "not-allowed" : "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "8px",
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) => { if (!updateMut.isPending) e.currentTarget.style.background = "#E8B85A"; }}
+          onMouseLeave={(e) => { if (!updateMut.isPending) e.currentTarget.style.background = "#C9973A"; }}
+        >
           {updateMut.isPending ? <Loader2 size={18} className="animate-spin" /> : "Save Media"}
         </button>
       </div>
