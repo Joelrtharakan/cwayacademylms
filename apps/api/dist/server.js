@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
@@ -19,19 +20,40 @@ const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const courses_routes_1 = __importDefault(require("./routes/courses.routes"));
 const forums_routes_1 = __importDefault(require("./routes/forums.routes"));
 const student_routes_1 = __importDefault(require("./routes/student.routes"));
+const blog_routes_1 = __importDefault(require("./routes/blog.routes"));
 const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
-const PORT = process.env.API_PORT || 4000;
+const PORT = process.env.PORT || 4000;
 // Security Middlewares
 app.use((0, helmet_1.default)({
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: false,
-    frameguard: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "js.stripe.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+            fontSrc: ["'self'", "fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
+            frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
+            connectSrc: ["'self'", "api.stripe.com"],
+        }
+    }
 }));
+// CORS — only allow your domains
 app.use((0, cors_1.default)({
-    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    credentials: true,
+    origin: [
+        'http://localhost:3000',
+        'https://learn.cwayacademy.com'
+    ],
+    credentials: true
 }));
+// Rate limiting
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per `window`
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', limiter);
 // Logging & Parsing
 if (process.env.NODE_ENV === "development") {
     app.use((0, morgan_1.default)("dev"));
@@ -55,8 +77,9 @@ app.use("/uploads", express_1.default.static(uploadsDir));
 app.use("/api/v1/auth", auth_routes_1.default);
 app.use("/api/v1/admin", admin_routes_1.default);
 app.use("/api/v1", courses_routes_1.default);
-app.use("/api/v1", forums_routes_1.default);
+app.use("/api/v1/forums", forums_routes_1.default);
 app.use("/api/v1/student", student_routes_1.default);
+app.use("/api/v1/blog", blog_routes_1.default);
 // Catch-all unhandled routes
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));

@@ -12,7 +12,7 @@ type Question = {
   id?: string;
   text: string;
   type: string;
-  points: number;
+  points: number | string;
   order: number;
   answers: Answer[];
 };
@@ -49,16 +49,17 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
     if (form.answers.some(a => !a.text?.trim())) return toast.error("All options must have text");
 
     try {
+      const payload = { ...form, points: Number(form.points) };
       if (editingId && editingId !== "new") {
         toast.loading("Updating question...", { id: "saveQuestion" });
-        const updatedQuestion = await updateQuestion(editingId, form);
+        const updatedQuestion = await updateQuestion(editingId, payload);
         queryClient.invalidateQueries({ queryKey: ["quizzes", moduleId] });
         setQuestions(prev => prev.map(q => q.id === updatedQuestion.id ? updatedQuestion : q));
         toast.success("Question updated!", { id: "saveQuestion" });
       } else {
         toast.loading("Creating question...", { id: "saveQuestion" });
         if (!quiz || !quiz.id) throw new Error("Quiz ID is missing! Cannot save.");
-        const newQuestion = await createQuestion(quiz.id, form);
+        const newQuestion = await createQuestion(quiz.id, payload);
         queryClient.invalidateQueries({ queryKey: ["quizzes", moduleId] });
         setQuestions(prev => [...(prev || []), newQuestion]);
         toast.success("Question created!", { id: "saveQuestion" });
@@ -145,7 +146,8 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
                 <textarea 
                   value={form.text}
                   onChange={(e) => setForm({ ...form, text: e.target.value })}
-                  style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", minHeight: "80px", resize: "vertical", fontFamily: "inherit", fontSize: "14px" }}
+                  style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", minHeight: "120px", maxHeight: "300px", resize: "vertical", fontFamily: "inherit", fontSize: "14px", overflowY: "auto" }}
+                  data-lenis-prevent="true"
                   placeholder="e.g. What is the primary theme of the Gospel of John?"
                 />
               </div>
@@ -155,7 +157,7 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
                 <input 
                   type="number" 
                   value={form.points}
-                  onChange={(e) => setForm({ ...form, points: Number(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, points: e.target.value === "" ? "" : Number(e.target.value) })}
                   style={{ width: "100px", padding: "10px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px" }}
                   min={1}
                 />

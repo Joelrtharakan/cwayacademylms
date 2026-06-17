@@ -72,7 +72,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
   };
 
   const requirements = parseJson(course.requirements);
-  const outcomes = parseJson(course.outcomes);
+  // Support both course.outcomes and curriculum.objectives
+  const outcomes = parseJson(course.curriculum?.objectives || course.outcomes);
+  const targetAudience = parseJson(course.targetAudience);
+  const tags = parseJson(course.tags);
+  const displayDescription = course.curriculum?.overview || course.description || "No description provided.";
 
   return (
     <div style={{ paddingTop: "80px" }}>
@@ -139,7 +143,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                 <span style={{ padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>{course.category?.name || "General"}</span>
               </div>
               <h1 style={{ color: "white", marginBottom: "0.75rem" }}>{course.title}</h1>
-              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "1.5rem" }}>{course.subtitle || course.description?.slice(0, 100) + "..."}</p>
+              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "1.5rem" }}>{course.subtitle || displayDescription.slice(0, 100) + "..."}</p>
               <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
                 {[{ icon: Clock, label: `${course.weeksDuration || 0} weeks` }, { icon: BookOpen, label: `${course.totalLectures || 0} Lessons` }, { icon: Users, label: `${course._count?.enrollments || 0} Students` }, { icon: Award, label: "Certificate" }].map(({ icon: Icon, label }) => (
                   <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.7)" }}>
@@ -199,54 +203,121 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             </div>
           )}
           
-          <h2 style={{ marginBottom: "1rem" }}>About This Course</h2>
-          <p style={{ lineHeight: 1.9, marginBottom: "2.5rem", whiteSpace: "pre-wrap" }}>{course.description}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "2.5rem", marginBottom: "3rem" }}>
+            <div style={{ background: "#FFFFFF", padding: "2.5rem", borderRadius: "16px", border: "1px solid var(--border-light)", boxShadow: "0 4px 6px rgba(0,0,0,0.02)" }}>
+              <h2 style={{ marginBottom: "1.25rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)" }}>About This Course</h2>
+              <p style={{ lineHeight: 1.9, color: "var(--text-secondary)", fontSize: "1.05rem", whiteSpace: "pre-wrap", margin: 0 }}>{displayDescription}</p>
+              
+              {tags.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border-light)" }}>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--navy-deep)", marginRight: "0.5rem", display: "flex", alignItems: "center" }}>Tags:</span>
+                  {tags.map((t: string, i: number) => (
+                    <span key={i} style={{ background: "var(--cream-mid)", color: "var(--text-secondary)", fontSize: "0.75rem", padding: "4px 12px", borderRadius: "999px", fontWeight: 600 }}>{t}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {targetAudience.length > 0 && (
+              <div>
+                <h2 style={{ marginBottom: "1.25rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)" }}>Who This Course is For</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0.75rem" }}>
+                  {targetAudience.map((t: string, i: number) => (
+                    <div key={i} style={{ display: "flex", gap: "1rem", alignItems: "flex-start", padding: "1rem 1.25rem", background: "#FFFFFF", borderRadius: "12px", border: "1px solid var(--border-light)" }}>
+                      <Users size={18} color="var(--gold-primary)" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <span style={{ fontSize: "0.95rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {outcomes.length > 0 && (
-            <>
-              <h2 style={{ marginBottom: "1.25rem" }}>What You Will Learn</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "2.5rem" }}>
+            <div style={{ 
+              marginBottom: "3.5rem", 
+              background: "#FFFFFF", 
+              border: "1px solid var(--border-light)", 
+              borderRadius: "20px", 
+              padding: "2.5rem 3rem",
+              boxShadow: "0 12px 48px rgba(0,0,0,0.03)"
+            }}>
+              <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "1.75rem", fontWeight: 700 }}>What You'll Learn</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", columnGap: "3rem", rowGap: "1.5rem" }}>
                 {outcomes.map((o: string, i: number) => (
-                  <div key={i} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", padding: "0.875rem 1rem", background: "var(--cream-mid)", borderRadius: "10px" }}>
-                    <CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{o}</span>
+                  <div key={i} style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
+                    <div style={{ 
+                      flexShrink: 0, 
+                      width: 28, 
+                      height: 28, 
+                      borderRadius: "50%", 
+                      background: "linear-gradient(135deg, rgba(184,134,69,0.1) 0%, rgba(138,100,51,0.2) 100%)", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center",
+                      marginTop: 2,
+                      boxShadow: "inset 0 0 0 1px rgba(184,134,69,0.2)"
+                    }}>
+                      <CheckCircle size={16} color="var(--gold-primary)" strokeWidth={2.5} />
+                    </div>
+                    <span style={{ fontSize: "1rem", color: "var(--text-secondary)", lineHeight: 1.6, fontWeight: 500 }}>{o}</span>
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
-          <h2 style={{ marginBottom: "1.25rem" }}>Course Curriculum</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "2.5rem" }}>
-            {course.sections && course.sections.length > 0 ? course.sections.map((sec: any, i: number) => (
-              <div key={sec.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem 1.25rem", background: "var(--cream-mid)", borderRadius: "10px", border: "1px solid var(--border-light)" }}>
-                <div style={{ display: "flex", gap: "0.875rem", alignItems: "center" }}>
-                  <span style={{ width: "26px", height: "26px", borderRadius: "50%", background: "var(--gold-pale)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.78rem", fontWeight: 700, color: "var(--gold-dark)", flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--navy-deep)" }}>{sec.title}</span>
+          <div style={{ 
+            marginBottom: "3.5rem", 
+            background: "#FFFFFF", 
+            border: "1px solid var(--border-light)", 
+            borderRadius: "20px", 
+            padding: "2.5rem 3rem",
+            boxShadow: "0 12px 48px rgba(0,0,0,0.03)"
+          }}>
+            <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "1.75rem", fontWeight: 700 }}>Course Curriculum</h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {course.sections && course.sections.length > 0 ? course.sections.map((sec: any, i: number) => (
+                <div key={sec.id} style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center", 
+                  padding: "1.5rem 0", 
+                  borderBottom: i === course.sections.length - 1 ? "none" : "1px solid var(--border-light)",
+                  transition: "all 0.2s"
+                }}>
+                  <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+                    <div style={{ 
+                      width: "36px", 
+                      height: "36px", 
+                      borderRadius: "12px", 
+                      background: "rgba(184,134,69,0.08)", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      fontSize: "0.9rem", 
+                      fontWeight: 700, 
+                      color: "var(--gold-primary)", 
+                      flexShrink: 0 
+                    }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <span style={{ fontWeight: 600, fontSize: "1.05rem", color: "var(--navy-deep)", letterSpacing: "-0.01em" }}>{sec.title}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)" }}>
+                    <BookOpen size={16} strokeWidth={2} />
+                    <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>{sec.lessons?.length || 0} lessons</span>
+                  </div>
                 </div>
-                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{sec.lessons?.length || 0} items</span>
-              </div>
-            )) : (
-              <div style={{ padding: "20px", background: "var(--cream-mid)", borderRadius: "10px", textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
-                No curriculum modules added yet.
-              </div>
-            )}
+              )) : (
+                <div style={{ padding: "3rem", background: "var(--cream-mid)", borderRadius: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 500 }}>
+                  Curriculum details are being finalized. Check back soon.
+                </div>
+              )}
+            </div>
           </div>
 
-          <h2 style={{ marginBottom: "1.25rem" }}>Instructor Announcements</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2.5rem" }}>
-            {course.announcements && course.announcements.length > 0 ? course.announcements.map((ann: any) => (
-              <div key={ann.id} style={{ padding: "1.25rem", background: "#FFFFFF", borderRadius: "10px", border: "1px solid var(--border-light)", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
-                <h3 style={{ fontSize: "1.1rem", margin: "0 0 0.5rem 0", color: "var(--navy-deep)", display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ color: "var(--gold-primary)" }}>📢</span> {ann.title}</h3>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>{new Date(ann.createdAt).toLocaleDateString()}</div>
-                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: 1.6, whiteSpace: "pre-wrap", margin: 0 }}>{ann.content}</p>
-              </div>
-            )) : (
-              <div style={{ padding: "20px", background: "var(--cream-mid)", borderRadius: "10px", textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
-                No announcements yet.
-              </div>
-            )}
-          </div>
+
 
           {requirements.length > 0 && (
             <>

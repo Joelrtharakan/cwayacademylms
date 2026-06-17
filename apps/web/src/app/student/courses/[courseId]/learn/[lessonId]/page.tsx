@@ -148,6 +148,34 @@ export default function LessonPlayerPage() {
   const [submissionResponse, setSubmissionResponse] = useState("");
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [isSubmittingAssig, setIsSubmittingAssig] = useState(false);
+  const [extensions, setExtensions] = useState<any[]>([]);
+  const [extensionRequests, setExtensionRequests] = useState<any[]>([]);
+  const [isRequestingExtension, setIsRequestingExtension] = useState(false);
+  const [extensionReason, setExtensionReason] = useState("");
+  const [extensionRequestedDate, setExtensionRequestedDate] = useState("");
+
+  const requestExtensionMut = useMutation({
+    mutationFn: async ({ itemId, itemType }: { itemId: string, itemType: string }) => {
+      return await api.post(`/courses/${courseId}/extensions/request`, {
+        itemId,
+        itemType,
+        reason: extensionReason,
+        requestedDate: extensionRequestedDate || undefined
+      });
+    },
+    onSuccess: () => {
+      toast.success("Extension requested successfully");
+      setIsRequestingExtension(false);
+      setExtensionReason("");
+      setExtensionRequestedDate("");
+      // Refetch extensions
+      api.get(`/courses/${courseId}/extensions/my-requests`).then(r => {
+        setExtensions(r.data.data.granted);
+        setExtensionRequests(r.data.data.requests);
+      });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to request extension")
+  });
 
   const onSubmitAssignment = async () => {
     if (!lesson?.assignment?.id || (!submissionResponse.trim() && !submissionFile)) return;
@@ -182,6 +210,13 @@ export default function LessonPlayerPage() {
         try {
           const cRes = await api.get(`/courses/${courseId}`);
           setInstructor(cRes.data.data.instructor);
+        } catch {}
+
+        // Fetch extensions
+        try {
+          const extRes = await api.get(`/courses/${courseId}/extensions/my-requests`);
+          setExtensions(extRes.data.data.granted || []);
+          setExtensionRequests(extRes.data.data.requests || []);
         } catch {}
         
         // Find lesson in sections
@@ -993,6 +1028,62 @@ export default function LessonPlayerPage() {
                           </button>
                         </div>
                       </div>
+                      
+                      {/* Extension Logic */}
+                      {lesson.assignment?.dueDate && (
+                        <div style={{ marginTop: "16px", padding: "16px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "8px" }}>
+                          {(() => {
+                            const dueDate = new Date(lesson.assignment.dueDate);
+                            const isPastDue = new Date() > dueDate;
+                            const assignmentId = lesson.assignment.id;
+                            const grantedExtension = extensions.find(e => e.itemId === assignmentId);
+                            const pendingRequest = extensionRequests.find(r => r.itemId === assignmentId && r.status === "PENDING");
+                            
+                            let effectiveDueDate = dueDate;
+                            if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
+                            const isEffectivelyPastDue = new Date() > effectiveDueDate;
+
+                            if (!isPastDue && !isEffectivelyPastDue) return null;
+
+                            if (grantedExtension && !isEffectivelyPastDue) {
+                              return (
+                                <div style={{ color: "#065F46", fontWeight: 600, fontSize: "14px" }}>
+                                  Extension granted until {effectiveDueDate.toLocaleDateString()}
+                                </div>
+                              );
+                            }
+
+                            if (pendingRequest) {
+                              return (
+                                <div style={{ color: "#92400E", fontWeight: 600, fontSize: "14px" }}>
+                                  Extension requested (Pending approval)
+                                </div>
+                              );
+                            }
+
+                            if (isEffectivelyPastDue) {
+                              return (
+                                <div>
+                                  <p style={{ color: "#DC2626", fontWeight: 600, fontSize: "14px", margin: "0 0 12px 0" }}>This assignment is past due. You must request an extension to submit.</p>
+                                  {!isRequestingExtension ? (
+                                    <button onClick={() => setIsRequestingExtension(true)} style={{ padding: "8px 16px", background: "#FFFFFF", border: "1px solid #FECACA", color: "#DC2626", borderRadius: "6px", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}>Request Extension</button>
+                                  ) : (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={2} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
+                                      <div style={{ display: "flex", gap: "8px" }}>
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ padding: "8px 16px", background: "#DC2626", color: "#FFFFFF", borderRadius: "6px", fontWeight: 600, fontSize: "13px", border: "none", cursor: "pointer" }}>Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} style={{ padding: "8px 16px", background: "transparent", color: "#8F9E93", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Cancel</button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1109,52 +1200,112 @@ export default function LessonPlayerPage() {
                       </div>
                       <div className="flex-1">
                         <div className="bg-white rounded-[20px] border border-[#E4E8E0] shadow-sm overflow-hidden focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all relative">
-                          <textarea
-                            value={newPostContent}
-                            onChange={e => setNewPostContent(e.target.value)}
-                            placeholder="Write your reply to this prompt..."
-                            rows={4}
-                            className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed"
-                            style={{ padding: '24px 24px 64px 24px', overflowY: "auto" }}
-                            onWheel={(e) => {
-                              const target = e.currentTarget;
-                              const isScrollingDown = e.deltaY > 0;
-                              const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
-                              const isAtTop = target.scrollTop <= 0;
+                          {(() => {
+                            let isEffectivelyPastDue = false;
+                            let showRequestExtension = false;
+                            let showPending = false;
+                            let showGranted = false;
+                            let effectiveDueDate = null;
+
+                            if (lesson.dueDate) {
+                              const dueDate = new Date(lesson.dueDate);
+                              const isPastDue = new Date() > dueDate;
+                              const grantedExtension = extensions.find(e => e.itemId === lesson.id);
+                              const pendingRequest = extensionRequests.find(r => r.itemId === lesson.id && r.status === "PENDING");
                               
-                              if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
-                                e.stopPropagation();
+                              effectiveDueDate = dueDate;
+                              if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
+                              isEffectivelyPastDue = new Date() > effectiveDueDate;
+
+                              if (isPastDue && !isEffectivelyPastDue) {
+                                showGranted = !!grantedExtension;
                               }
-                            }}
-                          />
-                          <div className="absolute bottom-3 right-3 flex items-center gap-3 z-10">
-                            <span className="text-[12px] text-[#8A9E8C] font-medium">{newPostContent.length > 0 ? `${newPostContent.length} chars` : ""}</span>
-                            <button
-                              disabled={!newPostContent.trim() || isPostingForum}
-                              onClick={async () => {
-                                if (!newPostContent.trim()) return;
-                                setIsPostingForum(true);
-                                try {
-                                  const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
-                                  setForumPosts(prev => [res.data.data, ...prev]);
-                                  setNewPostContent("");
-                                  
-                                  // Mark lesson as complete since student replied
-                                  if (!lesson.isCompleted) {
-                                    await markComplete();
-                                  }
-                                } catch (err: any) {
-                                  console.error(err);
-                                  toast.error(err.response?.data?.message || "Failed to post reply");
-                                } finally {
-                                  setIsPostingForum(false);
-                                }
-                              }}
-                              className="flex items-center justify-center w-10 h-10 bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-                            >
-                              <Send size={16} />
-                            </button>
-                          </div>
+                              if (isEffectivelyPastDue) {
+                                if (pendingRequest) showPending = true;
+                                else showRequestExtension = true;
+                              }
+                            }
+
+                            if (isEffectivelyPastDue && showRequestExtension) {
+                              return (
+                                <div style={{ background: "#FEF2F2", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
+                                  <p style={{ color: "#DC2626", fontWeight: 600, fontSize: "14px", margin: "0 0 12px 0" }}>This forum is past due. You must request an extension to reply.</p>
+                                  {!isRequestingExtension ? (
+                                    <button onClick={() => setIsRequestingExtension(true)} style={{ padding: "8px 16px", background: "#FFFFFF", border: "1px solid #FECACA", color: "#DC2626", borderRadius: "6px", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}>Request Extension</button>
+                                  ) : (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={2} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
+                                      <div style={{ display: "flex", gap: "8px" }}>
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: lesson.id, itemType: "FORUM" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ padding: "8px 16px", background: "#DC2626", color: "#FFFFFF", borderRadius: "6px", fontWeight: 600, fontSize: "13px", border: "none", cursor: "pointer" }}>Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} style={{ padding: "8px 16px", background: "transparent", color: "#8F9E93", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Cancel</button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+
+                            if (showPending) {
+                              return <div style={{ color: "#92400E", fontWeight: 600, fontSize: "14px", padding: "16px", background: "#FEF3C7", borderRadius: "8px" }}>Extension requested (Pending approval)</div>;
+                            }
+
+                            return (
+                              <>
+                                {showGranted && effectiveDueDate && (
+                                  <div style={{ padding: "12px 24px 0", color: "#065F46", fontSize: "13px", fontWeight: 600 }}>
+                                    Extension granted until {effectiveDueDate.toLocaleDateString()}
+                                  </div>
+                                )}
+                                <textarea
+                                  value={newPostContent}
+                                  onChange={e => setNewPostContent(e.target.value)}
+                                  placeholder="Write your reply to this prompt..."
+                                  rows={4}
+                                  className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed"
+                                  style={{ padding: '24px 24px 64px 24px', overflowY: "auto" }}
+                                  onWheel={(e) => {
+                                    const target = e.currentTarget;
+                                    const isScrollingDown = e.deltaY > 0;
+                                    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
+                                    const isAtTop = target.scrollTop <= 0;
+                                    
+                                    if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
+                                      e.stopPropagation();
+                                    }
+                                  }}
+                                />
+                                <div className="absolute bottom-3 right-3 flex items-center gap-3 z-10">
+                                  <span className="text-[12px] text-[#8A9E8C] font-medium">{newPostContent.length > 0 ? `${newPostContent.length} chars` : ""}</span>
+                                  <button
+                                    disabled={!newPostContent.trim() || isPostingForum}
+                                    onClick={async () => {
+                                      if (!newPostContent.trim()) return;
+                                      setIsPostingForum(true);
+                                      try {
+                                        const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
+                                        setForumPosts(prev => [res.data.data, ...prev]);
+                                        setNewPostContent("");
+                                        
+                                        // Mark lesson as complete since student replied
+                                        if (!lesson.isCompleted) {
+                                          await markComplete();
+                                        }
+                                      } catch (err: any) {
+                                        console.error(err);
+                                        toast.error(err.response?.data?.message || "Failed to post reply");
+                                      } finally {
+                                        setIsPostingForum(false);
+                                      }
+                                    }}
+                                    className="flex items-center justify-center w-10 h-10 bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                                  >
+                                    <Send size={16} />
+                                  </button>
+                                </div>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>

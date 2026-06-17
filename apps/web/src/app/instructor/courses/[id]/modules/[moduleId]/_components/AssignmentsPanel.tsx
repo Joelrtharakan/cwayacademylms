@@ -152,7 +152,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
   const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", maxScore: 100, dueDate: "" });
+  const [form, setForm] = useState({ title: "", description: "", maxScore: "100", dueDate: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isTimeOpen, setIsTimeOpen] = useState(false);
   const [viewingSubmissionsFor, setViewingSubmissionsFor] = useState<any>(null);
@@ -189,7 +189,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
       queryClient.invalidateQueries({ queryKey: ["assignments", module.id] });
       queryClient.invalidateQueries({ queryKey: ["modules"] });
       setIsCreating(false);
-      setForm({ title: "", description: "", maxScore: 100, dueDate: "" });
+      setForm({ title: "", description: "", maxScore: "100", dueDate: "" });
       setSelectedFile(null);
       toast.success("Assignment created!");
     },
@@ -215,7 +215,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
       queryClient.invalidateQueries({ queryKey: ["modules"] });
       setIsCreating(false);
       setEditingId(null);
-      setForm({ title: "", description: "", maxScore: 100, dueDate: "" });
+      setForm({ title: "", description: "", maxScore: "100", dueDate: "" });
       setSelectedFile(null);
       toast.success("Assignment updated!");
     },
@@ -246,7 +246,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
     setForm({
       title: assign.title,
       description: assign.description || "",
-      maxScore: assign.maxScore || 100,
+      maxScore: String(assign.maxScore || 100),
       dueDate: assign.dueDate ? new Date(assign.dueDate).toISOString().slice(0, 16) : ""
     });
     setSelectedFile(null);
@@ -268,7 +268,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
           <button 
             onClick={() => {
               setEditingId(null);
-              setForm({ title: "", description: "", maxScore: 100, dueDate: "" });
+              setForm({ title: "", description: "", maxScore: "100", dueDate: "" });
               setSelectedFile(null);
               setIsCreating(true);
             }}
@@ -306,9 +306,9 @@ export default function AssignmentsPanel({ module }: { module: any }) {
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 placeholder="Detailed instructions for the assignment..."
                 required
-                rows={4}
-                onWheel={(e) => e.stopPropagation()}
-                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical", overflowY: "auto" }}
+                rows={3}
+                data-lenis-prevent="true"
+                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical", overflowY: "auto", minHeight: "120px", maxHeight: "300px" }}
               />
             </div>
 
@@ -318,7 +318,7 @@ export default function AssignmentsPanel({ module }: { module: any }) {
                 <input 
                   type="number" 
                   value={form.maxScore}
-                  onChange={e => setForm({ ...form, maxScore: Number(e.target.value) })}
+                  onChange={e => setForm({ ...form, maxScore: e.target.value })}
                   min="0"
                   style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />

@@ -9,6 +9,7 @@ import { ClipboardList, Upload, CheckCircle, Clock } from "lucide-react";
 export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any, enrollmentId: string }) {
   const queryClient = useQueryClient();
   const assignmentId = lesson.assignment?.id;
+  const isPastDue = lesson.assignment?.dueDate ? new Date(lesson.assignment.dueDate) < new Date() : false;
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
@@ -48,8 +49,15 @@ export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any
           <h2 style={{ fontSize: 32, fontWeight: 700, color: THEME.HERO, marginBottom: 16, fontFamily: "Cormorant Garamond, serif" }}>{lesson.title}</h2>
           {lesson.content && <p style={{ color: THEME.MUTED, fontSize: 15, lineHeight: 1.6 }}>{lesson.content}</p>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: THEME.MUTED, fontSize: 13, background: "rgba(0,0,0,0.02)", padding: "8px 16px", borderRadius: 999 }}>
-          <ClipboardList size={16} /> Assignment
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-end" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: THEME.MUTED, fontSize: 13, background: "rgba(0,0,0,0.02)", padding: "8px 16px", borderRadius: 999 }}>
+            <ClipboardList size={16} /> Assignment
+          </div>
+          {lesson.assignment?.dueDate && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: isPastDue ? "#E53E3E" : THEME.GOLD, fontSize: 13, fontWeight: 600, padding: "4px 12px", background: isPastDue ? "rgba(229,62,62,0.1)" : "rgba(201,151,58,0.1)", borderRadius: 999 }}>
+              <Clock size={14} /> Due: {new Date(lesson.assignment.dueDate).toLocaleString()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -94,6 +102,11 @@ export default function AssignmentLesson({ lesson, enrollmentId }: { lesson: any
               </div>
             )}
           </div>
+        </div>
+      ) : isPastDue ? (
+        <div style={{ background: "white", borderRadius: 16, padding: 32, border: "1px solid rgba(229,62,62,0.2)" }}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, color: "#E53E3E", marginBottom: 12 }}>LOCKED (Past Due Date)</h3>
+          <p style={{ color: THEME.MUTED, fontSize: 15, marginBottom: 0 }}>This assignment is no longer accepting submissions because the deadline has passed.</p>
         </div>
       ) : (
         <div style={{ background: "white", borderRadius: 16, padding: 32, border: "1px solid rgba(0,0,0,0.05)" }}>

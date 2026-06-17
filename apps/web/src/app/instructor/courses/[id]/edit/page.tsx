@@ -30,7 +30,8 @@ function Textarea({ label, error, ...props }: any) {
   return (
     <div style={{ marginBottom: 18 }}>
       {label && <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</label>}
-      <textarea {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(184,134,69,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#1A261D", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 120, ...props.style }}
+      <textarea {...props} style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${error ? "#F87171" : "rgba(184,134,69,0.25)"}`, borderRadius: 8, padding: "10px 14px", color: "#1A261D", fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 120, maxHeight: 300, overflowY: "auto", ...props.style }}
+        data-lenis-prevent="true"
         onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#F87171" : "rgba(184,134,69,0.25)"} />
       {error && <p style={{ color: "#F87171", fontSize: 11, marginTop: 4 }}>{error}</p>}
     </div>
@@ -82,6 +83,7 @@ export default function EditCoursePage() {
     onSuccess: () => {
       toast.success("Course updated successfully");
       qc.invalidateQueries({ queryKey: ["course", id] });
+      qc.invalidateQueries({ queryKey: ["instructor-courses"] });
     },
     onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update course"),
   });
@@ -94,6 +96,7 @@ export default function EditCoursePage() {
       setThumbnail(result.thumbnailUrl);
       toast.success("Thumbnail updated!");
       qc.invalidateQueries({ queryKey: ["course", id] });
+      qc.invalidateQueries({ queryKey: ["instructor-courses"] });
     } catch { toast.error("Upload failed"); }
     setUploading(false);
   };

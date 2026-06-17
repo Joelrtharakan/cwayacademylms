@@ -124,4 +124,12 @@ router.get("/instructor/invitations", authenticate, authorize("INSTRUCTOR"), CC.
 router.post("/instructor/invitations/:id/accept", authenticate, authorize("INSTRUCTOR"), CC.acceptInvitation);
 router.post("/instructor/invitations/:id/decline", authenticate, authorize("INSTRUCTOR"), CC.declineInvitation);
 
+// ─── EXTENSIONS ───────────────────────────────────────────────────────────────
+import * as EC from "../controllers/extension.controller";
+router.get("/courses/:courseId/extensions", authenticate, authorize("INSTRUCTOR", "ADMIN"), EC.getExtensionRequests);
+router.post("/courses/:courseId/extensions", authenticate, authorize("INSTRUCTOR", "ADMIN"), EC.createManualExtension);
+router.post("/courses/:courseId/extensions/request", authenticate, EC.createExtensionRequest);
+router.put("/courses/:courseId/extensions/:id/status", authenticate, authorize("INSTRUCTOR", "ADMIN"), EC.updateExtensionRequestStatus);
+router.get("/courses/:courseId/extensions/my-requests", authenticate, EC.getStudentExtensionRequests);
+
 export default router;

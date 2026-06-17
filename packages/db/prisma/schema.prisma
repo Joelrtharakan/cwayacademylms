@@ -59,6 +59,8 @@ model User {
   notificationPrefs String             @default("{}")
   notes                Note[]
   courseInvitations    CourseInvitation[]  @relation("InstructorInvitations")
+  extensions           Extension[]         @relation("StudentExtensions")
+  extensionRequests    ExtensionRequest[]  @relation("StudentExtensionRequests")
 
   @@index([email])
   @@index([role])
@@ -128,6 +130,8 @@ model Course {
   rubrics            Rubric[]
   attendanceSessions AttendanceSession[]
   curriculum         Curriculum?
+  extensions         Extension[]
+  extensionRequests  ExtensionRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -171,6 +175,7 @@ model Lesson {
   isPreview    Boolean @default(false)
   bunnyVideoId String?
   forumMarks   Int?
+  dueDate      DateTime? // For forum deadlines
 
   quiz             Quiz?
   assignment       Assignment?
@@ -636,6 +641,43 @@ model AttendanceRecord {
   note      String?
 
   @@unique([sessionId, studentId])
+}
+
+model Extension {
+  id           String    @id @default(cuid())
+  studentId    String
+  student      User      @relation("StudentExtensions", fields: [studentId], references: [id], onDelete: Cascade)
+  itemId       String    // Assignment ID or Lesson ID (for forums)
+  itemType     String    // "ASSIGNMENT" or "FORUM"
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  extendedDate DateTime
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([studentId, itemId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([itemId])
+}
+
+model ExtensionRequest {
+  id            String    @id @default(cuid())
+  studentId     String
+  student       User      @relation("StudentExtensionRequests", fields: [studentId], references: [id], onDelete: Cascade)
+  itemId        String    // Assignment ID or Lesson ID (for forums)
+  itemType      String    // "ASSIGNMENT" or "FORUM"
+  courseId      String
+  course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  reason        String
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  requestedDate DateTime? // The date the student is requesting
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([studentId])
+  @@index([courseId])
+  @@index([itemId])
 }
 
 model Curriculum {

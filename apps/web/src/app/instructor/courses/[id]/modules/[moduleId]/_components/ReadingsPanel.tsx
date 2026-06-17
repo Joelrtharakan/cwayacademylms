@@ -91,8 +91,9 @@ export default function ReadingsPanel({ module }: { module: any }) {
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 placeholder="Briefly describe this document"
-                rows={2}
-                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical" }}
+                rows={3}
+                data-lenis-prevent="true"
+                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical", overflowY: "auto", minHeight: "120px", maxHeight: "300px" }}
               />
             </div>
             

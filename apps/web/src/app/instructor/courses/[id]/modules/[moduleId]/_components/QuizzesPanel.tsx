@@ -11,7 +11,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
   const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", instructions: "", passingScore: 70, timeLimit: 0, maxAttempts: 3 });
+  const [form, setForm] = useState({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" });
 
   const { data: quizzes, isLoading } = useQuery({
     queryKey: ["quizzes", module.id],
@@ -23,14 +23,14 @@ export default function QuizzesPanel({ module }: { module: any }) {
       title: form.title,
       instructions: form.instructions,
       passingScore: Number(form.passingScore),
-      timeLimit: form.timeLimit > 0 ? Number(form.timeLimit) : null,
+      timeLimit: Number(form.timeLimit) > 0 ? Number(form.timeLimit) : null,
       maxAttempts: Number(form.maxAttempts)
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quizzes", module.id] });
       queryClient.invalidateQueries({ queryKey: ["modules"] });
       setIsCreating(false);
-      setForm({ title: "", instructions: "", passingScore: 70, timeLimit: 0, maxAttempts: 3 });
+      setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" });
       toast.success("Quiz created! Now add questions.");
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create quiz"),
@@ -105,7 +105,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                 <input 
                   type="number" 
                   value={form.passingScore}
-                  onChange={e => setForm({ ...form, passingScore: Number(e.target.value) })}
+                  onChange={e => setForm({ ...form, passingScore: e.target.value })}
                   min="0" max="100"
                   style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />
@@ -115,7 +115,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                 <input 
                   type="number" 
                   value={form.timeLimit}
-                  onChange={e => setForm({ ...form, timeLimit: Number(e.target.value) })}
+                  onChange={e => setForm({ ...form, timeLimit: e.target.value })}
                   min="0"
                   placeholder="0 for no limit"
                   style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
@@ -126,7 +126,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                 <input 
                   type="number" 
                   value={form.maxAttempts}
-                  onChange={e => setForm({ ...form, maxAttempts: Number(e.target.value) })}
+                  onChange={e => setForm({ ...form, maxAttempts: e.target.value })}
                   min="1"
                   style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />

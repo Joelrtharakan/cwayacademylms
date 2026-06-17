@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
+exports.getProgramById = exports.getPrograms = exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
+exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
@@ -392,7 +393,7 @@ exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     });
     // Send the email asynchronously
-    email_service_1.EmailService.sendInstructorWelcomeEmail(user, password).catch(err => {
+    (0, email_service_1.sendInstructorWelcomeEmail)(user, password).catch((err) => {
         console.error("Failed to send instructor welcome email:", err);
     });
     res.status(201).json({ status: "success", data: user, message: "Instructor created and email sent." });
@@ -458,6 +459,12 @@ exports.approveCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         include: { instructor: { select: { id: true, name: true, email: true } } },
     });
     await notification_service_1.NotificationService.createNotification(course.instructorId, "COURSE_APPROVED", "Your course has been approved", `'${course.title}' is now live on CWAY Academy`, `/courses/${course.slug}`);
+    try {
+        await (0, email_service_1.sendCourseApprovedEmail)({ name: course.instructor.name, email: course.instructor.email }, { title: course.title, slug: course.slug, id: course.id });
+    }
+    catch (e) {
+        console.error("[Email] Failed to send course approved email:", e);
+    }
     res.json({ status: "success", message: "Course approved and published" });
 });
 exports.rejectCourse = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -848,4 +855,158 @@ exports.updateSettings = (0, errors_1.asyncHandler)(async (req, res) => {
         ? await prisma_1.prisma.siteSettings.update({ where: { id: existing.id }, data })
         : await prisma_1.prisma.siteSettings.create({ data });
     res.json({ status: "success", data: settings });
+});
+// ─── PROGRAM MANAGEMENT (LMS WORKFLOW) ───────────────────────────────────────
+exports.getPrograms = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { status, search, page = "1", limit = "20" } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+    const where = {};
+    if (status)
+        where.status = status;
+    if (search)
+        where.title = { contains: search, mode: "insensitive" };
+    const [programs, total] = await Promise.all([
+        prisma_1.prisma.program.findMany({
+            where,
+            skip,
+            take: limitNum,
+            orderBy: { createdAt: "desc" },
+            include: {
+                _count: { select: { courses: true } },
+                courses: {
+                    select: { id: true, title: true, status: true, invitationStatus: true, thumbnail: true,
+                        instructor: { select: { id: true, name: true } } },
+                    orderBy: { createdAt: "desc" },
+                },
+            },
+        }),
+        prisma_1.prisma.program.count({ where }),
+    ]);
+    res.json({ status: "success", data: { programs, total, page: pageNum, pages: Math.ceil(total / limitNum) } });
+});
+exports.getProgramById = (0, errors_1.asyncHandler)(async (req, res) => {
+    const program = await prisma_1.prisma.program.findUnique({
+        where: { id: req.params.id },
+        include: {
+            _count: { select: { courses: true } },
+            courses: {
+                select: {
+                    id: true, title: true, slug: true, status: true, invitationStatus: true,
+                    thumbnail: true, price: true, isFree: true, createdAt: true,
+                    instructor: { select: { id: true, name: true, email: true, avatar: true } },
+                    invitation: { select: { id: true, status: true, adminNote: true,
+                            instructor: { select: { id: true, name: true, email: true } } } },
+                    _count: { select: { enrollments: true, sections: true } },
+                },
+                orderBy: { createdAt: "asc" },
+            },
+        },
+    });
+    if (!program)
+        throw new errors_1.AppError("Program not found", 404);
+    res.json({ status: "success", data: program });
+});
+exports.createProgram = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { title, description, duration, tags, status } = req.body;
+    if (!title)
+        throw new errors_1.AppError("Title is required", 400);
+    const program = await prisma_1.prisma.program.create({
+        data: {
+            title,
+            description: description || null,
+            duration: duration || null,
+            tags: tags ? JSON.stringify(tags) : "[]",
+            status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        },
+    });
+    res.status(201).json({ status: "success", data: program });
+});
+exports.updateProgram = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { title, description, duration, tags, status } = req.body;
+    const program = await prisma_1.prisma.program.update({
+        where: { id: req.params.id },
+        data: {
+            ...(title !== undefined && { title }),
+            ...(description !== undefined && { description }),
+            ...(duration !== undefined && { duration }),
+            ...(tags !== undefined && { tags: JSON.stringify(tags) }),
+            ...(status !== undefined && { status }),
+        },
+        include: { _count: { select: { courses: true } } },
+    });
+    res.json({ status: "success", data: program });
+});
+exports.deleteProgram = (0, errors_1.asyncHandler)(async (req, res) => {
+    const program = await prisma_1.prisma.program.findUnique({
+        where: { id: req.params.id },
+        include: { _count: { select: { courses: true } } },
+    });
+    if (!program)
+        throw new errors_1.AppError("Program not found", 404);
+    // Unlink courses from this program instead of deleting them
+    await prisma_1.prisma.course.updateMany({
+        where: { programId: req.params.id },
+        data: { programId: null },
+    });
+    await prisma_1.prisma.program.delete({ where: { id: req.params.id } });
+    res.json({ status: "success", message: "Program deleted" });
+});
+exports.addCourseToProgram = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { programId } = req.params;
+    const { title, description, price, requirements, instructorId } = req.body;
+    if (!title)
+        throw new errors_1.AppError("Course title is required", 400);
+    // Find or use provided instructorId; fallback to admin's own id
+    const resolvedInstructorId = instructorId || req.user.id;
+    const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") + "-" + Date.now();
+    const course = await prisma_1.prisma.course.create({
+        data: {
+            title,
+            slug,
+            description: description || null,
+            price: price ? parseFloat(price) : 0,
+            requirements: requirements ? JSON.stringify(requirements) : "[]",
+            instructorId: resolvedInstructorId,
+            programId,
+            weeksDuration: 6,
+            status: "DRAFT",
+            invitationStatus: "UNASSIGNED",
+        },
+        include: {
+            instructor: { select: { id: true, name: true, email: true } },
+            _count: { select: { sections: true } },
+        },
+    });
+    res.status(201).json({ status: "success", data: course });
+});
+exports.assignInstructorToCourse = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { courseId } = req.params;
+    const { instructorId, adminNote } = req.body;
+    if (!instructorId)
+        throw new errors_1.AppError("instructorId is required", 400);
+    const [course, instructor] = await Promise.all([
+        prisma_1.prisma.course.findUnique({ where: { id: courseId } }),
+        prisma_1.prisma.user.findUnique({ where: { id: instructorId, role: "INSTRUCTOR" } }),
+    ]);
+    if (!course)
+        throw new errors_1.AppError("Course not found", 404);
+    if (!instructor)
+        throw new errors_1.AppError("Instructor not found", 404);
+    // Delete any existing invitation for this course
+    await prisma_1.prisma.courseInvitation.deleteMany({ where: { courseId } });
+    // Create new invitation and update course
+    const [invitation] = await prisma_1.prisma.$transaction([
+        prisma_1.prisma.courseInvitation.create({
+            data: { courseId, instructorId, adminNote: adminNote || null, status: "PENDING" },
+            include: { instructor: { select: { id: true, name: true, email: true } } },
+        }),
+        prisma_1.prisma.course.update({
+            where: { id: courseId },
+            data: { instructorId, invitationStatus: "PENDING" },
+        }),
+    ]);
+    await notification_service_1.NotificationService.createNotification(instructorId, "COURSE_INVITATION", "You've been assigned a course", `You have a new course invitation: "${course.title}"`, `/instructor/courses`);
+    res.json({ status: "success", data: invitation, message: "Invitation sent to instructor" });
 });

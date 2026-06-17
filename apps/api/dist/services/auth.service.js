@@ -23,6 +23,8 @@ class AuthService {
         }
         // Hash password
         const passwordHash = await bcryptjs_1.default.hash(password, 12);
+        const rawToken = crypto_1.default.randomBytes(32).toString("hex");
+        const emailVerifyToken = this.hashToken(rawToken);
         // Create user
         const user = await prisma_1.prisma.user.create({
             data: {
@@ -33,12 +35,17 @@ class AuthService {
                 church,
                 location,
                 preferredLanguage: preferredLanguage || "ENGLISH",
-                isVerified: true,
-                emailVerifyToken: null,
+                isVerified: false,
+                emailVerifyToken,
             },
         });
-        // Send welcome email directly
-        await email_service_1.EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
+        // Send verification email
+        try {
+            await (0, email_service_1.sendVerificationEmail)({ name: user.name, email: user.email }, rawToken);
+        }
+        catch (e) {
+            console.error("[Email] Failed to send verification email:", e);
+        }
         return { message: "Account created successfully" };
     }
     static async verifyEmail(token) {
@@ -57,7 +64,12 @@ class AuthService {
             },
         });
         // Send Welcome Email
-        await email_service_1.EmailService.sendWelcomeEmail({ name: user.name, email: user.email });
+        try {
+            await (0, email_service_1.sendWelcomeEmail)({ name: user.name, email: user.email });
+        }
+        catch (e) {
+            console.error("[Email] Failed to send welcome email:", e);
+        }
         return { message: "Email verified" };
     }
     static async login(credentials) {
@@ -133,7 +145,12 @@ class AuthService {
                 resetTokenExpiry,
             },
         });
-        await email_service_1.EmailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
+        try {
+            await (0, email_service_1.sendPasswordResetEmail)({ name: user.name, email: user.email }, rawToken);
+        }
+        catch (e) {
+            console.error("[Email] Failed to send password reset email:", e);
+        }
         return { message: "If that email exists, a reset link was sent" };
     }
     static async resetPassword(data) {

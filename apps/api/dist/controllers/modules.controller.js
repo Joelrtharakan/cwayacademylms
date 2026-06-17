@@ -117,7 +117,7 @@ exports.reorderModules = (0, errors_1.asyncHandler)(async (req, res) => {
 // ─── LESSONS ─────────────────────────────────────────────────────────────────
 exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { moduleId } = req.params;
-    const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
+    const { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks } = req.body;
     const section = await prisma_1.prisma.section.findUnique({
         where: { id: moduleId },
         include: { course: true },
@@ -146,13 +146,14 @@ exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
             order: nextOrder,
             isFree: isFree ?? false,
             isPreview: isPreview ?? false,
+            forumMarks: forumMarks ? Number(forumMarks) : null,
         },
     });
     res.status(201).json({ status: "success", data: lesson });
 });
 exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
-    const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
+    const { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks } = req.body;
     const lesson = await prisma_1.prisma.lesson.findUnique({
         where: { id: lessonId },
         include: { section: { include: { course: true } } },
@@ -164,7 +165,7 @@ exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     const updated = await prisma_1.prisma.lesson.update({
         where: { id: lessonId },
-        data: { title, type, content, videoUrl, duration, order, isFree, isPreview },
+        data: { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks: forumMarks !== undefined ? Number(forumMarks) : undefined },
     });
     res.json({ status: "success", data: updated });
 });
@@ -378,8 +379,8 @@ exports.createReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     // Upload to R2
     const ext = file.originalname.split('.').pop() || '';
-    const fileKey = storage_service_1.StorageService.generateUploadKey(`reading-materials/${moduleId}`, file.originalname);
-    const { url } = await storage_service_1.StorageService.uploadFile(file.buffer, fileKey, file.mimetype);
+    const fileKey = (0, storage_service_1.generateKey)(`reading-materials/${moduleId}`, file.originalname);
+    const { url } = await (0, storage_service_1.uploadToR2)(file.buffer, fileKey, file.mimetype);
     const lastMat = await prisma_1.prisma.readingMaterial.findFirst({
         where: { sectionId: moduleId },
         orderBy: { order: 'desc' }
@@ -437,7 +438,7 @@ exports.deleteReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Not authorized", 403);
     }
     // Delete from R2
-    await storage_service_1.StorageService.deleteFile(material.fileKey);
+    await (0, storage_service_1.deleteFromR2)(material.fileKey);
     // Delete from DB
     await prisma_1.prisma.readingMaterial.delete({ where: { id } });
     res.json({ status: "success", message: "Reading material deleted successfully" });
@@ -794,8 +795,8 @@ exports.uploadAssignmentAttachment = (0, errors_1.asyncHandler)(async (req, res)
     if (req.user.role !== "ADMIN" && assignment.lesson.section.course.instructorId !== req.user.id) {
         throw new errors_1.AppError("Not authorized", 403);
     }
-    const fileKey = storage_service_1.StorageService.generateUploadKey(`assignments/${assignmentId}`, file.originalname);
-    const { url } = await storage_service_1.StorageService.uploadFile(file.buffer, fileKey, file.mimetype);
+    const fileKey = (0, storage_service_1.generateKey)(`assignments/${assignmentId}`, file.originalname);
+    const { url } = await (0, storage_service_1.uploadToR2)(file.buffer, fileKey, file.mimetype);
     const updated = await prisma_1.prisma.assignment.update({
         where: { id: assignmentId },
         data: { attachmentUrl: url }

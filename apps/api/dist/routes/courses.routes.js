@@ -32,17 +32,13 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const multer_1 = __importDefault(require("multer"));
+const upload_middleware_1 = require("../middleware/upload.middleware");
 const authenticate_1 = require("../middleware/authenticate");
 const authorize_1 = require("../middleware/authorize");
 const CC = __importStar(require("../controllers/courses.controller"));
 const router = (0, express_1.Router)();
-const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 // ── PUBLIC ──────────────────────────────────────────────────────────────────
 router.get("/courses", (req, res, next) => { try {
     (0, authenticate_1.authenticate)(req, res, () => next());
@@ -64,21 +60,14 @@ router.delete("/courses/:id", authenticate_1.authenticate, (0, authorize_1.autho
 router.post("/courses/:id/submit-review", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.submitForReview);
 router.post("/courses/:id/duplicate", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.duplicateCourse);
 // Uploads
-router.post("/courses/:id/upload-thumbnail", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("thumbnail"), CC.uploadThumbnail);
-router.post("/courses/:id/upload-promo-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("video"), CC.uploadPromoVideo);
+router.post("/courses/:id/upload-thumbnail", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload_middleware_1.upload.single("thumbnail"), CC.uploadThumbnail);
+router.post("/courses/:id/upload-promo-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload_middleware_1.upload.single("video"), CC.uploadPromoVideo);
 // Sections
 router.post("/courses/:id/sections", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createSection);
 router.put("/courses/:id/sections/:sectionId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.updateSection);
 router.delete("/courses/:id/sections/:sectionId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.deleteSection);
 router.put("/courses/:id/sections/reorder", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.reorderSections);
-// Lessons
-router.post("/sections/:sectionId/lessons", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createLesson);
-router.put("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.updateLesson);
-router.delete("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.deleteLesson);
-router.put("/sections/:sectionId/lessons/reorder", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.reorderLessons);
-router.post("/lessons/:lessonId/upload-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("video"), CC.uploadLessonVideo);
-router.get("/lessons/:lessonId/video-status", authenticate_1.authenticate, CC.getLessonVideoStatus);
-router.post("/lessons/:lessonId/upload-attachment", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("attachment"), CC.uploadLessonAttachment);
+// Legacy Lesson routes removed in favor of Phase 4 modules.controller.ts (MC)
 // Removed duplicate Assignment routes; Phase 4 implementation below handles these.
 // Forum
 router.get("/courses/:id/forum/posts", authenticate_1.authenticate, CC.getForumPosts);
@@ -92,6 +81,8 @@ router.get("/instructor/courses", authenticate_1.authenticate, (0, authorize_1.a
 router.get("/instructor/stats", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorStats);
 router.get("/instructor/courses/:id/analytics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
 router.get("/instructor/assignments", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getInstructorAssignments);
+router.get("/instructor/courses/:id/students", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
+router.get("/instructor/courses/:id/gradebook", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorGradebook);
 const MC = __importStar(require("../controllers/modules.controller"));
 // ─── Phase 4: Modules & Content ──────────────────────────────────────────────
 router.post("/courses/:id/modules", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.createModule);
@@ -104,10 +95,10 @@ router.put("/modules/:moduleId/lessons/reorder", authenticate_1.authenticate, (0
 router.put("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateLesson);
 router.delete("/lessons/:lessonId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.deleteLesson);
 // Videos
-router.post("/lessons/:lessonId/upload-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("video"), MC.uploadVideoToLesson);
+router.post("/lessons/:lessonId/upload-video", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload_middleware_1.upload.single("video"), MC.uploadVideoToLesson);
 router.get("/lessons/:lessonId/video-status", authenticate_1.authenticate, MC.getLessonVideoStatus);
 // Reading Materials
-router.post("/modules/:moduleId/reading-materials", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("file"), MC.createReadingMaterial);
+router.post("/modules/:moduleId/reading-materials", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload_middleware_1.upload.single("file"), MC.createReadingMaterial);
 router.get("/modules/:moduleId/reading-materials", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getReadingMaterials);
 router.put("/reading-materials/:id", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateReadingMaterial);
 router.delete("/reading-materials/:id", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.deleteReadingMaterial);
@@ -126,7 +117,7 @@ router.post("/modules/:moduleId/assignment", authenticate_1.authenticate, (0, au
 router.get("/modules/:moduleId/assignments", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getAssignments);
 router.put("/assignments/:assignmentId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateAssignment);
 router.delete("/assignments/:assignmentId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.deleteAssignment);
-router.post("/assignments/:assignmentId/upload-attachment", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload.single("file"), MC.uploadAssignmentAttachment);
+router.post("/assignments/:assignmentId/upload-attachment", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), upload_middleware_1.upload.single("file"), MC.uploadAssignmentAttachment);
 router.get("/assignments/:assignmentId/submissions", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getAssignmentSubmissions);
 router.put("/submissions/:submissionId/grade", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.gradeSubmission);
 router.get("/courses/:id/rubrics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getCourseRubrics);
@@ -142,10 +133,21 @@ router.get("/messages/:userId", authenticate_1.authenticate, CC.getMessageThread
 router.post("/messages", authenticate_1.authenticate, CC.sendMessage);
 // User profile
 router.put("/users/me/profile", authenticate_1.authenticate, CC.updateMyProfile);
-router.post("/users/me/upload-avatar", authenticate_1.authenticate, upload.single("avatar"), CC.uploadAvatar);
+router.post("/users/me/upload-avatar", authenticate_1.authenticate, upload_middleware_1.upload.single("avatar"), CC.uploadAvatar);
 // Announcements
 router.get("/courses/:id/announcements", authenticate_1.authenticate, CC.getCourseAnnouncements);
 router.get("/instructor/courses/:id/announcements", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorAnnouncements);
 router.post("/instructor/courses/:id/announcements", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createAnnouncement);
 router.delete("/instructor/courses/:id/announcements/:announcementId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.deleteAnnouncement);
+// ─── INSTRUCTOR INVITATIONS ───────────────────────────────────────────────────
+router.get("/instructor/invitations", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getInvitations);
+router.post("/instructor/invitations/:id/accept", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.acceptInvitation);
+router.post("/instructor/invitations/:id/decline", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.declineInvitation);
+// ─── EXTENSIONS ───────────────────────────────────────────────────────────────
+const EC = __importStar(require("../controllers/extension.controller"));
+router.get("/courses/:courseId/extensions", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), EC.getExtensionRequests);
+router.post("/courses/:courseId/extensions", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), EC.createManualExtension);
+router.post("/courses/:courseId/extensions/request", authenticate_1.authenticate, EC.createExtensionRequest);
+router.put("/courses/:courseId/extensions/:id/status", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), EC.updateExtensionRequestStatus);
+router.get("/courses/:courseId/extensions/my-requests", authenticate_1.authenticate, EC.getStudentExtensionRequests);
 exports.default = router;

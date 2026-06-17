@@ -581,6 +581,17 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
   const { content } = req.body;
   const studentId = req.user!.id;
 
+  const assignment = await prisma.assignment.findUnique({ 
+    where: { id: assignmentId }, 
+    include: { lesson: { include: { section: { include: { course: true } } } } } 
+  });
+  
+  if (!assignment) throw new AppError("Assignment not found", 404);
+
+  if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
+    throw new AppError("Assignment submission is locked as the due date has passed", 403);
+  }
+
   let fileUrl: string | null = null;
   if (req.file) {
     const { url } = await uploadToR2(
@@ -603,9 +614,6 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
 
   let submission;
   if (existing) {
-    // Determine the final fileUrl. If no new file was uploaded, keep the old one.
-    // If the user wants to remove the file, the frontend would need to explicitly tell us,
-    // but for now, any new upload overwrites, and no upload keeps the old one.
     const finalFileUrl = req.file ? fileUrl : existing.fileUrl;
     submission = await prisma.submission.update({
       where: { id: existing.id },
@@ -627,19 +635,15 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
     });
   }
 
-  const assignment = await prisma.assignment.findUnique({ where: { id: assignmentId }, include: { lesson: { include: { section: { include: { course: true } } } } } });
-  
-  if (assignment) {
-    await prisma.notification.create({
-      data: {
-        userId: assignment.lesson.section.course.instructorId,
-        type: "NEW_SUBMISSION",
-        title: "New assignment submission",
-        body: `A student submitted '${assignment.title}'`,
-        link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
-      }
-    });
-  }
+  await prisma.notification.create({
+    data: {
+      userId: assignment.lesson.section.course.instructorId,
+      type: "NEW_SUBMISSION",
+      title: "New assignment submission",
+      body: `A student submitted '${assignment.title}'`,
+      link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
+    }
+  });
 
   res.json({ status: "success", data: submission });
 });

@@ -32,20 +32,17 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authenticate_1 = require("../middleware/authenticate");
 const studentCtrl = __importStar(require("../controllers/student.controller"));
-const multer_1 = __importDefault(require("multer"));
+const upload_middleware_1 = require("../middleware/upload.middleware");
 const router = (0, express_1.Router)();
-const upload = (0, multer_1.default)(); // Mock multer since S3 integration handles real uploads elsewhere, or use it for parsing multipart forms
 router.use(authenticate_1.authenticate);
 // Progress
 router.post("/enrollments", studentCtrl.enrollInCourse);
 router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
+router.get("/courses/:courseId/grade", studentCtrl.getMyCourseGrade);
 router.get("/enrollments/:enrollmentId/progress", studentCtrl.getProgress);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/complete", studentCtrl.completeLesson);
 router.post("/enrollments/:enrollmentId/lessons/:lessonId/progress", studentCtrl.saveWatchProgress);
@@ -55,8 +52,9 @@ router.get("/quizzes/:quizId/my-attempts", studentCtrl.getMyQuizAttempts);
 router.post("/quizzes/:quizId/attempt", studentCtrl.attemptQuiz);
 router.post("/quizzes/:quizId/submit", studentCtrl.submitQuiz);
 // Assignments
+router.get("/assignments", studentCtrl.getMyAssignments);
 router.get("/assignments/:assignmentId/my-submission", studentCtrl.getMySubmission);
-router.post("/assignments/:assignmentId/submit", upload.single("file"), studentCtrl.submitAssignment);
+router.post("/assignments/:assignmentId/submit", upload_middleware_1.upload.single("file"), studentCtrl.submitAssignment);
 // Readings
 router.get("/modules/:moduleId/reading-materials", studentCtrl.getReadingMaterials);
 // Notes

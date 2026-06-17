@@ -1,18 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
+exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const certificate_service_1 = require("../services/certificate.service");
 // ==========================================
 // PROGRESS TRACKING
 // ==========================================
+const email_service_1 = require("../services/email.service");
 exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
     const { courseId } = req.body;
     const studentId = req.user.id;
+    const user = req.user;
     if (!courseId)
         throw new errors_1.AppError("Course ID is required", 400);
-    const course = await prisma_1.prisma.course.findUnique({ where: { id: courseId } });
+    const course = await prisma_1.prisma.course.findUnique({
+        where: { id: courseId },
+        include: { instructor: { select: { name: true } } }
+    });
     if (!course || course.status !== "PUBLISHED") {
         throw new errors_1.AppError("Course not found or not available", 404);
     }
@@ -30,6 +35,20 @@ exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             progress: 0
         }
     });
+    try {
+        await (0, email_service_1.sendEnrollmentConfirmationEmail)({ name: user.name || "Student", email: user.email }, {
+            title: course.title,
+            id: course.id,
+            moduleNumber: course.moduleNumber,
+            weeksDuration: course.weeksDuration,
+            instructorName: course.instructor.name,
+            welcomeMessage: course.welcomeMessage,
+            scriptureRef: course.scriptureRef
+        });
+    }
+    catch (e) {
+        console.error("[Email] Failed to send enrollment confirmation:", e);
+    }
     res.status(201).json({ status: "success", data: enrollment });
 });
 exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -42,12 +61,13 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
             readingMaterialProgress: true,
             course: {
                 include: {
+                    instructor: { select: { name: true } },
                     sections: {
                         orderBy: { order: "asc" },
                         include: {
                             lessons: {
                                 orderBy: { order: "asc" },
-                                include: { quiz: { select: { id: true } }, assignment: { select: { id: true } } }
+                                include: { quiz: true, assignment: true }
                             },
                             readingMaterials: {
                                 orderBy: { order: "asc" },
@@ -198,15 +218,23 @@ exports.completeLesson = (0, errors_1.asyncHandler)(async (req, res) => {
         update: { completedAt: new Date() },
         create: { enrollmentId, lessonId, completedAt: new Date(), watchedSeconds: 0 }
     });
-    // Recalculate progress
-    const totalLessons = enrollment.course.sections.reduce((acc, sec) => acc + sec.lessons.length, 0);
-    const completedCount = enrollment.lessonProgress.filter(lp => lp.completedAt && lp.lessonId !== lessonId).length + 1; // Add 1 for the one we just completed
-    const overallProgress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
-    let courseCompleted = false;
+    // Recalculate progress consistently: count BOTH lessons AND reading materials
+    const enrollment2 = await prisma_1.prisma.enrollment.findUnique({
+        where: { id: enrollmentId },
+        include: {
+            course: { include: { sections: { include: { lessons: true, readingMaterials: true } } } },
+            lessonProgress: { where: { completedAt: { not: null } } },
+            readingMaterialProgress: { where: { completedAt: { not: null } } }
+        }
+    });
+    const totalItems = enrollment2.course.sections.reduce((sum, sec) => sum + sec.lessons.length + sec.readingMaterials.length, 0);
+    const completedItems = enrollment2.lessonProgress.length + enrollment2.readingMaterialProgress.length;
+    const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
     await prisma_1.prisma.enrollment.update({
         where: { id: enrollmentId },
         data: { progress: overallProgress }
     });
+    let courseCompleted = false;
     if (overallProgress >= 100 && !enrollment.completedAt) {
         courseCompleted = true;
         await prisma_1.prisma.enrollment.update({
@@ -478,39 +506,65 @@ exports.submitQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
 // ==========================================
 // ASSIGNMENTS
 // ==========================================
+const storage_service_1 = require("../services/storage.service");
 exports.submitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { assignmentId } = req.params;
     const { content } = req.body;
     const studentId = req.user.id;
-    const fileUrl = req.file ? req.file.location : null; // Assuming multer-s3 sets location
+    const assignment = await prisma_1.prisma.assignment.findUnique({
+        where: { id: assignmentId },
+        include: { lesson: { include: { section: { include: { course: true } } } } }
+    });
+    if (!assignment)
+        throw new errors_1.AppError("Assignment not found", 404);
+    if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
+        throw new errors_1.AppError("Assignment submission is locked as the due date has passed", 403);
+    }
+    let fileUrl = null;
+    if (req.file) {
+        const { url } = await (0, storage_service_1.uploadToR2)(req.file.buffer, (0, storage_service_1.generateKey)("submissions", req.file.originalname), req.file.mimetype);
+        fileUrl = url;
+    }
     if (!content && !fileUrl)
         throw new errors_1.AppError("Either content or file is required", 400);
     const existing = await prisma_1.prisma.submission.findFirst({
         where: { assignmentId, studentId }
     });
-    if (existing)
-        throw new errors_1.AppError("Already submitted", 400);
-    const submission = await prisma_1.prisma.submission.create({
-        data: {
-            assignmentId,
-            studentId,
-            content,
-            fileUrl,
-            isGraded: false
-        }
-    });
-    const assignment = await prisma_1.prisma.assignment.findUnique({ where: { id: assignmentId }, include: { lesson: { include: { section: { include: { course: true } } } } } });
-    if (assignment) {
-        await prisma_1.prisma.notification.create({
+    if (existing && existing.isGraded) {
+        throw new errors_1.AppError("Cannot resubmit a graded assignment", 400);
+    }
+    let submission;
+    if (existing) {
+        const finalFileUrl = req.file ? fileUrl : existing.fileUrl;
+        submission = await prisma_1.prisma.submission.update({
+            where: { id: existing.id },
             data: {
-                userId: assignment.lesson.section.course.instructorId,
-                type: "NEW_SUBMISSION",
-                title: "New assignment submission",
-                body: `A student submitted '${assignment.title}'`,
-                link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
+                content,
+                fileUrl: finalFileUrl,
+                submittedAt: new Date()
             }
         });
     }
+    else {
+        submission = await prisma_1.prisma.submission.create({
+            data: {
+                assignmentId,
+                studentId,
+                content,
+                fileUrl,
+                isGraded: false
+            }
+        });
+    }
+    await prisma_1.prisma.notification.create({
+        data: {
+            userId: assignment.lesson.section.course.instructorId,
+            type: "NEW_SUBMISSION",
+            title: "New assignment submission",
+            body: `A student submitted '${assignment.title}'`,
+            link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
+        }
+    });
     res.json({ status: "success", data: submission });
 });
 exports.getMySubmission = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -787,22 +841,151 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
                 select: {
                     id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
                     instructor: { select: { name: true } },
-                    _count: { select: { sections: true } }
+                    _count: { select: { sections: true } },
+                    sections: {
+                        include: {
+                            lessons: {
+                                where: { type: "ASSIGNMENT" },
+                                include: { assignment: true }
+                            }
+                        }
+                    }
                 }
             }
         },
         orderBy: { enrolledAt: "desc" }
     });
+    const certificatesCount = await prisma_1.prisma.certificate.count({
+        where: { studentId }
+    });
+    const submissions = await prisma_1.prisma.submission.findMany({
+        where: { studentId }
+    });
+    let pendingAssignmentsCount = 0;
+    enrollments.forEach(enr => {
+        enr.course.sections?.forEach(sec => {
+            sec.lessons?.forEach(lesson => {
+                if (lesson.assignment) {
+                    const hasSubmission = submissions.some(s => s.assignmentId === lesson.assignment?.id);
+                    if (!hasSubmission) {
+                        pendingAssignmentsCount++;
+                    }
+                }
+            });
+        });
+    });
     // Simplified "Continue Learning"
     const activeEnrollment = enrollments.find(e => e.status === "ACTIVE" && e.progress < 100) || enrollments[0];
-    // Upcoming deadlines (assignments with dueDate > now)
-    // Assuming assignment dueDates exist in schema. Wait, schema doesn't have dueDate on Assignment? Let's check schema.
-    // Actually, we'll skip upcoming deadlines for the backend payload if dueDate isn't in schema, or send empty.
     res.json({
         status: "success",
         data: {
             enrollments,
-            activeEnrollment
+            activeEnrollment,
+            certificatesCount,
+            pendingAssignmentsCount
         }
     });
+});
+exports.getMyAssignments = (0, errors_1.asyncHandler)(async (req, res) => {
+    const studentId = req.user.id;
+    const enrollments = await prisma_1.prisma.enrollment.findMany({
+        where: { studentId },
+        include: {
+            course: {
+                include: {
+                    sections: {
+                        include: {
+                            lessons: {
+                                where: { type: "ASSIGNMENT" },
+                                include: { assignment: true }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+    const submissions = await prisma_1.prisma.submission.findMany({
+        where: { studentId }
+    });
+    const assignments = [];
+    enrollments.forEach(enr => {
+        enr.course.sections.forEach(sec => {
+            sec.lessons.forEach(lesson => {
+                if (lesson.assignment) {
+                    const submission = submissions.find(s => s.assignmentId === lesson.assignment?.id);
+                    assignments.push({
+                        id: lesson.assignment.id,
+                        title: lesson.assignment.title,
+                        courseName: enr.course.title,
+                        courseId: enr.course.id,
+                        lessonId: lesson.id,
+                        totalPoints: lesson.assignment.maxScore,
+                        submission
+                    });
+                }
+            });
+        });
+    });
+    res.json({ status: "success", data: assignments });
+});
+exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { courseId } = req.params;
+    const studentId = req.user.id;
+    const enrollment = await prisma_1.prisma.enrollment.findFirst({
+        where: { courseId, studentId }
+    });
+    if (!enrollment)
+        throw new errors_1.AppError("Not enrolled in this course", 403);
+    // 1. Find all graded items in this course
+    const course = await prisma_1.prisma.course.findUnique({
+        where: { id: courseId },
+        include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+    });
+    if (!course)
+        throw new errors_1.AppError("Course not found", 404);
+    const gradedItems = [];
+    course.sections.forEach(sec => {
+        sec.lessons.forEach(lesson => {
+            if (lesson.assignment) {
+                gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+            }
+            if (lesson.quiz) {
+                gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+            }
+            if (lesson.type === "FORUM") {
+                gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+            }
+        });
+    });
+    // 2. Fetch student's grades
+    const submissions = await prisma_1.prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId } } } } });
+    const quizAttempts = await prisma_1.prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId } } } } });
+    const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+    const forumDiscussions = await prisma_1.prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
+    const grades = {};
+    gradedItems.forEach(item => grades[item.id] = null);
+    submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined)
+        grades[sub.assignmentId] = sub.grade; });
+    quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId])
+        grades[qa.quizId] = qa.score; });
+    forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score > grades[sf.lessonId]))
+        grades[sf.lessonId] = sf.score; });
+    let totalEarned = 0;
+    let totalMaxGraded = 0;
+    gradedItems.forEach(item => {
+        const score = grades[item.id];
+        if (score !== null && score !== undefined) {
+            totalEarned += score;
+            totalMaxGraded += item.maxScore;
+        }
+    });
+    const courseGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+    const itemDistribution = gradedItems.map(item => ({
+        id: item.id,
+        type: item.type,
+        maxScore: item.maxScore,
+        score: grades[item.id]
+    }));
+    res.json({ status: "success", data: { grade: courseGrade, totalEarned, totalMaxGraded, items: itemDistribution } });
 });

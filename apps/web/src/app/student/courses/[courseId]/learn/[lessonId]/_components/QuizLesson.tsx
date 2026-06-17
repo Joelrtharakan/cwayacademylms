@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { THEME } from "@/lib/cway-theme";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
-import { CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, HelpCircle, Clock } from "lucide-react";
 
 export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enrollmentId: string }) {
   const queryClient = useQueryClient();
   const quizId = lesson.quiz?.id;
+  const maxAttempts = lesson.quiz?.maxAttempts || 0;
   const [activeAttempt, setActiveAttempt] = useState<any>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   const { data: attemptsData, isLoading: loadingAttempts } = useQuery({
     queryKey: ["quizAttempts", quizId],
@@ -18,26 +20,49 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
     enabled: !!quizId
   });
 
-  const startMutation = useMutation({
-    mutationFn: () => api.post(`/student/quizzes/${quizId}/attempt`),
-    onSuccess: (res) => {
-      setActiveAttempt(res.data.data);
-      setAnswers({});
-    }
-  });
-
   const submitMutation = useMutation({
     mutationFn: () => api.post(`/student/quizzes/${quizId}/submit`, {
       attemptId: activeAttempt.attemptId,
       answers,
-      timeTaken: 0 // Simplification
+      timeTaken: activeAttempt.timeLimit ? (activeAttempt.timeLimit - (timeLeft || 0)) : 0
     }),
     onSuccess: () => {
       setActiveAttempt(null);
+      setTimeLeft(null);
       queryClient.invalidateQueries({ queryKey: ["quizAttempts", quizId] });
       queryClient.invalidateQueries({ queryKey: ["enrollment"] });
     }
   });
+
+  const startMutation = useMutation({
+    mutationFn: () => api.post(`/student/quizzes/${quizId}/attempt`),
+    onSuccess: (res) => {
+      const data = res.data.data;
+      setActiveAttempt(data);
+      setAnswers({});
+      if (data.timeLimit && data.timeLimit > 0) {
+        setTimeLeft(data.timeLimit);
+      } else {
+        setTimeLeft(null);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (activeAttempt && timeLeft !== null && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev && prev <= 1) {
+            clearInterval(timer);
+            submitMutation.mutate();
+            return 0;
+          }
+          return prev ? prev - 1 : 0;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [activeAttempt, timeLeft, submitMutation]);
 
   if (!quizId) return <div style={{ padding: 40 }}>Quiz data not found for this lesson.</div>;
 
@@ -46,12 +71,25 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
   }
 
   const passedAttempt = attemptsData?.find((a: any) => a.passed);
+  const maxAttemptsReached = maxAttempts > 0 && attemptsData && attemptsData.length >= maxAttempts;
+  const hasAttempts = attemptsData && attemptsData.length > 0;
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   if (activeAttempt) {
     const quiz = activeAttempt.quiz;
     return (
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: THEME.HERO, marginBottom: 24 }}>{quiz.title}</h2>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px", position: "relative" }}>
+        {timeLeft !== null && (
+          <div style={{ position: "absolute", top: 24, right: 24, display: "flex", alignItems: "center", gap: 8, background: timeLeft < 60 ? "rgba(229,62,62,0.1)" : "rgba(201,151,58,0.1)", color: timeLeft < 60 ? "#E53E3E" : THEME.GOLD, padding: "8px 16px", borderRadius: 999, fontWeight: 700, fontSize: 16 }}>
+            <Clock size={18} /> {formatTime(timeLeft)}
+          </div>
+        )}
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: THEME.HERO, marginBottom: 24, paddingRight: 100 }}>{quiz.title}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
           {quiz.questions.map((q: any, i: number) => (
             <div key={q.id} style={{ background: "white", padding: 24, borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)" }}>
@@ -113,6 +151,10 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(138,158,140,0.1)", color: "#8A9E8C", padding: "12px 24px", borderRadius: 999, fontSize: 16, fontWeight: 600 }}>
             <CheckCircle size={20} /> You passed this quiz
           </div>
+        ) : maxAttemptsReached ? (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(229,62,62,0.1)", color: "#E53E3E", padding: "12px 24px", borderRadius: 999, fontSize: 16, fontWeight: 600 }}>
+            <AlertCircle size={20} /> Maximum attempts reached
+          </div>
         ) : (
           <button 
             onClick={() => startMutation.mutate()}
@@ -120,7 +162,7 @@ export default function QuizLesson({ lesson, enrollmentId }: { lesson: any, enro
             onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
             onMouseLeave={e => e.currentTarget.style.transform = "none"}
           >
-            Start Quiz
+            {hasAttempts ? "Retake Quiz" : "Start Quiz"}
           </button>
         )}
       </div>

@@ -59,8 +59,9 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
                 e.target.style.height = 'inherit';
                 e.target.style.height = `${e.target.scrollHeight}px`;
               }} 
-              rows={4} 
-              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", resize: "none", overflow: "hidden", minHeight: "120px" }} 
+              rows={3} 
+              data-lenis-prevent="true" 
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", resize: "none", overflowY: "auto", minHeight: "120px", maxHeight: "300px" }} 
               placeholder="Briefly describe what this course is about..." 
               ref={(el) => {
                 if (el) {

@@ -84,7 +84,7 @@ export default function BasicInfoSection({ course, onSave }: { course: any, onSa
                   <option value="INR">INR</option>
                   <option value="USD">USD</option>
                 </select>
-                <input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} />
+                <input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value === "" ? "" : Number(e.target.value) })} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} />
               </div>
             )}
           </div>

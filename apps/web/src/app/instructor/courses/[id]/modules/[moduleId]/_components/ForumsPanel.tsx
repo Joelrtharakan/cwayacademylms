@@ -18,6 +18,7 @@ export default function ForumsPanel({ module }: { module: any }) {
   const [forumTitle, setForumTitle] = useState("");
   const [forumPrompt, setForumPrompt] = useState("");
   const [forumMarks, setForumMarks] = useState<number | "">("");
+  const [forumDueDate, setForumDueDate] = useState("");
 
   const { data: lessons, isLoading } = useQuery({
     queryKey: ["lessons", module.id],
@@ -32,6 +33,7 @@ export default function ForumsPanel({ module }: { module: any }) {
     setForumTitle("");
     setForumPrompt("");
     setForumMarks("");
+    setForumDueDate("");
   };
 
   const createMut = useMutation({
@@ -42,7 +44,8 @@ export default function ForumsPanel({ module }: { module: any }) {
       duration: 0,
       isFree: false,
       isPreview: false,
-      forumMarks: forumMarks === "" ? null : Number(forumMarks)
+      forumMarks: forumMarks === "" ? null : Number(forumMarks),
+      dueDate: forumDueDate ? new Date(forumDueDate).toISOString() : undefined,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lessons", module.id] });
@@ -60,7 +63,8 @@ export default function ForumsPanel({ module }: { module: any }) {
       duration: 0,
       isFree: false,
       isPreview: false,
-      forumMarks: forumMarks === "" ? null : Number(forumMarks)
+      forumMarks: forumMarks === "" ? null : Number(forumMarks),
+      dueDate: forumDueDate ? new Date(forumDueDate).toISOString() : undefined,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lessons", module.id] });
@@ -121,21 +125,34 @@ export default function ForumsPanel({ module }: { module: any }) {
           <div style={{ marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Prompt Guidelines / Instructions</label>
             <textarea 
-              value={forumPrompt} onChange={e => setForumPrompt(e.target.value)}
+              value={forumPrompt} 
+              onChange={e => setForumPrompt(e.target.value)}
               placeholder="What should students discuss in this forum? Provide clear guidelines..."
-              rows={4}
-              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D", resize: "vertical" }}
+              rows={3}
+              data-lenis-prevent="true"
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D", resize: "vertical", overflowY: "auto", minHeight: "120px", maxHeight: "300px" }}
             />
           </div>
 
-          <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Total Marks for Grading</label>
-            <input 
-              type="number"
-              value={forumMarks} onChange={e => setForumMarks(e.target.value ? Number(e.target.value) : "")}
-              placeholder="e.g. 100 (Leave blank for default 100)"
-              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D" }}
-            />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Total Marks for Grading</label>
+              <input 
+                type="number"
+                value={forumMarks} onChange={e => setForumMarks(e.target.value ? Number(e.target.value) : "")}
+                placeholder="e.g. 100 (Leave blank for default 100)"
+                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D" }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Due Date & Time (Optional)</label>
+              <input 
+                type="datetime-local" 
+                value={forumDueDate}
+                onChange={e => setForumDueDate(e.target.value)}
+                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D", fontFamily: "inherit" }}
+              />
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
@@ -193,6 +210,7 @@ export default function ForumsPanel({ module }: { module: any }) {
                       setForumTitle(forum.title);
                       setForumPrompt(forum.content);
                       setForumMarks(forum.forumMarks || "");
+                      setForumDueDate(forum.dueDate ? new Date(forum.dueDate).toISOString().slice(0, 16) : "");
                       setIsCreating(false);
                     }}
                     style={{ background: "#F3F4F0", border: "1px solid #E4E8E0", color: "#526658", cursor: "pointer", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", borderRadius: "6px", transition: "all 0.2s", fontSize: "12px", fontWeight: 600 }}

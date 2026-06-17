@@ -4,11 +4,13 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { User, Lock, Bell, Wallet, ShieldCheck, Upload, Check } from "lucide-react";
+import { User, Lock, Bell, Wallet, ShieldCheck, Upload, Check, Camera } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/lib/api/instructor";
 import { api, useAuthStore } from "@/store/auth.store";
 
 const GOLD = "#B88645";
+const GOLD_LIGHT = "rgba(184,134,69,0.15)";
+const GOLD_GRADIENT = "linear-gradient(135deg, #C9973A 0%, #A3763A 100%)";
 const SURFACE = "#FFFFFF";
 const DARK = "#1A261D";
 const MUTED = "#8F9E93";
@@ -16,24 +18,127 @@ const BORDER = "#E4E8E0";
 const BG_ALT = "#F7F8F5";
 
 function Input({ label, error, ...props }: any) {
+  const [focused, setFocused] = useState(false);
+
   return (
-    <div style={{ marginBottom: 18 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</label>}
-      <input {...props} style={{ width: "100%", background: BG_ALT, border: `1px solid ${error ? "#EF4444" : BORDER}`, borderRadius: 8, padding: "12px 14px", color: DARK, fontSize: 14, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s", ...props.style }}
-        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#EF4444" : BORDER} />
-      {error && <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{error}</p>}
+    <div style={{ marginBottom: 24 }}>
+      {label && <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: focused ? GOLD : DARK, marginBottom: 8, transition: "color 0.2s" }}>{label}</label>}
+      <div style={{ position: "relative" }}>
+        <input 
+          {...props} 
+          style={{ 
+            width: "100%", 
+            background: SURFACE, 
+            border: `1px solid ${error ? "#EF4444" : focused ? GOLD : BORDER}`, 
+            borderRadius: 10, 
+            padding: "14px 16px", 
+            color: DARK, 
+            fontSize: 15, 
+            outline: "none", 
+            boxSizing: "border-box", 
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            boxShadow: focused ? `0 0 0 4px ${GOLD_LIGHT}` : "0 2px 4px rgba(0,0,0,0.01)",
+            ...props.style 
+          }}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }} 
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }} 
+        />
+      </div>
+      {error && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "#EF4444", fontSize: 13, fontWeight: 500 }}>
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#EF4444" }}/>
+          {error}
+        </div>
+      )}
     </div>
   );
 }
 
 function Textarea({ label, error, ...props }: any) {
+  const [focused, setFocused] = useState(false);
+
   return (
-    <div style={{ marginBottom: 18 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</label>}
-      <textarea {...props} style={{ width: "100%", background: BG_ALT, border: `1px solid ${error ? "#EF4444" : BORDER}`, borderRadius: 8, padding: "12px 14px", color: DARK, fontSize: 14, outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 120, transition: "border-color 0.2s", ...props.style }}
-        onFocus={e => e.target.style.borderColor = GOLD} onBlur={e => e.target.style.borderColor = error ? "#EF4444" : BORDER} />
-      {error && <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{error}</p>}
+    <div style={{ marginBottom: 24 }}>
+      {label && <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: focused ? GOLD : DARK, marginBottom: 8, transition: "color 0.2s" }}>{label}</label>}
+      <div style={{ position: "relative" }}>
+        <textarea 
+          {...props} 
+          style={{ 
+            width: "100%", 
+            background: SURFACE, 
+            border: `1px solid ${error ? "#EF4444" : focused ? GOLD : BORDER}`, 
+            borderRadius: 10, 
+            padding: "16px", 
+            color: DARK, 
+            fontSize: 15, 
+            outline: "none", 
+            boxSizing: "border-box", 
+            resize: "vertical", 
+            minHeight: 140, 
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
+            overflowY: "auto", 
+            boxShadow: focused ? `0 0 0 4px ${GOLD_LIGHT}` : "0 2px 4px rgba(0,0,0,0.01)",
+            lineHeight: 1.6,
+            ...props.style 
+          }}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }} 
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }} 
+          onWheel={(e) => {
+            const target = e.currentTarget;
+            const isScrollingDown = e.deltaY > 0;
+            const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
+            const isAtTop = target.scrollTop <= 0;
+            
+            if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
+              e.stopPropagation();
+            }
+          }}
+        />
+      </div>
+      {error && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "#EF4444", fontSize: 13, fontWeight: 500 }}>
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#EF4444" }}/>
+          {error}
+        </div>
+      )}
     </div>
+  );
+}
+
+function SaveButton({ isPending, label }: { isPending: boolean, label: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+
+  return (
+    <button 
+      type="submit" 
+      disabled={isPending} 
+      style={{ 
+        background: GOLD_GRADIENT, 
+        color: "#FFFFFF", 
+        borderRadius: 10, 
+        padding: "14px 32px", 
+        fontWeight: 700, 
+        fontSize: 15, 
+        border: "none", 
+        cursor: "pointer", 
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        boxShadow: isHovered ? "0 8px 20px rgba(184,134,69,0.3)" : "0 4px 10px rgba(184,134,69,0.15)",
+        transform: isActive ? "scale(0.97)" : isHovered ? "translateY(-2px)" : "none",
+        opacity: isPending ? 0.7 : 1
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setIsActive(false); }}
+      onMouseDown={() => setIsActive(true)}
+      onMouseUp={() => setIsActive(false)}
+    >
+      {isPending ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="spinner-border" style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+          Saving...
+        </div>
+      ) : label}
+    </button>
   );
 }
 
@@ -49,7 +154,7 @@ export default function InstructorSettingsPage() {
     { id: "notifications", label: "Notifications", icon: Bell },
   ];
 
-  // Profile Form
+  // Forms
   const profileForm = useForm({
     defaultValues: {
       name: user?.name || "", bio: user?.bio || "", church: user?.church || "",
@@ -66,6 +171,21 @@ export default function InstructorSettingsPage() {
   });
 
   const passwordForm = useForm({ defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" } });
+
+  // Sync state when user updates
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        name: user.name || "", bio: user.bio || "", church: user.church || "",
+        location: user.location || "", phone: user.phone || ""
+      });
+      credentialsForm.reset({
+        title: (user as any).title || "",
+        credentials: (user as any).credentials || "",
+        yearsExperience: (user as any).yearsExperience || "",
+      });
+    }
+  }, [user, profileForm, credentialsForm]);
 
   const profileMut = useMutation({
     mutationFn: updateMyProfile,
@@ -88,64 +208,139 @@ export default function InstructorSettingsPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-      <h1 style={{ fontFamily: "Georgia, serif", fontSize: 28, color: DARK, margin: 0, fontWeight: 700 }}>Account Settings</h1>
+    <div style={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      gap: 40,
+      background: `radial-gradient(circle at top right, rgba(184,134,69,0.05) 0%, transparent 40%), radial-gradient(circle at bottom left, rgba(82,102,88,0.05) 0%, transparent 40%)`,
+      backgroundColor: BG_ALT,
+      minHeight: "100vh",
+      padding: "40px 80px"
+    }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .tab-content { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .avatar-hover-overlay { opacity: 0; transition: all 0.3s ease; }
+        .avatar-container:hover .avatar-hover-overlay { opacity: 1; backdrop-filter: blur(4px); }
+        .avatar-container:hover img { transform: scale(1.05); }
+      `}</style>
 
-      <div style={{ display: "flex", gap: 32 }}>
-        {/* Sidebar */}
-        <div style={{ width: 240, flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Hero Header Area */}
+      <div style={{ position: "relative", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #B88645 0%, #8A6433 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 16px rgba(184,134,69,0.25)" }}>
+            <User size={24} color="#FFFFFF" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 style={{ fontFamily: "Georgia, serif", fontSize: 36, color: DARK, margin: 0, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1 }}>Account Settings</h1>
+            <p style={{ color: MUTED, fontSize: 15, margin: "4px 0 0 0", fontWeight: 500 }}>Manage your personal information, credentials, and preferences.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ 
+        display: "flex", 
+        background: SURFACE, 
+        border: `1px solid ${BORDER}`, 
+        borderRadius: 24, 
+        overflow: "hidden", 
+        boxShadow: "0 10px 40px rgba(0,0,0,0.03)",
+        minHeight: 600
+      }}>
+        {/* Unified Sidebar */}
+        <div style={{ 
+          width: 260, 
+          flexShrink: 0, 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: 6,
+          background: "#FAFAFA",
+          borderRight: `1px solid ${BORDER}`,
+          padding: "32px 20px"
+        }}>
+          <h3 style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 16px 16px" }}>Settings Menu</h3>
           {TABS.map(t => {
             const active = activeTab === t.id;
             const Icon = t.icon;
             return (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderRadius: 10, background: active ? "rgba(184,134,69,0.1)" : "transparent", border: "none", cursor: "pointer", color: active ? GOLD : MUTED, fontWeight: active ? 700 : 600, fontSize: 14, transition: "all 0.15s", textAlign: "left" }}
-                onMouseEnter={(e) => !active && (e.currentTarget.style.background = BG_ALT)}
-                onMouseLeave={(e) => !active && (e.currentTarget.style.background = "transparent")}
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 14, 
+                  padding: "14px 16px", 
+                  borderRadius: 10, 
+                  background: active ? SURFACE : "transparent", 
+                  border: "none", 
+                  cursor: "pointer", 
+                  color: active ? DARK : MUTED, 
+                  fontWeight: active ? 700 : 500, 
+                  fontSize: 15, 
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
+                  textAlign: "left",
+                  boxShadow: active ? "0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)" : "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = "rgba(0,0,0,0.03)";
+                    e.currentTarget.style.color = DARK;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = MUTED;
+                  }
+                }}
               >
-                <Icon size={18} color={active ? GOLD : MUTED} />
+                <Icon size={18} color={active ? GOLD : MUTED} strokeWidth={active ? 2.5 : 2} style={{ transition: "all 0.2s" }} />
                 {t.label}
               </button>
             );
           })}
         </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 40, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+        {/* Content Pane */}
+        <div className="tab-content" key={activeTab} style={{ flex: 1, padding: 48, background: SURFACE }}>
           {activeTab === "profile" && (
             <div>
-              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: DARK, marginBottom: 32, fontWeight: 700 }}>Public Profile</h2>
+              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>Public Profile</h2>
+                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>This information will be displayed publicly so be careful what you share.</p>
+              </div>
               
-              <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 32 }}>
-                <div style={{ width: 88, height: 88, borderRadius: "50%", background: user?.avatar ? "transparent" : BG_ALT, border: user?.avatar ? `1px solid ${BORDER}` : `2px dashed ${BORDER}`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {user?.avatar ? <img src={user.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <User size={36} color={MUTED} />}
+              <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 48 }}>
+                <div className="avatar-container" style={{ position: "relative", width: 120, height: 120, borderRadius: "50%", background: user?.avatar ? "transparent" : BG_ALT, border: user?.avatar ? `2px solid ${SURFACE}` : `2px dashed ${BORDER}`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(0,0,0,0.08)", cursor: "pointer" }}>
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }} />
+                  ) : (
+                    <User size={48} color={MUTED} strokeWidth={1.5} />
+                  )}
+                  <label className="avatar-hover-overlay" style={{ position: "absolute", inset: 0, background: "rgba(26, 38, 29, 0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#FFF", cursor: "pointer", gap: 6 }}>
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
+                    <Camera size={24} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Change</span>
+                  </label>
                 </div>
                 <div>
-                  <label style={{ display: "inline-flex", alignItems: "center", background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "10px 20px", color: DARK, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 8, transition: "background 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = BG_ALT}
-                    onMouseLeave={(e) => e.currentTarget.style.background = SURFACE}>
-                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
-                    <Upload size={16} style={{ marginRight: 8 }} /> Change Avatar
-                  </label>
-                  <p style={{ fontSize: 12, color: MUTED, margin: 0 }}>JPG, PNG or WebP. Max 2MB.</p>
+                  <h3 style={{ margin: "0 0 4px 0", fontSize: 18, fontWeight: 700, color: DARK }}>Profile Picture</h3>
+                  <p style={{ fontSize: 14, color: MUTED, margin: 0, maxWidth: 300, lineHeight: 1.5 }}>We recommend a square image, at least 400x400px. JPG, PNG or WebP formats up to 2MB.</p>
                 </div>
               </div>
 
               <form onSubmit={profileForm.handleSubmit(d => profileMut.mutate(d))}>
                 <Input label="Full Name *" {...profileForm.register("name", { required: "Name is required" })} error={profileForm.formState.errors.name?.message} />
-                <Textarea label="Bio" {...profileForm.register("bio")} placeholder="Tell students about yourself..." />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                <Textarea label="Biography" {...profileForm.register("bio")} placeholder="Write a brief professional summary about yourself..." />
+                
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 8 }}>
                   <Input label="Church Affiliation" {...profileForm.register("church")} />
                   <Input label="Location" {...profileForm.register("location")} />
                 </div>
                 <Input label="Phone Number" {...profileForm.register("phone")} />
                 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                  <button type="submit" disabled={profileMut.isPending} style={{ background: GOLD, color: "#FFFFFF", borderRadius: 8, padding: "12px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", transition: "background 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "#A3763A"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = GOLD}>
-                    {profileMut.isPending ? "Saving..." : "Save Profile"}
-                  </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                  <SaveButton isPending={profileMut.isPending} label="Save Profile Updates" />
                 </div>
               </form>
             </div>
@@ -153,23 +348,24 @@ export default function InstructorSettingsPage() {
 
           {activeTab === "credentials" && (
             <div>
-              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: DARK, marginBottom: 24, fontWeight: 700 }}>Academic Credentials</h2>
-              <div style={{ marginBottom: 32, padding: "16px 20px", background: "rgba(184,134,69,0.06)", borderRadius: 8, borderLeft: `4px solid ${GOLD}` }}>
-                <p style={{ fontSize: 13, color: DARK, margin: 0 }}>These credentials will be displayed next to your name on your courses and blog posts (e.g. <strong>Dr. John Doe, M.Th., Ph.D.</strong>)</p>
+              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>Academic Credentials</h2>
+                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>Establish your authority by displaying your academic background to students.</p>
               </div>
+
+              <div style={{ marginBottom: 40, padding: "20px 24px", background: "linear-gradient(to right, rgba(184,134,69,0.05), transparent)", borderRadius: 12, borderLeft: `4px solid ${GOLD}` }}>
+                <p style={{ fontSize: 14, color: DARK, margin: 0, lineHeight: 1.6 }}>These credentials will be prominently displayed next to your name on your courses and blog posts (e.g. <strong style={{ color: GOLD }}>Dr. John Doe, M.Th., Ph.D.</strong>)</p>
+              </div>
+
               <form onSubmit={credentialsForm.handleSubmit(d => profileMut.mutate({ ...d, yearsExperience: d.yearsExperience ? Number(d.yearsExperience) : null }))}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 20 }}>
-                  <Input label="Title" {...credentialsForm.register("title")} placeholder="e.g. Rev., Dr., Pr." />
-                  <Input label="Credentials" {...credentialsForm.register("credentials")} placeholder="e.g. M.Th., Ph.D." />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+                  <Input label="Title Prefix" {...credentialsForm.register("title")} placeholder="e.g. Rev., Dr., Pr." />
+                  <Input label="Degree / Credentials" {...credentialsForm.register("credentials")} placeholder="e.g. M.Th., Ph.D." />
                 </div>
                 <Input label="Years of Experience" type="number" {...credentialsForm.register("yearsExperience")} />
                 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                  <button type="submit" disabled={profileMut.isPending} style={{ background: GOLD, color: "#FFFFFF", borderRadius: 8, padding: "12px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", transition: "background 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "#A3763A"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = GOLD}>
-                    {profileMut.isPending ? "Saving..." : "Save Credentials"}
-                  </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                  <SaveButton isPending={profileMut.isPending} label="Save Credentials" />
                 </div>
               </form>
             </div>
@@ -177,21 +373,23 @@ export default function InstructorSettingsPage() {
 
           {activeTab === "password" && (
             <div>
-              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: DARK, marginBottom: 32, fontWeight: 700 }}>Change Password</h2>
+              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>Change Password</h2>
+                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>Ensure your account is using a long, random password to stay secure.</p>
+              </div>
+
               <form onSubmit={passwordForm.handleSubmit(d => {
                 if (d.newPassword !== d.confirmPassword) { passwordForm.setError("confirmPassword", { message: "Passwords don't match" }); return; }
                 passwordMut.mutate(d);
               })}>
                 <Input type="password" label="Current Password *" {...passwordForm.register("currentPassword", { required: "Required" })} error={passwordForm.formState.errors.currentPassword?.message} />
-                <Input type="password" label="New Password *" {...passwordForm.register("newPassword", { required: "Required", minLength: { value: 8, message: "Min 8 chars" } })} error={passwordForm.formState.errors.newPassword?.message} />
-                <Input type="password" label="Confirm New Password *" {...passwordForm.register("confirmPassword", { required: "Required" })} error={passwordForm.formState.errors.confirmPassword?.message} />
+                <div style={{ marginTop: 8 }}>
+                  <Input type="password" label="New Password *" {...passwordForm.register("newPassword", { required: "Required", minLength: { value: 8, message: "Min 8 chars" } })} error={passwordForm.formState.errors.newPassword?.message} />
+                  <Input type="password" label="Confirm New Password *" {...passwordForm.register("confirmPassword", { required: "Required" })} error={passwordForm.formState.errors.confirmPassword?.message} />
+                </div>
                 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                  <button type="submit" disabled={passwordMut.isPending} style={{ background: GOLD, color: "#FFFFFF", borderRadius: 8, padding: "12px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", transition: "background 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "#A3763A"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = GOLD}>
-                    {passwordMut.isPending ? "Updating..." : "Update Password"}
-                  </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                  <SaveButton isPending={passwordMut.isPending} label="Update Password" />
                 </div>
               </form>
             </div>
@@ -199,7 +397,11 @@ export default function InstructorSettingsPage() {
 
           {activeTab === "notifications" && (
             <div>
-              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: DARK, marginBottom: 32, fontWeight: 700 }}>Notification Preferences</h2>
+              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>Notification Preferences</h2>
+                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>Choose what we email you about. You'll always receive critical account updates.</p>
+              </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {[
                   { id: "email_new_student", label: "New student enrollment", desc: "Get an email when someone buys your course" },
@@ -207,23 +409,74 @@ export default function InstructorSettingsPage() {
                   { id: "email_assignment", label: "Assignment submitted", desc: "Get notified when a student submits an assignment" },
                   { id: "email_message", label: "Direct messages", desc: "Get notified when a student messages you" },
                 ].map(n => (
-                  <label key={n.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 10, cursor: "pointer", transition: "background 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = BG_ALT}
-                    onMouseLeave={(e) => e.currentTarget.style.background = SURFACE}>
+                  <label key={n.id} style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "space-between", 
+                    padding: "20px 24px", 
+                    background: SURFACE, 
+                    border: `1px solid ${BORDER}`, 
+                    borderRadius: 12, 
+                    cursor: "pointer", 
+                    transition: "all 0.2s",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.01)"
+                  }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.04)";
+                      e.currentTarget.style.borderColor = "rgba(184,134,69,0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.01)";
+                      e.currentTarget.style.borderColor = BORDER;
+                    }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: DARK }}>{n.label}</div>
-                      <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{n.desc}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: DARK }}>{n.label}</div>
+                      <div style={{ fontSize: 14, color: MUTED, marginTop: 6 }}>{n.desc}</div>
                     </div>
-                    <input type="checkbox" defaultChecked style={{ accentColor: GOLD, width: 18, height: 18 }} />
+                    {/* Modern Toggle Switch Style */}
+                    <div style={{ position: "relative" }}>
+                      <input type="checkbox" defaultChecked style={{ 
+                        appearance: "none", 
+                        width: 44, 
+                        height: 24, 
+                        background: BG_ALT, 
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        transition: "all 0.3s",
+                        position: "relative"
+                      }}
+                      className="premium-toggle"
+                      />
+                      <style>{`
+                        .premium-toggle:checked {
+                          background: ${GOLD} !important;
+                          border-color: ${GOLD} !important;
+                        }
+                        .premium-toggle::after {
+                          content: '';
+                          position: absolute;
+                          top: 2px;
+                          left: 2px;
+                          width: 18px;
+                          height: 18px;
+                          background: white;
+                          border-radius: 50%;
+                          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        }
+                        .premium-toggle:checked::after {
+                          transform: translateX(20px);
+                        }
+                      `}</style>
+                    </div>
                   </label>
                 ))}
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 32 }}>
-                <button style={{ background: GOLD, color: "#FFFFFF", borderRadius: 8, padding: "12px 28px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", transition: "background 0.2s" }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#A3763A"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = GOLD}>
-                  Save Preferences
-                </button>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 32, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                <SaveButton isPending={false} label="Save Preferences" />
               </div>
             </div>
           )}
