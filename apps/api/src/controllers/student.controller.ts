@@ -9,6 +9,74 @@ import { CertificateService } from "../services/certificate.service";
 
 import { sendEnrollmentConfirmationEmail } from "../services/email.service";
 
+async function checkAndCompleteCourse(enrollmentId: string, studentId: string, overallProgress: number) {
+  if (overallProgress < 100) return;
+  
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    include: { course: { include: { program: true } } }
+  });
+  if (!enrollment || enrollment.completedAt) return;
+
+  await prisma.enrollment.update({
+    where: { id: enrollmentId },
+    data: { completedAt: new Date(), status: "COMPLETED" }
+  });
+
+  let shouldIssueCertificate = true;
+  let isProgramCertificate = false;
+  let programTitle = "";
+
+  if (enrollment.course.programId) {
+    const programCourses = await prisma.course.findMany({ 
+      where: { programId: enrollment.course.programId }, 
+      select: { id: true, program: { select: { title: true } } } 
+    });
+    const programCourseIds = programCourses.map(c => c.id);
+    
+    const completedEnrollments = await prisma.enrollment.count({
+      where: {
+        studentId,
+        courseId: { in: programCourseIds },
+        status: "COMPLETED"
+      }
+    });
+    
+    if (completedEnrollments < programCourseIds.length) {
+      shouldIssueCertificate = false;
+    } else {
+      isProgramCertificate = true;
+      programTitle = programCourses[0]?.program?.title || "";
+    }
+  }
+
+  if (shouldIssueCertificate) {
+    await CertificateService.issueCertificate(studentId, enrollment.courseId);
+  }
+
+  const student = await prisma.user.findUnique({ where: { id: studentId } });
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: studentId,
+        type: "COURSE_COMPLETED",
+        title: `🎉 You completed '${enrollment.course.title}'!`,
+        body: shouldIssueCertificate 
+          ? (isProgramCertificate ? `You've completed the ${programTitle} program! Your certificate is ready to download.` : "Your certificate is ready to download.")
+          : "Keep up the great work!",
+        link: shouldIssueCertificate ? "/student/certificates" : `/student/courses`
+      },
+      {
+        userId: enrollment.course.instructorId,
+        type: "STUDENT_COMPLETED",
+        title: `${student?.name} completed your course`,
+        body: `${student?.name} has just finished '${enrollment.course.title}'.`,
+        link: `/instructor/courses/${enrollment.courseId}/students`
+      }
+    ]
+  });
+}
+
 export const enrollInCourse = asyncHandler(async (req: Request, res: Response) => {
   const { courseId } = req.body;
   const studentId = req.user!.id;
@@ -266,46 +334,14 @@ export const completeLesson = asyncHandler(async (req: Request, res: Response) =
     data: { progress: overallProgress }
   });
 
-  let courseCompleted = false;
-
-  if (overallProgress >= 100 && !enrollment.completedAt) {
-    courseCompleted = true;
-    await prisma.enrollment.update({
-      where: { id: enrollmentId },
-      data: { completedAt: new Date(), status: "COMPLETED" }
-    });
-
-    // Trigger certificate generation
-    await CertificateService.issueCertificate(studentId, enrollment.courseId);
-
-    // Notifications
-    const student = await prisma.user.findUnique({ where: { id: studentId } });
-    await prisma.notification.createMany({
-      data: [
-        {
-          userId: studentId,
-          type: "COURSE_COMPLETED",
-          title: `🎉 You completed '${enrollment.course.title}'!`,
-          body: "Your certificate is ready to download.",
-          link: "/student/certificates"
-        },
-        {
-          userId: enrollment.course.instructorId,
-          type: "STUDENT_COMPLETED",
-          title: `${student?.name} completed your course`,
-          body: `'${enrollment.course.title}' — congratulations to them!`,
-          link: `/instructor/courses/${enrollment.courseId}/students`
-        }
-      ]
-    });
-  }
+  await checkAndCompleteCourse(enrollmentId, studentId, overallProgress);
 
   res.json({
     status: "success",
     data: {
       lessonProgress,
       overallProgress,
-      courseCompleted
+      courseCompleted: overallProgress >= 100
     }
   });
 });
@@ -361,6 +397,8 @@ export const completeReadingMaterial = asyncHandler(async (req: Request, res: Re
     where: { id: enrollmentId },
     data: { progress: overallProgress }
   });
+
+  await checkAndCompleteCourse(enrollmentId, studentId, overallProgress);
 
   res.json({ status: "success", data: { progress, completed: true, overallProgress } });
 });
