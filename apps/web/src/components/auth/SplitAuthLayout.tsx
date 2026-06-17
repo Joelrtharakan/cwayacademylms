@@ -35,10 +35,10 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
               <Image
                 src="/logo.png"
                 alt="CWAY Academy"
-                width={120}
-                height={36}
-                className="w-[clamp(80px,10vw,120px)] h-auto object-contain drop-shadow-md"
-                style={{ width: 'auto', height: 'auto' }}
+                width={150}
+                height={150}
+                className="object-contain drop-shadow-md"
+                style={{ width: 'clamp(100px, 12vw, 150px)', height: 'auto', maxHeight: '150px' }}
                 priority
               />
             </Link>
@@ -88,10 +88,10 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
             <Image
               src="/logo.png"
               alt="CWAY Academy"
-              width={160}
-              height={50}
-              className="h-10 w-auto object-contain"
-              style={{ width: 'auto', height: 'auto' }}
+              width={100}
+              height={100}
+              className="object-contain"
+              style={{ width: '100px', height: 'auto', maxHeight: '100px' }}
               priority
             />
           </Link>
