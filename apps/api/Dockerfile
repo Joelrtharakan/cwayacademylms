@@ -66,6 +66,5 @@ EXPOSE 5000
 
 # Run migrations then start the server
 CMD ["sh", "-c", \
-  "npx prisma migrate resolve --applied 20260617130545_init_postgres --schema=./packages/db/prisma/schema.prisma && \
-   npx prisma migrate deploy --schema=./packages/db/prisma/schema.prisma && \
+  "npx prisma migrate deploy --schema=./packages/db/prisma/schema.prisma && \
    node apps/api/dist/server.js"]
