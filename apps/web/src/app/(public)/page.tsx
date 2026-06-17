@@ -1308,18 +1308,18 @@ export default function LandingPage() {
               <div className="modern-team-row-card reveal stagger-2">
                 <div className="team-row-left">
                   <div className="team-avatar-container">
-                    <img src="/Finny.png" alt="Mr. Finny Philip Varghese" className="w-full h-full rounded-full object-cover relative z-10" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", objectPosition: "center 20%", position: "relative", zIndex: 10 }} />
+                    <img src="/Finny.png" alt="Evg. Finny Philip Varghese" className="w-full h-full rounded-full object-cover relative z-10" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", objectPosition: "center 20%", position: "relative", zIndex: 10 }} />
                   </div>
                   <div className="team-role">Director of Operations</div>
-                  <span className="team-credential-badge">B.Tech., Operations Leader</span>
+                  <span className="team-credential-badge">Operations Leader</span>
                 </div>
                 <div className="team-row-right">
-                  <h3 style={{ fontSize: "22px", fontWeight: 600 }}>Mr.&nbsp;Finny Philip Varghese</h3>
+                  <h3 style={{ fontSize: "22px", fontWeight: 600 }}>Evg.&nbsp;Finny Philip Varghese</h3>
                   <div className="team-separator" />
                   <div className="body-text" style={{ fontSize: "15px", lineHeight: "1.7", textAlign: "justify", wordSpacing: "-0.02em" }}>
-                    <p style={{ marginBottom: "1rem" }}>Education in IT and computers, and a very engaged Christian upbringing, enabled Mr.&nbsp;Finny to draw on more than a decade of professional experience, including roles at multinational companies such as Dell, forming and administering trusts for skill development, and organizing Church gatherings.</p>
-                    <p style={{ marginBottom: "1rem" }}>He is the Founder and Operations Head of ARTnTEQ GLOBAL SERVICES and its subsidiaries.</p>
-                    <p>He is an entrepreneur with a vision to equip and emancipate lay leaders, with a genuine emphasis on the Kingdom&apos;s purpose. He is also the Treasurer-Trustee of the CWAY Missions Religious Trust in Bangalore.</p>
+                    <p style={{ marginBottom: "1rem" }}>An ordained minister of the AG Church of Brazil, and has been engaged in Christian missions since 2012. Driven by a deep commitment to sharing the love of God with underserved communities, he has dedicated himself to mission work across various capacities.</p>
+                    <p style={{ marginBottom: "1rem" }}>Over the years, he has played a pivotal role in establishing and supporting several mission-focused charitable organizations and trusts in India. As a founder, trustee, and advisor, he continues to contribute to initiatives that foster community development, spiritual growth, and holistic transformation. In addition to his ministry experience, he brings extensive expertise in information technology and business leadership.</p>
+                    <p>Currently, he serves as the Founding Director of ARTNTEQ Group of Businesses, where he has strategically leveraged his skills to establish sustainable ventures that support the vision of equipping, empowering, and emancipating lay leaders for effective service and leadership.</p>
                   </div>
                 </div>
               </div>

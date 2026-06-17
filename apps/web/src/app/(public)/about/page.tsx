@@ -665,7 +665,7 @@ export default function AboutPage() {
               </div>
             </motion.div>
 
-            {/* Mr. Finny Philip Varghese */}
+            {/* Evg. Finny Philip Varghese */}
             <motion.div
               variants={fadeUp}
               whileHover={{ y: -6 }}
@@ -675,24 +675,24 @@ export default function AboutPage() {
               <div className="lg:col-span-3 flex flex-col items-center text-center border-b lg:border-b-0 lg:border-r border-[#DCE0D5]/50 pb-6 lg:pb-0 lg:pr-8 pt-2 w-full">
                 <div className="w-24 h-24 rounded-full mb-4 relative flex items-center justify-center bg-gradient-to-br from-[#2C4A3B] to-[#4A7A62] shadow-xl transition-transform duration-500 group-hover:scale-105">
                   <div className="absolute inset-[-6px] rounded-full border border-dashed border-[var(--gold-primary)] opacity-60 group-hover:rotate-12 transition-transform duration-700" />
-                  <img src="/Finny.png" alt="Mr. Finny Philip Varghese" className="w-full h-full rounded-full object-cover relative z-10" />
+                  <img src="/Finny.png" alt="Evg. Finny Philip Varghese" className="w-full h-full rounded-full object-cover relative z-10" />
                 </div>
                 <div className="text-[var(--gold-primary)] font-bold text-[10px] tracking-widest uppercase mt-2 mb-3 leading-tight">
                   Director of Operations
                 </div>
                 <span className="inline-block px-3 py-1 bg-[#F3F4F0] text-[var(--navy-mid)] text-xs font-semibold rounded-full">
-                  B.Tech., Operations Leader
+                  Operations Leader
                 </span>
               </div>
 
               {/* Right Bio Column */}
               <div className="lg:col-span-9 flex flex-col justify-start items-start text-left lg:pl-6 w-full mt-6 lg:mt-0">
-                <h4 className="text-2xl font-normal font-serif text-[var(--navy-deep)] mb-2">Mr. Finny Philip Varghese</h4>
+                <h4 className="text-2xl font-normal font-serif text-[var(--navy-deep)] mb-2">Evg. Finny Philip Varghese</h4>
                 <div className="w-12 h-[2px] bg-[var(--gold-light)] mb-4" />
                 <div className="text-[var(--text-secondary)] font-light leading-relaxed text-sm md:text-base text-justify space-y-4" style={{ wordSpacing: '-0.02em' }}>
-                  <p>Education in IT and computers, and a very engaged Christian upbringing, enabled Mr. Finny to draw on more than a decade of professional experience, including roles at multinational companies such as Dell, forming and administering trusts for skill development, and organizing Church gatherings.</p>
-                  <p>He is the Founder and Operations Head of ARTnTEQ GLOBAL SERVICES and its subsidiaries.</p>
-                  <p>He is an entrepreneur with a vision to equip and emancipate lay leaders, with a genuine emphasis on the Kingdom&apos;s purpose. He is also the Treasurer-Trustee of the CWAY Missions Religious Trust in Bangalore.</p>
+                  <p>An ordained minister of the AG Church of Brazil, and has been engaged in Christian missions since 2012. Driven by a deep commitment to sharing the love of God with underserved communities, he has dedicated himself to mission work across various capacities.</p>
+                  <p>Over the years, he has played a pivotal role in establishing and supporting several mission-focused charitable organizations and trusts in India. As a founder, trustee, and advisor, he continues to contribute to initiatives that foster community development, spiritual growth, and holistic transformation. In addition to his ministry experience, he brings extensive expertise in information technology and business leadership.</p>
+                  <p>Currently, he serves as the Founding Director of ARTNTEQ Group of Businesses, where he has strategically leveraged his skills to establish sustainable ventures that support the vision of equipping, empowering, and emancipating lay leaders for effective service and leadership.</p>
                 </div>
               </div>
             </motion.div>
