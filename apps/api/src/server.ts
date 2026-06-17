@@ -39,11 +39,24 @@ app.use(helmet({
 }));
 
 // CORS — only allow your domains
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://learn.cwayacademy.com',
+  'https://cwayacademy.com',
+  'https://www.cwayacademy.com',
+  'https://cwayacademylms.netlify.app',
+  'https://cwayacademy.netlify.app',
+  process.env.FRONTEND_URL // Allow dynamic URL from Render env vars
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://learn.cwayacademy.com'
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
