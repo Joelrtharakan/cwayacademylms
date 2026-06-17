@@ -58,6 +58,7 @@ COPY --from=builder /app/node_modules         ./node_modules
 COPY --from=builder /app/packages/db          ./packages/db
 COPY --from=builder /app/apps/api/dist        ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
 # Copy Prisma schema for migrations
 COPY --from=builder /app/packages/db/prisma   ./packages/db/prisma
