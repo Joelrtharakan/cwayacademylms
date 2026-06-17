@@ -28,13 +28,13 @@ const PORT = process.env.PORT || 4000;
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc:  ["'self'"],
-      scriptSrc:   ["'self'", "'unsafe-inline'", "js.stripe.com"],
-      styleSrc:    ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-      fontSrc:     ["'self'", "fonts.gstatic.com"],
-      imgSrc:      ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
-      frameSrc:    ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
-      connectSrc:  ["'self'", "api.stripe.com"],
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "js.stripe.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      fontSrc: ["'self'", "fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
+      frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
+      connectSrc: ["'self'", "api.stripe.com"],
     }
   }
 }));
