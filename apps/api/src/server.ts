@@ -46,6 +46,7 @@ const allowedOrigins = [
   'https://www.cwayacademy.com',
   'https://cwayacademylms.netlify.app',
   'https://cwayacademy.netlify.app',
+  'https://cwayacademylms.joelrtharakan.workers.dev',
   process.env.FRONTEND_URL // Allow dynamic URL from Render env vars
 ].filter(Boolean) as string[];
 
