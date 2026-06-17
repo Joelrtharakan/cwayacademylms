@@ -21,6 +21,7 @@ import blogRoutes from "./routes/blog.routes";
 import { AppError } from "./utils/errors";
 
 const app = express();
+app.set("trust proxy", 1); // Trust first proxy for rate limiting (Render/Cloudflare)
 const PORT = process.env.PORT || 4000;
 
 // Security Middlewares
