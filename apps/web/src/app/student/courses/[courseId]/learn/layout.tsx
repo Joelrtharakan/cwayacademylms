@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { api, useAuthStore } from "@/store/auth.store";
-import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download } from "lucide-react";
+import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -324,6 +324,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
               )}
             </div>
           )}
+
+
         </div>
 
         {/* Modules List */}
@@ -548,6 +550,33 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
           {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Instructor Contact */}
+            {enrollment?.course?.instructor && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginRight: "8px", paddingRight: "16px", borderRight: "1px solid #E4E8E0" }}>
+                <div className="hidden md:block" style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: "4px" }}>
+                  Instructor
+                </div>
+                {enrollment.course.instructor.email && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Fallback to Gmail compose since local mailto: handler is unconfigured/failing
+                      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${enrollment.course.instructor.email}`, '_blank');
+                    }}
+                    title="Email Instructor"
+                    style={{
+                      width: "38px", height: "38px", borderRadius: "10px", background: "#F7F8F5", border: "1px solid #E4E8E0",
+                      display: "flex", alignItems: "center", justifyContent: "center", color: "#9AAE9B", transition: "all 0.15s", cursor: "pointer"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.color = "#B88645"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#9AAE9B"; }}
+                  >
+                    <Mail size={15} />
+                  </button>
+                )}
+              </div>
+            )}
+
             <button
               onClick={() => setIsNotesOpen(true)}
               style={{
