@@ -122,7 +122,6 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-scroll-behavior="smooth"
       className={`${plusJakarta.variable} ${dmSerif.variable} ${inter.variable} ${jetbrainsMono.variable} ${cinzel.variable}`}
     >
       <head>

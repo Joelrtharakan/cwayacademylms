@@ -5,7 +5,8 @@ import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { api } from "@/store/auth.store";
 import { useConfirm } from "@/components/shared/ConfirmContext";
-import Link from "next/link";
+import { DataTable, Column } from "@/components/admin/DataTable";
+import { useRouter } from "next/navigation";
 
 type BlogPost = {
   id: string;
@@ -19,6 +20,7 @@ export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const confirm = useConfirm();
+  const router = useRouter();
 
   const fetchPosts = async () => {
     try {
@@ -45,72 +47,174 @@ export default function AdminBlogPage() {
     }
   };
 
+  const columns: Column<BlogPost>[] = [
+    {
+      key: "title",
+      header: "Title",
+      render: (row) => (
+        <span style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D" }}>
+          {row.title}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) =>
+        row.isPublished ? (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(61,122,75,0.08)",
+              color: "#3D7A4B",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            <CheckCircle size={14} /> Published
+          </span>
+        ) : (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(143,158,147,0.1)",
+              color: "#8F9E93",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            <XCircle size={14} /> Draft
+          </span>
+        ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      render: (row) => (
+        <span style={{ color: "#8F9E93", fontSize: "13px", fontWeight: 500 }}>
+          {new Date(row.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <div className="flex justify-between items-start mb-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Header Section */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <PageHeader title="Blog Posts" subtitle="Manage editorial content published on CWAY Academy" />
-        <Link href="/admin/blog/new">
-          <button className="flex items-center px-4 py-2 rounded-md bg-[#B88645] hover:bg-[#A3753A] text-white">
-            <Plus size={16} className="mr-2" />
-            New Post
-          </button>
-        </Link>
+        <button
+          onClick={() => router.push("/admin/blog/new")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#B88645",
+            color: "#FFFFFF",
+            padding: "10px 18px",
+            borderRadius: "10px",
+            fontSize: "13px",
+            fontWeight: 600,
+            border: "none",
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#A3753A";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#B88645";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <Plus size={16} />
+          <span>New Post</span>
+        </button>
       </div>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="bg-white rounded-2xl border border-[#E8EBE4] overflow-hidden">
-          <table className="w-full text-left text-[14px]">
-            <thead className="bg-[#F5F7F3] text-[#4A5B4D] font-medium border-b border-[#E8EBE4]">
-              <tr>
-                <th className="px-6 py-4">Title</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-b border-[#E8EBE4] hover:bg-[#F9FAF8]">
-                  <td className="px-6 py-4 font-medium text-[#1A261D]">{post.title}</td>
-                  <td className="px-6 py-4">
-                    {post.isPublished ? (
-                      <span className="flex items-center text-green-600">
-                        <CheckCircle size={14} className="mr-1" /> Published
-                      </span>
-                    ) : (
-                      <span className="flex items-center text-gray-500">
-                        <XCircle size={14} className="mr-1" /> Draft
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-[#8F9E93]">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/blog/${post.slug}`}>
-                      <button className="p-1 hover:bg-[#F5F7F3] rounded mr-2">
-                        <Edit2 size={16} className="text-[#8F9E93]" />
-                      </button>
-                    </Link>
-                    <button className="p-1 hover:bg-[#F5F7F3] rounded" onClick={() => deletePost(post.slug)}>
-                      <Trash2 size={16} className="text-red-500" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {posts.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-[#8F9E93]">
-                    No blog posts found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* Data Table */}
+      <DataTable
+        columns={columns}
+        data={posts}
+        loading={loading}
+        rowKey={(row) => row.id}
+        emptyMessage="No blog posts found. Create your first post!"
+        actions={(row) => (
+          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <button
+              onClick={() => router.push(`/admin/blog/${row.slug}`)}
+              title="Edit Post"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+                color: "#8F9E93",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(184,134,69,0.08)";
+                e.currentTarget.style.color = "#B88645";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "#8F9E93";
+              }}
+            >
+              <Edit2 size={14} />
+            </button>
+            <button
+              onClick={() => deletePost(row.slug)}
+              title="Delete Post"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+                color: "#8F9E93",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(176,58,46,0.08)";
+                e.currentTarget.style.color = "#B03A2E";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "#8F9E93";
+              }}
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        )}
+      />
     </div>
   );
 }

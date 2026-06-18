@@ -486,6 +486,7 @@ model BlogPost {
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   isPublished Boolean  @default(false)
   readingTime Int? // minutes
+  customAuthor String? // Optional guest author name
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

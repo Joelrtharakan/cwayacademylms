@@ -315,12 +315,14 @@ export default function AdminSidebar() {
                         const Icon = item.icon;
 
                         return (
-                          <Link
+                          <button
                             key={item.href}
-                            href={item.href}
-                            prefetch={true}
+                            onClick={() => router.push(item.href)}
                             title={collapsed ? item.name : undefined}
                             style={{
+                              width: "100%",
+                              border: "none",
+                              cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
                               gap: collapsed ? 0 : "14px",
@@ -378,7 +380,7 @@ export default function AdminSidebar() {
                                 {item.name}
                               </span>
                             )}
-                          </Link>
+                          </button>
                         );
                       })}
                     </div>

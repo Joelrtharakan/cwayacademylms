@@ -72,34 +72,6 @@ export default function InstructorDashboardPage() {
             Here's what's happening in your courses today.
           </p>
         </div>
-        <Link 
-          href="/instructor/courses/new" 
-          style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "8px", 
-            background: "#1A261D", 
-            color: "#FFFFFF", 
-            borderRadius: "10px", 
-            padding: "10px 20px", 
-            fontSize: "13px", 
-            fontWeight: 600, 
-            textDecoration: "none",
-            boxShadow: "0 4px 12px rgba(26,38,29,0.15)",
-            transition: "all 0.2s"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-1px)";
-            e.currentTarget.style.boxShadow = "0 6px 16px rgba(26,38,29,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 12px rgba(26,38,29,0.15)";
-          }}
-        >
-          <Plus size={16} />
-          New Course
-        </Link>
       </div>
 
       <style>{`

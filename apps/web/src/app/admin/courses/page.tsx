@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink } from "lucide-react";
+import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -39,6 +41,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AdminCoursesPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -119,7 +122,12 @@ export default function AdminCoursesPage() {
             </div>
           )}
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "200px" }}>
+            <p 
+              onClick={() => router.push(`/instructor/courses/${row.id}`)}
+              style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "200px", transition: "color 0.15s", cursor: "pointer" }} 
+              onMouseEnter={(e) => e.currentTarget.style.color = "#B88645"} 
+              onMouseLeave={(e) => e.currentTarget.style.color = "#1A261D"}
+            >
               {row.title}
             </p>
             {row.moduleNumber && (
@@ -173,6 +181,27 @@ export default function AdminCoursesPage() {
       >
         <ExternalLink size={14} />
       </a>
+      <button
+        onClick={() => router.push(`/instructor/courses/${row.id}`)}
+        title="Manage Course Content & Settings"
+        style={{
+          width: "32px",
+          height: "32px",
+          borderRadius: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.15s",
+          color: "#8F9E93",
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.08)"; e.currentTarget.style.color = "#B88645"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
+      >
+        <Settings size={14} />
+      </button>
       <button
         onClick={() => featureMut.mutate({ id: row.id, featured: !row.isFeatured })}
         title={row.isFeatured ? "Unfeature" : "Feature"}
@@ -266,7 +295,30 @@ export default function AdminCoursesPage() {
 
   return (
     <div>
-      <PageHeader title="Courses" subtitle={`${data?.total ?? 0} courses on the platform`} />
+      <PageHeader 
+        title="Courses" 
+        subtitle={`${data?.total ?? 0} courses on the platform`} 
+        actions={
+          <Link
+            href="/admin/courses/new"
+            style={{
+              padding: "10px 20px",
+              background: "#B88645",
+              color: "#FFF",
+              borderRadius: "10px",
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "14px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 12px rgba(184,134,69,0.2)"
+            }}
+          >
+            + Create Course
+          </Link>
+        }
+      />
 
       {/* Toolbar */}
       <div

@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import { useQuery } from "@tanstack/react-query";
+import { getInvitations } from "@/lib/api/instructor";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -69,6 +71,13 @@ export default function InstructorSidebar() {
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
+
+  const { data: invitations } = useQuery({
+    queryKey: ["invitations", "PENDING"],
+    queryFn: () => getInvitations("PENDING"),
+    enabled: !!user && user.role === "INSTRUCTOR",
+  });
+  const pendingCount = invitations?.length || 0;
 
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -197,7 +206,7 @@ export default function InstructorSidebar() {
                 <span style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "13px", fontWeight: 400, letterSpacing: "0.1em", color: "#B88645", textTransform: "uppercase" as const }}>Academy</span>
               </div>
               <div style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.15em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" as const, marginTop: "2px" }}>
-                Instructor Panel
+                {user?.role === "ADMIN" ? "Admin (Instructor View)" : "Instructor Panel"}
               </div>
             </div>
           </div>
@@ -218,6 +227,30 @@ export default function InstructorSidebar() {
             zIndex: 2,
           }}
         >
+          {user?.role === "ADMIN" && (
+            <div style={{ padding: "0 16px 16px 16px", marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <Link 
+                href="/admin/courses"
+                style={{
+                  display: "block",
+                  padding: "10px",
+                  background: "rgba(255,255,255,0.05)",
+                  color: "#FFFFFF",
+                  textDecoration: "none",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+              >
+                ← Return to Admin Panel
+              </Link>
+            </div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {NAV.map((section, idx) => {
               const isSectionExpanded = !!expandedSections[section.title];
@@ -278,10 +311,13 @@ export default function InstructorSidebar() {
                       const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
                       return (
-                        <Link
+                        <button
                           key={item.name}
-                          href={item.href}
+                          onClick={() => router.push(item.href)}
                           style={{
+                            width: "100%",
+                            border: "none",
+                            cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
                             gap: collapsed ? 0 : "14px",
@@ -298,14 +334,14 @@ export default function InstructorSidebar() {
                           }}
                           onMouseEnter={(e) => {
                             if (!isActive) {
-                              e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                              e.currentTarget.style.color = "#FDFBF7";
+                              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                              (e.currentTarget as HTMLElement).style.color = "#FDFBF7";
                             }
                           }}
                           onMouseLeave={(e) => {
                             if (!isActive) {
-                              e.currentTarget.style.background = "transparent";
-                              e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+                              (e.currentTarget as HTMLElement).style.background = "transparent";
+                              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)";
                             }
                           }}
                           title={collapsed ? item.name : undefined}
@@ -332,12 +368,30 @@ export default function InstructorSidebar() {
                                 fontSize: "13px",
                                 fontWeight: isActive ? 600 : 500,
                                 whiteSpace: "nowrap",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flex: 1,
                               }}
                             >
-                              {item.name}
+                              <span>{item.name}</span>
+                              {item.name === "Invitations" && pendingCount > 0 && (
+                                <span
+                                  style={{
+                                    background: "#B03A2E",
+                                    color: "#FFFFFF",
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    padding: "2px 6px",
+                                    borderRadius: "10px",
+                                  }}
+                                >
+                                  {pendingCount}
+                                </span>
+                              )}
                             </span>
                           )}
-                        </Link>
+                        </button>
                       );
                     })}
                   </div>
@@ -404,7 +458,7 @@ export default function InstructorSidebar() {
                 </div>
                 <div style={{ overflow: "hidden", flex: 1 }}>
                   <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "14px", fontWeight: 700, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {user?.name || "Instructor"}
+                    {user?.name || (user?.role === "ADMIN" ? "Admin" : "Instructor")}
                   </div>
                   <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "12px", color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {user?.email}

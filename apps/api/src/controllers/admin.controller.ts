@@ -1170,3 +1170,70 @@ export const assignInstructorToCourse = asyncHandler(async (req: Request, res: R
   res.json({ status: "success", data: invitation, message: "Invitation sent to instructor" });
 });
 
+
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
+}
+
+async function uniqueSlug(title: string): Promise<string> {
+  let slug = slugify(title);
+  let count = 0;
+  while (await prisma.course.findUnique({ where: { slug } })) {
+    count++;
+    slug = `${slugify(title)}-${count}`;
+  }
+  return slug;
+}
+
+export const createCourse = asyncHandler(async (req: Request, res: Response) => {
+  const { title, subtitle, description, categoryId, level = "BEGINNER", language = "ENGLISH",
+    moduleNumber, weeksDuration = 6, totalLectures = 0, scriptureRef, isFree = true,
+    price = 0, currency = "INR", requirements, outcomes, targetAudience,
+    welcomeMessage, congratsMessage, tags, instructorId, adminNote } = req.body;
+
+  if (!title) throw new AppError("Title is required", 400);
+  if (!instructorId) throw new AppError("Instructor ID is required to create a course", 400);
+
+  const slug = await uniqueSlug(title);
+
+  const [course, invitation] = await prisma.$transaction(async (tx) => {
+    const newCourse = await tx.course.create({
+      data: {
+        title, subtitle, description, categoryId, level, language,
+        moduleNumber: moduleNumber ? Number(moduleNumber) : undefined,
+        weeksDuration: Number(weeksDuration), totalLectures: Number(totalLectures),
+        scriptureRef, isFree: Boolean(isFree), price: Number(price), currency,
+        requirements: JSON.stringify(requirements || []),
+        outcomes: JSON.stringify(outcomes || []),
+        targetAudience: JSON.stringify(targetAudience || []),
+        welcomeMessage, congratsMessage,
+        tags: JSON.stringify(tags || []),
+        slug, status: "DRAFT", instructorId,
+        invitationStatus: "PENDING",
+        forum: { create: {} },
+        curriculum: { create: {} }
+      },
+    });
+
+    const newInvitation = await tx.courseInvitation.create({
+      data: {
+        courseId: newCourse.id,
+        instructorId,
+        adminNote: adminNote || null,
+        status: "PENDING"
+      }
+    });
+
+    return [newCourse, newInvitation];
+  });
+
+  await NotificationService.createNotification(
+    instructorId,
+    "COURSE_INVITATION",
+    "You've been assigned a new course",
+    `An admin created '${course.title}' and assigned it to you.`,
+    `/instructor/invitations`
+  );
+
+  res.status(201).json({ status: "success", data: course, invitation });
+});

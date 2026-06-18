@@ -99,6 +99,28 @@ export default function LandingPage() {
   });
   const courses = coursesData?.courses || [];
 
+  const { data: blogPostsData } = useQuery({
+    queryKey: ["publicBlogPosts"],
+    queryFn: () => api.get("/blog/posts?published=true").then((res) => res.data.data),
+  });
+
+  const displayPosts = React.useMemo(() => {
+    if (blogPostsData && blogPostsData.length > 0) {
+      return blogPostsData.map((p: any) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt || "Click to read more...",
+        content: p.content,
+        author: p.customAuthor || p.author?.name || "CWAY Academy",
+        authorRole: p.customAuthor ? "Author" : (p.author?.credentials || "Author"),
+        date: new Date(p.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        readTime: p.readingTime ? `${p.readingTime} min` : "5 min",
+        category: "Article",
+      }));
+    }
+    return posts;
+  }, [blogPostsData]);
+
   useEffect(() => {
     if (selectedBlogPost || showPrivacyModal || showTermsModal) {
       document.body.style.overflow = "hidden";
@@ -116,7 +138,7 @@ export default function LandingPage() {
       const hash = window.location.hash || "#home";
       const id = hash.replace("#", "");
       setActiveTab(id);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "auto" });
 
       // Trigger reveal animations after render
       setTimeout(() => initRevealAnimations(id), 100);
@@ -126,23 +148,30 @@ export default function LandingPage() {
     window.addEventListener("hashchange", navigateTo);
 
     // 2. Scroll Progress & Navbar styling
+    let ticking = false;
     const handleScroll = () => {
-      const progressEl = document.getElementById("progress");
-      if (progressEl) {
-        const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-        const pct = (window.scrollY / (docHeight - window.innerHeight)) * 100;
-        progressEl.style.width = pct + "%";
-      }
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const progressEl = document.getElementById("progress");
+          if (progressEl) {
+            const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+            const pct = (window.scrollY / (docHeight - window.innerHeight)) * 100;
+            progressEl.style.width = pct + "%";
+          }
 
-      const navEl = document.querySelector("nav");
-      if (navEl) {
-        if (window.scrollY > 50) {
-          navEl.style.boxShadow = "0 4px 30px rgba(0, 0, 0, 0.06)";
-          navEl.style.height = "70px";
-        } else {
-          navEl.style.boxShadow = "none";
-          navEl.style.height = "80px";
-        }
+          const navEl = document.querySelector("nav");
+          if (navEl) {
+            if (window.scrollY > 50) {
+              navEl.style.boxShadow = "0 4px 30px rgba(0, 0, 0, 0.06)";
+              navEl.style.height = "70px";
+            } else {
+              navEl.style.boxShadow = "none";
+              navEl.style.height = "80px";
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -1440,7 +1469,7 @@ export default function LandingPage() {
             paddingBottom: "4rem"
           }}
         >
-          {posts.map((post, idx) => (
+          {displayPosts.map((post: Post, idx: number) => (
             <div
               key={post.slug}
               className={`card blog-card reveal ${idx % 2 === 1 ? 'stagger-1' : ''}`}
@@ -1703,7 +1732,7 @@ export default function LandingPage() {
 
                   {/* Render paragraphs dynamically */}
                   <div style={{ lineHeight: 1.9, color: "var(--text-muted)" }}>
-                    {selectedBlogPost.content.split("\n\n").map((para: string, i: number) => {
+                    {selectedBlogPost.content.split(/\n\s*\n/).map((para: string, i: number) => {
                       const trimmed = para.trim();
                       if (trimmed.startsWith("“") && trimmed.endsWith("”")) {
                         return (

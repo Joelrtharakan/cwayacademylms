@@ -45,7 +45,7 @@ export const getPostBySlug = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
-  const { title, excerpt, content, isPublished } = req.body;
+  const { title, excerpt, content, isPublished, customAuthor } = req.body;
   const authorId = req.user!.id;
 
   let slug = generateSlug(title);
@@ -65,6 +65,7 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
       content,
       isPublished: isPublished ?? false,
       readingTime,
+      customAuthor: customAuthor || null,
       authorId
     }
   });
@@ -74,7 +75,7 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const { slug } = req.params;
-  const { title, excerpt, content, isPublished } = req.body;
+  const { title, excerpt, content, isPublished, customAuthor } = req.body;
   const user = req.user!;
 
   const post = await prisma.blogPost.findUnique({ where: { slug } });
@@ -101,7 +102,8 @@ export const updatePost = asyncHandler(async (req: Request, res: Response) => {
       excerpt,
       content,
       isPublished,
-      readingTime
+      readingTime,
+      customAuthor: customAuthor || null
     }
   });
 

@@ -131,34 +131,6 @@ export default function InstructorCoursesPage() {
             Manage and monitor your course catalog.
           </p>
         </div>
-        <Link 
-          href="/instructor/courses/new" 
-          style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "8px", 
-            background: "#1A261D", 
-            color: "#FFFFFF", 
-            borderRadius: "10px", 
-            padding: "10px 20px", 
-            fontSize: "13px", 
-            fontWeight: 600, 
-            textDecoration: "none",
-            boxShadow: "0 4px 12px rgba(26,38,29,0.15)",
-            transition: "all 0.2s"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-1px)";
-            e.currentTarget.style.boxShadow = "0 6px 16px rgba(26,38,29,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 12px rgba(26,38,29,0.15)";
-          }}
-        >
-          <Plus size={16} />
-          New Course
-        </Link>
       </div>
 
       {/* Filter Tabs */}
@@ -199,23 +171,7 @@ export default function InstructorCoursesPage() {
           </div>
           <h2 style={{ fontFamily: "Georgia, serif", fontSize: "22px", color: "#1A261D", marginBottom: "8px", fontWeight: 700 }}>No courses yet</h2>
           <p style={{ color: "#8F9E93", fontSize: "14px", fontStyle: "italic", marginBottom: "4px", fontWeight: 500 }}>"Whatever you do, work at it with all your heart"</p>
-          <p style={{ color: "#8F9E93", fontSize: "12px", marginBottom: "28px" }}>— Colossians 3:23</p>
-          <Link 
-            href="/instructor/courses/new" 
-            style={{ 
-              display: "inline-block",
-              background: "#1A261D", 
-              color: "#FFFFFF", 
-              borderRadius: "10px", 
-              padding: "12px 24px", 
-              fontSize: "13px", 
-              fontWeight: 600, 
-              textDecoration: "none",
-              boxShadow: "0 4px 12px rgba(26,38,29,0.15)",
-            }}
-          >
-            Create your first course
-          </Link>
+          <p style={{ color: "#8F9E93", fontSize: "12px" }}>— Colossians 3:23</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>

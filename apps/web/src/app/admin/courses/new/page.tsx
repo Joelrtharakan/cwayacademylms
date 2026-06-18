@@ -8,15 +8,17 @@ import { toast } from "sonner";
 import { BookOpen, Gift, CreditCard, Heart, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function NewCoursePage() {
+export default function NewAdminCoursePage() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [instructorId, setInstructorId] = useState("");
   const [moduleNumber, setModuleNumber] = useState("");
   const [language, setLanguage] = useState("ENGLISH");
   const [level, setLevel] = useState("BEGINNER");
+  const [adminNote, setAdminNote] = useState("");
   
   const [pricingType, setPricingType] = useState<"FREE" | "PAID" | "SCHOLARSHIP">("FREE");
   const [price, setPrice] = useState("");
@@ -24,14 +26,19 @@ export default function NewCoursePage() {
 
   const { data: catData } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => api.get("/categories").then((r) => r.data.data),
+    queryFn: () => api.get("/admin/categories").then((r) => r.data.data),
+  });
+
+  const { data: instData } = useQuery({
+    queryKey: ["instructors"],
+    queryFn: () => api.get("/admin/instructors").then((r) => r.data.data),
   });
 
   const createMut = useMutation({
-    mutationFn: (data: any) => api.post("/courses", data).then((r) => r.data.data),
+    mutationFn: (data: any) => api.post("/admin/courses", data).then((r) => r.data.data),
     onSuccess: (data) => {
-      toast.success("Course draft created successfully");
-      router.push(`/instructor/courses/${data.id}`);
+      toast.success("Course created & instructor invited");
+      router.push(`/admin/courses`);
     },
     onError: (e: any) => {
       toast.error(e?.response?.data?.message || "Failed to create course");
@@ -40,7 +47,7 @@ export default function NewCoursePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !categoryId) {
+    if (!title || !categoryId || !instructorId) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -49,6 +56,8 @@ export default function NewCoursePage() {
       title,
       subtitle,
       categoryId,
+      instructorId,
+      adminNote,
       moduleNumber: moduleNumber || undefined,
       language,
       level,
@@ -79,15 +88,15 @@ export default function NewCoursePage() {
       >
         {/* Header */}
         <div style={{ padding: "32px 40px", borderBottom: "1px solid rgba(184,134,69,0.15)", position: "relative" }}>
-          <Link href="/instructor/courses" style={{ position: "absolute", left: "40px", top: "38px", color: "#8F9E93", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
+          <Link href="/admin/courses" style={{ position: "absolute", left: "40px", top: "38px", color: "#8F9E93", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
             <ArrowLeft size={20} />
           </Link>
           <div style={{ textAlign: "center" }}>
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "48px", height: "48px", borderRadius: "12px", background: "rgba(184,134,69,0.1)", color: "#B88645", marginBottom: "16px" }}>
               <BookOpen size={24} />
             </div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "32px", fontWeight: 700, color: "#1A261D", margin: "0 0 8px 0" }}>Create a New Course</h1>
-            <p style={{ fontSize: "15px", color: "#8F9E93", margin: 0 }}>Let's start with the basics. You can fill in the rest later.</p>
+            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "32px", fontWeight: 700, color: "#1A261D", margin: "0 0 8px 0" }}>Create Course & Assign Instructor</h1>
+            <p style={{ fontSize: "15px", color: "#8F9E93", margin: 0 }}>This will create a draft and send an invitation to the instructor.</p>
           </div>
         </div>
 
@@ -111,15 +120,27 @@ export default function NewCoursePage() {
                   onBlur={(e) => e.target.style.borderColor = "rgba(184,134,69,0.3)"}
                   required
                 />
-                {title && (
-                  <div style={{ marginTop: "12px", padding: "16px", background: "#F7F8F5", borderRadius: "12px", border: "1px dashed rgba(184,134,69,0.2)" }}>
-                    <p style={{ fontSize: "12px", color: "#8F9E93", margin: "0 0 8px 0", textTransform: "uppercase" }}>Live Preview</p>
-                    <h2 style={{ fontFamily: "Georgia, serif", fontSize: "28px", fontStyle: "italic", color: "#B88645", margin: 0 }}>{title}</h2>
-                  </div>
-                )}
               </div>
-              
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Assign Instructor *</label>
+                  <select
+                    value={instructorId}
+                    onChange={(e) => setInstructorId(e.target.value)}
+                    style={{
+                      width: "100%", padding: "16px", fontSize: "15px", background: "#F7F8F5", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "12px", color: "#1A261D", outline: "none", appearance: "none"
+                    }}
+                    required
+                  >
+                    <option value="" disabled style={{ color: "#000" }}>Select instructor...</option>
+                    {instData?.instructors?.map((inst: any) => (
+                      <option key={inst.id} value={inst.id} style={{ color: "#000" }}>{inst.name} ({inst.email})</option>
+                    )) || instData?.map?.((inst: any) => (
+                      <option key={inst.id} value={inst.id} style={{ color: "#000" }}>{inst.name} ({inst.email})</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Category *</label>
                   <select
@@ -136,17 +157,17 @@ export default function NewCoursePage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Module Number</label>
-                  <input
-                    type="number"
-                    value={moduleNumber}
-                    onChange={(e) => setModuleNumber(e.target.value)}
-                    placeholder="e.g. 1"
-                    min="1"
-                    max="99"
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Note for Instructor (Optional)</label>
+                  <textarea
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="e.g. Please build this course out by next month."
                     style={{
-                      width: "100%", padding: "16px", fontSize: "15px", background: "#F7F8F5", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "12px", color: "#1A261D", outline: "none"
+                      width: "100%", padding: "16px", fontSize: "15px", background: "#F7F8F5", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "12px", color: "#1A261D", outline: "none", resize: "none", minHeight: "100px"
                     }}
                   />
                 </div>
@@ -212,7 +233,7 @@ export default function NewCoursePage() {
                 >
                   <Gift size={32} color={pricingType === "FREE" ? "#B88645" : "#8F9E93"} style={{ marginBottom: "16px" }} />
                   <h3 style={{ fontFamily: "Georgia, serif", fontSize: "20px", fontWeight: 700, color: pricingType === "FREE" ? "#B88645" : "#1A261D", margin: "0 0 8px 0" }}>Free</h3>
-                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>Open to all — anyone can enroll at no cost</p>
+                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>Open to all</p>
                 </div>
 
                 {/* Paid */}
@@ -224,7 +245,7 @@ export default function NewCoursePage() {
                 >
                   <CreditCard size={32} color={pricingType === "PAID" ? "#B88645" : "#8F9E93"} style={{ marginBottom: "16px" }} />
                   <h3 style={{ fontFamily: "Georgia, serif", fontSize: "20px", fontWeight: 700, color: pricingType === "PAID" ? "#B88645" : "#1A261D", margin: "0 0 8px 0" }}>Paid</h3>
-                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>Students pay once to unlock all content</p>
+                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>Students pay once</p>
                 </div>
 
                 {/* Scholarship */}
@@ -236,7 +257,7 @@ export default function NewCoursePage() {
                 >
                   <Heart size={32} color={pricingType === "SCHOLARSHIP" ? "#B88645" : "#8F9E93"} style={{ marginBottom: "16px" }} />
                   <h3 style={{ fontFamily: "Georgia, serif", fontSize: "20px", fontWeight: 700, color: pricingType === "SCHOLARSHIP" ? "#B88645" : "#1A261D", margin: "0 0 8px 0" }}>Scholarship</h3>
-                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>CWAY partners can sponsor candidates</p>
+                  <p style={{ fontSize: "13px", color: "#8F9E93", margin: 0, lineHeight: 1.5 }}>CWAY partners sponsor</p>
                 </div>
               </div>
 
@@ -263,26 +284,18 @@ export default function NewCoursePage() {
                       required={pricingType === "PAID"}
                     />
                   </div>
-                  {price && (
-                    <div style={{ marginTop: "16px", padding: "16px", background: "rgba(184,134,69,0.08)", borderRadius: "8px", border: "1px dashed rgba(184,134,69,0.2)" }}>
-                      <p style={{ fontSize: "13px", color: "#8F9E93", margin: "0 0 4px 0", display: "flex", justifyContent: "space-between" }}><span>Sale price:</span> <span>{currency === "INR" ? "₹" : "$"}{price}</span></p>
-                      <p style={{ fontSize: "13px", color: "#8F9E93", margin: "0 0 8px 0", display: "flex", justifyContent: "space-between" }}><span>Platform fee (30%):</span> <span style={{ color: "#B03A2E" }}>-{currency === "INR" ? "₹" : "$"}{(Number(price) * 0.3).toFixed(2)}</span></p>
-                      <div style={{ height: "1px", background: "rgba(184,134,69,0.2)", margin: "8px 0" }}></div>
-                      <p style={{ fontSize: "15px", color: "#B88645", margin: 0, fontWeight: 700, display: "flex", justifyContent: "space-between" }}><span>You earn:</span> <span>{currency === "INR" ? "₹" : "$"}{(Number(price) * 0.7).toFixed(2)}</span></p>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
 
             {/* Submit */}
             <div style={{ paddingTop: "16px", borderTop: "1px solid rgba(184,134,69,0.15)", display: "flex", justifyContent: "flex-end", gap: "16px" }}>
-              <Link href="/instructor/courses" style={{ padding: "14px 28px", borderRadius: "999px", fontSize: "15px", fontWeight: 600, color: "#8F9E93", textDecoration: "none", display: "flex", alignItems: "center" }}>
+              <Link href="/admin/courses" style={{ padding: "14px 28px", borderRadius: "999px", fontSize: "15px", fontWeight: 600, color: "#8F9E93", textDecoration: "none", display: "flex", alignItems: "center" }}>
                 Cancel
               </Link>
               <button
                 type="submit"
-                disabled={createMut.isPending || !title || !categoryId || (pricingType === "PAID" && !price)}
+                disabled={createMut.isPending || !title || !categoryId || !instructorId || (pricingType === "PAID" && !price)}
                 style={{
                   padding: "14px 32px", borderRadius: "999px", fontSize: "15px", fontWeight: 600, background: "#B88645", color: "#FFFFFF", border: "none", cursor: createMut.isPending ? "not-allowed" : "pointer", opacity: createMut.isPending ? 0.7 : 1, transition: "all 0.2s", display: "flex", alignItems: "center", gap: "8px"
                 }}
@@ -290,7 +303,7 @@ export default function NewCoursePage() {
                 onMouseLeave={(e) => !createMut.isPending && (e.currentTarget.style.background = "#B88645")}
               >
                 {createMut.isPending ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : null}
-                {createMut.isPending ? "Creating Draft..." : "Create Course"}
+                {createMut.isPending ? "Creating..." : "Create Course & Assign"}
               </button>
             </div>
           </form>
