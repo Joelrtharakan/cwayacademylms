@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   env: {
     NEXT_PUBLIC_API_URL: "https://cway-api.onrender.com/api/v1",
     NEXT_PUBLIC_APP_URL: "https://cwayacademy.com",
