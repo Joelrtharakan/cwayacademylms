@@ -7,8 +7,17 @@ import { asyncHandler, AppError } from "../utils/errors";
 import { redis } from "../utils/redis";
 import { prisma } from "../utils/prisma";
 import { TokenService } from "../services/token.service";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per window for auth routes
+  message: "Too many login attempts from this IP, please try again after 15 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Validation Rules
 const registerRules = [
@@ -39,12 +48,12 @@ const resetPasswordRules = [
 ];
 
 // Routes mapping
-router.post("/register", registerRules, validate, AuthController.register);
+router.post("/register", authLimiter, registerRules, validate, AuthController.register);
 router.get("/verify-email/:token", AuthController.verifyEmail);
-router.post("/login", loginRules, validate, AuthController.login);
+router.post("/login", authLimiter, loginRules, validate, AuthController.login);
 router.post("/refresh", AuthController.refresh);
 router.post("/logout", AuthController.logout);
-router.post("/forgot-password", forgotPasswordRules, validate, AuthController.forgotPassword);
+router.post("/forgot-password", authLimiter, forgotPasswordRules, validate, AuthController.forgotPassword);
 router.post("/reset-password", resetPasswordRules, validate, AuthController.resetPassword);
 
 // Protected routes
