@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProgramById = exports.getPrograms = exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
-exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
+exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
@@ -1009,4 +1009,54 @@ exports.assignInstructorToCourse = (0, errors_1.asyncHandler)(async (req, res) =
     ]);
     await notification_service_1.NotificationService.createNotification(instructorId, "COURSE_INVITATION", "You've been assigned a course", `You have a new course invitation: "${course.title}"`, `/instructor/courses`);
     res.json({ status: "success", data: invitation, message: "Invitation sent to instructor" });
+});
+function slugify(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
+}
+async function uniqueSlug(title) {
+    let slug = slugify(title);
+    let count = 0;
+    while (await prisma_1.prisma.course.findUnique({ where: { slug } })) {
+        count++;
+        slug = `${slugify(title)}-${count}`;
+    }
+    return slug;
+}
+exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { title, subtitle, description, categoryId, level = "BEGINNER", language = "ENGLISH", moduleNumber, weeksDuration = 6, totalLectures = 0, scriptureRef, isFree = true, price = 0, currency = "INR", requirements, outcomes, targetAudience, welcomeMessage, congratsMessage, tags, instructorId, adminNote } = req.body;
+    if (!title)
+        throw new errors_1.AppError("Title is required", 400);
+    if (!instructorId)
+        throw new errors_1.AppError("Instructor ID is required to create a course", 400);
+    const slug = await uniqueSlug(title);
+    const [course, invitation] = await prisma_1.prisma.$transaction(async (tx) => {
+        const newCourse = await tx.course.create({
+            data: {
+                title, subtitle, description, categoryId, level, language,
+                moduleNumber: moduleNumber ? Number(moduleNumber) : undefined,
+                weeksDuration: Number(weeksDuration), totalLectures: Number(totalLectures),
+                scriptureRef, isFree: Boolean(isFree), price: Number(price), currency,
+                requirements: JSON.stringify(requirements || []),
+                outcomes: JSON.stringify(outcomes || []),
+                targetAudience: JSON.stringify(targetAudience || []),
+                welcomeMessage, congratsMessage,
+                tags: JSON.stringify(tags || []),
+                slug, status: "DRAFT", instructorId,
+                invitationStatus: "PENDING",
+                forum: { create: {} },
+                curriculum: { create: {} }
+            },
+        });
+        const newInvitation = await tx.courseInvitation.create({
+            data: {
+                courseId: newCourse.id,
+                instructorId,
+                adminNote: adminNote || null,
+                status: "PENDING"
+            }
+        });
+        return [newCourse, newInvitation];
+    });
+    await notification_service_1.NotificationService.createNotification(instructorId, "COURSE_INVITATION", "You've been assigned a new course", `An admin created '${course.title}' and assigned it to you.`, `/instructor/invitations`);
+    res.status(201).json({ status: "success", data: course, invitation });
 });

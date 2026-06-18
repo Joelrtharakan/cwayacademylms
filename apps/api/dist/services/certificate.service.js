@@ -258,6 +258,8 @@ class CertificateService {
                         title: true,
                         moduleNumber: true,
                         scriptureRef: true,
+                        programId: true,
+                        program: { select: { title: true } },
                         instructor: { select: { name: true } }
                     }
                 },
@@ -269,7 +271,7 @@ class CertificateService {
         }
         const templateData = {
             studentName: certificate.student.name,
-            courseName: certificate.course.title,
+            courseName: certificate.course.programId && certificate.course.program ? certificate.course.program.title : certificate.course.title,
             moduleNumber: certificate.course.moduleNumber ? certificate.course.moduleNumber.toString() : '',
             scriptureRef: certificate.course.scriptureRef || '',
             instructorName: certificate.course.instructor.name,

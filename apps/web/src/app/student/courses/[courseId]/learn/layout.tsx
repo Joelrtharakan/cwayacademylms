@@ -60,6 +60,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   useEffect(() => {
     // Fetch enrollment and progress
     const fetchData = async () => {
+      if (!courseId) return;
       try {
         const enrRes = await api.get(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
@@ -88,7 +89,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
           setExpandedModules({ [enr.course.sections[0].id]: true });
         }
       } catch (err: any) {
-        console.error("Failed to load course player data", err);
+        console.error(`Failed to load course player data. Failed URL: ${err?.config?.url}`, err);
         if (err?.response?.status === 401) {
           router.push("/login");
         }

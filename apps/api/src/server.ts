@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 4000;
 
 // Security Middlewares
 app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  frameguard: false,
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
@@ -33,7 +35,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
       fontSrc: ["'self'", "fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
-      frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
+      frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com", "localhost:*"],
       connectSrc: ["'self'", "api.stripe.com"],
     }
   }
@@ -65,7 +67,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window`
+  max: 5000, // Limit each IP to 5000 requests per `window`
   standardHeaders: true,
   legacyHeaders: false,
 });

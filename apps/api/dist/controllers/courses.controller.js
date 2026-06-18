@@ -945,6 +945,18 @@ exports.createAnnouncement = (0, errors_1.asyncHandler)(async (req, res) => {
         },
         include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
     });
+    // Create notifications for all enrolled students
+    const enrollments = await prisma_1.prisma.enrollment.findMany({ where: { courseId: course.id, status: "ACTIVE" } });
+    if (enrollments.length > 0) {
+        const notifications = enrollments.map(e => ({
+            userId: e.studentId,
+            type: "ANNOUNCEMENT",
+            title: `New Announcement in ${course.title}`,
+            body: title,
+            link: `/student/courses/${course.slug || course.id}/learn`,
+        }));
+        await prisma_1.prisma.notification.createMany({ data: notifications });
+    }
     res.json({ status: "success", data: announcement });
 });
 exports.deleteAnnouncement = (0, errors_1.asyncHandler)(async (req, res) => {

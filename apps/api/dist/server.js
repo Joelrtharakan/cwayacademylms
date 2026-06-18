@@ -23,9 +23,12 @@ const student_routes_1 = __importDefault(require("./routes/student.routes"));
 const blog_routes_1 = __importDefault(require("./routes/blog.routes"));
 const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
+app.set("trust proxy", 1); // Trust first proxy for rate limiting (Render/Cloudflare)
 const PORT = process.env.PORT || 4000;
 // Security Middlewares
 app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    frameguard: false,
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
@@ -33,23 +36,37 @@ app.use((0, helmet_1.default)({
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "*.r2.dev", "cwayacademy.netlify.app", "*.bunny.net"],
-            frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com"],
+            frameSrc: ["'self'", "iframe.mediadelivery.net", "js.stripe.com", "localhost:*"],
             connectSrc: ["'self'", "api.stripe.com"],
         }
     }
 }));
 // CORS — only allow your domains
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://learn.cwayacademy.com',
+    'https://cwayacademy.com',
+    'https://www.cwayacademy.com',
+    'https://cwayacademylms.netlify.app',
+    'https://cwayacademy.netlify.app',
+    'https://cwayacademylms.joelrtharakan.workers.dev',
+    process.env.FRONTEND_URL // Allow dynamic URL from Render env vars
+].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: [
-        'http://localhost:3000',
-        'https://learn.cwayacademy.com'
-    ],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 // Rate limiting
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per `window`
+    max: 5000, // Limit each IP to 5000 requests per `window`
     standardHeaders: true,
     legacyHeaders: false,
 });

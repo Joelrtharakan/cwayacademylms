@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { useAuthStore, api } from "@/store/auth.store";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -526,19 +527,7 @@ export default function LessonPlayerPage() {
                 </div>
               )}
             </div>
-            {!lesson.isCompleted && (
-              <div className="max-w-7xl mx-auto mt-4 px-4 md:px-0 flex flex-col items-center gap-2 text-center">
-                <button
-                  onClick={markComplete}
-                  className="px-6 py-3 bg-[#C9973A] text-[#1A261D] rounded-full font-semibold shadow-sm hover:bg-[#A8792A] transition-colors"
-                >
-                  Mark Lesson Complete
-                </button>
-                <p className="text-xs text-[#F3F4F6]/90 max-w-xl">
-                  If the video does not auto-complete, press this button after you have watched the full lesson.
-                </p>
-              </div>
-            )}
+            {/* Button moved to bottom bar */}
           </div>
         )}
 
@@ -1527,17 +1516,31 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 fixed bottom-0 left-0 md:left-[320px] right-0" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
+      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 fixed bottom-0 left-0 md:left-[320px] right-0 transition-all duration-300" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
         <button
           disabled={!previousLesson}
           onClick={() => previousLesson && goToLesson(previousLesson.id)}
-          className="bg-[#F7E3B7] text-[#4A3F1F] border border-[#E0C17A] hover:bg-[#F2D685] flex items-center gap-2 text-sm font-semibold transition-colors shadow-sm shadow-[#D8B657]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#F7E3B7] text-[#4A3F1F] border border-[#E0C17A] hover:bg-[#F2D685] flex items-center gap-2 text-sm font-semibold transition-colors shadow-sm shadow-[#D8B657]/20 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           style={{ padding: "12px 24px", borderRadius: "999px" }}
         >
           <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">Previous Lesson</span>
         </button>
-        <div className="text-xs text-[#8A9E8C] font-medium tracking-wide">
-          Module · Lesson
+        
+        <div className="flex flex-col items-center gap-2 text-center px-4">
+          <div className="text-xs text-[#8A9E8C] font-bold tracking-widest uppercase">
+            Module · Lesson
+          </div>
+          {lesson?.type === "VIDEO" && !lesson.isCompleted && (
+            <div className="flex flex-col items-center gap-1.5 mt-1">
+              <button
+                onClick={markComplete}
+                className="bg-gradient-to-r from-[#C9973A] to-[#B88645] text-white rounded-full font-bold text-[13px] hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-1.5 shadow-sm border border-[#E3B864]/40"
+                style={{ padding: "6px 16px" }}
+              >
+                <CheckCircle size={15} /> Mark as Complete
+              </button>
+            </div>
+          )}
         </div>
         <button 
           onClick={handleNext}

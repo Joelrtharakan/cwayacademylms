@@ -176,7 +176,7 @@ export default function StudentDashboardPage() {
             />
           </div>
         ) : (
-          <div style={{ height: "260px" }}>
+          <div style={{ height: "260px", minWidth: 0, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={learningData} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
                 <defs>

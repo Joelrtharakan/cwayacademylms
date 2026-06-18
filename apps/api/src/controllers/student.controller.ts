@@ -134,7 +134,9 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
   const { courseId } = req.params;
   const studentId = req.user!.id;
 
-  const enrollment = await prisma.enrollment.findUnique({
+  console.log(`[getCourseEnrollment] Fetching for studentId=${studentId}, courseId=${courseId}`);
+
+  let enrollment = await prisma.enrollment.findUnique({
     where: { studentId_courseId: { studentId, courseId } },
     include: {
       lessonProgress: true,
@@ -163,7 +165,46 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
     }
   });
 
-  if (!enrollment) throw new AppError("Enrollment not found", 404);
+  if (!enrollment && req.user!.role === "ADMIN") {
+    console.log(`[getCourseEnrollment] Auto-enrolling ADMIN ${studentId} in course ${courseId} for preview`);
+    enrollment = await prisma.enrollment.create({
+      data: {
+        studentId,
+        courseId,
+        status: "ACTIVE"
+      },
+      include: {
+        lessonProgress: true,
+        readingMaterialProgress: true,
+        course: {
+          include: {
+            instructor: { select: { name: true } },
+            sections: {
+              orderBy: { order: "asc" },
+              include: {
+                lessons: {
+                  orderBy: { order: "asc" },
+                  include: { quiz: true, assignment: true }
+                },
+                readingMaterials: {
+                  orderBy: { order: "asc" },
+                },
+                discussions: {
+                  orderBy: { createdAt: "asc" },
+                  include: { author: { select: { id: true, name: true } } }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  if (!enrollment) {
+    console.log(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
+    throw new AppError("Enrollment not found", 404);
+  }
 
   // Map progress into lessons
   const sections = enrollment.course.sections.map(section => ({
@@ -200,6 +241,8 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   const { enrollmentId } = req.params;
   const studentId = req.user!.id;
 
+  console.log(`[getProgress] Fetching for enrollmentId=${enrollmentId}, studentId=${studentId}`);
+
   const enrollment = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
     include: {
@@ -219,8 +262,14 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-  if (!enrollment) throw new AppError("Enrollment not found", 404);
-  if (enrollment.studentId !== studentId && req.user!.role !== "ADMIN") throw new AppError("Unauthorized", 403);
+  if (!enrollment) {
+    console.log(`[getProgress] 404 - Enrollment NOT FOUND for id=${enrollmentId}`);
+    throw new AppError("Enrollment not found", 404);
+  }
+  if (enrollment.studentId !== studentId && req.user!.role !== "ADMIN") {
+    console.log(`[getProgress] 403 - Unauthorized for id=${enrollmentId}, studentId=${studentId}`);
+    throw new AppError("Unauthorized", 403);
+  }
 
   let totalItems = 0;
   let completedItems = 0;
@@ -993,9 +1042,11 @@ export const markAllNotificationsRead = asyncHandler(async (req: Request, res: R
 export const getStudentDashboard = asyncHandler(async (req: Request, res: Response) => {
   const studentId = req.user!.id;
   
-  const enrollments = await prisma.enrollment.findMany({
+  const enrollmentsRaw = await prisma.enrollment.findMany({
     where: { studentId },
     include: {
+      lessonProgress: { where: { completedAt: { not: null } } },
+      readingMaterialProgress: { where: { completedAt: { not: null } } },
       course: {
         select: {
           id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
@@ -1004,8 +1055,10 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
           sections: {
             include: {
               lessons: {
-                where: { type: "ASSIGNMENT" },
-                include: { assignment: true }
+                select: { id: true, type: true, assignment: true }
+              },
+              readingMaterials: {
+                select: { id: true }
               }
             }
           }
@@ -1024,10 +1077,14 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
   });
 
   let pendingAssignmentsCount = 0;
-  enrollments.forEach(enr => {
+  
+  const enrollments = enrollmentsRaw.map(enr => {
+    let totalItems = 0;
     enr.course.sections?.forEach(sec => {
+      totalItems += (sec.lessons?.length || 0) + (sec.readingMaterials?.length || 0);
+      
       sec.lessons?.forEach(lesson => {
-        if (lesson.assignment) {
+        if (lesson.type === "ASSIGNMENT" && lesson.assignment) {
           const hasSubmission = submissions.some(s => s.assignmentId === lesson.assignment?.id);
           if (!hasSubmission) {
             pendingAssignmentsCount++;
@@ -1035,6 +1092,23 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
         }
       });
     });
+
+    const completedItems = enr.lessonProgress.length + enr.readingMaterialProgress.length;
+    const realProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+    
+    // Auto-downgrade status if a new lesson was added
+    let status = enr.status;
+    if (realProgress < 100 && status === "COMPLETED") {
+      status = "ACTIVE";
+      // Fire-and-forget an update to the DB to sync it
+      prisma.enrollment.update({ where: { id: enr.id }, data: { status: "ACTIVE", progress: realProgress, completedAt: null } }).catch(console.error);
+    }
+
+    return {
+      ...enr,
+      progress: realProgress,
+      status
+    };
   });
 
   // Simplified "Continue Learning"

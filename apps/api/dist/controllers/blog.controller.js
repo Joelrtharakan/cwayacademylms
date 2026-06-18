@@ -40,7 +40,7 @@ exports.getPostBySlug = (0, errors_1.asyncHandler)(async (req, res) => {
     res.json({ status: "success", data: post });
 });
 exports.createPost = (0, errors_1.asyncHandler)(async (req, res) => {
-    const { title, excerpt, content, isPublished } = req.body;
+    const { title, excerpt, content, isPublished, customAuthor } = req.body;
     const authorId = req.user.id;
     let slug = generateSlug(title);
     // Ensure unique slug
@@ -57,6 +57,7 @@ exports.createPost = (0, errors_1.asyncHandler)(async (req, res) => {
             content,
             isPublished: isPublished ?? false,
             readingTime,
+            customAuthor: customAuthor || null,
             authorId
         }
     });
@@ -64,7 +65,7 @@ exports.createPost = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.updatePost = (0, errors_1.asyncHandler)(async (req, res) => {
     const { slug } = req.params;
-    const { title, excerpt, content, isPublished } = req.body;
+    const { title, excerpt, content, isPublished, customAuthor } = req.body;
     const user = req.user;
     const post = await prisma_1.prisma.blogPost.findUnique({ where: { slug } });
     if (!post)
@@ -88,7 +89,8 @@ exports.updatePost = (0, errors_1.asyncHandler)(async (req, res) => {
             excerpt,
             content,
             isPublished,
-            readingTime
+            readingTime,
+            customAuthor: customAuthor || null
         }
     });
     res.json({ status: "success", data: updated });
