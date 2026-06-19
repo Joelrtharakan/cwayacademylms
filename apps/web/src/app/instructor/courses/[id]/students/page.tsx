@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Search, Mail, Download } from "lucide-react";
+import { ArrowLeft, Search, Mail, Download, Phone, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/store/auth.store";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const GOLD = "var(--gold-primary, #C9A84C)";
 const SURFACE = "#FFFFFF";
@@ -66,7 +67,7 @@ export default function CourseStudentsPage() {
   };
 
   return (
-    <div style={{ padding: "24px 32px", maxWidth: 1000 }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
         <button onClick={() => router.back()} style={{ background: "#FFFFFF", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: DARK, cursor: "pointer", transition: "all 0.15s", boxShadow: "var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05))" }}>
           <ArrowLeft size={18} />
@@ -134,9 +135,47 @@ export default function CourseStudentsPage() {
                   )}
                 </td>
                 <td style={{ padding: "16px 24px", textAlign: "right" }}>
-                  <Link href={`/instructor/messages/${e.studentId}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "var(--gold-dark, #A68A3D)", background: "rgba(201,168,76,0.1)", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "background 0.2s" }}>
-                    <Mail size={16} /> Message
-                  </Link>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+                    <Link href={`/instructor/messages?userId=${e.studentId}&name=${encodeURIComponent(e.student?.name || '')}`} title="Message Student" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", color: "var(--gold-dark, #A68A3D)", background: "rgba(201,168,76,0.1)", borderRadius: "8px", textDecoration: "none", transition: "background 0.2s" }} onMouseEnter={(ev) => { ev.currentTarget.style.background = "rgba(201,168,76,0.2)"; }} onMouseLeave={(ev) => { ev.currentTarget.style.background = "rgba(201,168,76,0.1)"; }}>
+                      <MessageSquare size={16} />
+                    </Link>
+                    {e.student?.email && (
+                      <button
+                        onClick={(ev) => {
+                          ev.preventDefault();
+                          window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${e.student.email}`, '_blank');
+                        }}
+                        title="Email Student"
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", color: MUTED, background: "var(--cream-light, #F9FAF8)", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s" }}
+                        onMouseEnter={(ev) => { ev.currentTarget.style.color = DARK; ev.currentTarget.style.borderColor = "#CBD5E1"; }}
+                        onMouseLeave={(ev) => { ev.currentTarget.style.color = MUTED; ev.currentTarget.style.borderColor = "var(--border-light, #E2E8F0)"; }}
+                      >
+                        <Mail size={16} />
+                      </button>
+                    )}
+                    {e.student?.phone ? (
+                      <a
+                        href={`tel:${e.student.phone}`}
+                        title="Call Student"
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", color: MUTED, background: "var(--cream-light, #F9FAF8)", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s" }}
+                        onMouseEnter={(ev) => { ev.currentTarget.style.color = DARK; ev.currentTarget.style.borderColor = "#CBD5E1"; }}
+                        onMouseLeave={(ev) => { ev.currentTarget.style.color = MUTED; ev.currentTarget.style.borderColor = "var(--border-light, #E2E8F0)"; }}
+                      >
+                        <Phone size={16} />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={(ev) => {
+                          ev.preventDefault();
+                          toast.error("This student hasn't provided a phone number.");
+                        }}
+                        title="No phone number provided"
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", color: "#C4C8C5", background: "#F7F8F5", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: "8px", cursor: "not-allowed", transition: "all 0.2s" }}
+                      >
+                        <Phone size={16} />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

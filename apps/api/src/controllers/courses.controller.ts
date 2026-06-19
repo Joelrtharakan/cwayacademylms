@@ -768,7 +768,7 @@ export const getInstructorCourseStudents = asyncHandler(async (req: Request, res
   const enrollments = await prisma.enrollment.findMany({
     where: { courseId: id },
     include: {
-      student: { select: { id: true, name: true, email: true, avatar: true } },
+      student: { select: { id: true, name: true, email: true, phone: true, avatar: true } },
       lessonProgress: {
         where: { completedAt: { not: null } },
         include: { lesson: { select: { title: true } } }
@@ -935,7 +935,7 @@ export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
   });
 
   const sender = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } });
-  await NotificationService.createNotification(receiverId, "NEW_MESSAGE", `New message from ${sender?.name}`, content.slice(0, 80), `/messages/${req.user!.id}`);
+  await NotificationService.createNotification(receiverId, "NEW_MESSAGE", `New message from ${sender?.name}`, content.slice(0, 80), `/student/dashboard`);
 
   res.status(201).json({ status: "success", data: message });
 });

@@ -60,12 +60,17 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user) router.push("/login");
-      else if (user.role !== "INSTRUCTOR" && user.role !== "ADMIN") router.push("/login");
+      if (!user) {
+        router.push("/login");
+      } else if (user.role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else if (user.role === "STUDENT") {
+        router.push("/student/dashboard");
+      }
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user || (user.role !== "INSTRUCTOR" && user.role !== "ADMIN")) {
+  if (isLoading || !user || user.role !== "INSTRUCTOR") {
     return (
       <div
         style={{

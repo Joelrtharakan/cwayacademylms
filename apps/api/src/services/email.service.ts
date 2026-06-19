@@ -52,7 +52,12 @@ async function send(to: string, subject: string, html: string) {
     console.log(`[EMAIL DEV] To: ${to} | Subject: ${subject}`)
     return
   }
-  await resend.emails.send({ from: FROM, to, subject, html })
+  const { data, error } = await resend.emails.send({ from: FROM, to, subject, html })
+  if (error) {
+    console.error("[EMAIL ERROR] Failed to send via Resend:", error)
+  } else {
+    console.log(`[EMAIL SENT] Successfully sent to ${to}`)
+  }
 }
 
 // ── THE 7 EMAIL FUNCTIONS ────────────────────────────────
@@ -201,7 +206,10 @@ export async function sendInstructorWelcomeEmail(
     wrap(`
       <h1 class="h1">Welcome, ${instructor.name}!</h1>
       <p class="p">An admin has created an instructor account for you on CWAY Academy.</p>
-      <p class="p">Your temporary password is: <strong>${password}</strong></p>
+      <div style="background:#fdf8ef; padding: 16px; border-radius: 8px; border: 1px solid rgba(201,151,58,0.3); margin: 16px 0;">
+        <p class="p" style="margin-bottom: 8px;"><strong>Email ID:</strong> ${instructor.email}</p>
+        <p class="p" style="margin-bottom: 0;"><strong>Password:</strong> ${password}</p>
+      </div>
       <p class="p">Please log in and change your password immediately.</p>
       <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
     `, 'Your instructor account is ready'))

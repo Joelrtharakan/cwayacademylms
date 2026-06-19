@@ -6,6 +6,7 @@ import { GlobalReveal } from "@/components/GlobalReveal";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ConfirmProvider } from "@/components/shared/ConfirmContext";
+import { SessionManager } from "@/components/auth/SessionManager";
 
 /* ── Self-hosted fonts via next/font (no external network requests) ── */
 const plusJakarta = Jost({
@@ -159,6 +160,7 @@ export default function RootLayout({
         <QueryProvider>
           <ConfirmProvider>
             <Toaster position="top-right" richColors />
+            <SessionManager />
             <GlobalReveal />
             <SmoothScroll>
               {children}

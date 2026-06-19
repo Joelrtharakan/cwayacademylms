@@ -21,7 +21,9 @@
     "docker:prod": "docker compose -f docker-compose.prod.yml up -d --build",
     "docker:prod:down": "docker compose -f docker-compose.prod.yml down",
     "docker:build:api": "docker build -f apps/api/Dockerfile -t cway-api .",
-    "docker:build:web": "docker build -f apps/web/Dockerfile -t cway-web ."
+    "docker:build:web": "docker build -f apps/web/Dockerfile -t cway-web .",
+    "db:backup": "docker exec cway_pgbackup /backup.sh",
+    "db:restore": "echo 'Usage: docker exec -i cway_postgres psql -U cway -d cway_lms < ./db_backups/YOUR_BACKUP_FILE.sql'"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

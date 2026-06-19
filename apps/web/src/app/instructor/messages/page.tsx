@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, Search } from "lucide-react";
 import { getConversations, getMessageThread, sendMessage } from "@/lib/api/instructor";
+import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -14,12 +15,23 @@ const DARK = "#1A261D";
 const MUTED = "#8F9E93";
 
 export default function MessagesPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <MessagesContent />
+    </React.Suspense>
+  );
+}
+
+function MessagesContent() {
   const { user } = useAuthStore();
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [content, setContent] = useState("");
   const [search, setSearch] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
+  const searchParams = useSearchParams();
+  const queryUserId = searchParams.get("userId");
+  const queryUserName = searchParams.get("name");
 
   const { data: convos = [] } = useQuery({ queryKey: ["conversations"], queryFn: getConversations, refetchInterval: 15000 });
 
@@ -31,6 +43,17 @@ export default function MessagesPage() {
   });
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [thread]);
+
+  useEffect(() => {
+    if (queryUserId && !selectedUser) {
+      const existingConvo = convos.find((c: any) => c.otherUser.id === queryUserId);
+      if (existingConvo) {
+        setSelectedUser(existingConvo.otherUser);
+      } else if (queryUserName) {
+        setSelectedUser({ id: queryUserId, name: queryUserName, role: "STUDENT" });
+      }
+    }
+  }, [queryUserId, queryUserName, convos, selectedUser]);
 
   const sendMut = useMutation({
     mutationFn: () => sendMessage(selectedUser!.id, content),

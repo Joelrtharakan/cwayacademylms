@@ -22,6 +22,9 @@ function LoginContent() {
     if (searchParams.get("verified") === "true") {
       toast.success("Email verified! You can now sign in.");
     }
+    if (searchParams.get("reason") === "expired") {
+      toast.warning("Your session has expired due to inactivity. Please sign in again.");
+    }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {

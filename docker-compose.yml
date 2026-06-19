@@ -48,6 +48,29 @@ services:
       postgres:
         condition: service_healthy
 
+  # Automated Daily Database Backups
+  pgbackup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: cway_pgbackup
+    restart: unless-stopped
+    user: postgres:postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: cway_lms
+      POSTGRES_USER: cway
+      POSTGRES_PASSWORD: cwaydev
+      # Run backup every day at midnight
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - ./db_backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:

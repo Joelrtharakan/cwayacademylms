@@ -52,6 +52,12 @@ const NAV: NavSection[] = [
       { name: "Certificates", href: "/student/certificates", icon: Award },
     ],
   },
+  {
+    title: "Account",
+    items: [
+      { name: "Settings", href: "/student/settings", icon: Settings },
+    ],
+  },
 ];
 
 // Sidebar width constants

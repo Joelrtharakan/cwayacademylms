@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import axios from "axios";
 
 export interface User {
@@ -37,10 +38,12 @@ export const api = axios.create({
 
 let refreshPromise: Promise<string | null> | null = null;
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  accessToken: null,
-  isLoading: true,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      accessToken: null,
+      isLoading: true,
 
   setAuth: (user, token) => {
     set({ user, accessToken: token, isLoading: false });
@@ -103,7 +106,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error("Failed to refresh user profile", err);
     }
   },
-}));
+}),
+{
+  name: "cway-auth-storage",
+  onRehydrateStorage: () => (state) => {
+    // When rehydrated from localStorage, update the api headers
+    if (state?.accessToken) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${state.accessToken}`;
+    }
+    if (state) {
+      state.isLoading = false;
+    }
+  },
+}
+));
 
 // Set up Axios interceptors for handling 401 Unauthorized responses
 api.interceptors.response.use(

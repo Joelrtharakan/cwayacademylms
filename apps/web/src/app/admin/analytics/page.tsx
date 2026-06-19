@@ -253,7 +253,7 @@ export default function AdminAnalyticsPage() {
             ) : (
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
                 <div style={{ width: "100%", height: "350px" }}>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie data={pieData} cx="45%" cy="50%" innerRadius={85} outerRadius={135} dataKey="value" nameKey="name" paddingAngle={4} stroke="none">
                         {pieData.map((_: any, i: number) => (
