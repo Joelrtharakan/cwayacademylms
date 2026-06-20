@@ -349,6 +349,7 @@ export default function LandingPage() {
         
         .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 6px; }
         .hamburger span { width: 24px; height: 2px; background: var(--text-main); transition: 0.3s; border-radius: 2px; }
+        .nav-actions { display: flex; gap: 1rem; align-items: center; }
 
         .mobile-overlay {
             background: var(--bg-main); position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -994,6 +995,7 @@ export default function LandingPage() {
         }
         @media (max-width: 768px) {
             .nav-links { display: none; }
+            .nav-actions { display: none; }
             .hamburger { display: flex; }
             .hero-btn-group { flex-direction: column; align-items: stretch; }
             .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
@@ -1054,16 +1056,23 @@ export default function LandingPage() {
           />
           <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
         </div>
-        <div className="nav-links">
-          <a href="#home" className={activeTab === "home" ? "nav-active" : ""}>Home</a>
-          <a href="#about" className={activeTab === "about" ? "nav-active" : ""}>About</a>
-          <a href="#courses" className={activeTab === "courses" ? "nav-active" : ""}>Courses</a>
-          <a href="#involved" className={activeTab === "involved" ? "nav-active" : ""}>Get Involved</a>
-          <a href="#blog" className={activeTab === "blog" ? "nav-active" : ""}>Blog</a>
-          <a href="#contact" className={activeTab === "contact" ? "nav-active" : ""}>Contact</a>
-        </div>
-        <div className="hamburger" onClick={() => setMobileMenuOpen(true)}>
-          <span></span><span></span><span></span>
+        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+          <div className="nav-links">
+            <a href="#home" className={activeTab === "home" ? "nav-active" : ""}>Home</a>
+            <a href="#about" className={activeTab === "about" ? "nav-active" : ""}>About</a>
+            <a href="#courses" className={activeTab === "courses" ? "nav-active" : ""}>Courses</a>
+            <a href="#involved" className={activeTab === "involved" ? "nav-active" : ""}>Get Involved</a>
+            <a href="#blog" className={activeTab === "blog" ? "nav-active" : ""}>Blog</a>
+            <a href="#contact" className={activeTab === "contact" ? "nav-active" : ""}>Contact</a>
+          </div>
+          
+          <div className="nav-actions">
+            <Link href="/login" className="btn-primary" style={{ padding: "10px 24px", fontSize: "11px" }}>Login</Link>
+          </div>
+
+          <div className="hamburger" onClick={() => setMobileMenuOpen(true)}>
+            <span></span><span></span><span></span>
+          </div>
         </div>
       </nav>
 
@@ -1076,6 +1085,8 @@ export default function LandingPage() {
         <a href="#involved" className={activeTab === "involved" ? "nav-active" : ""} onClick={() => setMobileMenuOpen(false)}>Get Involved</a>
         <a href="#blog" className={activeTab === "blog" ? "nav-active" : ""} onClick={() => setMobileMenuOpen(false)}>Blog</a>
         <a href="#contact" className={activeTab === "contact" ? "nav-active" : ""} onClick={() => setMobileMenuOpen(false)}>Contact</a>
+        <div style={{ width: "40px", height: "1px", background: "var(--accent-gold)", opacity: 0.3 }}></div>
+        <Link href="/login" className="btn-primary" style={{ padding: "14px 32px", fontSize: "13px" }}>Login</Link>
       </div>
 
       {/* ─── HOME PAGE ─── */}
@@ -1087,7 +1098,6 @@ export default function LandingPage() {
             <p className="body-text" style={{ fontSize: "18px", maxWidth: "580px", margin: "0 auto", color: "rgba(255,255,255,0.85)" }}>Experience the unique blend of coaching, challenging, and commissioning to shape or enhance your leadership potential.</p>
             <div className="hero-btn-group">
               <a href="#about" className="btn-primary">Know More</a>
-              <a href="/register" className="btn-secondary">Enroll Now</a>
             </div>
           </div>
         </div>

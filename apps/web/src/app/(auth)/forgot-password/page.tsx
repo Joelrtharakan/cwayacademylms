@@ -35,23 +35,23 @@ export default function ForgotPasswordPage() {
   if (isSuccess) {
     return (
       <SplitAuthLayout>
-        <div className="text-center py-10 animate-3d-entrance">
-          <div className="w-20 h-20 bg-cway-success/10 text-cway-success rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
-            <Check className="w-10 h-10" />
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ width: '80px', height: '80px', backgroundColor: 'rgba(44, 74, 59, 0.08)', color: '#2C4A3B', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
+            <Check size={40} />
           </div>
-          <h2 className="font-serif text-4xl font-semibold text-cway-dark-green leading-tight mb-4 drop-shadow-sm">
+          <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
             Reset Link Sent
           </h2>
-          <p className="font-sans text-sm text-cway-dark-green/70 mb-10 max-w-sm mx-auto leading-relaxed">
+          <p className="font-sans" style={{ fontSize: '14px', color: '#526658', maxWidth: '380px', margin: '0 auto 40px', lineHeight: 1.6 }}>
             If that email is registered with us, a reset link has been sent to your inbox. Please check your spam folder if you do not receive it.
           </p>
 
           <Link
             href="/login"
-            className="group relative w-full h-[56px] bg-cway-gold text-white rounded-2xl font-sans font-bold text-xs tracking-widest uppercase shadow-[0_8px_20px_-6px_rgba(201,151,58,0.4)] transition-all duration-300 hover:shadow-[0_12px_25px_-6px_rgba(201,151,58,0.5)] hover:-translate-y-1 active:translate-y-0 active:shadow-md cursor-pointer flex items-center justify-center overflow-hidden"
+            className="font-sans font-bold"
+            style={{ width: '100%', height: '44px', backgroundColor: '#C9973A', color: 'white', borderRadius: '16px', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px -6px rgba(201,151,58,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <span className="relative z-10">Back to sign in</span>
+            Back to sign in
           </Link>
         </div>
       </SplitAuthLayout>
@@ -60,27 +60,29 @@ export default function ForgotPasswordPage() {
 
   return (
     <SplitAuthLayout>
-      <div className="mb-10 text-center md:text-left">
-        <h2 className="font-serif text-4xl font-semibold text-cway-dark-green leading-tight mb-3">
+      <div style={{ marginBottom: '40px', textAlign: 'left' }}>
+        <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
           Forgot password?
         </h2>
-        <p className="font-sans text-sm text-cway-dark-green/60">
+        <p className="font-sans" style={{ fontSize: '14px', color: '#526658' }}>
           Enter your email and we'll send a reset link
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="group/input">
-          <label className="block text-[11px] uppercase tracking-widest font-sans font-bold text-cway-dark-green/70 mb-2 transition-colors group-focus-within/input:text-cway-gold">
-            Email address
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div>
+          <label className="font-sans font-bold" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(28,43,30,0.7)', marginBottom: '4px' }}>
+            Email Address
           </label>
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-cway-dark-green/30 w-5 h-5 transition-colors group-focus-within/input:text-cway-gold" />
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(28,43,30,0.3)' }}>
+              <Mail size={20} />
+            </div>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-2xl pl-12 pr-4 h-[56px] text-sm bg-white/80 border-2 border-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] text-cway-dark-green transition-all duration-300 outline-none focus:border-cway-gold/30 focus:bg-white focus:shadow-[0_0_0_4px_rgba(201,151,58,0.1)] hover:bg-white"
+              style={{ width: '100%', height: '44px', paddingLeft: '48px', paddingRight: '16px', borderRadius: '16px', border: '2px solid transparent', backgroundColor: 'rgba(255,255,255,0.8)', color: '#1C2B1E', fontSize: '14px', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
               placeholder="you@example.com"
               required
               disabled={isSubmitting}
@@ -88,22 +90,23 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        <div className="pt-2">
+        <div style={{ paddingTop: '8px' }}>
           <button
             type="submit"
-            className="group relative w-full h-[56px] bg-cway-gold text-white rounded-2xl font-sans font-bold text-xs tracking-widest uppercase shadow-[0_8px_20px_-6px_rgba(201,151,58,0.4)] transition-all duration-300 hover:shadow-[0_12px_25px_-6px_rgba(201,151,58,0.5)] hover:-translate-y-1 active:translate-y-0 active:shadow-md cursor-pointer flex items-center justify-center overflow-hidden disabled:opacity-50 disabled:hover:translate-y-0"
+            className="font-sans font-bold"
+            style={{ width: '100%', height: '44px', backgroundColor: '#C9973A', color: 'white', borderRadius: '16px', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px -6px rgba(201,151,58,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             disabled={isSubmitting}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <span className="relative z-10">{isSubmitting ? "Sending Reset Link..." : "Send Reset Link"}</span>
+            {isSubmitting ? "Sending Reset Link..." : "Send Reset Link"}
           </button>
         </div>
       </form>
 
-      <div className="mt-8 text-center text-xs font-sans text-cway-dark-green/60">
+      <div className="font-sans" style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#526658' }}>
         <Link
           href="/login"
-          className="font-medium text-cway-gold-muted hover:text-cway-gold hover:underline transition-colors"
+          className="font-bold hover:underline"
+          style={{ color: '#A8792A' }}
         >
           ← Back to sign in
         </Link>

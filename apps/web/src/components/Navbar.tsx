@@ -196,26 +196,37 @@ export function Navbar() {
 
           {/* CTA Buttons */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }} className="hidden-mobile">
-            <Link href="/login" className="nav-login-btn">
-              LOGIN
-            </Link>
             <Link 
-              href="/apply" 
-              className="btn-outline-gold" 
+              href="/login" 
               prefetch={false}
               style={{ 
                 padding: "0.6rem 1.35rem", 
                 fontSize: "0.88rem", 
                 borderRadius: "50px",
-                border: "2px solid var(--gold-primary)",
-                fontWeight: 600,
+                background: "#2C4A3B",
+                color: "#FFFFFF",
+                border: "2px solid #2C4A3B",
+                fontWeight: 700,
                 textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
-                transition: "all 0.3s"
+                transition: "all 0.3s",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                boxShadow: "0 4px 12px rgba(44, 74, 59, 0.15)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "#2C4A3B";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#2C4A3B";
+                e.currentTarget.style.color = "#FFFFFF";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(44, 74, 59, 0.15)";
               }}
             >
-              Apply Now
+              Login
             </Link>
           </div>
 
@@ -298,25 +309,25 @@ export function Navbar() {
             ))}
             
             <div className="mobile-nav-divider"></div>
-            <Link href="/login" className="mobile-login-btn">
-              Login to Academy
-            </Link>
-
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(44, 74, 59, 0.08)" }}>
               <Link 
-                href="/apply" 
-                className="btn-outline-gold" 
+                href="/login" 
                 prefetch={false}
                 style={{ 
                   textAlign: "center", 
                   padding: "0.75rem", 
                   borderRadius: "50px",
+                  background: "#2C4A3B",
+                  color: "#FFFFFF",
+                  border: "2px solid #2C4A3B",
                   textDecoration: "none",
-                  fontWeight: 600,
-                  fontSize: "0.95rem"
+                  fontWeight: 700,
+                  fontSize: "0.95rem",
+                  letterSpacing: "1px",
+                  textTransform: "uppercase"
                 }}
               >
-                Apply Now
+                Login
               </Link>
             </div>
           </motion.div>

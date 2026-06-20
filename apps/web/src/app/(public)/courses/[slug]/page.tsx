@@ -26,8 +26,8 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
 
   const handleEnrollClick = async () => {
     if (!user) {
-      // Not logged in -> redirect to login with intent
-      router.push(`/login?enrollCourseId=${course.id}`);
+      // Not logged in -> redirect to register with intent
+      router.push(`/register?enrollCourseId=${course.id}`);
       return;
     }
 

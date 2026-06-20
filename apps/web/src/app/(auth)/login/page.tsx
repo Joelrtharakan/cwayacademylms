@@ -95,7 +95,7 @@ function LoginContent() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.trim())}
               style={{ width: '100%', height: '44px', paddingLeft: '48px', paddingRight: '16px', borderRadius: '16px', border: '2px solid transparent', backgroundColor: 'rgba(255,255,255,0.8)', color: '#1C2B1E', fontSize: '14px', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
               placeholder="you@example.com"
               required
@@ -163,10 +163,11 @@ function LoginContent() {
       </div>
 
       <div>
-        <a
-          href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google${searchParams.get("enrollCourseId") ? `?state=${searchParams.get("enrollCourseId")}` : ""}`}
+        <button
+          type="button"
+          onClick={() => toast.info("Google login is coming soon!")}
           className="font-sans font-semibold"
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '44px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none' }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '44px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none', cursor: 'pointer' }}
         >
           <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
             <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 15.02 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.85 2.99C6.27 7.02 8.92 5.04 12 5.04z" />
@@ -175,19 +176,9 @@ function LoginContent() {
             <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.7-2.87c-1.03.69-2.35 1.1-4.26 1.1-3.08 0-5.73-1.98-6.65-4.96L1.5 16.35C3.39 20.35 7.35 23 12 23z" />
           </svg>
           Continue with Google
-        </a>
+        </button>
       </div>
 
-      <div className="font-sans" style={{ marginTop: '32px', textAlign: 'center', fontSize: '12px', color: '#526658' }}>
-        Don't have an account?{" "}
-        <Link
-          href={searchParams.get("enrollCourseId") ? `/register?enrollCourseId=${searchParams.get("enrollCourseId")}` : "/register"}
-          className="font-bold hover:underline"
-          style={{ color: '#A8792A' }}
-        >
-          Register →
-        </Link>
-      </div>
     </div>
   );
 }

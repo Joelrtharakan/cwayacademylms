@@ -85,28 +85,30 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-10 text-center md:text-left">
-        <h2 className="font-serif text-4xl font-semibold text-cway-dark-green leading-tight mb-3">
-          Reset password
+    <div style={{ width: '100%' }}>
+      <div style={{ marginBottom: '40px', textAlign: 'left' }}>
+        <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+          Reset Password
         </h2>
-        <p className="font-sans text-sm text-cway-dark-green/60">
+        <p className="font-sans" style={{ fontSize: '14px', color: '#526658' }}>
           Enter a secure new password for your account
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="group/input">
-          <label className="block text-[11px] uppercase tracking-widest font-sans font-bold text-cway-dark-green/70 mb-2 transition-colors group-focus-within/input:text-cway-gold">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div>
+          <label className="font-sans font-bold" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(28,43,30,0.7)', marginBottom: '4px' }}>
             New Password
           </label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-cway-dark-green/30 w-5 h-5 transition-colors group-focus-within/input:text-cway-gold" />
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(28,43,30,0.3)' }}>
+              <Lock size={20} />
+            </div>
             <input
               type={showPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full rounded-2xl pl-12 pr-12 h-[56px] text-sm bg-white/80 border-2 border-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] text-cway-dark-green transition-all duration-300 outline-none focus:border-cway-gold/30 focus:bg-white focus:shadow-[0_0_0_4px_rgba(201,151,58,0.1)] hover:bg-white"
+              style={{ width: '100%', height: '44px', paddingLeft: '48px', paddingRight: '40px', borderRadius: '16px', border: '2px solid transparent', backgroundColor: 'rgba(255,255,255,0.8)', color: '#1C2B1E', fontSize: '14px', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
               placeholder="••••••••"
               required
               disabled={isSubmitting}
@@ -114,7 +116,7 @@ function ResetPasswordContent() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-cway-dark-green/40 hover:text-cway-dark-green transition-colors"
+              style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(28,43,30,0.4)', background: 'none', border: 'none', cursor: 'pointer' }}
               disabled={isSubmitting}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -122,17 +124,19 @@ function ResetPasswordContent() {
           </div>
         </div>
 
-        <div className="group/input">
-          <label className="block text-[11px] uppercase tracking-widest font-sans font-bold text-cway-dark-green/70 mb-2 transition-colors group-focus-within/input:text-cway-gold">
+        <div>
+          <label className="font-sans font-bold" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(28,43,30,0.7)', marginBottom: '4px' }}>
             Confirm New Password
           </label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-cway-dark-green/30 w-5 h-5 transition-colors group-focus-within/input:text-cway-gold" />
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(28,43,30,0.3)' }}>
+              <Lock size={20} />
+            </div>
             <input
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-2xl pl-12 pr-4 h-[56px] text-sm bg-white/80 border-2 border-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] text-cway-dark-green transition-all duration-300 outline-none focus:border-cway-gold/30 focus:bg-white focus:shadow-[0_0_0_4px_rgba(201,151,58,0.1)] hover:bg-white"
+              style={{ width: '100%', height: '44px', paddingLeft: '48px', paddingRight: '16px', borderRadius: '16px', border: '2px solid transparent', backgroundColor: 'rgba(255,255,255,0.8)', color: '#1C2B1E', fontSize: '14px', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
               placeholder="••••••••"
               required
               disabled={isSubmitting}
@@ -140,14 +144,14 @@ function ResetPasswordContent() {
           </div>
         </div>
 
-        <div className="pt-2">
+        <div style={{ paddingTop: '8px' }}>
           <button
             type="submit"
-            className="group relative w-full h-[56px] bg-cway-gold text-white rounded-2xl font-sans font-bold text-xs tracking-widest uppercase shadow-[0_8px_20px_-6px_rgba(201,151,58,0.4)] transition-all duration-300 hover:shadow-[0_12px_25px_-6px_rgba(201,151,58,0.5)] hover:-translate-y-1 active:translate-y-0 active:shadow-md cursor-pointer flex items-center justify-center overflow-hidden disabled:opacity-50 disabled:hover:translate-y-0"
+            className="font-sans font-bold"
+            style={{ width: '100%', height: '44px', backgroundColor: '#C9973A', color: 'white', borderRadius: '16px', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px -6px rgba(201,151,58,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             disabled={isSubmitting}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <span className="relative z-10">{isSubmitting ? "Resetting Password..." : "Reset Password"}</span>
+            {isSubmitting ? "Resetting Password..." : "Reset Password"}
           </button>
         </div>
       </form>

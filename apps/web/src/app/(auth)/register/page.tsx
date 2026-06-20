@@ -113,31 +113,28 @@ function RegisterContent() {
   if (isSuccess) {
     return (
       <SplitAuthLayout>
-        <div className="text-center py-10 animate-3d-entrance">
-          <div className="w-20 h-20 bg-cway-success/10 text-cway-success rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
-            <Check className="w-10 h-10" />
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ width: '80px', height: '80px', backgroundColor: 'rgba(44, 74, 59, 0.08)', color: '#2C4A3B', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
+            <Check size={40} />
           </div>
-          <h2 className="font-serif text-4xl font-semibold text-cway-dark-green leading-tight mb-4 drop-shadow-sm">
+          <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
             Check your email
           </h2>
-          <p className="font-sans text-sm text-cway-dark-green/70 mb-10 max-w-sm mx-auto leading-relaxed">
-            We have sent a verification link to <strong className="text-cway-dark-green font-semibold">{email}</strong>. Please verify your address to log in.
+          <p className="font-sans" style={{ fontSize: '14px', color: '#526658', maxWidth: '380px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+            We have sent a verification link to <strong style={{ color: '#1C2B1E', fontWeight: 600 }}>{email}</strong>. Please verify your address to log in.
           </p>
 
           <button
             onClick={handleResendEmail}
             disabled={countdown > 0}
-            className={`w-full font-sans font-semibold text-xs tracking-widest uppercase rounded-2xl h-[56px] transition-all duration-300 flex items-center justify-center shadow-sm ${
-              countdown > 0
-                ? "bg-white/50 text-cway-text-muted cursor-not-allowed border-2 border-white/20"
-                : "bg-cway-gold text-white hover:bg-cway-gold-light hover:-translate-y-1 hover:shadow-md active:translate-y-0"
-            }`}
+            className="font-sans font-bold"
+            style={{ width: '100%', height: '44px', backgroundColor: countdown > 0 ? 'rgba(255,255,255,0.5)' : '#C9973A', color: countdown > 0 ? 'rgba(28,43,30,0.4)' : 'white', borderRadius: '16px', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', border: countdown > 0 ? '2px solid rgba(255,255,255,0.2)' : 'none', cursor: countdown > 0 ? 'not-allowed' : 'pointer', boxShadow: countdown > 0 ? 'none' : '0 8px 20px -6px rgba(201,151,58,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '32px' }}
           >
             {countdown > 0 ? `Resend email in ${countdown}s` : "Resend email"}
           </button>
 
-          <div className="mt-8 text-center text-xs font-sans">
-            <Link href="/login" className="font-semibold text-cway-gold-muted hover:text-cway-gold hover:underline transition-colors">
+          <div className="font-sans" style={{ textAlign: 'center', fontSize: '12px', color: '#526658' }}>
+            <Link href="/login" className="font-bold hover:underline" style={{ color: '#A8792A' }}>
               ← Back to sign in
             </Link>
           </div>
@@ -336,10 +333,11 @@ function RegisterContent() {
         </div>
 
         <div>
-          <a
-            href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/google${searchParams.get("enrollCourseId") ? `?state=${searchParams.get("enrollCourseId")}` : ""}`}
+          <button
+            type="button"
+            onClick={() => toast.info("Google login is coming soon!")}
             className="font-sans font-semibold"
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '40px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none' }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', border: '2px solid white', backgroundColor: 'rgba(255,255,255,0.6)', height: '40px', borderRadius: '16px', fontSize: '14px', color: '#1C2B1E', textDecoration: 'none', cursor: 'pointer' }}
           >
             <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
               <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 15.02 1 12 1 7.35 1 3.39 3.65 1.5 7.5l3.85 2.99C6.27 7.02 8.92 5.04 12 5.04z" />
@@ -348,7 +346,7 @@ function RegisterContent() {
               <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.7-2.87c-1.03.69-2.35 1.1-4.26 1.1-3.08 0-5.73-1.98-6.65-4.96L1.5 16.35C3.39 20.35 7.35 23 12 23z" />
             </svg>
             Continue with Google
-          </a>
+          </button>
         </div>
 
         <div className="font-sans" style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#526658' }}>
