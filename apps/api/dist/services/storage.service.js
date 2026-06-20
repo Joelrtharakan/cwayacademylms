@@ -4,6 +4,7 @@ exports.r2 = void 0;
 exports.uploadToR2 = uploadToR2;
 exports.deleteFromR2 = deleteFromR2;
 exports.generateKey = generateKey;
+exports.extractR2Key = extractR2Key;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const lib_storage_1 = require("@aws-sdk/lib-storage");
 // Cloudflare R2 uses S3-compatible API
@@ -40,4 +41,15 @@ async function deleteFromR2(key) {
 function generateKey(folder, filename) {
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, '-');
     return `${folder}/${Date.now()}-${sanitized}`;
+}
+function extractR2Key(url) {
+    if (!url)
+        return null;
+    const publicUrl = process.env.R2_PUBLIC_URL || '';
+    if (publicUrl && url.startsWith(publicUrl)) {
+        return url.replace(`${publicUrl}/`, '');
+    }
+    // Fallback: If it's a relative URL, maybe it's local. 
+    // We only care about deleting from R2.
+    return null;
 }

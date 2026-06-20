@@ -128,8 +128,8 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (!originalRequest) return Promise.reject(error);
 
-    const isRefreshRequest = originalRequest.url?.includes("/auth/refresh");
-    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
+    const isAuthRoute = originalRequest.url?.includes("/auth/refresh") || originalRequest.url?.includes("/auth/login");
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       originalRequest._retry = true;
       const newAccessToken = await useAuthStore.getState().refreshAccessToken();
       if (newAccessToken) {
@@ -139,7 +139,7 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !originalRequest.url?.includes("/auth/login")) {
       useAuthStore.getState().clearAuth();
       if (typeof window !== "undefined") {
         window.location.href = "/login";

@@ -49,3 +49,14 @@ export function generateKey(
   const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, '-')
   return `${folder}/${Date.now()}-${sanitized}`
 }
+
+export function extractR2Key(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const publicUrl = process.env.R2_PUBLIC_URL || '';
+  if (publicUrl && url.startsWith(publicUrl)) {
+    return url.replace(`${publicUrl}/`, '');
+  }
+  // Fallback: If it's a relative URL, maybe it's local. 
+  // We only care about deleting from R2.
+  return null;
+}

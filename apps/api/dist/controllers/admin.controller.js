@@ -13,6 +13,8 @@ const export_service_1 = require("../services/export.service");
 const crypto_1 = __importDefault(require("crypto"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const email_service_1 = require("../services/email.service");
+const storage_service_1 = require("../services/storage.service");
+const video_service_1 = require("../services/video.service");
 // ─── STATS ───────────────────────────────────────────────────────────────────
 exports.getStats = (0, errors_1.asyncHandler)(async (req, res) => {
     const now = new Date();
@@ -292,8 +294,89 @@ exports.deleteUser = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
     if (id === req.user.id)
         throw new errors_1.AppError("You cannot delete your own account", 400);
+    // 1. Fetch user and related file keys before deleting
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { id },
+        include: {
+            blogPosts: { select: { coverKey: true } },
+            submissions: { select: { fileUrl: true } },
+            coursesCreated: {
+                select: {
+                    thumbnail: true,
+                    promoVideoUrl: true,
+                    sections: {
+                        select: {
+                            readingMaterials: { select: { fileKey: true } },
+                            lessons: {
+                                select: {
+                                    bunnyVideoId: true,
+                                    assignment: { select: { attachmentUrl: true } }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+    if (!user)
+        throw new errors_1.AppError("User not found", 404);
+    // 2. Collect all R2 keys to delete
+    const keysToDelete = [];
+    // Avatar
+    if (user.avatar) {
+        const key = (0, storage_service_1.extractR2Key)(user.avatar);
+        if (key)
+            keysToDelete.push(key);
+    }
+    // Blog Posts
+    user.blogPosts.forEach(post => {
+        if (post.coverKey)
+            keysToDelete.push(post.coverKey);
+    });
+    // Submissions
+    user.submissions.forEach(sub => {
+        const key = (0, storage_service_1.extractR2Key)(sub.fileUrl);
+        if (key)
+            keysToDelete.push(key);
+    });
+    // Courses (Instructor)
+    const bunnyVideoIdsToDelete = [];
+    user.coursesCreated.forEach(course => {
+        const thumbKey = (0, storage_service_1.extractR2Key)(course.thumbnail);
+        if (thumbKey)
+            keysToDelete.push(thumbKey);
+        // promoVideoUrl is normally Bunny.net embed URL, but if it's R2, this will catch it
+        const promoKey = (0, storage_service_1.extractR2Key)(course.promoVideoUrl);
+        if (promoKey)
+            keysToDelete.push(promoKey);
+        course.sections.forEach(sec => {
+            sec.readingMaterials.forEach(rm => {
+                if (rm.fileKey)
+                    keysToDelete.push(rm.fileKey);
+            });
+            sec.lessons.forEach(lesson => {
+                if (lesson.bunnyVideoId)
+                    bunnyVideoIdsToDelete.push(lesson.bunnyVideoId);
+                if (lesson.assignment?.attachmentUrl) {
+                    const attKey = (0, storage_service_1.extractR2Key)(lesson.assignment.attachmentUrl);
+                    if (attKey)
+                        keysToDelete.push(attKey);
+                }
+            });
+        });
+    });
+    // 3. Batch delete from R2 and Bunny.net (done in parallel, ignore errors so we don't block DB deletion)
+    const deletePromises = keysToDelete.map(key => (0, storage_service_1.deleteFromR2)(key).catch(err => {
+        console.error(`Failed to delete R2 key ${key}:`, err);
+    }));
+    const bunnyPromises = bunnyVideoIdsToDelete.map(vid => video_service_1.VideoService.deleteBunnyVideo(vid).catch(err => {
+        console.error(`Failed to delete Bunny.net video ${vid}:`, err);
+    }));
+    await Promise.all([...deletePromises, ...bunnyPromises]);
+    // 4. Delete user from database (Cascade handles the rest)
     await prisma_1.prisma.user.delete({ where: { id } });
-    res.json({ status: "success", message: "User deleted" });
+    res.json({ status: "success", message: "User deleted and associated files removed from storage" });
 });
 exports.impersonateUser = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;

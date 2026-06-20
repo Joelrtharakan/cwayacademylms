@@ -124,7 +124,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
             readingMaterialProgress: true,
             course: {
                 include: {
-                    instructor: { select: { name: true } },
+                    instructor: { select: { name: true, email: true, phone: true } },
                     sections: {
                         orderBy: { order: "asc" },
                         include: {
@@ -158,7 +158,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
                 readingMaterialProgress: true,
                 course: {
                     include: {
-                        instructor: { select: { name: true } },
+                        instructor: { select: { name: true, email: true, phone: true } },
                         sections: {
                             orderBy: { order: "asc" },
                             include: {
