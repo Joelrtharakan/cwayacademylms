@@ -214,3 +214,23 @@ export async function sendInstructorWelcomeEmail(
       <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
     `, 'Your instructor account is ready'))
 }
+
+export async function sendAdmissionEmail(
+  student: { name: string; email: string },
+  password: string,
+  programTitle: string
+) {
+  await send(student.email,
+    `Admission Granted: Welcome to ${programTitle}!`,
+    wrap(`
+      <h1 class="h1">Welcome, ${student.name}!</h1>
+      <p class="p">We are thrilled to inform you that your application for <strong>${programTitle}</strong> has been approved.</p>
+      <p class="p">An account has been created for you to access the student dashboard.</p>
+      <div style="background:#fdf8ef; padding: 16px; border-radius: 8px; border: 1px solid rgba(201,151,58,0.3); margin: 16px 0;">
+        <p class="p" style="margin-bottom: 8px;"><strong>Email ID:</strong> ${student.email}</p>
+        <p class="p" style="margin-bottom: 0;"><strong>Temporary Password:</strong> ${password}</p>
+      </div>
+      <p class="p">Please log in and begin your first course. We recommend changing your password immediately after logging in.</p>
+      <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
+    `, 'Your admission has been approved and your account is ready'))
+}

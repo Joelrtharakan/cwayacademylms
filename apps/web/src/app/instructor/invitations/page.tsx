@@ -61,23 +61,24 @@ export default function InvitationsPage() {
               key={f}
               onClick={() => setFilter(f)}
               style={{
-                padding: "7px 16px",
+                padding: "8px 20px",
                 borderRadius: 999,
-                border: active ? "none" : "1px solid #E4E8E0",
-                background: active ? "#1C2B1E" : "transparent",
-                color: active ? "#FFFFFF" : "#8A9E8C",
-                fontSize: 13, fontWeight: 600, cursor: "pointer",
-                transition: "all 0.15s",
-                display: "flex", alignItems: "center", gap: 6,
+                border: "none",
+                background: active ? "#C9973A" : "transparent",
+                color: active ? "#FFFFFF" : "#6B7D70",
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex", alignItems: "center", gap: 8,
+                boxShadow: active ? "0 4px 12px rgba(201,151,58,0.25)" : "none",
               }}
-              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = "#F5F0E8"; }}
-              onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = "transparent"; }}
+              onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "#F9FAFC"; e.currentTarget.style.color = "#1C2B1E"; } }}
+              onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7D70"; } }}
             >
               {f === "PENDING" ? f.charAt(0) + f.slice(1).toLowerCase() : f === "ALL" ? "All" : f.charAt(0) + f.slice(1).toLowerCase()}
               {count > 0 && (
                 <span style={{
-                  background: active ? "rgba(255,255,255,0.2)" : "rgba(138,158,140,0.15)",
-                  borderRadius: 999, padding: "0 6px", fontSize: 11, fontWeight: 700,
+                  background: active ? "rgba(255,255,255,0.2)" : "#EEF0EA",
+                  borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 800,
                   color: active ? "#FFFFFF" : "#8A9E8C",
                 }}>
                   {count}

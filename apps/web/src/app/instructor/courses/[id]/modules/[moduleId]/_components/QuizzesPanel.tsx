@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createQuiz, getQuizzes, deleteQuiz } from "@/lib/api/modules";
+import { createQuiz, getQuizzes, updateQuiz, deleteQuiz } from "@/lib/api/modules";
 import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import QuestionBuilderModal from "./QuestionBuilderModal";
@@ -10,6 +10,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
+  const [editingSettingsId, setEditingSettingsId] = useState<string | null>(null);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" });
 
@@ -36,6 +37,25 @@ export default function QuizzesPanel({ module }: { module: any }) {
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create quiz"),
   });
 
+  const updateMut = useMutation({
+    mutationFn: (id: string) => updateQuiz(id, {
+      title: form.title,
+      instructions: form.instructions,
+      passingScore: Number(form.passingScore),
+      timeLimit: Number(form.timeLimit) > 0 ? Number(form.timeLimit) : null,
+      maxAttempts: Number(form.maxAttempts)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quizzes", module.id] });
+      queryClient.invalidateQueries({ queryKey: ["modules"] });
+      setIsCreating(false);
+      setEditingSettingsId(null);
+      setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" });
+      toast.success("Quiz settings updated");
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update quiz"),
+  });
+
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteQuiz(id),
     onSuccess: () => {
@@ -48,7 +68,23 @@ export default function QuizzesPanel({ module }: { module: any }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    createMut.mutate();
+    if (editingSettingsId) {
+      updateMut.mutate(editingSettingsId);
+    } else {
+      createMut.mutate();
+    }
+  };
+
+  const handleEditSettings = (quiz: any, lessonContent: string) => {
+    setEditingSettingsId(quiz.id);
+    setForm({
+      title: quiz.title,
+      instructions: lessonContent || "",
+      passingScore: quiz.passingScore.toString(),
+      timeLimit: quiz.timeLimit ? (quiz.timeLimit / 60).toString() : "0",
+      maxAttempts: quiz.maxAttempts.toString()
+    });
+    setIsCreating(true);
   };
 
   return (
@@ -60,7 +96,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
         </div>
         {!isCreating && (
           <button 
-            onClick={() => setIsCreating(true)}
+            onClick={() => { setEditingSettingsId(null); setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" }); setIsCreating(true); }}
             style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
           >
             <Plus size={16} /> Add Quiz
@@ -71,8 +107,8 @@ export default function QuizzesPanel({ module }: { module: any }) {
       {isCreating && (
         <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "12px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 10px 30px rgba(26,38,29,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>New Quiz Settings</h3>
-            <button onClick={() => setIsCreating(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
+            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>{editingSettingsId ? "Edit Quiz Settings" : "New Quiz Settings"}</h3>
+            <button onClick={() => { setIsCreating(false); setEditingSettingsId(null); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
           </div>
           
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -136,10 +172,10 @@ export default function QuizzesPanel({ module }: { module: any }) {
             <div style={{ display: "flex", gap: "12px", paddingTop: "8px", borderTop: "1px solid #E4E8E0" }}>
               <button 
                 type="submit"
-                disabled={createMut.isPending}
-                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", opacity: createMut.isPending ? 0.7 : 1 }}
+                disabled={createMut.isPending || updateMut.isPending}
+                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1 }}
               >
-                {createMut.isPending ? "Creating..." : "Save Quiz Settings"}
+                {editingSettingsId ? (updateMut.isPending ? "Saving..." : "Save Changes") : (createMut.isPending ? "Creating..." : "Save Quiz Settings")}
               </button>
             </div>
           </form>
@@ -177,7 +213,10 @@ export default function QuizzesPanel({ module }: { module: any }) {
                       <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1" }}><HelpCircle size={12} /> {quiz._count?.questions || 0} Questions</span>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <button onClick={() => handleEditSettings(quiz, item.content)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      <Edit2 size={16} />
+                    </button>
                     <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "6px 12px", background: "#B88645", border: "none", color: "#FFFFFF", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Edit Questions</button>
                     <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                       <Trash2 size={14} />

@@ -25,6 +25,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
   });
 
   const handleEnrollClick = async () => {
+    // If course belongs to a program, redirect to the program application
+    if (course.programId) {
+      router.push(`/programs/${course.programId}/apply`);
+      return;
+    }
+
     if (!user) {
       // Not logged in -> redirect to register with intent
       router.push(`/register?enrollCourseId=${course.id}`);
@@ -136,60 +142,87 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
           <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.15, backgroundImage: `url(${course.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} />
         )}
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "3rem", alignItems: "start" }}>
-            <div>
-              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: course.programId ? "1fr" : "1fr 340px", gap: "3rem", alignItems: "start" }}>
+            <div style={{ maxWidth: course.programId ? "850px" : "100%" }}>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 <span className="badge badge-gold">{course.level || "BEGINNER"}</span>
                 <span style={{ padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>{course.category?.name || "General"}</span>
+                {course.programId && (
+                  <span style={{ padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, background: "rgba(201,168,76,0.15)", color: "var(--gold-light)", border: "1px solid rgba(201,168,76,0.3)" }}>
+                    Part of {course.program?.title || "Program"}
+                  </span>
+                )}
               </div>
-              <h1 style={{ color: "white", marginBottom: "0.75rem" }}>{course.title}</h1>
-              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "1.5rem" }}>{course.subtitle || displayDescription.slice(0, 100) + "..."}</p>
-              <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
-                {[{ icon: Clock, label: `${course.weeksDuration || 0} weeks` }, { icon: BookOpen, label: `${course.totalLectures || 0} Lessons` }, { icon: Users, label: `${course._count?.enrollments || 0} Students` }, { icon: Award, label: "Certificate" }].map(({ icon: Icon, label }) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.7)" }}>
-                    <Icon size={14} color="var(--gold-light)" />{label}
+              <h1 style={{ color: "white", marginBottom: "0.75rem", fontSize: course.programId ? "3.5rem" : "2.5rem", lineHeight: 1.1 }}>{course.title}</h1>
+              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.1rem", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "750px" }}>{course.subtitle || displayDescription.slice(0, 100) + "..."}</p>
+              <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+                {(() => {
+                  const calculatedLessons = course.sections?.reduce((sum: number, s: any) => sum + (s.lessons?.length || 0), 0) || course.totalLectures || 0;
+                  const calculatedWeeks = course.sections?.length > 0 ? course.sections.length : (course.weeksDuration || 0);
+                  
+                  return [
+                    { icon: Clock, label: `${calculatedWeeks} weeks` }, 
+                    { icon: BookOpen, label: `${calculatedLessons} Lessons` }, 
+                    { icon: Users, label: `${course._count?.enrollments || 0} Students` }, 
+                    { icon: Award, label: "Certificate" }
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: "rgba(255,255,255,0.8)" }}>
+                      <Icon size={16} color="var(--gold-light)" />{label}
+                    </div>
+                  ));
+                })()}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "rgba(201,168,76,0.2)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(201,168,76,0.4)", flexShrink: 0, overflow: "hidden" }}>
+                    {course.instructor?.avatar ? <img src={course.instructor.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <BookOpen size={16} color="var(--gold-light)" />}
                   </div>
-                ))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(201,168,76,0.2)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(201,168,76,0.4)", flexShrink: 0, overflow: "hidden" }}>
-                  {course.instructor?.avatar ? <img src={course.instructor.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <BookOpen size={16} color="var(--gold-light)" />}
+                  <div>
+                    <div style={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>{course.instructor?.name || "Instructor"}</div>
+                    <div style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.8rem" }}>Course Instructor</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ color: "white", fontWeight: 600, fontSize: "0.875rem" }}>{course.instructor?.name || "Instructor"}</div>
-                  <div style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.75rem" }}>Instructor</div>
-                </div>
+
+                {course.programId && (
+                  <div style={{ borderLeft: "1px solid rgba(255,255,255,0.1)", paddingLeft: "2rem", display: "flex", alignItems: "center" }}>
+                    <Link href={`/programs/${course.programId}/apply`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", color: "var(--navy-deep)", background: "var(--gold-light)", padding: "0.75rem 1.5rem", borderRadius: "999px", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1px", transition: "all 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "white"} onMouseOut={(e) => e.currentTarget.style.background = "var(--gold-light)"}>
+                      Apply to Program <ChevronRight size={16} />
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Enroll Card */}
-            <div style={{ background: "var(--cream-light)", borderRadius: "20px", padding: "1.75rem", boxShadow: "var(--shadow-xl)" }}>
-              <div style={{ height: "140px", borderRadius: "12px", background: "linear-gradient(135deg, var(--gold-primary), var(--gold-dark))", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", overflow: "hidden", position: "relative" }}>
-                {course.thumbnail && <img src={course.thumbnail} alt="" style={{ position: "absolute", width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />}
-                <Play size={40} color="white" fill="white" style={{ marginLeft: "4px", position: "relative", zIndex: 1 }} />
-              </div>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 700, color: "var(--navy-deep)", marginBottom: "0.25rem" }}>
-                {course.isFree ? "Free" : `${course.currency === "INR" ? "₹" : "$"}${course.price}`}
-              </div>
-              <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.25rem" }}>Includes full access to all materials</p>
-              
-              <button 
-                onClick={handleEnrollClick}
-                disabled={isEnrolling}
-                className="btn-primary" 
-                style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.625rem", border: "none", cursor: isEnrolling ? "not-allowed" : "pointer", opacity: isEnrolling ? 0.7 : 1 }}
-              >
-                {isEnrolling ? <Loader2 size={16} className="animate-spin" /> : "Enroll Now"}
-              </button>
+            {/* Enroll Card or Program Card */}
+            {course.programId ? null : (
+              <div style={{ background: "var(--cream-light)", borderRadius: "20px", padding: "1.75rem", boxShadow: "var(--shadow-xl)" }}>
+                <div style={{ height: "140px", borderRadius: "12px", background: "linear-gradient(135deg, var(--gold-primary), var(--gold-dark))", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", overflow: "hidden", position: "relative" }}>
+                  {course.thumbnail && <img src={course.thumbnail} alt="" style={{ position: "absolute", width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />}
+                  <Play size={40} color="white" fill="white" style={{ marginLeft: "4px", position: "relative", zIndex: 1 }} />
+                </div>
+                <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 700, color: "var(--navy-deep)", marginBottom: "0.25rem" }}>
+                  {course.isFree ? "Free" : `${course.currency === "INR" ? "₹" : "$"}${course.price}`}
+                </div>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.25rem" }}>Includes full access to all materials</p>
+                
+                <button 
+                  onClick={handleEnrollClick}
+                  disabled={isEnrolling}
+                  className="btn-primary" 
+                  style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.625rem", border: "none", cursor: isEnrolling ? "not-allowed" : "pointer", opacity: isEnrolling ? 0.7 : 1 }}
+                >
+                  {isEnrolling ? <Loader2 size={16} className="animate-spin" /> : "Enroll Now"}
+                </button>
 
-              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-light)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                {[`Language: ${course.language}`, `Duration: ${course.weeksDuration} weeks`].map((item) => (
-                  <div key={item} style={{ fontSize: "0.78rem", color: "var(--text-secondary)", display: "flex", gap: "0.5rem" }}>
-                    <CheckCircle size={12} color="var(--success)" style={{ flexShrink: 0, marginTop: "2px" }} />{item}
-                  </div>
-                ))}
+                <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-light)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  {[`Language: ${course.language}`, `Duration: ${course.weeksDuration} weeks`].map((item) => (
+                    <div key={item} style={{ fontSize: "0.78rem", color: "var(--text-secondary)", display: "flex", gap: "0.5rem" }}>
+                      <CheckCircle size={12} color="var(--success)" style={{ flexShrink: 0, marginTop: "2px" }} />{item}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

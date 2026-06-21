@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, BookOpen, Edit2, Trash2, Users } from "lucide-react";
+import { Plus, BookOpen, Edit2, Trash2, Users, Archive } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { getInstructorCourses, deleteCourse } from "@/lib/api/instructor";
+import { getInstructorCourses, deleteCourse, updateCourse } from "@/lib/api/instructor";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
 type StatusFilter = "ALL" | "PUBLISHED" | "DRAFT" | "PENDING" | "REJECTED" | "ARCHIVED";
@@ -22,7 +22,7 @@ function StatusBadge({ status }: { status: string }) {
   return <span style={{ background: s.bg, color: s.text, borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{status}</span>;
 }
 
-function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) => void }) {
+function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (id: string) => void; onArchive: (id: string) => void }) {
   const [hover, setHover] = useState(false);
   return (
     <div 
@@ -84,6 +84,16 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (id: string) 
           >
             <Users size={14} />
           </Link>
+          {course.status !== "ARCHIVED" && (
+            <button onClick={() => onArchive(course.id)}
+              title="Archive Course"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#8F9E93", borderRadius: "8px", padding: "8px 14px", cursor: "pointer", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#E4E8E0"; e.currentTarget.style.color = "#1A261D"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.color = "#8F9E93"; }}
+            >
+              <Archive size={14} />
+            </button>
+          )}
           <button onClick={() => onDelete(course.id)}
             title="Delete Course"
             style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(176,58,46,0.05)", border: "1px solid rgba(176,58,46,0.15)", color: "#B03A2E", borderRadius: "8px", padding: "8px 14px", cursor: "pointer", transition: "all 0.15s" }}
@@ -112,7 +122,13 @@ export default function InstructorCoursesPage() {
     onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to delete"),
   });
 
-  const FILTERS: StatusFilter[] = ["ALL", "PUBLISHED", "DRAFT", "PENDING", "REJECTED"];
+  const FILTERS: StatusFilter[] = ["ALL", "PUBLISHED", "DRAFT", "PENDING", "REJECTED", "ARCHIVED"];
+
+  const archiveMut = useMutation({
+    mutationFn: (id: string) => updateCourse(id, { status: "ARCHIVED" }),
+    onSuccess: () => { toast.success("Course archived"); qc.invalidateQueries({ queryKey: ["instructor-courses"] }); },
+    onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to archive"),
+  });
 
   return (
     <div style={{ maxWidth: "1400px" }}>
@@ -176,7 +192,12 @@ export default function InstructorCoursesPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {courses.map((c: any) => (
-            <CourseCard key={c.id} course={c} onDelete={async (id) => { if (await confirm("Delete this course?")) deleteMut.mutate(id); }} />
+            <CourseCard 
+              key={c.id} 
+              course={c} 
+              onDelete={async (id) => { if (await confirm("Delete this course?")) deleteMut.mutate(id); }}
+              onArchive={async (id) => { if (await confirm("Archive this course? It will no longer be visible to new students.")) archiveMut.mutate(id); }} 
+            />
           ))}
         </div>
       )}

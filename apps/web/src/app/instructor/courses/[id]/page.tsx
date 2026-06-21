@@ -177,7 +177,8 @@ export default function CourseManagementPage() {
                   onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
                   placeholder="Briefly describe what this module covers..."
                   rows={3}
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#1A261D", resize: "vertical" }}
+                  onWheel={(e) => e.stopPropagation()}
+                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#1A261D", resize: "vertical", overscrollBehavior: "contain" }}
                 />
               </div>
               <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
@@ -237,7 +238,8 @@ export default function CourseManagementPage() {
                       defaultValue={mod.description || ""}
                       id={`edit-desc-${mod.id}`}
                       rows={2}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#8F9E93", resize: "vertical" }}
+                      onWheel={(e) => e.stopPropagation()}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#8F9E93", resize: "vertical", overscrollBehavior: "contain" }}
                     />
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button 

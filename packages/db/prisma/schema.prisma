@@ -61,6 +61,7 @@ model User {
   courseInvitations    CourseInvitation[]  @relation("InstructorInvitations")
   extensions           Extension[]         @relation("StudentExtensions")
   extensionRequests    ExtensionRequest[]  @relation("StudentExtensionRequests")
+  programEnrollments   ProgramEnrollment[]
 
   @@index([email])
   @@index([role])
@@ -83,6 +84,7 @@ model Course {
   id              String  @id @default(cuid())
   title           String
   slug            String  @unique
+  courseCode      String?
   subtitle        String?
   description     String?
   thumbnail       String?
@@ -191,7 +193,7 @@ model Enrollment {
   studentId     String
   student       User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId      String
-  course        Course    @relation(fields: [courseId], references: [id])
+  course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   enrolledAt    DateTime  @default(now())
   completedAt   DateTime?
   progress      Float     @default(0)
@@ -308,7 +310,7 @@ model Certificate {
   studentId   String
   student     User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId    String
-  course      Course               @relation(fields: [courseId], references: [id])
+  course      Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
   issuedAt    DateTime             @default(now())
   uniqueCode  String               @unique @default(cuid())
   downloadUrl String?
@@ -718,6 +720,8 @@ model Program {
   tags        String    @default("[]")
   status      String    @default("DRAFT") // DRAFT | PUBLISHED
   courses     Course[]  @relation("ProgramCourses")
+  applications ProgramApplication[]
+  enrollments  ProgramEnrollment[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -737,4 +741,69 @@ model CourseInvitation {
 
   @@index([instructorId])
   @@index([status])
+}
+
+model ProgramApplication {
+  id                 String   @id @default(cuid())
+  programId          String
+  program            Program  @relation(fields: [programId], references: [id])
+  
+  mediumOfStudy      String   @default("English")
+  fullName           String
+  dob                DateTime
+  gender             String
+  maritalStatus      String
+  nationality        String
+  aadhaarNumber      String?
+  passportPhotoUrl   String
+  
+  mobileNumber       String
+  whatsappNumber     String
+  email              String
+  
+  permanentAddress   String // JSON
+  currentAddress     String // JSON
+  
+  highestQualification String
+  previousInstitution  String
+  yearOfCompletion     String
+  marksOrGrade         String
+  certificatesUrls     String // JSON array of urls
+  
+  isBornAgain          Boolean
+  churchName           String
+  churchAddress        String // JSON
+  pastorName           String
+  ministryExperience   String?
+  callingStatement     String
+  
+  reference1Name       String
+  reference1Phone      String
+  reference1Relation   String
+  reference2Name       String
+  reference2Phone      String
+  reference2Relation   String
+  
+  declarationName      String
+  status               String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([programId])
+  @@index([email])
+}
+
+model ProgramEnrollment {
+  id              String   @id @default(cuid())
+  studentId       String
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  programId       String
+  program         Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, DROPPED
+  enrolledAt      DateTime @default(now())
+  completedAt     DateTime?
+  currentCourseId String?  // Tracks which course in the program they are currently taking
+  
+  @@unique([studentId, programId])
 }

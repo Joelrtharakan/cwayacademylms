@@ -9,6 +9,7 @@ import { Save, Loader2 } from "lucide-react";
 export default function BasicInfoSection({ course, onSave }: { course: any, onSave: () => void }) {
   const [formData, setFormData] = useState({
     title: course.title || "",
+    courseCode: course.courseCode || "",
     subtitle: course.subtitle || "",
     categoryId: course.categoryId || "",
     language: course.language || "ENGLISH",
@@ -39,9 +40,15 @@ export default function BasicInfoSection({ course, onSave }: { course: any, onSa
       <h2 style={{ fontFamily: "Georgia, serif", fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: "0 0 24px 0" }}>Basic Information</h2>
       
       <div style={{ display: "grid", gap: "24px" }}>
-        <div>
-          <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", marginBottom: "8px" }}>Course Title</label>
-          <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} />
+        <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "24px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", marginBottom: "8px" }}>Course Title</label>
+            <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", marginBottom: "8px" }}>Course Code</label>
+            <input type="text" value={formData.courseCode} onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0" }} placeholder="e.g. CWA101" />
+          </div>
         </div>
         
         <div>

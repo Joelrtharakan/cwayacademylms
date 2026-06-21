@@ -54,7 +54,8 @@ const NAV: NavSection[] = [
   {
     title: "Content",
     items: [
-      { name: "Programs", href: "/admin/programs", icon: Layers },
+      { name: "Programs", href: "/admin/programs", icon: LayoutTemplate },
+      { name: "Applications", href: "/admin/applications", icon: FileText },
       { name: "Courses", href: "/admin/courses", icon: BookOpen },
       { name: "Categories", href: "/admin/categories", icon: FolderKanban },
       { name: "Blog Posts", href: "/admin/blog", icon: FileText },

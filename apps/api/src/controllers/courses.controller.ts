@@ -38,10 +38,9 @@ export const listCourses = asyncHandler(async (req: Request, res: Response) => {
 
   const where: any = {};
 
-  // Public users only see published
-  if (!req.user || req.user.role === "STUDENT") {
-    where.status = "PUBLISHED";
-  }
+  // Public catalog only shows published courses
+  where.status = "PUBLISHED";
+
   if (search) where.OR = [{ title: { contains: search } }, { subtitle: { contains: search } }];
   if (category) where.categoryId = category;
   if (level) where.level = level;
@@ -49,9 +48,6 @@ export const listCourses = asyncHandler(async (req: Request, res: Response) => {
   if (isFree !== undefined) where.isFree = isFree === "true";
   if (minPrice) where.price = { gte: Number(minPrice) };
   if (maxPrice) where.price = { ...where.price, lte: Number(maxPrice) };
-
-  // Instructor can only see own courses
-  if (req.user?.role === "INSTRUCTOR") where.instructorId = req.user.id;
 
   const orderBy: any =
     sortBy === "popular" ? { enrollments: { _count: "desc" } } :
@@ -65,8 +61,9 @@ export const listCourses = asyncHandler(async (req: Request, res: Response) => {
       include: {
         instructor: { select: { id: true, name: true, avatar: true } },
         category: { select: { name: true } },
-        _count: { select: { enrollments: true } },
+        _count: { select: { enrollments: true, sections: true } },
         reviews: { select: { rating: true } },
+        program: { select: { id: true, title: true, description: true } },
       },
     }),
     prisma.course.count({ where }),
@@ -193,9 +190,10 @@ export const updateCourse = asyncHandler(async (req: Request, res: Response) => 
 
   const { title, subtitle, description, categoryId, level, language, moduleNumber,
     weeksDuration, totalLectures, scriptureRef, isFree, price, currency,
-    requirements, outcomes, targetAudience, welcomeMessage, congratsMessage, tags, status } = req.body;
+    requirements, outcomes, targetAudience, welcomeMessage, congratsMessage, tags, status, courseCode } = req.body;
 
   const data: any = {};
+  if (courseCode !== undefined) data.courseCode = courseCode === "" ? null : courseCode;
   if (title !== undefined) { data.title = title; data.slug = await uniqueSlug(title); }
   if (subtitle !== undefined) data.subtitle = subtitle;
   if (description !== undefined) data.description = description;

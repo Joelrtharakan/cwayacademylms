@@ -30,9 +30,31 @@ async function checkAndCompleteCourse(enrollmentId: string, studentId: string, o
   if (enrollment.course.programId) {
     const programCourses = await prisma.course.findMany({ 
       where: { programId: enrollment.course.programId }, 
+      orderBy: { createdAt: "asc" },
       select: { id: true, program: { select: { title: true } } } 
     });
     const programCourseIds = programCourses.map(c => c.id);
+    
+    // Auto-enroll in next course logic
+    const currentIndex = programCourseIds.indexOf(enrollment.courseId);
+    if (currentIndex !== -1 && currentIndex < programCourseIds.length - 1) {
+      const nextCourseId = programCourseIds[currentIndex + 1];
+      await prisma.enrollment.upsert({
+        where: { studentId_courseId: { studentId, courseId: nextCourseId } },
+        update: {},
+        create: { studentId, courseId: nextCourseId }
+      });
+      await prisma.programEnrollment.updateMany({
+        where: { studentId, programId: enrollment.course.programId },
+        data: { currentCourseId: nextCourseId }
+      });
+    } else if (currentIndex === programCourseIds.length - 1) {
+      // Finished all courses in program
+      await prisma.programEnrollment.updateMany({
+        where: { studentId, programId: enrollment.course.programId },
+        data: { status: "COMPLETED", completedAt: new Date() }
+      });
+    }
     
     const completedEnrollments = await prisma.enrollment.count({
       where: {

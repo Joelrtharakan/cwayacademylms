@@ -7,11 +7,11 @@ interface AddCourseModalProps {
   open: boolean;
   programId: string;
   onClose: () => void;
-  onSubmit: (data: { title: string; description: string; price: number }) => Promise<void>;
+  onSubmit: (data: { title: string; description: string; price: number; courseCode: string }) => Promise<void>;
 }
 
 export function AddCourseModal({ open, programId, onClose, onSubmit }: AddCourseModalProps) {
-  const [form, setForm] = useState({ title: "", description: "", price: "" });
+  const [form, setForm] = useState({ title: "", courseCode: "", description: "", price: "" });
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
@@ -23,10 +23,11 @@ export function AddCourseModal({ open, programId, onClose, onSubmit }: AddCourse
     try {
       await onSubmit({
         title: form.title,
+        courseCode: form.courseCode,
         description: form.description,
         price: form.price ? parseFloat(form.price) : 0,
       });
-      setForm({ title: "", description: "", price: "" });
+      setForm({ title: "", courseCode: "", description: "", price: "" });
       onClose();
     } finally {
       setLoading(false);
@@ -111,6 +112,18 @@ export function AddCourseModal({ open, programId, onClose, onSubmit }: AddCourse
                 onBlur={(e) => { e.target.style.borderColor = "#D4D9CE"; e.target.style.boxShadow = "none"; }}
                 required
                 autoFocus
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Course Code</label>
+              <input
+                type="text"
+                value={form.courseCode}
+                onChange={(e) => setForm({ ...form, courseCode: e.target.value })}
+                placeholder="e.g. CWA101"
+                style={inputStyle}
+                onFocus={(e) => { e.target.style.borderColor = "#C9973A"; e.target.style.boxShadow = "0 0 0 3px rgba(201,151,58,0.12)"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#D4D9CE"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <div>

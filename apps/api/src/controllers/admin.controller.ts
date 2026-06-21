@@ -556,9 +556,10 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
       select: {
         id: true, title: true, slug: true, status: true, thumbnail: true, price: true,
         isFree: true, moduleNumber: true, language: true, level: true, isFeatured: true,
-        createdAt: true, rejectionReason: true,
+        createdAt: true, rejectionReason: true, courseCode: true,
         instructor: { select: { id: true, name: true, email: true } },
         category: { select: { id: true, name: true } },
+        program: { select: { id: true, title: true } },
         _count: { select: { enrollments: true, reviews: true } },
         reviews: { select: { rating: true } },
         sections: { select: { _count: { select: { lessons: true } }, title: true, order: true } },
@@ -1186,7 +1187,7 @@ export const deleteProgram = asyncHandler(async (req: Request, res: Response) =>
 
 export const addCourseToProgram = asyncHandler(async (req: Request, res: Response) => {
   const { programId } = req.params;
-  const { title, description, price, requirements, instructorId } = req.body;
+  const { title, description, price, requirements, instructorId, courseCode } = req.body;
   if (!title) throw new AppError("Course title is required", 400);
 
   // Find or use provided instructorId; fallback to admin's own id
@@ -1198,6 +1199,7 @@ export const addCourseToProgram = asyncHandler(async (req: Request, res: Respons
     data: {
       title,
       slug,
+      courseCode: courseCode || null,
       description: description || null,
       price: price ? parseFloat(price) : 0,
       requirements: requirements ? JSON.stringify(requirements) : "[]",
@@ -1321,4 +1323,94 @@ export const createCourse = asyncHandler(async (req: Request, res: Response) => 
   );
 
   res.status(201).json({ status: "success", data: course, invitation });
+});
+
+// ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
+export const getApplications = asyncHandler(async (req: Request, res: Response) => {
+  const applications = await prisma.programApplication.findMany({
+    include: { program: { select: { title: true } } },
+    orderBy: { createdAt: "desc" }
+  });
+  res.json({ status: "success", data: applications });
+});
+
+export const getApplicationById = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const application = await prisma.programApplication.findUnique({
+    where: { id },
+    include: { program: { select: { title: true } } }
+  });
+  if (!application) throw new AppError("Application not found", 404);
+  res.json({ status: "success", data: application });
+});
+
+export const approveApplication = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const application = await prisma.programApplication.findUnique({
+    where: { id },
+    include: { program: { include: { courses: { orderBy: { createdAt: "asc" } } } } }
+  });
+  if (!application) throw new AppError("Application not found", 404);
+  if (application.status !== "PENDING") throw new AppError("Application is not pending", 400);
+
+  let user = await prisma.user.findUnique({ where: { email: application.email } });
+  let password = "";
+  
+  if (!user) {
+    password = Math.random().toString(36).slice(-8);
+    const passwordHash = await bcrypt.hash(password, 12);
+    user = await prisma.user.create({
+      data: {
+        name: application.fullName,
+        email: application.email,
+        passwordHash,
+        role: "STUDENT",
+        phone: application.mobileNumber,
+        isVerified: true
+      }
+    });
+  }
+
+  // Create ProgramEnrollment
+  const firstCourse = application.program.courses[0];
+  
+  await prisma.programEnrollment.upsert({
+    where: { studentId_programId: { studentId: user.id, programId: application.programId } },
+    update: { currentCourseId: firstCourse?.id },
+    create: {
+      studentId: user.id,
+      programId: application.programId,
+      currentCourseId: firstCourse?.id
+    }
+  });
+
+  // Enroll in first course
+  if (firstCourse) {
+    await prisma.enrollment.upsert({
+      where: { studentId_courseId: { studentId: user.id, courseId: firstCourse.id } },
+      update: {},
+      create: { studentId: user.id, courseId: firstCourse.id }
+    });
+  }
+
+  await prisma.programApplication.update({
+    where: { id },
+    data: { status: "APPROVED" }
+  });
+
+  if (password) {
+    const { sendAdmissionEmail } = await import("../services/email.service");
+    await sendAdmissionEmail({ name: user.name, email: user.email }, password, application.program.title);
+  }
+
+  res.json({ status: "success", message: "Application approved successfully" });
+});
+
+export const rejectApplication = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await prisma.programApplication.update({
+    where: { id },
+    data: { status: "REJECTED" }
+  });
+  res.json({ status: "success", message: "Application rejected" });
 });

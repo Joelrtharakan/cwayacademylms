@@ -22,9 +22,9 @@ export function AssignInstructorModal({
   onSuccess,
 }: AssignInstructorModalProps) {
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState("");
   const [note, setNote] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { data: instructors = [], isLoading } = useQuery({
     queryKey: ["instructors"],
@@ -42,28 +42,29 @@ export function AssignInstructorModal({
       onClose();
       setSelectedId("");
       setNote("");
-      setSearch("");
+      setDropdownOpen(false);
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to send invitation"),
   });
 
   if (!open) return null;
 
-  const filtered = (instructors as any[]).filter((i: any) =>
-    !search || i.name?.toLowerCase().includes(search.toLowerCase()) || i.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const selectedInstructor = (instructors as any[]).find((i: any) => i.id === selectedId);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "11px 14px",
-    background: "#FFFFFF",
-    border: "1px solid #D4D9CE",
-    borderRadius: 10,
+    paddingTop: "12px",
+    paddingRight: "16px",
+    paddingBottom: "12px",
+    paddingLeft: "16px",
+    background: "#F9FAFC",
+    border: "1px solid #E4E8E0",
+    borderRadius: 12,
     fontSize: 14,
     color: "#1C2B1E",
     outline: "none",
     fontFamily: "inherit",
-    transition: "border-color 0.2s, box-shadow 0.2s",
+    transition: "all 0.2s ease",
   };
 
   return (
@@ -109,91 +110,70 @@ export function AssignInstructorModal({
           </button>
         </div>
 
-        {/* Scrollable body */}
-        <div style={{ padding: "20px 28px", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Search */}
+        {/* Body */}
+        <div style={{ padding: "24px 28px", flex: 1, display: "flex", flexDirection: "column", gap: 20, minHeight: 0 }}>
+          {/* Dropdown */}
           <div style={{ position: "relative" }}>
-            <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8A9E8C" }} />
-            <input
-              type="text"
-              placeholder="Search instructors..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ ...inputStyle, paddingLeft: 36 }}
-              onFocus={(e) => { e.target.style.borderColor = "#C9973A"; e.target.style.boxShadow = "0 0 0 3px rgba(201,151,58,0.12)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "#D4D9CE"; e.target.style.boxShadow = "none"; }}
-            />
-          </div>
-
-          {/* Instructor list */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 240, overflowY: "auto" }}>
-            {isLoading ? (
-              [...Array(3)].map((_, i) => (
-                <div key={i} style={{ height: 56, background: "#F5F0E8", borderRadius: 10, animation: "pulse 1.5s infinite" }} />
-              ))
-            ) : filtered.length === 0 ? (
-              <p style={{ fontSize: 13, color: "#8A9E8C", textAlign: "center", padding: "20px 0" }}>No instructors found</p>
-            ) : (
-              filtered.map((inst: any) => (
-                <div
-                  key={inst.id}
-                  onClick={() => setSelectedId(inst.id === selectedId ? "" : inst.id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 14px",
-                    borderRadius: 10,
-                    border: `1.5px solid ${selectedId === inst.id ? "#C9973A" : "#E4E8E0"}`,
-                    background: selectedId === inst.id ? "rgba(201,151,58,0.06)" : "#FAFAF8",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: selectedId === inst.id ? "rgba(201,151,58,0.2)" : "#E4E8E0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: selectedId === inst.id ? "#C9973A" : "#8A9E8C",
-                      overflow: "hidden",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {inst.avatar ? (
-                      <img src={inst.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      inst.name?.[0] || "I"
-                    )}
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+              Select Instructor
+            </label>
+            <div
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", padding: "14px 16px" }}
+            >
+              {selectedInstructor ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#E4E8E0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {selectedInstructor.avatar ? <img src={selectedInstructor.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 10, fontWeight: 700, color: "#8A9E8C" }}>{selectedInstructor.name?.[0] || "I"}</span>}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#1C2B1E", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {inst.name}
-                    </p>
-                    <p style={{ fontSize: 12, color: "#8A9E8C", margin: "2px 0 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {inst.email} · {inst.publishedCourses || 0} courses
-                    </p>
-                  </div>
-                  {selectedId === inst.id && (
-                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#C9973A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4l3 3 5-6" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  )}
+                  <span style={{ fontWeight: 600, color: "#1C2B1E", fontSize: 14 }}>{selectedInstructor.name}</span>
                 </div>
-              ))
+              ) : (
+                <span style={{ color: "#8A9E8C", fontSize: 14 }}>Select an instructor...</span>
+              )}
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="#8A9E8C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {dropdownOpen && (
+              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: 8, background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: 12, boxShadow: "0 8px 32px rgba(28,43,30,0.12)", zIndex: 10, maxHeight: 240, overflowY: "auto" }}>
+                {isLoading ? (
+                  <div style={{ padding: 16, textAlign: "center", color: "#8A9E8C" }}>Loading...</div>
+                ) : (instructors as any[]).length === 0 ? (
+                  <div style={{ padding: 16, textAlign: "center", color: "#8A9E8C" }}>No instructors found</div>
+                ) : (
+                  (instructors as any[]).map((inst: any) => (
+                    <div
+                      key={inst.id}
+                      onClick={() => { setSelectedId(inst.id); setDropdownOpen(false); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "12px 16px",
+                        cursor: "pointer",
+                        background: selectedId === inst.id ? "#FDFBF7" : "transparent",
+                        borderBottom: "1px solid #EEF0EA",
+                        transition: "background 0.2s ease"
+                      }}
+                    >
+                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#E4E8E0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                        {inst.avatar ? <img src={inst.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontWeight: 700, color: "#8A9E8C" }}>{inst.name?.[0] || "I"}</span>}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "#1C2B1E" }}>{inst.name}</div>
+                        <div style={{ fontSize: 12, color: "#8A9E8C" }}>{inst.email} · {inst.publishedCourses || 0} courses</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
           </div>
 
           {/* Admin note */}
-          <div>
+          <div style={{ flexShrink: 0 }}>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
               Note to Instructor (optional)
             </label>

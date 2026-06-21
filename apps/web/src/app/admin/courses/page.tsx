@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings } from "lucide-react";
+import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings, MoreHorizontal } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -122,14 +123,21 @@ export default function AdminCoursesPage() {
             </div>
           )}
           <div style={{ minWidth: 0 }}>
-            <p 
-              onClick={() => router.push(`/instructor/courses/${row.id}`)}
-              style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "200px", transition: "color 0.15s", cursor: "pointer" }} 
-              onMouseEnter={(e) => e.currentTarget.style.color = "#B88645"} 
-              onMouseLeave={(e) => e.currentTarget.style.color = "#1A261D"}
-            >
-              {row.title}
-            </p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+              {row.courseCode && (
+                <span style={{ fontSize: "10px", fontWeight: 700, color: "#C9973A", background: "rgba(201,151,58,0.1)", padding: "2px 6px", borderRadius: "4px", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+                  {row.courseCode}
+                </span>
+              )}
+              <p 
+                onClick={() => router.push(`/instructor/courses/${row.id}`)}
+                style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "200px", transition: "color 0.15s", cursor: "pointer" }} 
+                onMouseEnter={(e) => e.currentTarget.style.color = "#B88645"} 
+                onMouseLeave={(e) => e.currentTarget.style.color = "#1A261D"}
+              >
+                {row.title}
+              </p>
+            </div>
             {row.moduleNumber && (
               <span
                 style={{
@@ -154,80 +162,17 @@ export default function AdminCoursesPage() {
     },
     { key: "instructor", header: "Instructor", render: (row) => <span style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93" }}>{row.instructor?.name}</span> },
     { key: "category", header: "Category", render: (row) => <span style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93" }}>{row.category?.name || "—"}</span> },
+    { key: "program", header: "Program", render: (row) => <span style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93" }}>{row.program?.title || "—"}</span> },
     { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
     { key: "enrollments", header: "Students", render: (row) => <span style={{ fontSize: "13px", fontWeight: 700, color: "#1A261D" }}>{row._count?.enrollments ?? 0}</span> },
     { key: "price", header: "Price", render: (row) => <span style={{ fontSize: "13px", fontWeight: 700, color: row.isFree ? "#3D7A4B" : "#1A261D" }}>{row.isFree ? "Free" : `₹${row.price}`}</span> },
   ];
 
   const actions = (row: any) => (
-    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-      <a
-        href={`/courses/${row.slug}`}
-        target="_blank"
-        rel="noreferrer"
-        title="Preview"
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.15s",
-          color: "#8F9E93",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.color = "#1A261D"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
-      >
-        <ExternalLink size={14} />
-      </a>
-      <button
-        onClick={() => router.push(`/instructor/courses/${row.id}`)}
-        title="Manage Course Content & Settings"
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.15s",
-          color: "#8F9E93",
-          border: "none",
-          background: "transparent",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.08)"; e.currentTarget.style.color = "#B88645"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
-      >
-        <Settings size={14} />
-      </button>
-      <button
-        onClick={() => featureMut.mutate({ id: row.id, featured: !row.isFeatured })}
-        title={row.isFeatured ? "Unfeature" : "Feature"}
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.15s",
-          color: row.isFeatured ? "#B88645" : "#8F9E93",
-          border: "none",
-          background: "transparent",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.08)"; e.currentTarget.style.color = "#B88645"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = row.isFeatured ? "#B88645" : "#8F9E93"; }}
-      >
-        {row.isFeatured ? <Star size={14} fill="#B88645" /> : <StarOff size={14} />}
-      </button>
-      {row.status === "PENDING" && (
-        <>
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
           <button
-            onClick={() => approveMut.mutate(row.id)}
-            title="Approve"
             style={{
               width: "32px",
               height: "32px",
@@ -241,55 +186,112 @@ export default function AdminCoursesPage() {
               background: "transparent",
               cursor: "pointer",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(61,122,75,0.08)"; e.currentTarget.style.color = "#3D7A4B"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.color = "#1A261D"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
           >
-            <CheckCircle size={14} />
+            <MoreHorizontal size={16} />
           </button>
-          <button
-            onClick={() => { setRejectModal({ id: row.id, title: row.title }); setRejectReason(""); }}
-            title="Reject"
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            sideOffset={4}
             style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
+              background: "#FFFFFF",
+              border: "1px solid #E4E8E0",
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px rgba(26,38,29,0.1)",
+              padding: "8px",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s",
-              color: "#8F9E93",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
+              flexDirection: "column",
+              gap: "4px",
+              zIndex: 9999,
+              minWidth: "160px",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(176,58,46,0.08)"; e.currentTarget.style.color = "#B03A2E"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
           >
-            <XCircle size={14} />
-          </button>
-        </>
-      )}
-      <button
-        onClick={() => setDeleteConfirm({ id: row.id, title: row.title })}
-        title="Delete"
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.15s",
-          color: "#8F9E93",
-          border: "none",
-          background: "transparent",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(176,58,46,0.08)"; e.currentTarget.style.color = "#B03A2E"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8F9E93"; }}
-      >
-        <Trash2 size={14} />
-      </button>
+            <DropdownMenu.Item asChild>
+              <a
+                href={`/courses/${row.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#1A261D", fontSize: "13px", fontWeight: 500, textDecoration: "none", transition: "background 0.15s", outline: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                <ExternalLink size={14} color="#8F9E93" />
+                Preview Course
+              </a>
+            </DropdownMenu.Item>
+            
+            <DropdownMenu.Item asChild>
+              <button
+                onClick={() => router.push(`/instructor/courses/${row.id}`)}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#1A261D", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                <Settings size={14} color="#8F9E93" />
+                Manage Settings
+              </button>
+            </DropdownMenu.Item>
+            
+            <DropdownMenu.Item asChild>
+              <button
+                onClick={() => featureMut.mutate({ id: row.id, featured: !row.isFeatured })}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#1A261D", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                {row.isFeatured ? <Star size={14} fill="#B88645" color="#B88645" /> : <StarOff size={14} color="#8F9E93" />}
+                {row.isFeatured ? "Unfeature" : "Feature"}
+              </button>
+            </DropdownMenu.Item>
+
+            {row.status === "PENDING" && (
+              <>
+                <DropdownMenu.Item asChild>
+                  <button
+                    onClick={() => approveMut.mutate(row.id)}
+                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#3D7A4B", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(61,122,75,0.08)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                    <CheckCircle size={14} color="#3D7A4B" />
+                    Approve
+                  </button>
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Item asChild>
+                  <button
+                    onClick={() => { setRejectModal({ id: row.id, title: row.title }); setRejectReason(""); }}
+                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#B03A2E", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(176,58,46,0.08)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                    <XCircle size={14} color="#B03A2E" />
+                    Reject
+                  </button>
+                </DropdownMenu.Item>
+              </>
+            )}
+            
+            <div style={{ height: "1px", background: "#E4E8E0", margin: "4px 0" }} />
+            
+            <DropdownMenu.Item asChild>
+              <button
+                onClick={() => setDeleteConfirm({ id: row.id, title: row.title })}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#B03A2E", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(176,58,46,0.08)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                <Trash2 size={14} color="#B03A2E" />
+                Delete Course
+              </button>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     </div>
   );
 

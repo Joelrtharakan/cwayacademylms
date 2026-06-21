@@ -638,7 +638,12 @@ export const updateQuiz = asyncHandler(async (req: Request, res: Response) => {
 
   const updatedQuiz = await prisma.quiz.update({
     where: { id: quizId },
-    data: { title, passingScore, timeLimit, maxAttempts },
+    data: { 
+      title, 
+      passingScore, 
+      timeLimit: timeLimit !== undefined ? (timeLimit ? timeLimit * 60 : null) : undefined, 
+      maxAttempts 
+    },
   });
 
   if (title || instructions !== undefined) {

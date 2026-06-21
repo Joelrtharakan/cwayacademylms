@@ -249,16 +249,22 @@ export default function ProgramDetailPage() {
                   )}
                 </div>
 
-                {/* Course info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#1C2B1E", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {course.title}
-                    </p>
-                    <CourseStatusBadge status={course.status} />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, marginBottom: 4 }}>
+                    {course.courseCode && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#C9973A", background: "rgba(201,151,58,0.1)", padding: "2px 6px", borderRadius: 4, letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+                        {course.courseCode}
+                      </span>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#1C2B1E", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {course.title}
+                      </p>
+                      <CourseStatusBadge status={course.status} />
+                    </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    {course.instructor ? (
+                    {course.instructor && course.invitationStatus !== "DECLINED" ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#8A9E8C" }}>
                         <UserCircle size={13} />
                         <span>{course.instructor.name}</span>

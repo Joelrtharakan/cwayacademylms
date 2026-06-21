@@ -105,6 +105,10 @@ export default function LessonPlayerPage() {
   const [quizState, setQuizState] = useState("not_started"); // not_started, in_progress, results
   const [quizData, setQuizData] = useState<any>(null);
   const [quizAnswers, setQuizAnswers] = useState<any>({});
+  const quizAnswersRef = useRef<any>({});
+  useEffect(() => { quizAnswersRef.current = quizAnswers; }, [quizAnswers]);
+  
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [quizResult, setQuizResult] = useState<any>(null);
   const lastSavedSecond = useRef<number>(0);
@@ -367,6 +371,7 @@ export default function LessonPlayerPage() {
       setQuizAnswers({});
       setCheatStrikes(0);
       setShowCheatWarning(false);
+      setTimeLeft(res.data.data.timeLimit || null);
       
       try {
         if (document.documentElement.requestFullscreen) {
@@ -385,7 +390,7 @@ export default function LessonPlayerPage() {
     try {
       const res = await api.post(`/student/quizzes/${lesson.quiz.id}/submit`, {
         attemptId: quizData.attemptId,
-        answers: quizAnswers
+        answers: quizAnswersRef.current
       });
       setQuizResult(res.data.data);
       setQuizState("results");
@@ -441,6 +446,31 @@ export default function LessonPlayerPage() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, [quizState, quizData, quizAnswers, lesson]);
+
+  // Countdown timer
+  useEffect(() => {
+    let timer: any;
+    if (quizState === "in_progress" && timeLeft !== null && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev !== null && prev <= 1) {
+            clearInterval(timer);
+            submitQuiz();
+            toast.error("Time is up! Your quiz has been automatically submitted.");
+            return 0;
+          }
+          return prev !== null ? prev - 1 : 0;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [quizState, timeLeft !== null]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   if (loading || !lesson) {
     return (
@@ -750,9 +780,16 @@ export default function LessonPlayerPage() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between" style={{ gap: '0.75rem' }}>
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-[#8A9E8C]" style={{ marginBottom: '0.25rem' }}>Question Progress</p>
-                      <p className="font-semibold text-[#1A261D]" style={{ fontSize: '1rem', margin: 0 }}>
-                        {currentQuestionIdx + 1} of {quizData.quiz.questions.length}
-                      </p>
+                      <div className="flex items-center gap-4">
+                        <p className="font-semibold text-[#1A261D]" style={{ fontSize: '1rem', margin: 0 }}>
+                          {currentQuestionIdx + 1} of {quizData.quiz.questions.length}
+                        </p>
+                        {timeLeft !== null && (
+                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${timeLeft < 60 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#FFF7E5] text-[#C9973A] border border-[#FDE6B5]'}`}>
+                            <Clock size={14} /> {formatTime(timeLeft)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="w-full md:w-1/2 h-2 rounded-full bg-[#F3F4F6] overflow-hidden" style={{ position: 'relative' }}>
                       <div className="h-full rounded-full bg-[#C9973A] transition-all" style={{ width: `${((currentQuestionIdx + 1) / quizData.quiz.questions.length) * 100}%` }} />

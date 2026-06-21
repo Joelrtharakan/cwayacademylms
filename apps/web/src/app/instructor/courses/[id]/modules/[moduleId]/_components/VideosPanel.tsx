@@ -11,7 +11,7 @@ export default function VideosPanel({ module }: { module: any }) {
   const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", isFree: false, videoUrl: "" });
+  const [form, setForm] = useState({ title: "", isFree: false, videoUrl: "", durationMinutes: 0 });
 
   // We fetch lessons directly here for better encapsulation
   const { data: lessons, isLoading } = useQuery({
@@ -24,14 +24,14 @@ export default function VideosPanel({ module }: { module: any }) {
 
   const createMut = useMutation({
     mutationFn: async () => {
-      const lesson = await createLesson(module.id, { title: form.title, type: "VIDEO", isFree: form.isFree, videoUrl: form.videoUrl });
+      const lesson = await createLesson(module.id, { title: form.title, type: "VIDEO", isFree: form.isFree, videoUrl: form.videoUrl, duration: form.durationMinutes * 60 });
       return lesson;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lessons", module.id] });
       queryClient.invalidateQueries({ queryKey: ["modules"] });
       setIsCreating(false);
-      setForm({ title: "", isFree: false, videoUrl: "" });
+      setForm({ title: "", isFree: false, videoUrl: "", durationMinutes: 0 });
       toast.success("Video lesson created!");
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create video lesson"),
@@ -39,7 +39,7 @@ export default function VideosPanel({ module }: { module: any }) {
 
   const updateMut = useMutation({
     mutationFn: async (id: string) => {
-      const lesson = await updateLesson(id, { title: form.title, isFree: form.isFree, videoUrl: form.videoUrl });
+      const lesson = await updateLesson(id, { title: form.title, isFree: form.isFree, videoUrl: form.videoUrl, duration: form.durationMinutes * 60 });
       return lesson;
     },
     onSuccess: () => {
@@ -47,7 +47,7 @@ export default function VideosPanel({ module }: { module: any }) {
       queryClient.invalidateQueries({ queryKey: ["modules"] });
       setEditingId(null);
       setIsCreating(false);
-      setForm({ title: "", isFree: false, videoUrl: "" });
+      setForm({ title: "", isFree: false, videoUrl: "", durationMinutes: 0 });
       toast.success("Video lesson updated!");
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update video lesson"),
@@ -75,7 +75,7 @@ export default function VideosPanel({ module }: { module: any }) {
   const handleEdit = (vid: any) => {
     setEditingId(vid.id);
     setIsCreating(true);
-    setForm({ title: vid.title, isFree: vid.isFree, videoUrl: vid.videoUrl || "" });
+    setForm({ title: vid.title, isFree: vid.isFree, videoUrl: vid.videoUrl || "", durationMinutes: Math.round((vid.duration || 0) / 60) });
   };
 
   return (
@@ -87,7 +87,7 @@ export default function VideosPanel({ module }: { module: any }) {
         </div>
         {!isCreating && (
           <button 
-            onClick={() => { setEditingId(null); setForm({ title: "", isFree: false, videoUrl: "" }); setIsCreating(true); }}
+            onClick={() => { setEditingId(null); setForm({ title: "", isFree: false, videoUrl: "", durationMinutes: 0 }); setIsCreating(true); }}
             style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
           >
             <Plus size={16} /> Add Video
@@ -123,6 +123,18 @@ export default function VideosPanel({ module }: { module: any }) {
                 onChange={e => setForm({ ...form, videoUrl: e.target.value })}
                 placeholder="e.g. https://www.youtube.com/watch?v=..."
                 required
+                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Duration (Minutes)</label>
+              <input 
+                type="number" 
+                value={form.durationMinutes || ""}
+                onChange={e => setForm({ ...form, durationMinutes: Number(e.target.value) })}
+                placeholder="e.g. 15"
+                min="0"
                 style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
               />
             </div>

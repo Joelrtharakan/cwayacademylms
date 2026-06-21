@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createQuestion, updateQuestion, deleteQuestion } from "@/lib/api/modules";
 import { X, Plus, Trash2, CheckCircle2, GripVertical, Save, Edit2 } from "lucide-react";
@@ -23,6 +24,11 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Question>({ text: "", type: "MCQ", points: 1, order: 0, answers: [{ text: "", isCorrect: true }] });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load existing questions
   useEffect(() => {
@@ -118,8 +124,10 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
     setForm({ ...form, answers: newAnswers });
   };
 
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(26,38,29,0.8)", zIndex: 100, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px" }} onWheel={(e) => e.stopPropagation()}>
+  if (!mounted) return null;
+
+  return createPortal(
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(26,38,29,0.8)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px" }} onWheel={(e) => e.stopPropagation()}>
       <div style={{ width: "100%", maxWidth: "700px", background: "#F7F8F5", maxHeight: "90vh", minHeight: 0, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 48px rgba(0,0,0,0.2)" }}>
         
         {/* Header */}
@@ -265,6 +273,7 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

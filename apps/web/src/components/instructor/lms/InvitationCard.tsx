@@ -60,19 +60,33 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
   return (
     <div
       style={{
-        background: statusConfig.bg,
-        border: `1.5px solid ${statusConfig.border}`,
+        background: "#FFFFFF",
+        border: "1px solid #EEF0EA",
         borderRadius: 16,
         overflow: "hidden",
-        transition: "box-shadow 0.2s",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        boxShadow: "0 4px 12px rgba(28,43,30,0.03)",
+        position: "relative"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = "0 12px 24px rgba(28,43,30,0.08)";
+        e.currentTarget.style.borderColor = statusConfig.color;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(28,43,30,0.03)";
+        e.currentTarget.style.borderColor = "#EEF0EA";
       }}
     >
+      <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 4, background: statusConfig.color }} />
       {/* Card header */}
       <div style={{ padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
         {/* Thumbnail / Icon */}
         <div style={{
-          width: 56, height: 42, borderRadius: 8, flexShrink: 0, overflow: "hidden",
-          background: "rgba(201,151,58,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
+          width: 60, height: 60, borderRadius: 12, flexShrink: 0, overflow: "hidden",
+          background: "rgba(28,43,30,0.03)", display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid #EEF0EA"
         }}>
           {invitation.course.thumbnail ? (
             <img src={invitation.course.thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -91,15 +105,15 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
             )}
             {invitation.course.program && <span style={{ color: "#D4D9CE", fontSize: 10 }}>·</span>}
             <span style={{
-              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em",
+              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
               background: statusConfig.bg, color: statusConfig.color,
-              padding: "2px 8px", borderRadius: 999, border: `1px solid ${statusConfig.border}`,
+              padding: "4px 10px", borderRadius: 999, border: `1px solid ${statusConfig.border}`,
             }}>
               {statusConfig.label}
             </span>
           </div>
 
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1C2B1E", margin: "0 0 4px", lineHeight: 1.3 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1C2B1E", margin: "0 0 6px", lineHeight: 1.3 }}>
             {invitation.course.title}
           </h3>
 
@@ -129,12 +143,12 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
 
       {/* Admin note */}
       {expanded && invitation.adminNote && (
-        <div style={{ padding: "0 20px 14px" }}>
-          <div style={{ background: "rgba(28,43,30,0.04)", borderRadius: 8, padding: "10px 14px", borderLeft: "3px solid #C9973A" }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: "#8A9E8C", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              Note from Admin
+        <div style={{ padding: "0 20px 16px 20px" }}>
+          <div style={{ background: "#F9FAFC", borderRadius: 12, padding: "12px 16px", border: "1px solid #EEF0EA" }}>
+            <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#C9973A", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              <Mail size={12} /> Note from Admin
             </p>
-            <p style={{ fontSize: 13, color: "#1C2B1E", margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 14, color: "#4A5D4E", margin: 0, lineHeight: 1.6 }}>
               {invitation.adminNote}
             </p>
           </div>
@@ -143,43 +157,57 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
 
       {/* Action buttons — only for PENDING */}
       {isPending && (
-        <div style={{ padding: "12px 20px 16px", display: "flex", gap: 10 }}>
+        <div style={{ padding: "0 20px 20px", display: "flex", gap: 12 }}>
           <button
             onClick={() => declineMut.mutate()}
             disabled={declineMut.isPending || acceptMut.isPending}
             style={{
-              flex: 1, padding: "9px 0",
-              background: "transparent",
-              border: "1.5px solid rgba(140,58,58,0.3)",
-              borderRadius: 8, fontSize: 13, fontWeight: 600,
-              color: "#8C3A3A", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              transition: "all 0.15s",
+              flex: 1, padding: "12px 0",
+              background: "#FFFFFF",
+              border: "1px solid #E4E8E0",
+              borderRadius: 12, fontSize: 14, fontWeight: 600,
+              color: "#6B7D70", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "all 0.2s ease",
               opacity: declineMut.isPending ? 0.6 : 1,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(140,58,58,0.06)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            onMouseEnter={(e) => { 
+              e.currentTarget.style.background = "#FDFBF7"; 
+              e.currentTarget.style.color = "#8C3A3A";
+              e.currentTarget.style.borderColor = "rgba(140,58,58,0.3)";
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.background = "#FFFFFF"; 
+              e.currentTarget.style.color = "#6B7D70";
+              e.currentTarget.style.borderColor = "#E4E8E0";
+            }}
           >
-            {declineMut.isPending ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <XCircle size={14} />}
+            {declineMut.isPending ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <XCircle size={16} />}
             Decline
           </button>
           <button
             onClick={() => acceptMut.mutate()}
             disabled={acceptMut.isPending || declineMut.isPending}
             style={{
-              flex: 2, padding: "9px 0",
-              background: "#4A8C5C",
-              border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700,
+              flex: 2, padding: "12px 0",
+              background: "linear-gradient(135deg, #4A8C5C 0%, #366B44 100%)",
+              border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700,
               color: "#FFFFFF", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              transition: "all 0.15s",
-              boxShadow: "0 2px 8px rgba(74,140,92,0.25)",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "all 0.2s ease",
+              boxShadow: "0 4px 12px rgba(74,140,92,0.2)",
               opacity: acceptMut.isPending ? 0.8 : 1,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#5AA06E"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#4A8C5C"; }}
+            onMouseEnter={(e) => { 
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 6px 16px rgba(74,140,92,0.3)";
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(74,140,92,0.2)";
+            }}
           >
-            {acceptMut.isPending ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <CheckCircle size={14} />}
+            {acceptMut.isPending ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <CheckCircle size={16} />}
             Accept & Add to My Courses
           </button>
         </div>

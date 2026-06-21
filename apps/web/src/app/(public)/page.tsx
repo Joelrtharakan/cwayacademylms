@@ -7,6 +7,7 @@ import { EmailCard } from "@/components/EmailCard";
 import { ContactContent } from "./contact/ContactContent";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface Post {
@@ -87,17 +88,52 @@ Alfred and Lillian Garr were a model missionary family who had grown in the grac
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedBlogPost, setSelectedBlogPost] = useState<Post | null>(null);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [expandedPrograms, setExpandedPrograms] = useState<Record<string, boolean>>({});
+
+  const toggleProgram = (id: string) => {
+    setExpandedPrograms(prev => {
+      const isExpanding = !prev[id];
+      if (isExpanding) {
+        setTimeout(() => {
+          const el = document.getElementById(`program-courses-${id}`);
+          if (el) {
+            const yOffset = -100; 
+            const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }, 50);
+      }
+      return { ...prev, [id]: isExpanding };
+    });
+  };
 
   const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
     queryKey: ["publicCourses"],
     queryFn: () => api.get("/courses").then((res) => res.data.data),
   });
   const courses = coursesData?.courses || [];
+
+  const { programsList, standaloneCourses } = React.useMemo(() => {
+    const pMap = new Map();
+    const sCourses: any[] = [];
+    courses.forEach((c: any) => {
+      if (c.program) {
+        if (!pMap.has(c.program.id)) {
+          pMap.set(c.program.id, { ...c.program, courses: [] });
+        }
+        pMap.get(c.program.id).courses.push(c);
+      } else {
+        sCourses.push(c);
+      }
+    });
+    return { programsList: Array.from(pMap.values()), standaloneCourses: sCourses };
+  }, [courses]);
 
   const { data: blogPostsData } = useQuery({
     queryKey: ["publicBlogPosts"],
@@ -1388,26 +1424,130 @@ export default function LandingPage() {
               <p className="body-text">Check back soon for upcoming courses.</p>
             </div>
           ) : (
-            <div className="grid-3">
-              {courses.map((c: any, i: number) => (
-                <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`}>
-                  <div>
-                    <div className="course-badges">
-                      <span className="badge">{c.weeksDuration} Wks</span>
-                      {c.totalLectures > 0 && <span className="badge">{c.totalLectures} Lectures</span>}
-                      {c.level && <span className="badge">{c.level}</span>}
-                    </div>
-                    <h3 style={{ fontSize: "20px", marginBottom: "0.75rem", fontFamily: "Georgia, serif" }}>{c.title}</h3>
-                    <p className="body-text" style={{ fontSize: "14.5px" }}>{c.subtitle || c.description?.substring(0, 100) || "Learn the foundations of this topic."}</p>
-                  </div>
-                  <div style={{ marginTop: "1.5rem" }}>
-                    <Link href={`/courses/${c.slug}`} style={{ display: "inline-block", color: "var(--accent-green)", fontWeight: 700, fontSize: "13px", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1px" }}>
-                      View Details →
-                    </Link>
+            <>
+              {programsList.length > 0 && (
+                <div style={{ marginBottom: "5rem" }}>
+                  <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>Featured Programs</h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4rem" }}>
+                    {programsList.map((prog: any, pIdx: number) => (
+                      <div key={prog.id} className="reveal" style={{ background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
+                        <div style={{ background: "linear-gradient(135deg, var(--accent-green) 0%, #1A261D 100%)", padding: "3rem", color: "white", position: "relative" }}>
+                          <div style={{ position: "absolute", top: "0", right: "0", bottom: "0", width: "40%", background: "radial-gradient(circle at top right, rgba(184, 134, 69, 0.2), transparent 70%)" }} />
+                          <span className="badge" style={{ background: "rgba(255,255,255,0.15)", color: "white", marginBottom: "1rem", display: "inline-block" }}>Program</span>
+                          <h3 style={{ fontSize: "32px", color: "white", marginBottom: "1rem", fontFamily: "var(--font-dm-serif), serif", position: "relative", zIndex: 1 }}>{prog.title}</h3>
+                          {prog.description && <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", maxWidth: "800px", lineHeight: "1.6", position: "relative", zIndex: 1, marginBottom: "2rem" }}>{prog.description}</p>}
+                          
+                          <div style={{ display: "flex", gap: "1rem", alignItems: "center", position: "relative", zIndex: 1 }}>
+                            <Link href={`/programs/${prog.id}/apply`} className="btn-primary" style={{ background: "white", color: "var(--accent-green)", border: "1px solid white" }}>
+                              Apply for Program
+                            </Link>
+                            <button 
+                              onClick={() => toggleProgram(prog.id)} 
+                              className="btn-primary"
+                              style={{ 
+                                background: "rgba(255,255,255,0.1)", 
+                                color: "white", 
+                                border: "1px solid rgba(255,255,255,0.3)", 
+                                cursor: "pointer",
+                                transition: "all 0.2s"
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
+                              onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                            >
+                              {expandedPrograms[prog.id] ? "Hide Courses" : "View Courses"}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {expandedPrograms[prog.id] && (
+                          <div id={`program-courses-${prog.id}`} style={{ padding: "3rem", background: "var(--bg-main)" }}>
+                            <h4 style={{ fontSize: "18px", color: "var(--text-main)", marginBottom: "2rem", fontWeight: 700, fontFamily: "var(--font-plus-jakarta), sans-serif" }}>Courses in this Program</h4>
+                            <div className="grid-3">
+                              {prog.courses.map((c: any, i: number) => (
+                                <div 
+                                  key={c.id} 
+                                  style={{ 
+                                    background: "#FFFFFF", 
+                                    borderRadius: "20px", 
+                                    border: "1px solid rgba(220, 224, 213, 0.8)", 
+                                    boxShadow: "0 8px 24px rgba(0,0,0,0.04)", 
+                                    overflow: "hidden", 
+                                    display: "flex", 
+                                    flexDirection: "column", 
+                                    height: "100%", 
+                                    transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    cursor: "pointer"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = "translateY(-6px)";
+                                    e.currentTarget.style.boxShadow = "0 20px 40px rgba(0,0,0,0.08)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.04)";
+                                  }}
+                                  onClick={() => router.push(`/courses/${c.slug}`)}
+                                >
+                                  {c.thumbnail ? (
+                                    <div style={{ height: "170px", width: "100%", overflow: "hidden", position: "relative" }}>
+                                      <img src={c.thumbnail} alt={c.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.7s ease" }} onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
+                                    </div>
+                                  ) : (
+                                    <div style={{ height: "170px", width: "100%", background: "linear-gradient(135deg, rgba(184,134,69,0.15), rgba(138,100,51,0.05))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                      <span style={{ fontFamily: "var(--font-dm-serif), serif", color: "var(--gold-dark)", fontSize: "1.2rem", opacity: 0.6, letterSpacing: "2px" }}>CWAY</span>
+                                    </div>
+                                  )}
+                                  <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                                    <div className="course-badges" style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
+                                      <span className="badge" style={{ background: "rgba(184,134,69,0.1)", color: "var(--gold-dark)", border: "none", fontSize: "10px", padding: "0.3rem 0.6rem" }}>{c._count?.sections > 0 ? c._count.sections : (c.weeksDuration || 0)} Wks</span>
+                                      {c.level && <span className="badge" style={{ background: "var(--cream-mid)", color: "var(--text-secondary)", border: "none", fontSize: "10px", padding: "0.3rem 0.6rem" }}>{c.level}</span>}
+                                    </div>
+                                    <h3 style={{ fontSize: "19px", marginBottom: "0.75rem", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", lineHeight: 1.3 }}>{c.title}</h3>
+                                    <p className="body-text" style={{ fontSize: "13.5px", flexGrow: 1, marginBottom: "1.5rem", color: "var(--text-muted)", lineHeight: 1.5 }}>{c.subtitle || c.description?.substring(0, 90) + "..." || "Explore the biblical foundations and practical aspects of this subject."}</p>
+                                    
+                                    <div style={{ marginTop: "auto", borderTop: "1px solid rgba(220, 224, 213, 0.4)", paddingTop: "1.25rem" }}>
+                                      <div style={{ display: "inline-flex", alignItems: "center", color: "var(--navy-deep)", fontWeight: 700, fontSize: "13px", textTransform: "uppercase", letterSpacing: "1px", transition: "color 0.2s" }} onMouseOver={(e) => e.currentTarget.style.color = "var(--gold-dark)"} onMouseOut={(e) => e.currentTarget.style.color = "var(--navy-deep)"}>
+                                        View Details <span style={{ marginLeft: "6px", fontSize: "16px" }}>→</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+
+              {standaloneCourses.length > 0 && (
+                <div>
+                  <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>Individual Courses</h2>
+                  <div className="grid-3">
+                    {standaloneCourses.map((c: any, i: number) => (
+                      <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`}>
+                        <div>
+                          <div className="course-badges">
+                            <span className="badge">{c._count?.sections > 0 ? c._count.sections : (c.weeksDuration || 0)} Wks</span>
+                            {c.totalLectures > 0 && <span className="badge">{c.totalLectures} Lectures</span>}
+                            {c.level && <span className="badge">{c.level}</span>}
+                          </div>
+                          <h3 style={{ fontSize: "20px", marginBottom: "0.75rem", fontFamily: "var(--font-dm-serif), serif", color: "var(--text-main)", lineHeight: 1.2 }}>{c.title}</h3>
+                          <p className="body-text" style={{ fontSize: "14.5px" }}>{c.subtitle || c.description?.substring(0, 100) || "Learn the foundations of this topic."}</p>
+                        </div>
+                        <div style={{ marginTop: "1.5rem" }}>
+                          <Link href={`/courses/${c.slug}`} style={{ display: "inline-block", color: "var(--accent-green)", fontWeight: 700, fontSize: "13px", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1px" }}>
+                            View Details →
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="text-center reveal" style={{ marginTop: "4rem" }}>
