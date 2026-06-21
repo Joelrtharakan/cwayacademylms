@@ -3,6 +3,21 @@ import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
 import { uploadToR2, generateKey } from "../services/storage.service";
 
+export const getPublicPrograms = asyncHandler(async (req: Request, res: Response) => {
+  const programs = await prisma.program.findMany({
+    where: { status: "PUBLISHED" },
+    include: {
+      courses: {
+        where: { status: "PUBLISHED" },
+        orderBy: { createdAt: "asc" },
+        include: { _count: { select: { sections: true, enrollments: true } }, instructor: { select: { name: true } } }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  res.json({ status: "success", data: programs });
+});
+
 export const getProgram = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const program = await prisma.program.findUnique({

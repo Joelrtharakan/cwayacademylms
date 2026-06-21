@@ -5,6 +5,7 @@ import multer from "multer";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get("/", PC.getPublicPrograms);
 router.get("/:id", PC.getProgram);
 
 router.post(

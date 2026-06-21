@@ -113,26 +113,20 @@ export default function LandingPage() {
     });
   };
 
+  const { data: programsData, isLoading: isLoadingPrograms } = useQuery({
+    queryKey: ["publicPrograms"],
+    queryFn: () => api.get("/programs").then((res) => res.data.data),
+  });
+  const programsList = programsData || [];
+
   const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
     queryKey: ["publicCourses"],
     queryFn: () => api.get("/courses").then((res) => res.data.data),
   });
   const courses = coursesData?.courses || [];
 
-  const { programsList, standaloneCourses } = React.useMemo(() => {
-    const pMap = new Map();
-    const sCourses: any[] = [];
-    courses.forEach((c: any) => {
-      if (c.program) {
-        if (!pMap.has(c.program.id)) {
-          pMap.set(c.program.id, { ...c.program, courses: [] });
-        }
-        pMap.get(c.program.id).courses.push(c);
-      } else {
-        sCourses.push(c);
-      }
-    });
-    return { programsList: Array.from(pMap.values()), standaloneCourses: sCourses };
+  const standaloneCourses = React.useMemo(() => {
+    return courses.filter((c: any) => !c.programId);
   }, [courses]);
 
   const { data: blogPostsData } = useQuery({
@@ -1414,11 +1408,11 @@ export default function LandingPage() {
         </div>
 
         <div className="section container">
-          {isLoadingCourses ? (
+          {isLoadingCourses || isLoadingPrograms ? (
             <div style={{ textAlign: "center", padding: "4rem 0" }}>
               <p className="body-text">Loading courses...</p>
             </div>
-          ) : !courses?.length ? (
+          ) : !standaloneCourses?.length && !programsList?.length ? (
             <div style={{ textAlign: "center", padding: "4rem 0", background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
               <h3 style={{ fontSize: "20px", marginBottom: "1rem", color: "var(--text-main)" }}>No Courses Available Yet</h3>
               <p className="body-text">Check back soon for upcoming courses.</p>
