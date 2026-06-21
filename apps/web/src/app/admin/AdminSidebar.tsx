@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
+  LayoutTemplate,
 } from "lucide-react";
 
 interface NavItem {
