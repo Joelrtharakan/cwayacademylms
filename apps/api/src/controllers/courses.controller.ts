@@ -699,6 +699,7 @@ export const getMyCourses = asyncHandler(async (req: Request, res: Response) => 
       _count: { select: { enrollments: true, sections: true } },
       reviews: { select: { rating: true } },
       enrollments: { select: { progress: true } },
+      program: { select: { title: true } },
     },
   });
 

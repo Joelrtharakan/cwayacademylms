@@ -63,6 +63,11 @@ function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (i
         <h3 style={{ fontFamily: "Georgia, serif", fontSize: "18px", color: "#1A261D", fontWeight: 700, lineHeight: 1.3, marginBottom: "8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
           {course.title}
         </h3>
+        {course.program?.title && (
+          <div style={{ fontSize: "11px", color: "#B88645", fontWeight: 700, marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em", background: "rgba(184,134,69,0.08)", padding: "4px 8px", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
+             {course.program.title}
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "13px", color: "#8F9E93", fontWeight: 500, marginBottom: "20px" }}>
           <span>{course._count?.sections || 0} modules</span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Users size={14} /> {course._count?.enrollments || 0} students</span>
