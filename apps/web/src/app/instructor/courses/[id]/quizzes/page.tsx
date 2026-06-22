@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "@/store/auth.store";
 import { format } from "date-fns";
 
@@ -14,6 +15,7 @@ const MUTED = "#8A9E8C";
 export default function CourseQuizzesPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // Get course to find its quizzes (we need to fetch sections -> lessons -> quizzes)
   const { data: course, isLoading } = useQuery({
@@ -37,6 +39,26 @@ export default function CourseQuizzesPage() {
     queryFn: () => api.get(`/quizzes/${selectedQuiz}/stats`).then(r => r.data.data),
     enabled: !!selectedQuiz,
   });
+
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      return api.post(`/quizzes/${selectedQuiz}/reset`);
+    },
+    onSuccess: (res) => {
+      toast.success(res.data?.message || "Quiz attempts reset successfully");
+      queryClient.invalidateQueries({ queryKey: ["quiz-attempts", selectedQuiz] });
+      queryClient.invalidateQueries({ queryKey: ["quiz-stats", selectedQuiz] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to reset quiz");
+    }
+  });
+
+  const handleReset = () => {
+    if (confirm("Are you sure you want to reset this quiz? This will delete all current student attempts and scores, allowing everyone to retake it.")) {
+      resetMutation.mutate();
+    }
+  };
 
   if (isLoading) return <div style={{ color: MUTED }}>Loading quizzes...</div>;
 
@@ -71,6 +93,17 @@ export default function CourseQuizzesPage() {
         {/* Content: Selected Quiz Details */}
         {selectedQuiz && (
           <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 16 }}>
+              <button 
+                onClick={handleReset}
+                disabled={resetMutation.isPending}
+                style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: `1px solid ${GOLD}`, borderRadius: 8, padding: "8px 16px", color: GOLD, fontSize: 13, fontWeight: 600, cursor: resetMutation.isPending ? "not-allowed" : "pointer", opacity: resetMutation.isPending ? 0.6 : 1 }}
+              >
+                <RotateCcw size={16} />
+                {resetMutation.isPending ? "Resetting..." : "Reset All Attempts"}
+              </button>
+            </div>
+
             {/* Stats */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
               <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: "16px 20px" }}>

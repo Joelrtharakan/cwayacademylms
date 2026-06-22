@@ -698,7 +698,18 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
   if (!assignment) throw new AppError("Assignment not found", 404);
 
   if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
-    throw new AppError("Assignment submission is locked as the due date has passed", 403);
+    const extension = await prisma.extensionRequest.findFirst({
+      where: {
+        studentId,
+        itemId: assignmentId,
+        itemType: "ASSIGNMENT",
+        status: "APPROVED"
+      }
+    });
+
+    if (!extension || (extension.requestedDate && new Date() > new Date(extension.requestedDate))) {
+      throw new AppError("Assignment submission is locked as the due date has passed", 403);
+    }
   }
 
   let fileUrl: string | null = null;

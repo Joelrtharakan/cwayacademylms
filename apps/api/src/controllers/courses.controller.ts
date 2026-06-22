@@ -615,6 +615,15 @@ export const getQuizStats = asyncHandler(async (req: Request, res: Response) => 
   res.json({ status: "success", data: { totalAttempts: total, passRate: total ? (passed / total) * 100 : 0, avgScore: avg, scoreDistribution: distribution } });
 });
 
+export const resetQuizAttempts = asyncHandler(async (req: Request, res: Response) => {
+  const { quizId } = req.params;
+  // Make sure the user is an instructor or admin
+  const deleted = await prisma.quizAttempt.deleteMany({
+    where: { quizId }
+  });
+  res.json({ status: "success", message: `Reset ${deleted.count} attempts successfully` });
+});
+
 // ─── FORUM ───────────────────────────────────────────────────────────────────
 
 export const getForumPosts = asyncHandler(async (req: Request, res: Response) => {

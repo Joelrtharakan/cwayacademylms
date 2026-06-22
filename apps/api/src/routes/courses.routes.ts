@@ -46,6 +46,9 @@ router.get("/instructor/courses", authenticate, authorize("INSTRUCTOR", "ADMIN")
 router.get("/instructor/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorStats);
 router.get("/instructor/courses/:id/analytics", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
 router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR"), CC.getInstructorAssignments);
+router.get("/quizzes/:quizId/attempts", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizAttempts);
+router.get("/quizzes/:quizId/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizStats);
+router.post("/quizzes/:quizId/reset", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.resetQuizAttempts);
 
 router.get("/instructor/courses/:id/students", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
 router.get("/instructor/courses/:id/gradebook", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorGradebook);
