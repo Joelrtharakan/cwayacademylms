@@ -89,11 +89,10 @@ const NAV: NavSection[] = [
 const EXPANDED_W = 280;
 const COLLAPSED_W = 80;
 
-export default function AdminSidebar({ mobileOpen = false, onClose = () => {} }: { mobileOpen?: boolean, onClose?: () => void }) {
+export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, collapsed = false, onToggleCollapse = () => {} }: { mobileOpen?: boolean, onClose?: () => void, collapsed?: boolean, onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
-  const [collapsed, setCollapsed] = useState(false);
 
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -508,7 +507,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {} }:
             }}
           >
             <button
-              onClick={() => setCollapsed(!collapsed)}
+              onClick={() => onToggleCollapse()}
               style={{
                 width: "32px",
                 height: "32px",

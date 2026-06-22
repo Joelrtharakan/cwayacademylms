@@ -13,6 +13,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const { user, isLoading, initAuth } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = React.useState(false);
 
   useEffect(() => {
     initAuth();
@@ -77,7 +78,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
-      <StudentSidebar mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <StudentSidebar 
+        mobileOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+        collapsed={isDesktopCollapsed}
+        onToggleCollapse={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+      />
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
@@ -103,9 +109,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           
           {/* Mobile Hamburger Menu */}
           <button 
-            className="md:hidden mr-4"
-            onClick={() => setIsMobileMenuOpen(true)}
-            style={{ color: "#1A261D", background: "transparent", border: "none" }}
+            className="mr-4"
+            onClick={() => {
+              if (window.innerWidth < 768) setIsMobileMenuOpen(true);
+              else setIsDesktopCollapsed(!isDesktopCollapsed);
+            }}
+            style={{ color: "#1A261D", background: "transparent", border: "none", cursor: "pointer" }}
           >
             <Menu size={24} />
           </button>

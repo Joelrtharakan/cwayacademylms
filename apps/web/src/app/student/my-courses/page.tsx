@@ -35,7 +35,7 @@ export default function MyCoursesPage() {
   const standaloneInProgress = standaloneEnrollments.filter((e: any) => e.status === "ACTIVE" && e.progress < 100);
   const standaloneCompleted = standaloneEnrollments.filter((e: any) => e.progress >= 100);
 
-  const renderCourseCard = (course: any, enrollment: any | null) => {
+  const renderCourseCard = (course: any, enrollment: any | null, isProgramCourse: boolean = false) => {
     const isCompleted = enrollment && enrollment.progress >= 100;
     const isLocked = !enrollment;
 
@@ -83,9 +83,11 @@ export default function MyCoursesPage() {
                 <Link href={`/student/courses/${course.id}/learn`} style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, border: `1px solid ${THEME.MUTED}`, color: THEME.HERO, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>
                   Review
                 </Link>
-                <Link href="/student/certificates" style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <Award size={16} /> Certificate
-                </Link>
+                {!isProgramCourse && (
+                  <Link href="/student/certificates" style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 8, background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <Award size={16} /> Certificate
+                  </Link>
+                )}
               </div>
             )}
             {!isCompleted && !isLocked && enrollment && (
@@ -125,22 +127,36 @@ export default function MyCoursesPage() {
         </p>
       </div>
 
-      {programEnrollments.map((pe: any) => (
-        <div key={pe.id} style={{ marginBottom: 56 }}>
-          <div style={{ marginBottom: 24, borderBottom: `2px solid ${THEME.GOLD}`, paddingBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: THEME.GOLD, textTransform: "uppercase", letterSpacing: "1px" }}>Enrolled Program</span>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: THEME.HERO, marginTop: 4 }}>
-              {pe.program.title}
-            </h2>
+      {programEnrollments.map((pe: any) => {
+        const isProgramCompleted = pe.program.courses.every((c: any) => {
+          const e = enrollments.find((e: any) => e.courseId === c.id);
+          return e && e.progress >= 100;
+        });
+
+        return (
+          <div key={pe.id} style={{ marginBottom: 56 }}>
+            <div style={{ marginBottom: 24, borderBottom: `2px solid ${THEME.GOLD}`, paddingBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: THEME.GOLD, textTransform: "uppercase", letterSpacing: "1px" }}>Enrolled Program</span>
+                <h2 style={{ fontSize: 24, fontWeight: 700, color: THEME.HERO, marginTop: 4 }}>
+                  {pe.program.title}
+                </h2>
+              </div>
+              {isProgramCompleted && (
+                <Link href="/student/certificates" style={{ background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Award size={16} /> Program Certificate
+                </Link>
+              )}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
+              {pe.program.courses.map((course: any) => {
+                const enrollment = enrollments.find((e: any) => e.courseId === course.id);
+                return renderCourseCard(course, enrollment, true);
+              })}
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
-            {pe.program.courses.map((course: any) => {
-              const enrollment = enrollments.find((e: any) => e.courseId === course.id);
-              return renderCourseCard(course, enrollment);
-            })}
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {standaloneInProgress.length > 0 && (
         <div style={{ marginBottom: 48 }}>

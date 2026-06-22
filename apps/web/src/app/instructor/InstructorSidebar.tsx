@@ -66,11 +66,10 @@ const NAV: NavSection[] = [
 const EXPANDED_W = 280;
 const COLLAPSED_W = 80;
 
-export default function InstructorSidebar({ mobileOpen = false, onClose = () => {} }: { mobileOpen?: boolean, onClose?: () => void }) {
+export default function InstructorSidebar({ mobileOpen = false, onClose = () => {}, collapsed = false, onToggleCollapse = () => {} }: { mobileOpen?: boolean, onClose?: () => void, collapsed?: boolean, onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
-  const [collapsed, setCollapsed] = useState(false);
 
   const { data: invitations } = useQuery({
     queryKey: ["invitations", "PENDING"],
@@ -515,7 +514,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
 
       {/* Floating Edge Toggle (Visible in both states) */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => onToggleCollapse()}
         style={{
           position: "fixed",
           top: "32px",
