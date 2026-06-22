@@ -41,16 +41,27 @@ const SubmissionsViewer = ({ assignment, onBack }: { assignment: any, onBack: ()
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "32px" }}>
           <div>
             <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Response</h4>
-            <div style={{ background: "#FAFAF7", padding: "20px", borderRadius: "12px", fontSize: "15px", whiteSpace: "pre-wrap", color: "#1A261D", minHeight: "150px" }}>
+            <div style={{ background: "#FAFAF7", padding: "20px", borderRadius: "12px", fontSize: "15px", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere", color: "#1A261D", minHeight: "150px" }}>
               {gradingSubmission.content || "No text response provided."}
             </div>
 
             {gradingSubmission.fileUrl && (
               <div style={{ marginTop: "24px" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Attachment</h4>
-                <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", textDecoration: "none", color: "#1A261D", fontWeight: 600 }}>
-                  <Download size={16} /> Download File
-                </a>
+                {gradingSubmission.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i) ? (
+                  <div style={{ border: "1px solid #E4E8E0", borderRadius: "8px", overflow: "hidden" }}>
+                    <img src={gradingSubmission.fileUrl} alt="Attachment" style={{ width: "100%", display: "block" }} />
+                    <div style={{ padding: "12px", background: "#FFFFFF", borderTop: "1px solid #E4E8E0" }}>
+                      <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "#4A8C5C", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>
+                        <Download size={14} /> Download Original
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", textDecoration: "none", color: "#1A261D", fontWeight: 600 }}>
+                    <Download size={16} /> View / Download File
+                  </a>
+                )}
               </div>
             )}
           </div>
