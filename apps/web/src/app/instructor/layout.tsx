@@ -6,12 +6,13 @@ import { useAuthStore } from "@/store/auth.store";
 import { useQuery } from "@tanstack/react-query";
 import { getInvitations } from "@/lib/api/instructor";
 import InstructorSidebar from "./InstructorSidebar";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import { toast } from "sonner";
 
 export default function InstructorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isLoading, initAuth } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [readIds, setReadIds] = useState<string[]>([]);
 
@@ -102,7 +103,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
-      <InstructorSidebar />
+      <InstructorSidebar mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
@@ -118,15 +119,25 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 28px",
+            padding: "0 clamp(16px, 4vw, 28px)",
             flexShrink: 0,
             position: "sticky",
             top: 0,
             zIndex: 30,
           }}
         >
+          
+          {/* Mobile Hamburger Menu */}
+          <button 
+            className="md:hidden mr-4"
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ color: "#1A261D", background: "transparent", border: "none" }}
+          >
+            <Menu size={24} />
+          </button>
+          
           {/* Search */}
-          <div style={{ position: "relative", width: "240px" }}>
+          <div className="hidden sm:block" style={{ position: "relative", width: "240px" }}>
             <Search
               size={14}
               style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9AAE9B" }}
@@ -245,7 +256,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                     )}
                   </div>
                   
-                  <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+                  <div data-lenis-prevent="true" style={{ maxHeight: "360px", overflowY: "auto" }}>
                     {/* Unread Section */}
                     {unreadNotifs.length > 0 && (
                       <div style={{ padding: "8px 20px", background: "#FAF7F2", fontSize: "10px", fontWeight: 800, textTransform: "uppercase", color: "#C9973A", letterSpacing: "0.08em" }}>
@@ -361,7 +372,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
         <main
           style={{
             flex: 1,
-            padding: "32px 36px",
+            padding: "clamp(16px, 4vw, 32px) clamp(16px, 5vw, 36px)",
           }}
         >
           {children}

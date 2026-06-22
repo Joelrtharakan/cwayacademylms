@@ -64,7 +64,7 @@ const NAV: NavSection[] = [
 const EXPANDED_W = 280;
 const COLLAPSED_W = 80;
 
-export default function StudentSidebar() {
+export default function StudentSidebar({ mobileOpen = false, onClose = () => {} }: { mobileOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
@@ -109,6 +109,15 @@ export default function StudentSidebar() {
 
   return (
     <>
+
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
       <style>{`
         .student-sidebar-scroll::-webkit-scrollbar {
           width: 6px;
@@ -127,6 +136,7 @@ export default function StudentSidebar() {
 
       {/* Fixed sidebar */}
       <div
+        className={`md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           position: "fixed",
           top: 0,
@@ -503,7 +513,7 @@ export default function StudentSidebar() {
       </div>
 
       {/* Spacer to push content right — same width as sidebar */}
-      <div style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div className="hidden md:block" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
     </>
   );
 }

@@ -1242,17 +1242,17 @@ export const getMyCourseGrade = asyncHandler(async (req: Request, res: Response)
   });
   if (!course) throw new AppError("Course not found", 404);
 
-  const gradedItems: { id: string, type: string, maxScore: number }[] = [];
+  const gradedItems: { id: string, type: string, maxScore: number, sectionTitle: string }[] = [];
   course.sections.forEach(sec => {
     sec.lessons.forEach(lesson => {
       if (lesson.assignment) {
-        gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+        gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: sec.title });
       }
       if (lesson.quiz) {
-        gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+        gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: sec.title });
       }
       if (lesson.type === "FORUM") {
-        gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+        gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: sec.title });
       }
     });
   });
@@ -1287,7 +1287,8 @@ export const getMyCourseGrade = asyncHandler(async (req: Request, res: Response)
     id: item.id,
     type: item.type,
     maxScore: item.maxScore,
-    score: grades[item.id]
+    score: grades[item.id],
+    sectionTitle: item.sectionTitle
   }));
 
   res.json({ status: "success", data: { grade: courseGrade, totalEarned, totalMaxGraded, items: itemDistribution } });

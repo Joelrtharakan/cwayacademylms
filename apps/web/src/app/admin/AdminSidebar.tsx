@@ -89,7 +89,7 @@ const NAV: NavSection[] = [
 const EXPANDED_W = 280;
 const COLLAPSED_W = 80;
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ mobileOpen = false, onClose = () => {} }: { mobileOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
@@ -134,6 +134,15 @@ export default function AdminSidebar() {
 
   return (
     <>
+
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
       <style>{`
         .admin-sidebar-scroll::-webkit-scrollbar {
           width: 6px;
@@ -153,6 +162,7 @@ export default function AdminSidebar() {
       {/* Fixed sidebar */}
       <div
         className="print:hidden"
+        className={`md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           position: "fixed",
           top: 0,

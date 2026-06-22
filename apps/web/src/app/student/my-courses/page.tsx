@@ -6,8 +6,10 @@ import { api } from "@/store/auth.store";
 import { THEME } from "@/lib/cway-theme";
 import Link from "next/link";
 import { BookOpen, Award, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function MyCoursesPage() {
+  const router = useRouter();
   const { data, isLoading } = useQuery({
     queryKey: ["studentDashboard"],
     queryFn: () => api.get("/student/dashboard").then(res => res.data.data),
@@ -38,7 +40,12 @@ export default function MyCoursesPage() {
     const isLocked = !enrollment;
 
     const cardContent = (
-      <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(0,0,0,0.05)", transition: "transform 0.2s, box-shadow 0.2s", height: "100%", display: "flex", flexDirection: "column", opacity: isLocked ? 0.7 : 1 }}
+      <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(0,0,0,0.05)", transition: "transform 0.2s, box-shadow 0.2s", height: "100%", display: "flex", flexDirection: "column", opacity: isLocked ? 0.7 : 1, cursor: isLocked ? "default" : "pointer" }}
+           onClick={(e) => {
+             if (!isLocked && !(e.target as HTMLElement).closest('a')) {
+               router.push(`/student/courses/${course.id}/learn`);
+             }
+           }}
            onMouseEnter={e => { if (!isLocked) { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.05)"; } }}
            onMouseLeave={e => { if (!isLocked) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; } }}
       >
@@ -100,9 +107,9 @@ export default function MyCoursesPage() {
     if (isLocked) return <div key={course.id}>{cardContent}</div>;
 
     return (
-      <Link key={course.id} href={`/student/courses/${course.id}/learn`} style={{ textDecoration: "none" }}>
+      <div key={course.id} style={{ textDecoration: "none" }}>
         {cardContent}
-      </Link>
+      </div>
     );
   };
 

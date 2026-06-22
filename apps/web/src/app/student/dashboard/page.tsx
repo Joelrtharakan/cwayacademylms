@@ -216,7 +216,7 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* Bottom Two Columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))", gap: "24px" }}>
         
         {/* Active Courses */}
         <div

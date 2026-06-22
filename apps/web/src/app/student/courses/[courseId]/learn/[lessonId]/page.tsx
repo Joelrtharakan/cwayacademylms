@@ -513,7 +513,7 @@ export default function LessonPlayerPage() {
   const nextButtonClasses = "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent";
 
   return (
-    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative pb-24">
+    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative">
       <div className="flex-1 w-full relative">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
@@ -1553,7 +1553,7 @@ export default function LessonPlayerPage() {
       </div>
 
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 fixed bottom-0 left-0 md:left-[320px] right-0 transition-all duration-300" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
+      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 sticky bottom-0 w-full transition-all duration-300 mt-auto" style={{ paddingLeft: "32px", paddingRight: "32px" }}>
         <button
           disabled={!previousLesson}
           onClick={() => previousLesson && goToLesson(previousLesson.id)}

@@ -1948,3 +1948,117 @@ section[id] {
 
 
 
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE UTILITIES
+───────────────────────────────────────────── */
+
+/* Responsive Grid 2-to-1 */
+.responsive-grid-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 1024px) {
+  .responsive-grid-2-1 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Flex Stack on Mobile */
+.flex-stack {
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 768px) {
+  .flex-stack {
+    flex-direction: column !important;
+  }
+}
+
+/* Flex Reverse Stack on Mobile (e.g. image goes to top) */
+.flex-stack-reverse {
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 768px) {
+  .flex-stack-reverse {
+    flex-direction: column-reverse !important;
+  }
+}
+
+/* Hide / Show Utilities */
+.hide-on-mobile {
+  display: block;
+}
+.show-on-mobile {
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .show-on-mobile {
+    display: block !important;
+  }
+}
+
+/* Responsive Padding */
+.responsive-padding {
+  padding: 3rem 2rem;
+}
+
+@media (max-width: 768px) {
+  .responsive-padding {
+    padding: 1.5rem 1rem !important;
+  }
+}
+
+/* Responsive Sidebar Layout */
+.responsive-sidebar-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.responsive-sidebar-content {
+  flex: 1;
+  margin-left: 260px; /* Width of sidebar */
+  transition: margin-left 0.3s;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .responsive-sidebar-content {
+    margin-left: 0;
+  }
+}
+
+/* Mobile Sidebar Overlay */
+.mobile-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+.mobile-sidebar-overlay.active {
+  display: block;
+}

@@ -4,11 +4,12 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import AdminSidebar from "./AdminSidebar";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isLoading, initAuth } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   useEffect(() => {
     initAuth();
@@ -60,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
-      <AdminSidebar />
+      <AdminSidebar mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
@@ -77,15 +78,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 28px",
+            padding: "0 clamp(16px, 4vw, 28px)",
             flexShrink: 0,
             position: "sticky",
             top: 0,
             zIndex: 30,
           }}
         >
+          
+          {/* Mobile Hamburger Menu */}
+          <button 
+            className="md:hidden mr-4"
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ color: "#1A261D", background: "transparent", border: "none" }}
+          >
+            <Menu size={24} />
+          </button>
+          
           {/* Search */}
-          <div style={{ position: "relative", width: "240px" }}>
+          <div className="hidden sm:block" style={{ position: "relative", width: "240px" }}>
             <Search
               size={14}
               style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9AAE9B" }}
@@ -201,7 +212,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           className="print:p-0 print:m-0 print:bg-white print:w-full"
           style={{
             flex: 1,
-            padding: "32px 36px",
+            padding: "clamp(16px, 4vw, 32px) clamp(16px, 5vw, 36px)",
           }}
         >
           {children}

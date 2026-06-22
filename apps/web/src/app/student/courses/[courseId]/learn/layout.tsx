@@ -16,7 +16,13 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   const { user } = useAuthStore();
   const [enrollment, setEnrollment] = useState<any>(null);
   const [progress, setProgress] = useState<any>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, []);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
@@ -181,16 +187,14 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
       {/* SIDEBAR */}
       <aside 
-        className={`fixed md:sticky inset-y-0 left-0 top-0 z-40 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed md:sticky inset-y-0 left-0 top-0 z-40 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0 w-[320px]' : '-translate-x-full md:translate-x-0 w-[320px] md:w-0'} overflow-hidden`}
         style={{
-          width: "320px",
           height: "100vh",
           background: "linear-gradient(180deg, #0f172a 0%, #020617 100%)",
-          display: "flex",
-          flexDirection: "column",
           flexShrink: 0
         }}
       >
+        <div style={{ width: "320px", display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Decorative radial glow top-right */}
         <div
           style={{
@@ -313,12 +317,31 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                 <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "10px 12px", background: "rgba(0,0,0,0.15)" }}>
                   <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>Grade Breakdown</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {courseGrade.items.filter((i: any) => i.score !== null && i.score !== undefined).map((item: any, idx: number) => (
-                      <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px" }}>
-                        <span style={{ color: "rgba(255,255,255,0.6)", textTransform: "capitalize" }}>{item.type.toLowerCase()}</span>
-                        <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>{item.score} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>/ {item.maxScore}</span></span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const graded = courseGrade.items.filter((i: any) => i.score !== null && i.score !== undefined);
+                      const grouped = graded.reduce((acc: any, item: any) => {
+                        const section = item.sectionTitle || 'Other';
+                        if (!acc[section]) acc[section] = [];
+                        acc[section].push(item);
+                        return acc;
+                      }, {});
+
+                      return Object.entries(grouped).map(([section, items]: [string, any], sectionIdx: number) => (
+                        <div key={sectionIdx} style={{ marginBottom: Object.keys(grouped).length - 1 === sectionIdx ? "0" : "8px" }}>
+                          <div style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: "6px" }}>
+                            {section}
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "6px" }}>
+                            {items.map((item: any, idx: number) => (
+                              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px" }}>
+                                <span style={{ color: "rgba(255,255,255,0.6)", textTransform: "capitalize" }}>{item.type.toLowerCase()}</span>
+                                <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>{item.score} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>/ {item.maxScore}</span></span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -329,7 +352,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
         </div>
 
         {/* Modules List */}
-        <div className="course-sidebar-scroll" style={{ flex: 1, overflowY: "auto", zIndex: 2, position: "relative" }}>
+        <div data-lenis-prevent="true" className="course-sidebar-scroll" style={{ flex: 1, overflowY: "auto", zIndex: 2, position: "relative" }}>
           {progress.moduleProgress.map((mod: any, index: number) => {
             const isExpanded = expandedModules[mod.moduleId];
             const isAllComplete = mod.completedItems === mod.totalItems && mod.totalItems > 0;
@@ -477,7 +500,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                 <div style={{
                                   fontSize: "13px", fontWeight: isActive ? 600 : 500,
                                   color: isActive ? "#D4A35B" : item.isCompleted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)",
-                                  textDecoration: item.isCompleted && !isActive ? "line-through" : "none"
+                                  textDecoration: "none"
                                 }}>
                                   {item.lessonTitle}
                                 </div>
@@ -503,6 +526,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
               </div>
             );
           })}
+        </div>
         </div>
       </aside>
 
@@ -537,8 +561,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
           {/* Left side (Mobile Toggle) */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <button 
-              className="md:hidden"
-              onClick={() => setIsSidebarOpen(true)}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               style={{ background: "none", border: "none", padding: "8px", cursor: "pointer", color: "#1A261D" }}
             >
               <PanelLeft size={20} />

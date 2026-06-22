@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore, api } from "@/store/auth.store";
 import StudentSidebar from "./StudentSidebar";
-import { Bell, Search, Check, X } from "lucide-react";
+import { Bell, Search, Check, X, Menu } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 
@@ -12,6 +12,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading, initAuth } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   useEffect(() => {
     initAuth();
@@ -76,7 +77,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
-      <StudentSidebar />
+      <StudentSidebar mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: "100vh" }}>
@@ -92,15 +93,25 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 28px",
+            padding: "0 clamp(16px, 4vw, 28px)",
             flexShrink: 0,
             position: "sticky",
             top: 0,
             zIndex: 30,
           }}
         >
+          
+          {/* Mobile Hamburger Menu */}
+          <button 
+            className="md:hidden mr-4"
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ color: "#1A261D", background: "transparent", border: "none" }}
+          >
+            <Menu size={24} />
+          </button>
+          
           {/* Search */}
-          <div style={{ position: "relative", width: "240px" }}>
+          <div className="hidden sm:block" style={{ position: "relative", width: "240px" }}>
             <Search
               size={14}
               style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9AAE9B" }}
@@ -177,7 +188,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         <main
           style={{
             flex: 1,
-            padding: "32px 36px",
+            padding: "clamp(16px, 4vw, 32px) clamp(16px, 5vw, 36px)",
           }}
         >
           {children}
@@ -289,7 +300,7 @@ function NotificationDropdown() {
               </button>
             )}
           </div>
-          <div style={{ maxHeight: "min(400px, calc(100vh - 140px))", overflowY: "auto", overscrollBehavior: "contain" }}>
+          <div data-lenis-prevent="true" style={{ maxHeight: "min(400px, calc(100vh - 140px))", overflowY: "auto" }}>
             {data.length === 0 ? (
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#8F9E93", fontSize: "13px" }}>You're all caught up!</div>
             ) : (

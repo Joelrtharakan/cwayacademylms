@@ -335,7 +335,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Bottom Two Columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))", gap: "24px" }}>
         {/* Top Courses */}
         <div
           style={{

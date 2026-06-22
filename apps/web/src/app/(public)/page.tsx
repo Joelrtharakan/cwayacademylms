@@ -1071,6 +1071,28 @@ export default function LandingPage() {
             .nav-logo-text { font-size: 14px !important; letter-spacing: 1px !important; }
             .container { padding: 0 0.75rem; }
         }
+        @media (max-width: 1024px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+            .about-header-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .challenge-new-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .challenge-left-content { position: relative; top: 0; }
+            .vm-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .offer-section-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .offer-left-column { position: relative; top: 0; }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 1.5rem; }
+            .nav-links, .nav-actions { display: none; }
+            .hamburger { display: flex; }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .modern-team-row-card { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 1.5rem; }
+            .team-avatar-container { margin: 0 auto 1rem auto; }
+            .hero-btn-group { flex-direction: column; }
+            .offer-right-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .headline-hero { font-size: clamp(32px, 8vw, 42px); }
+            .section { padding-top: 4rem; padding-bottom: 4rem; }
+        }
       ` }} />
 
       {/* Progress Scrollbar */}
