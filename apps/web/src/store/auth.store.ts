@@ -23,6 +23,7 @@ interface AuthState {
   isLoading: boolean;
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
+  logout: () => Promise<void>;
   refreshAccessToken: () => Promise<string | null>;
   initAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -54,6 +55,15 @@ export const useAuthStore = create<AuthState>()(
   clearAuth: () => {
     set({ user: null, accessToken: null, isLoading: false });
     delete api.defaults.headers.common["Authorization"];
+  },
+
+  logout: async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (e) {
+      console.error("Logout API failed", e);
+    }
+    get().clearAuth();
   },
 
   refreshAccessToken: async () => {

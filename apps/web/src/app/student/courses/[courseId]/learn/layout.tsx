@@ -447,9 +447,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                   {item.isCompleted ? (
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "#A5F3FC" }}>
-                                      <CheckCircle size={14} /> Completed
-                                    </span>
+                                    <CheckCircle size={16} style={{ color: "#4A8C5C" }} />
                                   ) : (
                                     <button
                                       onClick={(e) => {

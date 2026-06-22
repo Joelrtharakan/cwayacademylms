@@ -28,6 +28,8 @@ model User {
   resetToken        String?
   resetTokenExpiry  DateTime?
   googleId          String?   @unique
+  lastLoginAt       DateTime?
+  lastLogoutAt      DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 

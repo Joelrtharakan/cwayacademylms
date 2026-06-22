@@ -102,6 +102,11 @@ export class AuthService {
 
     await TokenService.storeRefreshToken(user.id, refreshToken);
 
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
     return {
       accessToken,
       refreshToken,
@@ -145,6 +150,10 @@ export class AuthService {
     try {
       const payload = TokenService.verifyRefreshToken(token);
       await TokenService.revokeRefreshToken(payload.userId);
+      await prisma.user.update({
+        where: { id: payload.userId },
+        data: { lastLogoutAt: new Date() },
+      });
     } catch (e) {}
 
     return { message: "Logged out" };

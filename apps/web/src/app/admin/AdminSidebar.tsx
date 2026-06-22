@@ -92,7 +92,7 @@ const COLLAPSED_W = 80;
 export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, collapsed = false, onToggleCollapse = () => {} }: { mobileOpen?: boolean, onClose?: () => void, collapsed?: boolean, onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, clearAuth } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -125,8 +125,8 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
 
   const W = collapsed ? COLLAPSED_W : EXPANDED_W;
 
-  const handleSignOut = () => {
-    clearAuth();
+  const handleSignOut = async () => {
+    await logout();
     toast.success("Signed out successfully");
     router.push("/login");
   };

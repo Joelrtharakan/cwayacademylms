@@ -36,8 +36,8 @@ export default function AssignmentsPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "80px 0", background: "white", borderRadius: 24, border: "1px solid rgba(0,0,0,0.05)" }}>
-          <div className="w-10 h-10 border-2 border-[#E4E8E0] border-t-[#C9973A] rounded-full animate-spin mx-auto mb-4" />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", background: "white", borderRadius: 24, border: "1px solid rgba(0,0,0,0.05)" }}>
+          <div className="w-10 h-10 border-2 border-[#E4E8E0] border-t-[#C9973A] rounded-full animate-spin mb-4" />
           <p className="font-medium text-[#8A9E8C] text-lg">Loading assignments...</p>
         </div>
       ) : assignments.length === 0 ? (
