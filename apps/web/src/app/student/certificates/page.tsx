@@ -69,7 +69,9 @@ export default function CertificatesPage() {
                 </div>
               </div>
               <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <h3 style={{ fontSize: 22, fontWeight: 600, color: THEME.HERO, marginBottom: 8 }}>{cert.course.title}</h3>
+                <h3 style={{ fontSize: 22, fontWeight: 600, color: THEME.HERO, marginBottom: 8 }}>
+                  {cert.course.programId && cert.course.program ? cert.course.program.title : cert.course.title}
+                </h3>
                 <p style={{ color: THEME.MUTED, fontSize: 14, marginBottom: 4 }}>
                   Instructor: {cert.course.instructor.name}
                 </p>
