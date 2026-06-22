@@ -8,6 +8,8 @@ exports.sendCertificateIssuedEmail = sendCertificateIssuedEmail;
 exports.sendCourseApprovedEmail = sendCourseApprovedEmail;
 exports.sendSponsorThankYouEmail = sendSponsorThankYouEmail;
 exports.sendInstructorWelcomeEmail = sendInstructorWelcomeEmail;
+exports.sendAdmissionEmail = sendAdmissionEmail;
+exports.sendReferenceFormEmail = sendReferenceFormEmail;
 const resend_1 = require("resend");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY || 're_dummy_key');
 const FROM = process.env.EMAIL_FROM;
@@ -173,4 +175,28 @@ async function sendInstructorWelcomeEmail(instructor, password) {
       <p class="p">Please log in and change your password immediately.</p>
       <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
     `, 'Your instructor account is ready'));
+}
+async function sendAdmissionEmail(student, password, programTitle) {
+    await send(student.email, `Admission Granted: Welcome to ${programTitle}!`, wrap(`
+      <h1 class="h1">Welcome, ${student.name}!</h1>
+      <p class="p">We are thrilled to inform you that your application for <strong>${programTitle}</strong> has been approved.</p>
+      <p class="p">An account has been created for you to access the student dashboard.</p>
+      <div style="background:#fdf8ef; padding: 16px; border-radius: 8px; border: 1px solid rgba(201,151,58,0.3); margin: 16px 0;">
+        <p class="p" style="margin-bottom: 8px;"><strong>Email ID:</strong> ${student.email}</p>
+        <p class="p" style="margin-bottom: 0;"><strong>Temporary Password:</strong> ${password}</p>
+      </div>
+      <p class="p">Please log in and begin your first course. We recommend changing your password immediately after logging in.</p>
+      <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
+    `, 'Your admission has been approved and your account is ready'));
+}
+async function sendReferenceFormEmail(referee, studentName, programTitle, token) {
+    const link = `${APP}/references/${token}`;
+    await send(referee.email, `Action Required: Reference Form for ${studentName}`, wrap(`
+      <h1 class="h1">Reference Request</h1>
+      <p class="p">Dear ${referee.name},</p>
+      <p class="p"><strong>${studentName}</strong> has applied for admission to <strong>${programTitle}</strong> at CWAY Academy and has listed you as a reference.</p>
+      <p class="p">Admission eligibility depends upon a careful evaluation of your recommendation. We value your comments very highly and request you to complete the reference form by clicking the link below.</p>
+      <p><a class="btn" href="${link}">Fill Reference Form</a></p>
+      <div class="sc"><p>Your submission will be kept strictly confidential.</p></div>
+    `, `Please complete the reference form for ${studentName}`));
 }

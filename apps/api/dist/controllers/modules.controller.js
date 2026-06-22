@@ -540,7 +540,12 @@ exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     const updatedQuiz = await prisma_1.prisma.quiz.update({
         where: { id: quizId },
-        data: { title, passingScore, timeLimit, maxAttempts },
+        data: {
+            title,
+            passingScore,
+            timeLimit: timeLimit !== undefined ? (timeLimit ? timeLimit * 60 : null) : undefined,
+            maxAttempts
+        },
     });
     if (title || instructions !== undefined) {
         await prisma_1.prisma.lesson.update({

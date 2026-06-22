@@ -27,9 +27,31 @@ async function checkAndCompleteCourse(enrollmentId, studentId, overallProgress) 
     if (enrollment.course.programId) {
         const programCourses = await prisma_1.prisma.course.findMany({
             where: { programId: enrollment.course.programId },
+            orderBy: { createdAt: "asc" },
             select: { id: true, program: { select: { title: true } } }
         });
         const programCourseIds = programCourses.map(c => c.id);
+        // Auto-enroll in next course logic
+        const currentIndex = programCourseIds.indexOf(enrollment.courseId);
+        if (currentIndex !== -1 && currentIndex < programCourseIds.length - 1) {
+            const nextCourseId = programCourseIds[currentIndex + 1];
+            await prisma_1.prisma.enrollment.upsert({
+                where: { studentId_courseId: { studentId, courseId: nextCourseId } },
+                update: {},
+                create: { studentId, courseId: nextCourseId }
+            });
+            await prisma_1.prisma.programEnrollment.updateMany({
+                where: { studentId, programId: enrollment.course.programId },
+                data: { currentCourseId: nextCourseId }
+            });
+        }
+        else if (currentIndex === programCourseIds.length - 1) {
+            // Finished all courses in program
+            await prisma_1.prisma.programEnrollment.updateMany({
+                where: { studentId, programId: enrollment.course.programId },
+                data: { status: "COMPLETED", completedAt: new Date() }
+            });
+        }
         const completedEnrollments = await prisma_1.prisma.enrollment.count({
             where: {
                 studentId,
@@ -595,7 +617,17 @@ exports.submitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     if (!assignment)
         throw new errors_1.AppError("Assignment not found", 404);
     if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
-        throw new errors_1.AppError("Assignment submission is locked as the due date has passed", 403);
+        const extension = await prisma_1.prisma.extensionRequest.findFirst({
+            where: {
+                studentId,
+                itemId: assignmentId,
+                itemType: "ASSIGNMENT",
+                status: "APPROVED"
+            }
+        });
+        if (!extension || (extension.requestedDate && new Date() > new Date(extension.requestedDate))) {
+            throw new errors_1.AppError("Assignment submission is locked as the due date has passed", 403);
+        }
     }
     let fileUrl = null;
     if (req.file) {
@@ -920,6 +952,7 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
                 select: {
                     id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
                     instructor: { select: { name: true } },
+                    program: { select: { title: true } },
                     _count: { select: { sections: true } },
                     sections: {
                         include: {
@@ -935,6 +968,22 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
             }
         },
         orderBy: { enrolledAt: "desc" }
+    });
+    const programEnrollments = await prisma_1.prisma.programEnrollment.findMany({
+        where: { studentId },
+        include: {
+            program: {
+                include: {
+                    courses: {
+                        orderBy: { createdAt: "asc" },
+                        select: {
+                            id: true, title: true, slug: true, thumbnail: true,
+                            instructor: { select: { name: true } }
+                        }
+                    }
+                }
+            }
+        }
     });
     const certificatesCount = await prisma_1.prisma.certificate.count({
         where: { studentId }
@@ -977,6 +1026,7 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
         status: "success",
         data: {
             enrollments,
+            programEnrollments,
             activeEnrollment,
             certificatesCount,
             pendingAssignmentsCount
@@ -1045,13 +1095,13 @@ exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
     course.sections.forEach(sec => {
         sec.lessons.forEach(lesson => {
             if (lesson.assignment) {
-                gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+                gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: sec.title });
             }
             if (lesson.quiz) {
-                gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+                gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: sec.title });
             }
             if (lesson.type === "FORUM") {
-                gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+                gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: sec.title });
             }
         });
     });
@@ -1082,7 +1132,8 @@ exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
         id: item.id,
         type: item.type,
         maxScore: item.maxScore,
-        score: grades[item.id]
+        score: grades[item.id],
+        sectionTitle: item.sectionTitle
     }));
     res.json({ status: "success", data: { grade: courseGrade, totalEarned, totalMaxGraded, items: itemDistribution } });
 });

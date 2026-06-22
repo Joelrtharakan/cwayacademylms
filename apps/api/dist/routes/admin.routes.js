@@ -110,4 +110,9 @@ router.put("/programs/:id", AdminController.updateProgram);
 router.delete("/programs/:id", AdminController.deleteProgram);
 router.post("/programs/:programId/courses", AdminController.addCourseToProgram);
 router.post("/courses/:courseId/assign-instructor", AdminController.assignInstructorToCourse);
+// ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
+router.get("/applications", AdminController.getApplications);
+router.get("/applications/:id", AdminController.getApplicationById);
+router.post("/applications/:id/approve", AdminController.approveApplication);
+router.post("/applications/:id/reject", AdminController.rejectApplication);
 exports.default = router;

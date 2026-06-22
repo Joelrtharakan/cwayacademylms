@@ -21,6 +21,8 @@ const courses_routes_1 = __importDefault(require("./routes/courses.routes"));
 const forums_routes_1 = __importDefault(require("./routes/forums.routes"));
 const student_routes_1 = __importDefault(require("./routes/student.routes"));
 const blog_routes_1 = __importDefault(require("./routes/blog.routes"));
+const programs_routes_1 = __importDefault(require("./routes/programs.routes"));
+const references_routes_1 = __importDefault(require("./routes/references.routes"));
 const errors_1 = require("./utils/errors");
 const app = (0, express_1.default)();
 app.set("trust proxy", 1); // Trust first proxy for rate limiting (Render/Cloudflare)
@@ -97,6 +99,8 @@ app.use("/api/v1", courses_routes_1.default);
 app.use("/api/v1/forums", forums_routes_1.default);
 app.use("/api/v1/student", student_routes_1.default);
 app.use("/api/v1/blog", blog_routes_1.default);
+app.use("/api/v1/programs", programs_routes_1.default);
+app.use("/api/v1/references", references_routes_1.default);
 // Catch-all unhandled routes
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));

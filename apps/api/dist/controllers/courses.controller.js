@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
-exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = exports.updateMyProfile = void 0;
+exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
+exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = exports.updateMyProfile = exports.uploadAvatar = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
@@ -38,10 +38,8 @@ exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
     const { search, category, level, language, isFree, minPrice, maxPrice, sortBy, page = 1, limit = 12 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const where = {};
-    // Public users only see published
-    if (!req.user || req.user.role === "STUDENT") {
-        where.status = "PUBLISHED";
-    }
+    // Public catalog only shows published courses
+    where.status = "PUBLISHED";
     if (search)
         where.OR = [{ title: { contains: search } }, { subtitle: { contains: search } }];
     if (category)
@@ -56,9 +54,6 @@ exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
         where.price = { gte: Number(minPrice) };
     if (maxPrice)
         where.price = { ...where.price, lte: Number(maxPrice) };
-    // Instructor can only see own courses
-    if (req.user?.role === "INSTRUCTOR")
-        where.instructorId = req.user.id;
     const orderBy = sortBy === "popular" ? { enrollments: { _count: "desc" } } :
         sortBy === "rating" ? { createdAt: "desc" } :
             sortBy === "moduleOrder" ? { moduleNumber: "asc" } :
@@ -69,8 +64,9 @@ exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
             include: {
                 instructor: { select: { id: true, name: true, avatar: true } },
                 category: { select: { name: true } },
-                _count: { select: { enrollments: true } },
+                _count: { select: { enrollments: true, sections: true } },
                 reviews: { select: { rating: true } },
+                program: { select: { id: true, title: true, description: true } },
             },
         }),
         prisma_1.prisma.course.count({ where }),
@@ -180,8 +176,10 @@ exports.updateCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Course not found", 404);
     if (req.user.role === "INSTRUCTOR" && course.instructorId !== req.user.id)
         throw new errors_1.AppError("Not authorized", 403);
-    const { title, subtitle, description, categoryId, level, language, moduleNumber, weeksDuration, totalLectures, scriptureRef, isFree, price, currency, requirements, outcomes, targetAudience, welcomeMessage, congratsMessage, tags, status } = req.body;
+    const { title, subtitle, description, categoryId, level, language, moduleNumber, weeksDuration, totalLectures, scriptureRef, isFree, price, currency, requirements, outcomes, targetAudience, welcomeMessage, congratsMessage, tags, status, courseCode } = req.body;
     const data = {};
+    if (courseCode !== undefined)
+        data.courseCode = courseCode === "" ? null : courseCode;
     if (title !== undefined) {
         data.title = title;
         data.slug = await uniqueSlug(title);
@@ -590,6 +588,14 @@ exports.getQuizStats = (0, errors_1.asyncHandler)(async (req, res) => {
     ];
     res.json({ status: "success", data: { totalAttempts: total, passRate: total ? (passed / total) * 100 : 0, avgScore: avg, scoreDistribution: distribution } });
 });
+exports.resetQuizAttempts = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { quizId } = req.params;
+    // Make sure the user is an instructor or admin
+    const deleted = await prisma_1.prisma.quizAttempt.deleteMany({
+        where: { quizId }
+    });
+    res.json({ status: "success", message: `Reset ${deleted.count} attempts successfully` });
+});
 // ─── FORUM ───────────────────────────────────────────────────────────────────
 exports.getForumPosts = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
@@ -662,9 +668,10 @@ exports.getMyCourses = (0, errors_1.asyncHandler)(async (req, res) => {
         include: {
             instructor: { select: { id: true, name: true, avatar: true } },
             category: { select: { name: true } },
-            _count: { select: { enrollments: true, sections: true } },
+            _count: { select: { enrollments: { where: { studentId: { not: req.user.id } } }, sections: true } },
             reviews: { select: { rating: true } },
             enrollments: { select: { progress: true } },
+            program: { select: { title: true } },
         },
     });
     const enriched = courses.map((c) => {
@@ -697,10 +704,10 @@ exports.getInstructorStats = (0, errors_1.asyncHandler)(async (req, res) => {
     const courseIds = courses.map((c) => c.id);
     const publishedCourses = courses.filter((c) => c.status === "PUBLISHED").length;
     const [enrollments, payments, reviews, completions, pendingSubmissions] = await Promise.all([
-        prisma_1.prisma.enrollment.count({ where: { courseId: { in: courseIds } } }),
+        prisma_1.prisma.enrollment.count({ where: { courseId: { in: courseIds }, studentId: { not: instructorId } } }),
         prisma_1.prisma.payment.findMany({ where: { courseId: { in: courseIds }, status: "COMPLETED" }, select: { amount: true } }),
         prisma_1.prisma.review.findMany({ where: { courseId: { in: courseIds } }, select: { rating: true } }),
-        prisma_1.prisma.enrollment.count({ where: { courseId: { in: courseIds }, status: "COMPLETED" } }),
+        prisma_1.prisma.enrollment.count({ where: { courseId: { in: courseIds }, status: "COMPLETED", studentId: { not: instructorId } } }),
         prisma_1.prisma.submission.count({ where: { assignment: { lesson: { section: { courseId: { in: courseIds } } } }, isGraded: false } }),
     ]);
     const instructor = await prisma_1.prisma.user.findUnique({ where: { id: instructorId }, select: { payoutPercentage: true } });
@@ -721,7 +728,7 @@ exports.getInstructorCourseStudents = (0, errors_1.asyncHandler)(async (req, res
     if (req.user.role === "INSTRUCTOR" && course.instructorId !== req.user.id)
         throw new errors_1.AppError("Not authorized", 403);
     const enrollments = await prisma_1.prisma.enrollment.findMany({
-        where: { courseId: id },
+        where: { courseId: id, studentId: { not: course.instructorId } },
         include: {
             student: { select: { id: true, name: true, email: true, phone: true, avatar: true } },
             lessonProgress: {

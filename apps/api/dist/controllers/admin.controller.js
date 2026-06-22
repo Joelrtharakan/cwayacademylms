@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProgramById = exports.getPrograms = exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
-exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
+exports.rejectApplication = exports.approveApplication = exports.getApplicationById = exports.getApplications = exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
@@ -517,9 +550,10 @@ exports.getCourses = (0, errors_1.asyncHandler)(async (req, res) => {
             select: {
                 id: true, title: true, slug: true, status: true, thumbnail: true, price: true,
                 isFree: true, moduleNumber: true, language: true, level: true, isFeatured: true,
-                createdAt: true, rejectionReason: true,
+                createdAt: true, rejectionReason: true, courseCode: true,
                 instructor: { select: { id: true, name: true, email: true } },
                 category: { select: { id: true, name: true } },
+                program: { select: { id: true, title: true } },
                 _count: { select: { enrollments: true, reviews: true } },
                 reviews: { select: { rating: true } },
                 sections: { select: { _count: { select: { lessons: true } }, title: true, order: true } },
@@ -1038,7 +1072,7 @@ exports.deleteProgram = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.addCourseToProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     const { programId } = req.params;
-    const { title, description, price, requirements, instructorId } = req.body;
+    const { title, description, price, requirements, instructorId, courseCode } = req.body;
     if (!title)
         throw new errors_1.AppError("Course title is required", 400);
     // Find or use provided instructorId; fallback to admin's own id
@@ -1048,6 +1082,7 @@ exports.addCourseToProgram = (0, errors_1.asyncHandler)(async (req, res) => {
         data: {
             title,
             slug,
+            courseCode: courseCode || null,
             description: description || null,
             price: price ? parseFloat(price) : 0,
             requirements: requirements ? JSON.stringify(requirements) : "[]",
@@ -1142,4 +1177,88 @@ exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
     });
     await notification_service_1.NotificationService.createNotification(instructorId, "COURSE_INVITATION", "You've been assigned a new course", `An admin created '${course.title}' and assigned it to you.`, `/instructor/invitations`);
     res.status(201).json({ status: "success", data: course, invitation });
+});
+// ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
+exports.getApplications = (0, errors_1.asyncHandler)(async (req, res) => {
+    const applications = await prisma_1.prisma.programApplication.findMany({
+        include: { program: { select: { title: true } } },
+        orderBy: { createdAt: "desc" }
+    });
+    res.json({ status: "success", data: applications });
+});
+exports.getApplicationById = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const application = await prisma_1.prisma.programApplication.findUnique({
+        where: { id },
+        include: {
+            program: { select: { title: true } },
+            referenceForms: true
+        }
+    });
+    if (!application)
+        throw new errors_1.AppError("Application not found", 404);
+    res.json({ status: "success", data: application });
+});
+exports.approveApplication = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const application = await prisma_1.prisma.programApplication.findUnique({
+        where: { id },
+        include: { program: { include: { courses: { orderBy: { createdAt: "asc" } } } } }
+    });
+    if (!application)
+        throw new errors_1.AppError("Application not found", 404);
+    if (application.status !== "PENDING")
+        throw new errors_1.AppError("Application is not pending", 400);
+    let user = await prisma_1.prisma.user.findUnique({ where: { email: application.email } });
+    let password = "";
+    if (!user) {
+        password = Math.random().toString(36).slice(-8);
+        const passwordHash = await bcryptjs_1.default.hash(password, 12);
+        user = await prisma_1.prisma.user.create({
+            data: {
+                name: application.fullName,
+                email: application.email,
+                passwordHash,
+                role: "STUDENT",
+                phone: application.mobileNumber,
+                isVerified: true
+            }
+        });
+    }
+    // Create ProgramEnrollment
+    const firstCourse = application.program.courses[0];
+    await prisma_1.prisma.programEnrollment.upsert({
+        where: { studentId_programId: { studentId: user.id, programId: application.programId } },
+        update: { currentCourseId: firstCourse?.id },
+        create: {
+            studentId: user.id,
+            programId: application.programId,
+            currentCourseId: firstCourse?.id
+        }
+    });
+    // Enroll in first course
+    if (firstCourse) {
+        await prisma_1.prisma.enrollment.upsert({
+            where: { studentId_courseId: { studentId: user.id, courseId: firstCourse.id } },
+            update: {},
+            create: { studentId: user.id, courseId: firstCourse.id }
+        });
+    }
+    await prisma_1.prisma.programApplication.update({
+        where: { id },
+        data: { status: "APPROVED" }
+    });
+    if (password) {
+        const { sendAdmissionEmail } = await Promise.resolve().then(() => __importStar(require("../services/email.service")));
+        await sendAdmissionEmail({ name: user.name, email: user.email }, password, application.program.title);
+    }
+    res.json({ status: "success", message: "Application approved successfully" });
+});
+exports.rejectApplication = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    await prisma_1.prisma.programApplication.update({
+        where: { id },
+        data: { status: "REJECTED" }
+    });
+    res.json({ status: "success", message: "Application rejected" });
 });

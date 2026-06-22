@@ -331,7 +331,6 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                           onClick={() => router.push(item.href)}
                           style={{
                             width: "100%",
-                            border: "none",
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
