@@ -39,7 +39,7 @@ const SubmissionsViewer = ({ assignment, onBack }: { assignment: any, onBack: ()
         <p style={{ color: "#8F9E93", fontSize: "14px", marginBottom: "32px" }}>Submitted on {new Date(gradingSubmission.submittedAt).toLocaleString()}</p>
         
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "32px" }}>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Response</h4>
             <div style={{ background: "#FAFAF7", padding: "20px", borderRadius: "12px", fontSize: "15px", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere", color: "#1A261D", minHeight: "150px" }}>
               {gradingSubmission.content || "No text response provided."}
