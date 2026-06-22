@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useLenis } from "lenis/react";
 import { useAuthStore } from "@/store/auth.store";
 import { useQuery } from "@tanstack/react-query";
 import { getInvitations } from "@/lib/api/instructor";
@@ -70,6 +71,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const lenis = useLenis();
 
   const { data: invitations } = useQuery({
     queryKey: ["invitations", "PENDING"],
@@ -144,7 +146,10 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
 
       {/* Fixed sidebar */}
       <div
-        className={`md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        data-lenis-prevent="true"
+        onMouseEnter={() => lenis?.stop()}
+        onMouseLeave={() => lenis?.start()}
+        className={`print:hidden md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           position: "fixed",
           top: 0,
@@ -222,8 +227,9 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
         </div>
 
         {/* ── Scrollable Content Area ─────────────────────────────────────── */}
-        <div
+        <nav
           className="instructor-sidebar-scroll"
+          data-lenis-prevent="true"
           style={{
             position: "absolute",
             top: "70px",
@@ -408,7 +414,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
               );
             })}
           </div>
-        </div>
+        </nav>
 
         {/* ── User Footer & Toggle (Absolutely positioned bottom) ─────────────────────────── */}
         <div

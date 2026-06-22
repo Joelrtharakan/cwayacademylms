@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useLenis } from "lenis/react";
 import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import {
@@ -68,6 +69,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const lenis = useLenis();
 
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -135,7 +137,10 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
 
       {/* Fixed sidebar */}
       <div
-        className={`md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        data-lenis-prevent="true"
+        onMouseEnter={() => lenis?.stop()}
+        onMouseLeave={() => lenis?.start()}
+        className={`print:hidden md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           position: "fixed",
           top: 0,
@@ -221,6 +226,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
         {/* ── Scrollable Navigation Area (Absolutely positioned middle) ── */}
         <nav
           className="student-sidebar-scroll"
+          data-lenis-prevent="true"
           style={{
             position: "absolute",
             top: "70px", // Match new header height
