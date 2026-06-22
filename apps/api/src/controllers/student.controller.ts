@@ -1073,6 +1073,7 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
         select: {
           id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
           instructor: { select: { name: true } },
+          program: { select: { title: true } },
           _count: { select: { sections: true } },
           sections: {
             include: {
@@ -1088,6 +1089,23 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
       }
     },
     orderBy: { enrolledAt: "desc" }
+  });
+
+  const programEnrollments = await prisma.programEnrollment.findMany({
+    where: { studentId },
+    include: {
+      program: {
+        include: {
+          courses: {
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true, title: true, slug: true, thumbnail: true,
+              instructor: { select: { name: true } }
+            }
+          }
+        }
+      }
+    }
   });
 
   const certificatesCount = await prisma.certificate.count({
@@ -1140,6 +1158,7 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
     status: "success",
     data: {
       enrollments,
+      programEnrollments,
       activeEnrollment,
       certificatesCount,
       pendingAssignmentsCount

@@ -696,7 +696,7 @@ export const getMyCourses = asyncHandler(async (req: Request, res: Response) => 
     include: {
       instructor: { select: { id: true, name: true, avatar: true } },
       category: { select: { name: true } },
-      _count: { select: { enrollments: true, sections: true } },
+      _count: { select: { enrollments: { where: { studentId: { not: req.user!.id } } }, sections: true } },
       reviews: { select: { rating: true } },
       enrollments: { select: { progress: true } },
       program: { select: { title: true } },
@@ -738,10 +738,10 @@ export const getInstructorStats = asyncHandler(async (req: Request, res: Respons
   const publishedCourses = courses.filter((c) => c.status === "PUBLISHED").length;
 
   const [enrollments, payments, reviews, completions, pendingSubmissions] = await Promise.all([
-    prisma.enrollment.count({ where: { courseId: { in: courseIds } } }),
+    prisma.enrollment.count({ where: { courseId: { in: courseIds }, studentId: { not: instructorId } } }),
     prisma.payment.findMany({ where: { courseId: { in: courseIds }, status: "COMPLETED" }, select: { amount: true } }),
     prisma.review.findMany({ where: { courseId: { in: courseIds } }, select: { rating: true } }),
-    prisma.enrollment.count({ where: { courseId: { in: courseIds }, status: "COMPLETED" } }),
+    prisma.enrollment.count({ where: { courseId: { in: courseIds }, status: "COMPLETED", studentId: { not: instructorId } } }),
     prisma.submission.count({ where: { assignment: { lesson: { section: { courseId: { in: courseIds } } } }, isGraded: false } }),
   ]);
 
@@ -765,7 +765,7 @@ export const getInstructorCourseStudents = asyncHandler(async (req: Request, res
   if (req.user!.role === "INSTRUCTOR" && course.instructorId !== req.user!.id) throw new AppError("Not authorized", 403);
 
   const enrollments = await prisma.enrollment.findMany({
-    where: { courseId: id },
+    where: { courseId: id, studentId: { not: course.instructorId } },
     include: {
       student: { select: { id: true, name: true, email: true, phone: true, avatar: true } },
       lessonProgress: {

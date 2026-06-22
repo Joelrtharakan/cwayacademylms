@@ -69,8 +69,8 @@ function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (i
           </div>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "13px", color: "#8F9E93", fontWeight: 500, marginBottom: "20px" }}>
-          <span>{course._count?.sections || 0} modules</span>
-          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Users size={14} /> {course._count?.enrollments || 0} students</span>
+          <span>{course._count?.sections || 0} module{course._count?.sections === 1 ? '' : 's'}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Users size={14} /> {course._count?.enrollments || 0} student{course._count?.enrollments === 1 ? '' : 's'}</span>
         </div>
         {/* Footer */}
         <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #E4E8E0", paddingTop: "16px", marginTop: "auto" }}>

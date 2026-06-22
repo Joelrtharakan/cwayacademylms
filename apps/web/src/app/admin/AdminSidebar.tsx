@@ -152,6 +152,7 @@ export default function AdminSidebar() {
 
       {/* Fixed sidebar */}
       <div
+        className="print:hidden"
         style={{
           position: "fixed",
           top: 0,
@@ -530,7 +531,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Spacer to push content right — same width as sidebar */}
-      <div style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div className="print:hidden" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
     </>
   );
 }

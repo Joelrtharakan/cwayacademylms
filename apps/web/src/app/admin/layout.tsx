@@ -67,6 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* ── Top bar ──────────────────────────────── */}
         <header
+          className="print:hidden"
           style={{
             height: "70px",
             background: "rgba(250, 250, 247, 0.85)",
@@ -197,6 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* ── Page Content ─────────────────────────── */}
         <main
+          className="print:p-0 print:m-0 print:bg-white print:w-full"
           style={{
             flex: 1,
             padding: "32px 36px",
