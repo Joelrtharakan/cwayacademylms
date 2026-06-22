@@ -224,20 +224,102 @@ export default function ApplicationDetailsPage() {
               </div>
             </section>
 
-            {/* References */}
+            {/* References Overview */}
             <section>
               <h3 className="text-lg font-bold border-b pb-2 mb-4 text-[#1C2B1E]">References</h3>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <span className="font-medium block">{app.reference1Name}</span>
                   <span className="text-gray-500 text-sm">{app.reference1Relation} | {app.reference1Phone}</span>
+                  <span className={`mt-1 text-xs px-2 py-0.5 rounded-full inline-block w-max ${app.reference1Status === 'SUBMITTED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>Status: {app.reference1Status}</span>
                 </div>
                 <div>
                   <span className="font-medium block">{app.reference2Name}</span>
                   <span className="text-gray-500 text-sm">{app.reference2Relation} | {app.reference2Phone}</span>
+                  <span className={`mt-1 text-xs px-2 py-0.5 rounded-full inline-block w-max ${app.reference2Status === 'SUBMITTED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>Status: {app.reference2Status}</span>
                 </div>
               </div>
             </section>
+
+            {/* Render Detailed Submitted Reference Forms */}
+            {app.referenceForms && app.referenceForms.map((refForm: any, idx: number) => {
+              const ratings = refForm.ratings ? JSON.parse(refForm.ratings) : {};
+              return (
+                <section key={refForm.id} className="mt-8 pt-8 border-t-2 border-dashed border-gray-300 print:break-before-page">
+                  <h3 className="text-2xl font-serif font-bold text-center mb-6 text-[#1C2B1E]">
+                    {refForm.type === 'PASTOR' ? "Pastor's Recommendation" : "General Reference"} Form
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 gap-y-6 gap-x-8 mb-6">
+                    <div><span className="text-gray-500 block text-sm">Referee Name</span><span className="font-medium">{refForm.refereeName}</span></div>
+                    <div><span className="text-gray-500 block text-sm">Position / Title</span><span className="font-medium">{refForm.refereePosition}</span></div>
+                    {refForm.type === 'PASTOR' && (
+                      <>
+                        <div><span className="text-gray-500 block text-sm">Church Name</span><span className="font-medium">{refForm.churchName}</span></div>
+                        <div><span className="text-gray-500 block text-sm">Denomination</span><span className="font-medium">{refForm.denomination}</span></div>
+                      </>
+                    )}
+                    <div><span className="text-gray-500 block text-sm">Contact</span><span className="font-medium">{refForm.email} | {refForm.phone}</span></div>
+                    <div><span className="text-gray-500 block text-sm">Known Applicant For</span><span className="font-medium">{refForm.yearsKnown} as {refForm.capacityKnown}</span></div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-6 gap-x-8 mb-6">
+                    <div><span className="text-gray-500 block text-sm">Church Engagement</span><span className="font-medium">{refForm.churchEngagement}</span></div>
+                    <div><span className="text-gray-500 block text-sm">Spiritual Influence</span><span className="font-medium">{refForm.spiritualInfluence}</span></div>
+                    <div><span className="text-gray-500 block text-sm">Financial Ability</span><span className="font-medium">{refForm.financialAbility}</span></div>
+                    {refForm.type === 'PASTOR' && (
+                      <div><span className="text-gray-500 block text-sm">Church Financial Help</span><span className="font-medium">{refForm.financialHelp || 'N/A'}</span></div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <span className="text-gray-500 block text-sm mb-2">Evaluation Ratings</span>
+                    <div className="grid grid-cols-2 gap-2 text-sm bg-gray-50 p-4 rounded-lg">
+                      {Object.entries(ratings).map(([area, rating]) => (
+                        <div key={area} className="flex justify-between border-b pb-1">
+                          <span className="text-gray-600">{area}</span>
+                          <span className="font-medium">{String(rating)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <span className="text-gray-500 block text-sm">General Comments</span>
+                      <p className="font-medium mt-1 italic whitespace-pre-wrap text-sm">"{refForm.comments}"</p>
+                    </div>
+                    {refForm.attentionAreas && (
+                      <div>
+                        <span className="text-gray-500 block text-sm">Areas Needing Attention</span>
+                        <p className="font-medium mt-1 italic whitespace-pre-wrap text-sm">"{refForm.attentionAreas}"</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-[#fdf8ef] p-4 rounded-lg flex justify-between items-center border border-[#C9973A]/30">
+                    <div>
+                      <span className="text-gray-500 block text-xs uppercase tracking-wider">Overall Recommendation</span>
+                      <span className="font-bold text-lg text-[#1C2B1E]">{refForm.recommendation}</span>
+                    </div>
+                    {refForm.discussFurther && (
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">Requested Phone Discussion</span>
+                    )}
+                  </div>
+
+                  <div className="mt-8 flex justify-between items-end">
+                    <div>
+                      <span className="text-gray-500 block text-xs">Electronically Signed By</span>
+                      <span className="font-medium font-serif text-xl">{refForm.signatureUrl}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block text-xs">Date Submitted</span>
+                      <span className="font-medium">{format(new Date(refForm.createdAt), "MMM d, yyyy")}</span>
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
 
             {/* Declaration */}
             <section className="bg-gray-50 p-6 border-l-4 border-[#C9973A] rounded-r-md">

@@ -15,66 +15,82 @@ export default function AdminApplicationsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center" style={{ marginBottom: "2rem" }}>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Program Applications</h1>
-          <p className="text-sm text-gray-500">Review and manage student admissions</p>
+          <p className="text-sm text-gray-500" style={{ marginTop: "0.25rem" }}>Review and manage student admissions</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow border overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applicant</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Program</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {applications?.map((app: any) => (
-              <tr key={app.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <img src={app.passportPhotoUrl} alt="" className="h-10 w-10 rounded-full object-cover mr-3" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{app.fullName}</div>
-                      <div className="text-sm text-gray-500">{app.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">{app.program?.title}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {format(new Date(app.createdAt), "MMM d, yyyy")}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${app.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 
-                      app.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 
-                      'bg-yellow-100 text-yellow-800'}`}>
-                    {app.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link href={`/admin/applications/${app.id}`} className="text-[#C9973A] hover:text-[#B88636]">
-                    Review
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {(!applications || applications.length === 0) && (
+      <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full divide-y divide-gray-200" style={{ minWidth: "1000px" }}>
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  No applications found.
-                </td>
+                <th scope="col" className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>Applicant</th>
+                <th scope="col" className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>Program</th>
+                <th scope="col" className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>Applied On</th>
+                <th scope="col" className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>References</th>
+                <th scope="col" className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>Status</th>
+                <th scope="col" className="text-right text-xs font-semibold text-gray-600 uppercase tracking-wider" style={{ padding: "16px 24px" }}>Action</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {applications?.map((app: any) => (
+                <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="whitespace-nowrap" style={{ padding: "20px 24px" }}>
+                    <div className="flex items-center gap-4">
+                      <img src={app.passportPhotoUrl} alt="" className="h-12 w-12 rounded-full object-cover shadow-sm border border-gray-100" />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-900">{app.fullName}</span>
+                        <span className="text-sm text-gray-500">{app.email}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap" style={{ padding: "20px 24px" }}>
+                    <span className="text-sm font-medium text-gray-800">{app.program?.title}</span>
+                  </td>
+                  <td className="whitespace-nowrap text-sm text-gray-500" style={{ padding: "20px 24px" }}>
+                    {format(new Date(app.createdAt), "MMM d, yyyy")}
+                  </td>
+                  <td className="whitespace-nowrap" style={{ padding: "20px 24px" }}>
+                    <div className="flex flex-col gap-2">
+                      <span className={`text-[11px] font-bold tracking-wide rounded-md inline-flex items-center w-max ${app.reference1Status === 'SUBMITTED' ? 'bg-green-50 text-green-700 border border-green-200/50' : 'bg-gray-50 text-gray-600 border border-gray-200/50'}`} style={{ padding: "6px 12px" }}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${app.reference1Status === 'SUBMITTED' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                        REF 1: {app.reference1Status}
+                      </span>
+                      <span className={`text-[11px] font-bold tracking-wide rounded-md inline-flex items-center w-max ${app.reference2Status === 'SUBMITTED' ? 'bg-green-50 text-green-700 border border-green-200/50' : 'bg-gray-50 text-gray-600 border border-gray-200/50'}`} style={{ padding: "6px 12px" }}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${app.reference2Status === 'SUBMITTED' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                        REF 2: {app.reference2Status}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap" style={{ padding: "20px 24px" }}>
+                    <span className={`inline-flex text-xs font-bold uppercase tracking-wider rounded-full 
+                      ${app.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 
+                        app.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 
+                        'bg-yellow-100 text-yellow-800'}`} style={{ padding: "6px 16px" }}>
+                      {app.status}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap text-right text-sm font-medium" style={{ padding: "20px 24px" }}>
+                    <Link href={`/admin/applications/${app.id}`} className="inline-flex items-center justify-center bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm" style={{ padding: "8px 20px" }}>
+                      Review
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {(!applications || applications.length === 0) && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center">
+                    <div className="text-gray-400 mb-2">No applications found</div>
+                    <p className="text-sm text-gray-500">When students apply, they will appear here.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

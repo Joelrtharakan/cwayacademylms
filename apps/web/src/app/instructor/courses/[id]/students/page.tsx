@@ -38,10 +38,13 @@ export default function CourseStudentsPage() {
 
   const students = studentsData || [];
   
-  const filtered = students.filter((e: any) => 
-    e.student?.name?.toLowerCase().includes(search.toLowerCase()) || 
-    e.student?.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = students.filter((e: any) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    const nameMatch = e.student?.name?.toLowerCase()?.includes(q);
+    const emailMatch = e.student?.email?.toLowerCase()?.includes(q);
+    return nameMatch || emailMatch;
+  });
   const handleExportCSV = () => {
     if (!filtered.length) return;
     const headers = ["Name", "Email", "Enrolled Date", "Progress (%)", "Last Completed Item", "Last Completed Date"];

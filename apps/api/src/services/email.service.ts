@@ -234,3 +234,22 @@ export async function sendAdmissionEmail(
       <p><a class="btn" href="${APP}/login">Log In to Dashboard</a></p>
     `, 'Your admission has been approved and your account is ready'))
 }
+
+export async function sendReferenceFormEmail(
+  referee: { name: string; email: string },
+  studentName: string,
+  programTitle: string,
+  token: string
+) {
+  const link = `${APP}/references/${token}`;
+  await send(referee.email,
+    `Action Required: Reference Form for ${studentName}`,
+    wrap(`
+      <h1 class="h1">Reference Request</h1>
+      <p class="p">Dear ${referee.name},</p>
+      <p class="p"><strong>${studentName}</strong> has applied for admission to <strong>${programTitle}</strong> at CWAY Academy and has listed you as a reference.</p>
+      <p class="p">Admission eligibility depends upon a careful evaluation of your recommendation. We value your comments very highly and request you to complete the reference form by clicking the link below.</p>
+      <p><a class="btn" href="${link}">Fill Reference Form</a></p>
+      <div class="sc"><p>Your submission will be kept strictly confidential.</p></div>
+    `, `Please complete the reference form for ${studentName}`))
+}

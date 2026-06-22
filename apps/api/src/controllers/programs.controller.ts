@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
 import { uploadToR2, generateKey } from "../services/storage.service";
+import crypto from "crypto";
+import { sendReferenceFormEmail } from "../services/email.service";
 
 export const getPublicPrograms = asyncHandler(async (req: Request, res: Response) => {
   const programs = await prisma.program.findMany({
@@ -68,10 +70,13 @@ export const applyForProgram = asyncHandler(async (req: Request, res: Response) 
     highestQualification, previousInstitution, yearOfCompletion, marksOrGrade,
     isBornAgain, churchName, churchAddressLine1, churchAddressLine2, churchCity, churchState, churchPostalCode, churchCountry,
     pastorName, ministryExperience, callingStatement,
-    reference1Name, reference1Phone, reference1Relation,
-    reference2Name, reference2Phone, reference2Relation,
+    reference1Name, reference1Email, reference1Phone, reference1Relation, reference1Type,
+    reference2Name, reference2Email, reference2Phone, reference2Relation, reference2Type,
     declarationName
   } = req.body;
+
+  const reference1Token = crypto.randomBytes(32).toString("hex");
+  const reference2Token = crypto.randomBytes(32).toString("hex");
 
   const application = await prisma.programApplication.create({
     data: {
@@ -127,17 +132,45 @@ export const applyForProgram = asyncHandler(async (req: Request, res: Response) 
       callingStatement,
       
       reference1Name,
+      reference1Email,
       reference1Phone,
       reference1Relation,
+      reference1Type,
+      reference1Token,
       
       reference2Name,
+      reference2Email,
       reference2Phone,
       reference2Relation,
+      reference2Type,
+      reference2Token,
       
       declarationName,
       status: "PENDING"
+    },
+    include: {
+      program: true
     }
   });
+
+  // Send emails to references asynchronously
+  if (reference1Email) {
+    sendReferenceFormEmail(
+      { name: reference1Name, email: reference1Email },
+      fullName,
+      application.program.title,
+      reference1Token
+    ).catch(err => console.error("Failed to send reference 1 email:", err));
+  }
+
+  if (reference2Email) {
+    sendReferenceFormEmail(
+      { name: reference2Name, email: reference2Email },
+      fullName,
+      application.program.title,
+      reference2Token
+    ).catch(err => console.error("Failed to send reference 2 email:", err));
+  }
 
   res.status(201).json({ status: "success", data: application });
 });

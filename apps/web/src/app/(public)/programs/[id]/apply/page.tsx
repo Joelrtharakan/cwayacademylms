@@ -6,6 +6,19 @@ import { toast } from "react-hot-toast";
 import { Camera, FileText, Upload, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
+function InputField({ label, name, type = "text", required = false, width = "100%", placeholder = "", value, onChange }: any) {
+  return (
+    <div style={{ width, flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      {label && <label style={{ display: "block", marginBottom: "0.6rem", fontSize: "13px", fontWeight: 700, color: "var(--navy-deep)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label} {required && <span style={{color: "var(--danger, red)"}}>*</span>}</label>}
+      <input type={type} name={name} placeholder={placeholder} value={value || ""} onChange={onChange} required={required}
+             style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s" }}
+             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold-dark)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)"; }}
+             onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(220, 224, 213, 0.8)"; e.currentTarget.style.boxShadow = "none"; }}
+      />
+    </div>
+  );
+}
+
 export default function ProgramApplicationPage() {
   const params = useParams();
   const router = useRouter();
@@ -67,11 +80,15 @@ export default function ProgramApplicationPage() {
     callingStatement: "",
     
     reference1Name: "",
+    reference1Email: "",
     reference1Phone: "",
     reference1Relation: "",
+    reference1Type: "General Reference",
     reference2Name: "",
+    reference2Email: "",
     reference2Phone: "",
     reference2Relation: "",
+    reference2Type: "General Reference",
     
     declarationNameFirst: "",
     declarationNameLast: "",
@@ -194,12 +211,16 @@ export default function ProgramApplicationPage() {
       submitData.append("callingStatement", formData.callingStatement);
       
       submitData.append("reference1Name", formData.reference1Name);
+      submitData.append("reference1Email", formData.reference1Email);
       submitData.append("reference1Phone", formData.reference1Phone);
       submitData.append("reference1Relation", formData.reference1Relation);
+      submitData.append("reference1Type", formData.reference1Type);
       
       submitData.append("reference2Name", formData.reference2Name);
+      submitData.append("reference2Email", formData.reference2Email);
       submitData.append("reference2Phone", formData.reference2Phone);
       submitData.append("reference2Relation", formData.reference2Relation);
+      submitData.append("reference2Type", formData.reference2Type);
       
       submitData.append("declarationName", `${formData.declarationNameFirst} ${formData.declarationNameLast}`);
 
@@ -239,17 +260,6 @@ export default function ProgramApplicationPage() {
       </div>
     );
   }
-
-  const InputField = ({ label, name, type = "text", required = false, width = "100%", placeholder = "" }: any) => (
-    <div style={{ width, flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      {label && <label style={{ display: "block", marginBottom: "0.6rem", fontSize: "13px", fontWeight: 700, color: "var(--navy-deep)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label} {required && <span style={{color: "var(--danger, red)"}}>*</span>}</label>}
-      <input type={type} name={name} placeholder={placeholder} value={(formData as any)[name]} onChange={handleChange} required={required}
-             style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s" }}
-             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold-dark)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)"; }}
-             onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(220, 224, 213, 0.8)"; e.currentTarget.style.boxShadow = "none"; }}
-      />
-    </div>
-  );
 
   const selectStyle = { width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", cursor: "pointer" };
   const labelStyle = { display: "block", marginBottom: "0.6rem", fontSize: "13px", fontWeight: 700, color: "var(--navy-deep)", textTransform: "uppercase", letterSpacing: "0.5px" };
@@ -361,13 +371,13 @@ export default function ProgramApplicationPage() {
             
             <label style={labelStyle}>Full Name *</label>
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
-              <InputField label="" placeholder="First Name" name="firstName" required />
-              <InputField label="" placeholder="Middle Name" name="middleName" />
-              <InputField label="" placeholder="Last Name" name="lastName" required />
+              <InputField label="" placeholder="First Name" name="firstName" required  value={(formData as any)["firstName"]} onChange={handleChange} />
+              <InputField label="" placeholder="Middle Name" name="middleName"  value={(formData as any)["middleName"]} onChange={handleChange} />
+              <InputField label="" placeholder="Last Name" name="lastName" required  value={(formData as any)["lastName"]} onChange={handleChange} />
             </div>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
-              <InputField label="Date of Birth" name="dob" type="date" required />
+              <InputField label="Date of Birth" name="dob" type="date" required  value={(formData as any)["dob"]} onChange={handleChange} />
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <label style={labelStyle}>Gender *</label>
                 <select name="gender" value={formData.gender} onChange={handleChange} required style={selectStyle}>
@@ -387,11 +397,11 @@ export default function ProgramApplicationPage() {
                   <option value="Married">Married</option>
                 </select>
               </div>
-              <InputField label="Nationality" name="nationality" required />
+              <InputField label="Nationality" name="nationality" required  value={(formData as any)["nationality"]} onChange={handleChange} />
             </div>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
-              <InputField label="Aadhaar Number (optional)" name="aadhaarNumber" />
+              <InputField label="Aadhaar Number (optional)" name="aadhaarNumber"  value={(formData as any)["aadhaarNumber"]} onChange={handleChange} />
             </div>
 
             <div style={{ marginBottom: "1.5rem" }}>
@@ -416,7 +426,7 @@ export default function ProgramApplicationPage() {
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>Contact Details</h3>
             
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
-              <InputField label="Email Address" name="email" type="email" required />
+              <InputField label="Email Address" name="email" type="email" required  value={(formData as any)["email"]} onChange={handleChange} />
             </div>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
@@ -438,29 +448,29 @@ export default function ProgramApplicationPage() {
 
             <label style={labelStyle}>Permanent Address *</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2.5rem" }}>
-              <InputField label="" placeholder="Address Line 1" name="permanentAddressLine1" required />
-              <InputField label="" placeholder="Address Line 2" name="permanentAddressLine2" />
+              <InputField label="" placeholder="Address Line 1" name="permanentAddressLine1" required  value={(formData as any)["permanentAddressLine1"]} onChange={handleChange} />
+              <InputField label="" placeholder="Address Line 2" name="permanentAddressLine2"  value={(formData as any)["permanentAddressLine2"]} onChange={handleChange} />
               <div style={{ display: "flex", gap: "1.5rem" }}>
-                <InputField label="" placeholder="City" name="permanentCity" required />
-                <InputField label="" placeholder="State / Province" name="permanentState" required />
+                <InputField label="" placeholder="City" name="permanentCity" required  value={(formData as any)["permanentCity"]} onChange={handleChange} />
+                <InputField label="" placeholder="State / Province" name="permanentState" required  value={(formData as any)["permanentState"]} onChange={handleChange} />
               </div>
               <div style={{ display: "flex", gap: "1.5rem" }}>
-                <InputField label="" placeholder="Postal Code" name="permanentPostalCode" required />
-                <InputField label="" placeholder="Country" name="permanentCountry" required />
+                <InputField label="" placeholder="Postal Code" name="permanentPostalCode" required  value={(formData as any)["permanentPostalCode"]} onChange={handleChange} />
+                <InputField label="" placeholder="Country" name="permanentCountry" required  value={(formData as any)["permanentCountry"]} onChange={handleChange} />
               </div>
             </div>
 
             <label style={labelStyle}>Current Address *</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
-              <InputField label="" placeholder="Address Line 1" name="currentAddressLine1" required />
-              <InputField label="" placeholder="Address Line 2" name="currentAddressLine2" />
+              <InputField label="" placeholder="Address Line 1" name="currentAddressLine1" required  value={(formData as any)["currentAddressLine1"]} onChange={handleChange} />
+              <InputField label="" placeholder="Address Line 2" name="currentAddressLine2"  value={(formData as any)["currentAddressLine2"]} onChange={handleChange} />
               <div style={{ display: "flex", gap: "1.5rem" }}>
-                <InputField label="" placeholder="City" name="currentCity" required />
-                <InputField label="" placeholder="State / Province" name="currentState" required />
+                <InputField label="" placeholder="City" name="currentCity" required  value={(formData as any)["currentCity"]} onChange={handleChange} />
+                <InputField label="" placeholder="State / Province" name="currentState" required  value={(formData as any)["currentState"]} onChange={handleChange} />
               </div>
               <div style={{ display: "flex", gap: "1.5rem" }}>
-                <InputField label="" placeholder="Postal Code" name="currentPostalCode" required />
-                <InputField label="" placeholder="Country" name="currentCountry" required />
+                <InputField label="" placeholder="Postal Code" name="currentPostalCode" required  value={(formData as any)["currentPostalCode"]} onChange={handleChange} />
+                <InputField label="" placeholder="Country" name="currentCountry" required  value={(formData as any)["currentCountry"]} onChange={handleChange} />
               </div>
             </div>
           </div>
@@ -481,12 +491,12 @@ export default function ProgramApplicationPage() {
                   <option value="Theology Degree">Theology Degree</option>
                 </select>
               </div>
-              <InputField label="Previous Institution Name" name="previousInstitution" required />
+              <InputField label="Previous Institution Name" name="previousInstitution" required  value={(formData as any)["previousInstitution"]} onChange={handleChange} />
             </div>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
-              <InputField label="Year of Completion" name="yearOfCompletion" type="number" required />
-              <InputField label="Marks / Grade (Percentage / CGPA)" name="marksOrGrade" required />
+              <InputField label="Year of Completion" name="yearOfCompletion" type="number" required  value={(formData as any)["yearOfCompletion"]} onChange={handleChange} />
+              <InputField label="Marks / Grade (Percentage / CGPA)" name="marksOrGrade" required  value={(formData as any)["marksOrGrade"]} onChange={handleChange} />
             </div>
 
             <div style={{ marginBottom: "1.5rem" }}>
@@ -528,32 +538,32 @@ export default function ProgramApplicationPage() {
               </div>
             </div>
 
-            <InputField label="Church Name" name="churchName" required />
+            <InputField label="Church Name" name="churchName" required  value={(formData as any)["churchName"]} onChange={handleChange} />
             
             <div style={{ margin: "2rem 0" }}>
               <label style={labelStyle}>Church Address *</label>
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <InputField label="" placeholder="Address Line 1" name="churchAddressLine1" required />
-                <InputField label="" placeholder="Address Line 2" name="churchAddressLine2" />
+                <InputField label="" placeholder="Address Line 1" name="churchAddressLine1" required  value={(formData as any)["churchAddressLine1"]} onChange={handleChange} />
+                <InputField label="" placeholder="Address Line 2" name="churchAddressLine2"  value={(formData as any)["churchAddressLine2"]} onChange={handleChange} />
                 <div style={{ display: "flex", gap: "1.5rem" }}>
-                  <InputField label="" placeholder="City" name="churchCity" required />
-                  <InputField label="" placeholder="State / Province" name="churchState" required />
+                  <InputField label="" placeholder="City" name="churchCity" required  value={(formData as any)["churchCity"]} onChange={handleChange} />
+                  <InputField label="" placeholder="State / Province" name="churchState" required  value={(formData as any)["churchState"]} onChange={handleChange} />
                 </div>
                 <div style={{ display: "flex", gap: "1.5rem" }}>
-                  <InputField label="" placeholder="Postal Code" name="churchPostalCode" required />
-                  <InputField label="" placeholder="Country" name="churchCountry" required />
+                  <InputField label="" placeholder="Postal Code" name="churchPostalCode" required  value={(formData as any)["churchPostalCode"]} onChange={handleChange} />
+                  <InputField label="" placeholder="Country" name="churchCountry" required  value={(formData as any)["churchCountry"]} onChange={handleChange} />
                 </div>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
-              <InputField label="Pastor's Name" name="pastorName" required />
-              <InputField label="Ministry Experience (if any)" name="ministryExperience" />
+              <InputField label="Pastor's Name" name="pastorName" required  value={(formData as any)["pastorName"]} onChange={handleChange} />
+              <InputField label="Ministry Experience (if any)" name="ministryExperience"  value={(formData as any)["ministryExperience"]} onChange={handleChange} />
             </div>
 
             <div style={{ marginBottom: "1.5rem" }}>
               <label style={labelStyle}>Calling / Purpose Statement *</label>
-              <textarea name="callingStatement" value={formData.callingStatement} onChange={handleChange} required rows={4} style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s" }} onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold-dark)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)"; }} onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(220, 224, 213, 0.8)"; e.currentTarget.style.boxShadow = "none"; }} placeholder="Briefly describe your calling and purpose..." />
+              <textarea name="callingStatement" data-lenis-prevent="true" value={formData.callingStatement} onChange={handleChange} required rows={4} style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", resize: "vertical", overflowY: "auto" }} onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold-dark)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)"; }} onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(220, 224, 213, 0.8)"; e.currentTarget.style.boxShadow = "none"; }} placeholder="Briefly describe your calling and purpose..." />
             </div>
           </div>
 
@@ -562,17 +572,37 @@ export default function ProgramApplicationPage() {
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>References</h3>
             
             <h4 style={{ fontSize: "16px", marginBottom: "1rem", color: "var(--navy-deep)" }}>Reference 1</h4>
+            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Reference Type *</label>
+                <select name="reference1Type" value={formData.reference1Type} onChange={handleChange} required style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", appearance: "none" }}>
+                  <option value="General Reference">General Reference</option>
+                  <option value="Pastor's Recommendation">Pastor's Recommendation</option>
+                </select>
+              </div>
+              <InputField label="Relation" placeholder="e.g. Pastor, Mentor, Friend" name="reference1Relation" required  value={(formData as any)["reference1Relation"]} onChange={handleChange} />
+            </div>
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
-              <InputField label="" placeholder="Full Name" name="reference1Name" required />
-              <InputField label="" placeholder="Phone Number" name="reference1Phone" required />
-              <InputField label="" placeholder="Relation (e.g. Pastor)" name="reference1Relation" required />
+              <InputField label="Full Name" placeholder="Full Name" name="reference1Name" required  value={(formData as any)["reference1Name"]} onChange={handleChange} />
+              <InputField label="Email Address" placeholder="Email Address" name="reference1Email"  value={(formData as any)["reference1Email"]} onChange={handleChange} />
+              <InputField label="Phone Number" placeholder="Phone Number" name="reference1Phone" required  value={(formData as any)["reference1Phone"]} onChange={handleChange} />
             </div>
 
             <h4 style={{ fontSize: "16px", marginBottom: "1rem", color: "var(--navy-deep)" }}>Reference 2</h4>
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
-              <InputField label="" placeholder="Full Name" name="reference2Name" required />
-              <InputField label="" placeholder="Phone Number" name="reference2Phone" required />
-              <InputField label="" placeholder="Relation" name="reference2Relation" required />
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Reference Type *</label>
+                <select name="reference2Type" value={formData.reference2Type} onChange={handleChange} required style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", appearance: "none" }}>
+                  <option value="General Reference">General Reference</option>
+                  <option value="Pastor's Recommendation">Pastor's Recommendation</option>
+                </select>
+              </div>
+              <InputField label="Relation" placeholder="Relation" name="reference2Relation" required  value={(formData as any)["reference2Relation"]} onChange={handleChange} />
+            </div>
+            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+              <InputField label="Full Name" placeholder="Full Name" name="reference2Name" required  value={(formData as any)["reference2Name"]} onChange={handleChange} />
+              <InputField label="Email Address" placeholder="Email Address" name="reference2Email"  value={(formData as any)["reference2Email"]} onChange={handleChange} />
+              <InputField label="Phone Number" placeholder="Phone Number" name="reference2Phone" required  value={(formData as any)["reference2Phone"]} onChange={handleChange} />
             </div>
           </div>
 
@@ -583,8 +613,8 @@ export default function ProgramApplicationPage() {
               I hereby declare that the information provided in this application is true and accurate to the best of my knowledge. I agree to abide by the rules, regulations, and academic requirements of the Academy.
             </p>
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
-              <InputField label="" placeholder="First Name (Signature)" name="declarationNameFirst" required />
-              <InputField label="" placeholder="Last Name (Signature)" name="declarationNameLast" required />
+              <InputField label="" placeholder="First Name (Signature)" name="declarationNameFirst" required  value={(formData as any)["declarationNameFirst"]} onChange={handleChange} />
+              <InputField label="" placeholder="Last Name (Signature)" name="declarationNameLast" required  value={(formData as any)["declarationNameLast"]} onChange={handleChange} />
             </div>
             <label style={{ display: "flex", alignItems: "center", gap: "1rem", cursor: "pointer", fontWeight: 700, color: "var(--navy-deep)" }}>
               <input type="checkbox" name="agreeToRules" checked={formData.agreeToRules} onChange={handleChange} style={{ width: "24px", height: "24px", accentColor: "var(--gold-dark)", cursor: "pointer" }} />

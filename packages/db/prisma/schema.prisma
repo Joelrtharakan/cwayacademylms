@@ -778,20 +778,74 @@ model ProgramApplication {
   callingStatement     String
   
   reference1Name       String
+  reference1Email      String?
   reference1Phone      String
   reference1Relation   String
+  reference1Type       String?
+  reference1Token      String?  @unique
+  reference1Status     String   @default("PENDING") // PENDING, SUBMITTED
+  
   reference2Name       String
+  reference2Email      String?
   reference2Phone      String
   reference2Relation   String
+  reference2Type       String?
+  reference2Token      String?  @unique
+  reference2Status     String   @default("PENDING") // PENDING, SUBMITTED
   
   declarationName      String
   status               String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  referenceForms       ReferenceForm[]
   
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   @@index([programId])
   @@index([email])
+}
+
+model ReferenceForm {
+  id                 String   @id @default(cuid())
+  applicationId      String
+  application        ProgramApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  referenceIndex     Int      // 1 or 2 to indicate which reference this is
+  type               String   // PASTOR or GENERAL
+  
+  // Base fields
+  yearsKnown         String
+  capacityKnown      String?
+  churchEngagement   String?
+  spiritualInfluence String?
+  
+  // Ratings (stored as JSON to handle all 12 areas)
+  ratings            String // JSON e.g. { "Christian Commitment": "Excellent", ... }
+  
+  financialAbility   String?
+  financialHelp      String?  // for pastor only
+  
+  comments           String?
+  attentionAreas     String?  // for general only
+  discussFurther     Boolean  @default(false)
+  recommendation     String
+  
+  // Referee Details
+  refereeName        String
+  refereePosition    String?
+  churchName         String?  // for pastor only
+  denomination       String?  // for pastor only
+  
+  address            String // JSON e.g. { "line1": "...", "city": "..." }
+  phone              String
+  email              String
+  
+  signatureUrl       String?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([applicationId, referenceIndex])
 }
 
 model ProgramEnrollment {

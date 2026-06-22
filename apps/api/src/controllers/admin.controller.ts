@@ -1338,7 +1338,10 @@ export const getApplicationById = asyncHandler(async (req: Request, res: Respons
   const { id } = req.params;
   const application = await prisma.programApplication.findUnique({
     where: { id },
-    include: { program: { select: { title: true } } }
+    include: { 
+      program: { select: { title: true } },
+      referenceForms: true
+    }
   });
   if (!application) throw new AppError("Application not found", 404);
   res.json({ status: "success", data: application });

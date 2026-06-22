@@ -65,10 +65,11 @@ function MessagesContent() {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (content.trim()) sendMut.mutate(); }
   };
 
-  const filteredConvos = convos.filter((c: any) =>
-    c.otherUser?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.otherUser?.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredConvos = convos.filter((c: any) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return c.otherUser?.name?.toLowerCase()?.includes(q) || c.otherUser?.email?.toLowerCase()?.includes(q);
+  });
 
   return (
     <div style={{ display: "flex", height: "calc(100vh - 60px - 48px)", gap: 0, background: SURFACE, borderRadius: 16, overflow: "hidden", border: "1px solid var(--border-light, #E2E8F0)", boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05))" }}>
