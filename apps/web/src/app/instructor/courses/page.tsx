@@ -49,9 +49,7 @@ function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (i
             <BookOpen size={40} color="rgba(184,134,69,0.2)" />
           </div>
         )}
-        <div style={{ position: "absolute", top: 12, left: 12 }}>
-          <StatusBadge status={course.status} />
-        </div>
+
         {course.moduleNumber && (
           <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(26,38,29,0.8)", color: "#FFFFFF", borderRadius: 6, padding: "4px 8px", fontSize: 11, fontWeight: 700 }}>
             Module {course.moduleNumber}
@@ -60,6 +58,9 @@ function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (i
       </div>
       {/* Body */}
       <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ marginBottom: "12px" }}>
+          <StatusBadge status={course.status} />
+        </div>
         <h3 style={{ fontFamily: "Georgia, serif", fontSize: "18px", color: "#1A261D", fontWeight: 700, lineHeight: 1.3, marginBottom: "8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
           {course.title}
         </h3>
