@@ -418,16 +418,7 @@ export default function LessonPlayerPage() {
   useEffect(() => {
     const handleViolation = () => {
       if (quizState === "in_progress") {
-        setCheatStrikes(prev => {
-          const newStrikes = prev + 1;
-          if (newStrikes > 3) {
-            submitQuiz();
-            alert("Quiz automatically submitted due to maximum infractions. Cheating is not permitted.");
-          } else {
-            setShowCheatWarning(true);
-          }
-          return newStrikes;
-        });
+        setCheatStrikes(prev => prev + 1);
       }
     };
 
@@ -446,6 +437,15 @@ export default function LessonPlayerPage() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, [quizState, quizData, quizAnswers, lesson]);
+
+  useEffect(() => {
+    if (cheatStrikes > 3 && quizState === "in_progress") {
+      submitQuiz();
+      toast.error("Quiz automatically submitted due to maximum infractions. Cheating is not permitted.");
+    } else if (cheatStrikes > 0 && cheatStrikes <= 3 && quizState === "in_progress") {
+      setShowCheatWarning(true);
+    }
+  }, [cheatStrikes, quizState]);
 
   // Countdown timer
   useEffect(() => {
