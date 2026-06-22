@@ -439,12 +439,17 @@ export default function LessonPlayerPage() {
   }, [quizState, quizData, quizAnswers, lesson]);
 
   useEffect(() => {
-    if (cheatStrikes > 3 && quizState === "in_progress") {
-      submitQuiz();
-      toast.error("Quiz automatically submitted due to maximum infractions. Cheating is not permitted.");
-    } else if (cheatStrikes > 0 && cheatStrikes <= 3 && quizState === "in_progress") {
-      setShowCheatWarning(true);
-    }
+    const handleCheat = async () => {
+      if (cheatStrikes > 3 && quizState === "in_progress") {
+        toast.error("Quiz automatically submitted due to maximum infractions. Cheating is not permitted.");
+        await submitQuiz();
+        await markComplete();
+        handleNext();
+      } else if (cheatStrikes > 0 && cheatStrikes <= 3 && quizState === "in_progress") {
+        setShowCheatWarning(true);
+      }
+    };
+    handleCheat();
   }, [cheatStrikes, quizState]);
 
   // Countdown timer
