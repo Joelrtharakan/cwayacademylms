@@ -1001,92 +1001,95 @@ export default function LessonPlayerPage() {
           const isEffectivelyPastDue = effectiveDueDate ? new Date() > effectiveDueDate : false;
 
           return (
-          <div className="w-full min-h-full bg-[#F9FAFB] text-gray-900" style={{ padding: "64px 5% 120px 5%" }}>
-            <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-12 xl:gap-20">
+          <div className="w-full min-h-full bg-gradient-to-br from-slate-50 to-blue-50/40 text-slate-900" style={{ padding: "80px 5% 120px 5%" }}>
+            <div className="max-w-[1150px] mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
               
-              {/* Left Column: Instructions (Clean Theme) */}
+              {/* Left Column: Instructions (Premium Modern) */}
               <div className="flex-1 lg:max-w-[55%]">
-                <div className="mb-10 pb-10 border-b border-gray-200">
-                  <div className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-600 rounded-md text-[11px] font-bold uppercase tracking-wider mb-6 px-3 py-1.5 shadow-sm">
-                    <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
+                <div className="mb-10 pb-10 border-b border-slate-200/60">
+                  <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 rounded-full text-[12px] font-bold uppercase tracking-wider mb-6 px-4 py-1.5 shadow-sm">
+                    <ClipboardCheck className="w-4 h-4" /> Assignment
                   </div>
                   
-                  <h1 className="font-serif text-3xl md:text-4xl lg:text-[2.75rem] text-gray-900 font-bold mb-8 leading-[1.2] tracking-tight">
+                  <h1 className="font-sans text-4xl md:text-5xl lg:text-[3.25rem] text-slate-900 font-extrabold mb-8 leading-[1.15] tracking-tight">
                     {lesson.assignment?.title}
                   </h1>
                   
                   <div className="flex flex-wrap items-center gap-4 text-sm">
                     {lesson.assignment?.dueDate && (
-                      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm">
-                        <Calendar className="w-4 h-4 text-gray-400" /> 
-                        <span className="font-medium text-gray-700 text-[13px]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
+                      <div className="flex items-center gap-2.5 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 shadow-sm">
+                        <Calendar className="w-4 h-4 text-blue-500" /> 
+                        <span className="font-semibold text-slate-700 text-[14px]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-2 shadow-sm">
-                      <span className="font-medium uppercase tracking-wider text-[11px] text-gray-500">
+                    <div className="flex items-center gap-2.5 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 shadow-sm">
+                      <span className="font-bold uppercase tracking-wider text-[11px] text-slate-500">
                         Max Score
                       </span>
-                      <span className="font-bold text-gray-700 text-[13px]">
+                      <span className="font-extrabold text-slate-800 text-[15px]">
                         {lesson.assignment?.maxScore} pts
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-normal" 
-                     style={{ fontSize: "16px" }}
+                <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed font-medium" 
+                     style={{ fontSize: "17px" }}
                      dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
 
                 {lesson.assignment?.attachmentUrl && (
-                  <div className="mt-12 pt-8 border-t border-gray-200">
-                    <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-4">Included Resources</h3>
+                  <div className="mt-14 pt-8 border-t border-slate-200/60">
+                    <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-5">Included Resources</h3>
                     <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" 
-                       className="group inline-flex items-center gap-3 px-5 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 text-[14px] font-medium shadow-sm">
-                      <Download className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" /> 
+                       className="group inline-flex items-center gap-4 px-6 py-4 bg-white border border-slate-200/60 text-slate-800 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all duration-300 text-[15px] font-bold shadow-sm">
+                      <div className="bg-slate-50 group-hover:bg-blue-50 p-2 rounded-xl transition-colors">
+                        <Download className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" /> 
+                      </div>
                       Download Attached File
                     </a>
                   </div>
                 )}
               </div>
 
-              {/* Right Column: Submission Area (Clean Theme) */}
+              {/* Right Column: Submission Area (Premium Modern) */}
               <div className="flex-1 lg:max-w-[45%]">
                 <div className="sticky top-24">
                   {!assignmentSub && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                      <h2 className="font-serif text-2xl font-bold mb-8 text-gray-900 tracking-tight">Your Submission</h2>
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-10 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                      <h2 className="font-sans text-[1.75rem] font-extrabold mb-8 text-slate-900 tracking-tight">Your Submission</h2>
                       
-                      <div className="space-y-6">
+                      <div className="space-y-8">
                         <div>
-                          <label className="block text-[12px] font-semibold text-gray-700 mb-2">Response</label>
+                          <label className="block text-[13px] font-bold text-slate-700 mb-2.5">Response</label>
                           <textarea 
                             rows={8}
                             value={submissionResponse}
                             onChange={(e) => setSubmissionResponse(e.target.value)}
                             disabled={isEffectivelyPastDue}
-                            className="w-full bg-gray-50 rounded-lg p-4 text-[15px] text-gray-900 leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#4A8C5C] focus:border-[#4A8C5C] focus:bg-white transition-colors duration-200 placeholder:text-gray-400 border border-gray-200 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full bg-slate-50 rounded-2xl p-5 text-[15px] text-slate-900 leading-relaxed focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all duration-300 placeholder:text-slate-400 border border-slate-200 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
                             placeholder="Type your thoughtful response here..."
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-[12px] font-semibold text-gray-700 mb-2">Attached File <span className="font-normal text-gray-500">(Optional)</span></label>
-                          <label className={`block rounded-lg p-8 text-center transition-all duration-200 bg-gray-50 border border-dashed border-gray-300 ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-[#4A8C5C] hover:bg-white group'}`}>
+                          <label className="block text-[13px] font-bold text-slate-700 mb-2.5">Attached File <span className="font-medium text-slate-500">(Optional)</span></label>
+                          <label className={`block rounded-2xl p-10 text-center transition-all duration-300 bg-slate-50 border-2 border-dashed border-slate-200 ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 group'}`}>
                             <input type="file" className="hidden" disabled={isEffectivelyPastDue} onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
-                            <div className="text-[14px] font-medium text-gray-700 group-hover:text-[#4A8C5C] transition-colors">
+                            <div className="text-[15px] font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
                               {submissionFile ? submissionFile.name : "Click to browse or drag & drop"}
                             </div>
                             {!submissionFile && (
-                              <div className="text-[12px] text-gray-500 mt-2">PDF, DOC, ZIP up to 50MB</div>
+                              <div className="text-[13px] text-slate-500 mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
                             )}
                           </label>
                         </div>
                         
-                        <div style={{ marginTop: "32px" }}>
+                        <div style={{ marginTop: "40px" }}>
                           <button 
                             onClick={onSubmitAssignment}
                             disabled={isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)}
-                            className="w-full bg-[#4A8C5C] hover:bg-[#3d734c] text-white rounded-lg font-medium shadow-sm transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed py-3.5 text-[15px]">
+                            className="w-full bg-[#1A261D] hover:bg-[#2D4031] text-white rounded-2xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:translate-y-0 py-4 text-[16px]">
                             {isSubmittingAssig ? "Submitting..." : "Submit Assignment"}
                           </button>
                         </div>
@@ -1094,39 +1097,39 @@ export default function LessonPlayerPage() {
                       
                       {/* Extension Logic */}
                       {lesson.assignment?.dueDate && (
-                        <div className="mt-6">
+                        <div className="mt-8">
                           {(() => {
                             if (!isPastDue && !isEffectivelyPastDue) return null;
 
                             if (grantedExtension && !isEffectivelyPastDue) {
                               return (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-[14px]">
-                                  <span className="font-semibold">Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
+                                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-emerald-800 text-[14px]">
+                                  <span className="font-bold">Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
                                 </div>
                               );
                             }
 
                             if (pendingRequest) {
                               return (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-[14px]">
-                                  <span className="font-semibold">Extension requested</span> (Pending approval)
+                                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 text-amber-800 text-[14px]">
+                                  <span className="font-bold">Extension requested</span> (Pending approval)
                                 </div>
                               );
                             }
 
                             if (isEffectivelyPastDue) {
                               return (
-                                <div className="bg-red-50 border border-red-200 p-5 rounded-lg">
-                                  <p className="text-red-700 text-[14px] mb-4">This assignment is past due. You must request an extension to submit.</p>
+                                <div className="bg-red-50 border border-red-100 p-6 rounded-2xl">
+                                  <p className="text-red-700 font-semibold text-[14px] mb-5">This assignment is past due. You must request an extension to submit.</p>
                                   {!isRequestingExtension ? (
-                                    <button onClick={() => setIsRequestingExtension(true)} className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-md font-medium text-[13px] hover:bg-red-50 transition-colors shadow-sm">Request Extension</button>
+                                    <button onClick={() => setIsRequestingExtension(true)} className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-[13px] hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm">Request Extension</button>
                                   ) : (
-                                    <div className="flex flex-col gap-4 bg-white p-5 rounded-lg border border-red-200">
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} className="w-full p-3 rounded-md border border-gray-200 text-[13px] focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all resize-none bg-gray-50" />
-                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-3 rounded-md border border-gray-200 text-[13px] focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all bg-gray-50" />
-                                      <div className="flex gap-3 mt-1">
-                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-4 py-2 bg-red-600 text-white rounded-md font-medium text-[13px] hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm">Submit Request</button>
-                                        <button onClick={() => setIsRequestingExtension(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-md font-medium text-[13px] hover:bg-gray-50 transition-colors">Cancel</button>
+                                    <div className="flex flex-col gap-4 bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} className="w-full p-4 rounded-xl border border-slate-200 text-[14px] focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-400 transition-all resize-none bg-slate-50" />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-4 rounded-xl border border-slate-200 text-[14px] focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-400 transition-all bg-slate-50" />
+                                      <div className="flex gap-3 mt-2">
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold text-[14px] hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm">Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-[14px] hover:bg-slate-50 transition-colors">Cancel</button>
                                       </div>
                                     </div>
                                   )}
@@ -1141,24 +1144,27 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && !assignmentSub.isGraded && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col items-center justify-center text-center">
-                      <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-6">
-                        <CheckCircle className="w-8 h-8 text-green-600" strokeWidth={2} />
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-12 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                      {/* Decorative top gradient */}
+                      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50 to-transparent" />
+                      
+                      <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 relative z-10 shadow-sm border border-emerald-100 ring-8 ring-emerald-50">
+                        <CheckCircle className="w-12 h-12 text-emerald-500" strokeWidth={2.5} />
                       </div>
-                      <h3 className="font-serif text-2xl font-bold text-gray-900 mb-3 tracking-tight">Submission Received</h3>
-                      <p className="text-gray-600 text-[15px] leading-relaxed max-w-sm mb-8">
-                        Your work is successfully uploaded and awaiting review.
+                      <h3 className="font-sans text-[1.75rem] font-extrabold text-slate-900 mb-4 tracking-tight relative z-10">Submission Received</h3>
+                      <p className="text-slate-600 text-[16px] leading-relaxed font-medium max-w-sm mb-10 relative z-10">
+                        Your work is successfully uploaded and awaiting review by the instructor.
                       </p>
                       
                       {!isEffectivelyPastDue ? (
                         <button 
                           onClick={onUnsubmitAssignment}
                           disabled={isUnsubmittingAssig}
-                          className="bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 px-6 py-2.5 text-[14px] shadow-sm">
+                          className="relative z-10 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all duration-300 disabled:opacity-50 px-8 py-3.5 text-[15px] shadow-sm hover:shadow-md">
                           {isUnsubmittingAssig ? "Unsubmitting..." : "Unsubmit Assignment"}
                         </button>
                       ) : (
-                        <div className="mt-2 text-[14px] font-medium text-yellow-800 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-lg">
+                        <div className="relative z-10 mt-2 text-[14px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-5 py-3.5 rounded-xl shadow-sm">
                           Due date has passed. Unsubmitting is disabled.
                         </div>
                       )}
@@ -1166,38 +1172,40 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && assignmentSub.isGraded && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden relative">
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500" />
+                      
                       {/* Top: Score row */}
-                      <div className="flex items-center p-8 border-b border-gray-200 bg-gray-50">
-                        <div className="flex-1 flex items-center gap-6">
+                      <div className="flex items-center p-10 border-b border-slate-100 bg-slate-50/50">
+                        <div className="flex-1 flex items-center gap-8">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Status</span>
-                            <div className="inline-flex items-center gap-1.5 text-green-600 font-medium text-[14px]">
-                              <CheckCircle className="w-4 h-4" strokeWidth={2.5} /> Graded
+                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Status</span>
+                            <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-[15px]">
+                              <CheckCircle className="w-5 h-5" strokeWidth={2.5} /> Graded
                             </div>
                           </div>
                           
-                          <div className="w-px h-12 bg-gray-300 mx-2" />
+                          <div className="w-px h-16 bg-slate-200 mx-2" />
 
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Your Score</span>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-3xl font-bold text-gray-900 leading-none">{assignmentSub.grade}</span>
-                              <span className="text-sm text-gray-500 font-medium">/ {lesson.assignment?.maxScore} pts</span>
+                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Your Score</span>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-extrabold text-slate-900 leading-none tracking-tight">{assignmentSub.grade}</span>
+                              <span className="text-[16px] text-slate-500 font-bold">/ {lesson.assignment?.maxScore} pts</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       {/* Bottom: Feedback */}
-                      <div className="p-8">
-                        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-4">
-                          Instructor Feedback
+                      <div className="p-10">
+                        <div className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-5 flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4" /> Instructor Feedback
                         </div>
                         {assignmentSub.feedback ? (
-                          <div className="text-[15px] text-gray-800 leading-relaxed bg-gray-50 p-6 rounded-lg border border-gray-200" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                          <div className="text-[16px] text-slate-800 leading-relaxed font-medium bg-slate-50 p-8 rounded-2xl border border-slate-100" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
                         ) : (
-                          <div className="text-[14px] text-gray-500 italic bg-gray-50 p-6 rounded-lg border border-gray-100">No additional feedback provided.</div>
+                          <div className="text-[15px] text-slate-500 italic font-medium bg-slate-50 p-8 rounded-2xl border border-slate-100">No additional feedback provided.</div>
                         )}
                       </div>
                     </div>
