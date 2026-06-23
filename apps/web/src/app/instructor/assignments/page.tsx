@@ -19,6 +19,7 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
   const [grade, setGrade] = useState(sub.grade ?? "");
   const [feedback, setFeedback] = useState(sub.feedback ?? "");
   const [showFile, setShowFile] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const maxScore = sub.assignment?.maxScore || 100;
 
   return (
@@ -66,7 +67,16 @@ function SubmissionCard({ sub, onGrade }: { sub: any; onGrade: (id: string, grad
                 </a>
               </div>
               {showFile && (
-                <iframe src={sub.fileUrl} style={{ width: "100%", height: 500, border: "1px solid var(--border-light, #E2E8F0)", borderRadius: 8, background: "#FFFFFF" }} />
+                !imageError ? (
+                  <img 
+                    src={sub.fileUrl} 
+                    alt="Submission" 
+                    onError={() => setImageError(true)}
+                    style={{ width: "100%", maxHeight: 800, objectFit: "contain", border: "1px solid var(--border-light, #E2E8F0)", borderRadius: 8, background: "#f8f9fa" }} 
+                  />
+                ) : (
+                  <iframe src={sub.fileUrl + (sub.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH' : '')} style={{ width: "100%", height: 800, border: "1px solid var(--border-light, #E2E8F0)", borderRadius: 8, background: "#FFFFFF" }} />
+                )
               )}
             </div>
           )}
