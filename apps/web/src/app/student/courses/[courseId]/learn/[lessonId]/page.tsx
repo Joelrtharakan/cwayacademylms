@@ -1009,31 +1009,32 @@ export default function LessonPlayerPage() {
                 {/* Left Column: Header & Instructions */}
                 <div className="flex-1 lg:max-w-[60%] xl:max-w-[65%] w-full">
                   
-                  <div className="mb-8">
-                    <div className="inline-flex items-center gap-1.5 text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-4">
-                      <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
+                  <div style={{ marginBottom: "32px" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#8F9E93", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "16px" }}>
+                      <ClipboardCheck size={14} /> Assignment
                     </div>
                     
-                    <h1 className="font-sans text-3xl md:text-4xl text-gray-900 font-semibold mb-6 leading-tight tracking-tight">
+                    <h1 style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "32px", color: "#1A261D", fontWeight: 700, marginBottom: "24px", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
                       {lesson.assignment?.title}
                     </h1>
                     
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 border-b border-gray-100 pb-6 mb-8">
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "24px", fontSize: "14px", color: "#526658", borderBottom: "1px solid #DCE0D5", paddingBottom: "24px", marginBottom: "32px" }}>
                       {lesson.assignment?.dueDate && (
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" /> 
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <Calendar size={16} /> 
                           <span>Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold uppercase tracking-wider text-[10px]">Points</span>
-                        <span className="font-medium text-gray-700">{lesson.assignment?.maxScore}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "10px", color: "#8F9E93" }}>Points</span>
+                        <span style={{ fontWeight: 600, color: "#1A261D" }}>{lesson.assignment?.maxScore}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="prose prose-slate max-w-none text-gray-700 leading-relaxed font-normal" 
-                       style={{ fontSize: "16px" }}
+                  <div 
+                       style={{ fontSize: "16px", color: "#1A261D", lineHeight: 1.7 }}
+                       className="prose prose-slate max-w-none"
                        dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
 
                   {lesson.assignment?.attachmentUrl && (
