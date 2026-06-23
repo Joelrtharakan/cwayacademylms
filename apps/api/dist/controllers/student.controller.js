@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
+exports.getProgramGrades = exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const certificate_service_1 = require("../services/certificate.service");
@@ -1172,4 +1172,68 @@ exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
         sectionTitle: item.sectionTitle
     }));
     res.json({ status: "success", data: { grade: courseGrade, totalEarned, totalMaxGraded, items: itemDistribution } });
+});
+exports.getProgramGrades = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { programId } = req.params;
+    const studentId = req.user.id;
+    const program = await prisma_1.prisma.program.findUnique({
+        where: { id: programId },
+        include: {
+            courses: {
+                include: {
+                    enrollments: { where: { studentId } }
+                }
+            }
+        }
+    });
+    if (!program)
+        throw new errors_1.AppError("Program not found", 404);
+    const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
+        // Basic computation like getMyCourseGrade
+        const courseData = await prisma_1.prisma.course.findUnique({
+            where: { id: course.id },
+            include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+        });
+        if (!courseData)
+            return { ...course, finalGrade: 0 };
+        const gradedItems = [];
+        courseData.sections.forEach(sec => {
+            sec.lessons.forEach(lesson => {
+                if (lesson.assignment)
+                    gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+                if (lesson.quiz)
+                    gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+                if (lesson.type === "FORUM")
+                    gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+            });
+        });
+        const submissions = await prisma_1.prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
+        const quizAttempts = await prisma_1.prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
+        const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+        const forumDiscussions = await prisma_1.prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
+        const grades = {};
+        gradedItems.forEach(item => grades[item.id] = null);
+        submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined)
+            grades[sub.assignmentId] = sub.grade; });
+        quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId])
+            grades[qa.quizId] = qa.score; });
+        forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score > grades[sf.lessonId]))
+            grades[sf.lessonId] = sf.score; });
+        let totalEarned = 0;
+        let totalMaxGraded = 0;
+        gradedItems.forEach(item => {
+            const score = grades[item.id];
+            if (score !== null && score !== undefined) {
+                totalEarned += score;
+                totalMaxGraded += item.maxScore;
+            }
+        });
+        const finalGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+        return {
+            id: course.id,
+            title: course.title,
+            finalGrade
+        };
+    }));
+    res.json({ status: "success", data: { program, coursesWithGrades } });
 });

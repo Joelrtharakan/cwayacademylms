@@ -1,0 +1,29 @@
+
+export const getProgramGrades = asyncHandler(async (req: Request, res: Response) => {
+  const { programId } = req.params;
+  const studentId = req.user!.id;
+
+  const enrollment = await prisma.programEnrollment.findUnique({
+    where: { studentId_programId: { studentId, programId } },
+    include: {
+      program: {
+        include: {
+          courses: {
+            include: {
+              enrollments: { where: { studentId } }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!enrollment) throw new AppError("Not enrolled in program", 404);
+
+  // For each course, calculate the final grade.
+  // We can just rely on the existing grading utility or calculate simply here.
+  // Actually, course grades are computed via getCourseGrade logic. It might be complex.
+  // Let's use the same logic as getMyCourseGrade for each course.
+  // Wait! The easiest is to just return the program with courses. The frontend can fetch individual grades or we do it here.
+});
+

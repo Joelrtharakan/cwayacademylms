@@ -74,6 +74,8 @@ router.get("/courses/:courseId/my-attendance", studentCtrl.getMyAttendance);
 // Certificates
 router.get("/certificates/my", studentCtrl.getMyCertificates);
 router.get("/certificates/:id/download", studentCtrl.downloadCertificate);
+// Programs
+router.get("/programs/:programId/grades", studentCtrl.getProgramGrades);
 // Notifications
 router.get("/notifications", studentCtrl.getMyNotifications);
 router.put("/notifications/read-all", studentCtrl.markAllNotificationsRead);

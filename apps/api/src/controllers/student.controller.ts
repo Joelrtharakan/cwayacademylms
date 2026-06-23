@@ -1338,3 +1338,73 @@ export const getMyCourseGrade = asyncHandler(async (req: Request, res: Response)
 
   res.json({ status: "success", data: { grade: courseGrade, totalEarned, totalMaxGraded, items: itemDistribution } });
 });
+
+export const getProgramGrades = asyncHandler(async (req: Request, res: Response) => {
+  const { programId } = req.params;
+  const studentId = req.user!.id;
+
+  const program = await prisma.program.findUnique({
+    where: { id: programId },
+    include: {
+      courses: {
+        include: {
+          enrollments: { where: { studentId } }
+        }
+      }
+    }
+  });
+
+  if (!program) throw new AppError("Program not found", 404);
+
+  const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
+    // Basic computation like getMyCourseGrade
+    const courseData = await prisma.course.findUnique({
+      where: { id: course.id },
+      include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+    });
+    
+    if (!courseData) return { ...course, finalGrade: 0 };
+
+    const gradedItems: { id: string, type: string, maxScore: number }[] = [];
+    courseData.sections.forEach(sec => {
+      sec.lessons.forEach(lesson => {
+        if (lesson.assignment) gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+        if (lesson.quiz) gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+        if (lesson.type === "FORUM") gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+      });
+    });
+
+    const submissions = await prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
+    const quizAttempts = await prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
+    const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+    const forumDiscussions = await prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
+
+    const grades: Record<string, number | null> = {};
+    gradedItems.forEach(item => grades[item.id] = null);
+
+    submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined) grades[sub.assignmentId] = sub.grade; });
+    quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId]!) grades[qa.quizId] = qa.score; });
+    forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score! > grades[sf.lessonId]!)) grades[sf.lessonId] = sf.score!; });
+
+    let totalEarned = 0;
+    let totalMaxGraded = 0;
+
+    gradedItems.forEach(item => {
+      const score = grades[item.id];
+      if (score !== null && score !== undefined) {
+        totalEarned += score;
+        totalMaxGraded += item.maxScore;
+      }
+    });
+
+    const finalGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+
+    return {
+      id: course.id,
+      title: course.title,
+      finalGrade
+    };
+  }));
+
+  res.json({ status: "success", data: { program, coursesWithGrades } });
+});

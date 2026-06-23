@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { api, useAuthStore } from "@/store/auth.store";
-import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone } from "lucide-react";
+import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
+import { getLetterGrade } from "@/lib/gradeScale";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -306,7 +307,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                   <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>{courseGrade.totalEarned} / {courseGrade.totalMaxGraded} Pts</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "16px", fontWeight: 700, color: "#10B981" }}>{courseGrade.grade}%</span>
+                  <span style={{ fontSize: "16px", fontWeight: 700, color: "#10B981" }}>{getLetterGrade(courseGrade.grade)} ({courseGrade.grade}%)</span>
                   {courseGrade.items && courseGrade.items.length > 0 && (
                     <ChevronDown size={14} color="rgba(255,255,255,0.4)" style={{ transform: isGradeExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                   )}

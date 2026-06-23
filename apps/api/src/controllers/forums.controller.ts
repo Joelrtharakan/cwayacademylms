@@ -33,6 +33,16 @@ export const createForumPost = asyncHandler(async (req: Request, res: Response) 
 
   if (!lesson) throw new AppError("Lesson not found", 404);
 
+  // Enforce limit: Students can only post once per forum
+  if (req.user!.role === "STUDENT") {
+    const existingPost = await prisma.discussion.findFirst({
+      where: { lessonId, authorId: req.user!.id }
+    });
+    if (existingPost) {
+      throw new AppError("You have already submitted a response for this forum.", 400);
+    }
+  }
+
   const post = await prisma.discussion.create({
     data: {
       lessonId,
@@ -62,6 +72,28 @@ export const createForumReply = asyncHandler(async (req: Request, res: Response)
   if (!discussion) throw new AppError("Discussion not found", 404);
 
   const isInstructor = req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR"; // simplified
+
+  if (!isInstructor) {
+    // Only apply the 2-student limit if replying to someone else's post
+    if (discussion.authorId !== req.user!.id && discussion.lessonId) {
+      const previousReplies = await prisma.discussionReply.findMany({
+        where: {
+          authorId: req.user!.id,
+          discussion: {
+            lessonId: discussion.lessonId,
+            authorId: { not: req.user!.id }
+          }
+        },
+        select: { discussion: { select: { authorId: true } } }
+      });
+
+      const uniqueOtherAuthors = new Set(previousReplies.map(r => r.discussion.authorId));
+
+      if (uniqueOtherAuthors.size >= 2 && !uniqueOtherAuthors.has(discussion.authorId)) {
+        throw new AppError("You have already replied to the maximum number of other students (2) in this forum.", 400);
+      }
+    }
+  }
 
   const reply = await prisma.discussionReply.create({
     data: {

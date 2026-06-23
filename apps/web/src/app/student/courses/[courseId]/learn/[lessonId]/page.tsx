@@ -1254,6 +1254,14 @@ export default function LessonPlayerPage() {
             return name.slice(0, 2).toUpperCase();
           };
 
+          const hasPostedDiscussion = forumPosts.some(p => p.authorId === user?.id || p.author?.id === user?.id);
+          const myRepliesToOthers = forumPosts.flatMap(p => 
+            (p.authorId !== user?.id && p.author?.id !== user?.id) ? 
+            (p.replies || []).filter((r: any) => r.authorId === user?.id || r.author?.id === user?.id).map((r: any) => p.authorId || p.author?.id) : []
+          );
+          const uniqueOtherAuthorsRepliedTo = new Set(myRepliesToOthers);
+          const hasReachedReplyLimit = uniqueOtherAuthorsRepliedTo.size >= 2;
+
           return (
             <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: "56px 8% 120px 8%" }}>
               <div className="max-w-3xl mx-auto">
@@ -1338,6 +1346,14 @@ export default function LessonPlayerPage() {
 
                             if (showPending) {
                               return <div style={{ color: "#92400E", fontWeight: 600, fontSize: "14px", padding: "16px", background: "#FEF3C7", borderRadius: "8px" }}>Extension requested (Pending approval)</div>;
+                            }
+
+                            if (hasPostedDiscussion) {
+                              return (
+                                <div className="bg-[#FEF3C7] text-[#92400E] p-5 text-[14px] font-medium text-center">
+                                  You have already submitted your response for this forum.
+                                </div>
+                              );
                             }
 
                             return (
@@ -1558,48 +1574,54 @@ export default function LessonPlayerPage() {
                                 ))}
 
                                 {/* Reply Input */}
-                                <div className="flex gap-4 items-start mt-4">
-                                  <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-1 shadow-sm">
-                                    ME
+                                {hasReachedReplyLimit && post.authorId !== user?.id && post.author?.id !== user?.id && !uniqueOtherAuthorsRepliedTo.has(post.authorId || post.author?.id) ? (
+                                  <div className="mt-4 text-[13px] text-[#B91C1C] font-medium bg-[#FEF2F2] border border-[#FECACA] p-4 rounded-xl text-center">
+                                    You have reached the maximum allowed replies to other students (2).
                                   </div>
-                                  <div className="flex-1 relative">
-                                    <textarea
-                                      value={replyContent[post.id] || ""}
-                                      onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                      placeholder="Write a reply..."
-                                      rows={2}
-                                      className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none focus:border-[#C9973A] transition-all p-4 pr-14 min-h-[52px]"
-                                      style={{ overflowY: "auto" }}
-                                      onWheel={(e) => {
-                                        const target = e.currentTarget;
-                                        const isScrollingDown = e.deltaY > 0;
-                                        const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
-                                        const isAtTop = target.scrollTop <= 0;
-                                        
-                                        if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
-                                          e.stopPropagation();
-                                        }
-                                      }}
-                                    />
-                                    <button
-                                      disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
-                                      onClick={async () => {
-                                        const content = replyContent[post.id]?.trim();
-                                        if (!content) return;
-                                        setIsReplying(prev => ({ ...prev, [post.id]: true }));
-                                        try {
-                                          const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
-                                          setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
-                                          setReplyContent(prev => ({ ...prev, [post.id]: "" }));
-                                        } catch {}
-                                        setIsReplying(prev => ({ ...prev, [post.id]: false }));
-                                      }}
-                                      className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                      <Send size={14} />
-                                    </button>
+                                ) : (
+                                  <div className="flex gap-4 items-start mt-4">
+                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-1 shadow-sm">
+                                      ME
+                                    </div>
+                                    <div className="flex-1 relative">
+                                      <textarea
+                                        value={replyContent[post.id] || ""}
+                                        onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                        placeholder="Write a reply..."
+                                        rows={2}
+                                        className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none focus:border-[#C9973A] transition-all p-4 pr-14 min-h-[52px]"
+                                        style={{ overflowY: "auto" }}
+                                        onWheel={(e) => {
+                                          const target = e.currentTarget;
+                                          const isScrollingDown = e.deltaY > 0;
+                                          const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
+                                          const isAtTop = target.scrollTop <= 0;
+                                          
+                                          if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
+                                            e.stopPropagation();
+                                          }
+                                        }}
+                                      />
+                                      <button
+                                        disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
+                                        onClick={async () => {
+                                          const content = replyContent[post.id]?.trim();
+                                          if (!content) return;
+                                          setIsReplying(prev => ({ ...prev, [post.id]: true }));
+                                          try {
+                                            const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
+                                            setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
+                                            setReplyContent(prev => ({ ...prev, [post.id]: "" }));
+                                          } catch {}
+                                          setIsReplying(prev => ({ ...prev, [post.id]: false }));
+                                        }}
+                                        className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                      >
+                                        <Send size={14} />
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
+                                )}
                               </div>
                             )}
                           </div>

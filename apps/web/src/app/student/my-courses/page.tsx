@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { THEME } from "@/lib/cway-theme";
 import Link from "next/link";
-import { BookOpen, Award, CheckCircle } from "lucide-react";
+import { BookOpen, Award, CheckCircle, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function MyCoursesPage() {
@@ -143,9 +143,14 @@ export default function MyCoursesPage() {
                 </h2>
               </div>
               {isProgramCompleted && (
-                <Link href="/student/certificates" style={{ background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <Award size={16} /> Program Certificate
-                </Link>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <Link href={`/student/programs/${pe.program.id}/grade-sheet`} target="_blank" style={{ background: "white", color: THEME.HERO, border: `1px solid ${THEME.HERO}`, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <FileText size={16} /> Grade Sheet
+                  </Link>
+                  <Link href="/student/certificates" style={{ background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Award size={16} /> Program Certificate
+                  </Link>
+                </div>
               )}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
