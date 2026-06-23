@@ -1001,37 +1001,37 @@ export default function LessonPlayerPage() {
           const isEffectivelyPastDue = effectiveDueDate ? new Date() > effectiveDueDate : false;
 
           return (
-          <div className="w-full min-h-full bg-white text-gray-900" style={{ padding: "48px 5% 120px 5%" }}>
-            <div className="max-w-5xl mx-auto">
+          <div className="w-full flex-1 bg-white text-gray-900" style={{ minHeight: "calc(100vh - 70px)", padding: "56px 5% 120px 5%" }}>
+            <div className="max-w-6xl mx-auto">
               
-              {/* Header Banner */}
-              <div className="mb-10 pb-8 border-b border-gray-200">
-                <div className="inline-flex items-center gap-1.5 text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-3">
-                  <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
-                </div>
+              <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
                 
-                <h1 className="font-sans text-3xl text-gray-900 font-semibold mb-5 leading-tight tracking-tight">
-                  {lesson.assignment?.title}
-                </h1>
-                
-                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
-                  {lesson.assignment?.dueDate && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" /> 
-                      <span>Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
+                {/* Left Column: Header & Instructions */}
+                <div className="flex-1 lg:max-w-[60%] xl:max-w-[65%] w-full">
+                  
+                  <div className="mb-8">
+                    <div className="inline-flex items-center gap-1.5 text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-4">
+                      <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
                     </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold uppercase tracking-wider text-[10px]">Points</span>
-                    <span className="font-medium text-gray-700">{lesson.assignment?.maxScore}</span>
+                    
+                    <h1 className="font-sans text-3xl md:text-4xl text-gray-900 font-semibold mb-6 leading-tight tracking-tight">
+                      {lesson.assignment?.title}
+                    </h1>
+                    
+                    <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 border-b border-gray-100 pb-6 mb-8">
+                      {lesson.assignment?.dueDate && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" /> 
+                          <span>Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold uppercase tracking-wider text-[10px]">Points</span>
+                        <span className="font-medium text-gray-700">{lesson.assignment?.maxScore}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-                
-                {/* Main Content: Instructions */}
-                <div className="lg:col-span-2">
                   <div className="prose prose-slate max-w-none text-gray-700 leading-relaxed font-normal" 
                        style={{ fontSize: "16px" }}
                        dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
@@ -1048,8 +1048,8 @@ export default function LessonPlayerPage() {
                   )}
                 </div>
 
-              {/* Right Column: Submission Area (Notion Style) */}
-              <div className="lg:col-span-1">
+              {/* Right Column: Submission Area */}
+              <div className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0">
                 <div className="sticky top-24">
                   {!assignmentSub && (
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
