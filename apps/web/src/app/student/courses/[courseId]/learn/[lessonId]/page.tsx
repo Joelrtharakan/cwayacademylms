@@ -1350,8 +1350,14 @@ export default function LessonPlayerPage() {
 
                             if (hasPostedDiscussion) {
                               return (
-                                <div className="bg-[#FEF3C7] text-[#92400E] p-5 text-[14px] font-medium text-center">
-                                  You have already submitted your response for this forum.
+                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-gradient-to-b from-white to-[#FAFAF7] text-center">
+                                  <div className="w-12 h-12 bg-[#EAF2EC] border border-[#D5E5D9] rounded-full flex items-center justify-center mb-4 shadow-sm">
+                                    <CheckCircle size={22} className="text-[#2C6E3D]" />
+                                  </div>
+                                  <h4 className="text-[17px] font-bold text-[#1A261D] mb-1.5">Response Submitted</h4>
+                                  <p className="text-[14.5px] text-[#526658] max-w-[85%] leading-relaxed">
+                                    You have successfully posted your initial response to the instructor's prompt. You can now read and engage with your classmates' replies below.
+                                  </p>
                                 </div>
                               );
                             }
@@ -1579,17 +1585,17 @@ export default function LessonPlayerPage() {
                                     You have reached the maximum allowed replies to other students (2).
                                   </div>
                                 ) : (
-                                  <div className="flex gap-4 items-start mt-4">
-                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-1 shadow-sm">
+                                  <div className="flex gap-3 items-start mt-4 pt-4 border-t border-[#E4E8E0]/60">
+                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-0.5 shadow-sm">
                                       ME
                                     </div>
-                                    <div className="flex-1 relative">
+                                    <div className="flex-1 relative bg-white border border-[#E4E8E0] rounded-[24px] flex items-end p-1 shadow-sm focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all">
                                       <textarea
                                         value={replyContent[post.id] || ""}
                                         onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
                                         placeholder="Write a reply..."
-                                        rows={2}
-                                        className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none focus:border-[#C9973A] transition-all p-4 pr-14 min-h-[52px]"
+                                        rows={1}
+                                        className="flex-1 bg-transparent text-[14.5px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none py-2 px-4 min-h-[38px] max-h-[120px]"
                                         style={{ overflowY: "auto" }}
                                         onWheel={(e) => {
                                           const target = e.currentTarget;
@@ -1615,9 +1621,9 @@ export default function LessonPlayerPage() {
                                           } catch {}
                                           setIsReplying(prev => ({ ...prev, [post.id]: false }));
                                         }}
-                                        className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                        className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-[#1A261D] text-white hover:bg-[#C9973A] transition-colors disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-[#1A261D] ml-1"
                                       >
-                                        <Send size={14} />
+                                        <Send size={15} className="-ml-0.5" />
                                       </button>
                                     </div>
                                   </div>
