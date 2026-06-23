@@ -64,15 +64,15 @@ async function checkAndCompleteCourse(enrollmentId: string, studentId: string, o
       }
     });
     
-    if (completedEnrollments < programCourseIds.length) {
-      shouldIssueCertificate = false;
-    } else {
+    if (completedEnrollments === programCourseIds.length) {
       isProgramCertificate = true;
       programTitle = programCourses[0]?.program?.title || "";
+      const programId = enrollment.course.programId;
+      // Issue program certificate
+      await CertificateService.issueProgramCertificate(studentId, programId);
     }
-  }
-
-  if (shouldIssueCertificate) {
+  } else {
+    // Only issue course certificate for standalone courses
     await CertificateService.issueCertificate(studentId, enrollment.courseId);
   }
 
@@ -1053,10 +1053,13 @@ export const getMyCertificates = asyncHandler(async (req: Request, res: Response
     include: {
       course: {
         select: {
-          title: true, moduleNumber: true, thumbnail: true, scriptureRef: true,
-          instructor: { select: { name: true } }
+          title: true, moduleNumber: true, thumbnail: true, scriptureRef: true, slug: true,
+          instructor: { select: { name: true } },
+          programId: true,
+          program: { select: { title: true } }
         }
-      }
+      },
+      program: { select: { title: true } }
     },
     orderBy: { issuedAt: "desc" }
   });

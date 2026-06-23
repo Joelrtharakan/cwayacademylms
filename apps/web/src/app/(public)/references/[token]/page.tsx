@@ -68,7 +68,7 @@ export default function ReferenceFormPage() {
         const res = await api.get(`/references/${token}`);
         if (res.data.status === "success") {
           setRefData(res.data.data);
-          setFormData(prev => ({
+          setFormData((prev: any) => ({
             ...prev,
             refereeName: res.data.data.refereeData.name || "",
             email: res.data.data.refereeData.email || "",

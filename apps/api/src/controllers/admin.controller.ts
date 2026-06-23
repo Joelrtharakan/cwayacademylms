@@ -891,34 +891,47 @@ export const deleteCoupon = asyncHandler(async (req: Request, res: Response) => 
 // ─── CERTIFICATE TEMPLATES ───────────────────────────────────────────────────
 
 export const getCertificateTemplates = asyncHandler(async (req: Request, res: Response) => {
-  const templates = await prisma.certificateTemplate.findMany({ orderBy: { createdAt: "desc" } });
+  const templates = await prisma.certificateTemplate.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { certificates: true } } }
+  });
   res.json({ status: "success", data: templates });
 });
 
 export const createCertificateTemplate = asyncHandler(async (req: Request, res: Response) => {
-  const { name, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle } = req.body;
+  const { name, type, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle } = req.body;
+  const templateType = type === "PROGRAM" ? "PROGRAM" : "COURSE";
 
+  // If setting as default, unset other defaults of the same type only
   if (isDefault) {
-    await prisma.certificateTemplate.updateMany({ data: { isDefault: false } });
+    await prisma.certificateTemplate.updateMany({
+      where: { type: templateType },
+      data: { isDefault: false }
+    });
   }
 
   const template = await prisma.certificateTemplate.create({
-    data: { name, htmlTemplate, isDefault: isDefault || false, logoUrl, signatorySignatureUrl, borderStyle },
+    data: { name, type: templateType, htmlTemplate, isDefault: isDefault || false, logoUrl, signatorySignatureUrl, borderStyle },
   });
 
   res.status(201).json({ status: "success", data: template });
 });
 
 export const updateCertificateTemplate = asyncHandler(async (req: Request, res: Response) => {
-  const { name, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle } = req.body;
+  const { name, type, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle } = req.body;
+  const templateType = type === "PROGRAM" ? "PROGRAM" : "COURSE";
 
+  // If setting as default, unset other defaults of the same type
   if (isDefault) {
-    await prisma.certificateTemplate.updateMany({ where: { NOT: { id: req.params.id } }, data: { isDefault: false } });
+    await prisma.certificateTemplate.updateMany({
+      where: { type: templateType, NOT: { id: req.params.id } },
+      data: { isDefault: false }
+    });
   }
 
   const template = await prisma.certificateTemplate.update({
     where: { id: req.params.id },
-    data: { name, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle },
+    data: { name, type: templateType, htmlTemplate, isDefault, logoUrl, signatorySignatureUrl, borderStyle },
   });
 
   res.json({ status: "success", data: template });
@@ -927,7 +940,6 @@ export const updateCertificateTemplate = asyncHandler(async (req: Request, res: 
 export const deleteCertificateTemplate = asyncHandler(async (req: Request, res: Response) => {
   const template = await prisma.certificateTemplate.findUnique({ where: { id: req.params.id } });
   if (!template) throw new AppError("Template not found", 404);
-  if (template.isDefault) throw new AppError("Cannot delete the default certificate template", 400);
 
   await prisma.certificateTemplate.delete({ where: { id: req.params.id } });
   res.json({ status: "success", message: "Template deleted" });
@@ -946,6 +958,7 @@ export const previewCertificateTemplate = asyncHandler(async (req: Request, res:
     .replace(/\{\{instructorName\}\}/g, instructorName || "Dr. Instructor")
     .replace(/\{\{moduleNumber\}\}/g, moduleNumber || "1")
     .replace(/\{\{uniqueCode\}\}/g, uniqueCode || "CWAY-PREVIEW-001")
+    .replace(/\{\{certificateNumber\}\}/g, "CA/2406/12345")
     .replace(/\{\{logoUrl\}\}/g, template.logoUrl || "https://cwayacademy.netlify.app/logo.png?v=3");
 
   res.json({ status: "success", data: { renderedHtml: rendered } });

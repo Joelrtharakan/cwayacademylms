@@ -59,10 +59,12 @@ export default function CertificatesPage() {
         </div>
       ) : (
         <div style={{ display: "grid", gap: 24 }}>
-          {certificates.map((cert: any) => (
+          {certificates.map((cert: any) => {
+            const isProgram = cert.type === 'PROGRAM';
+            return (
             <div key={cert.id} style={{ display: "flex", background: "white", borderRadius: 16, border: "1px solid rgba(0,0,0,0.05)", overflow: "hidden" }}>
               <div style={{ width: 240, background: THEME.MUTED, position: "relative" }}>
-                 {cert.course.thumbnail && (
+                 {!isProgram && cert.course.thumbnail && (
                   <img src={cert.course.thumbnail} alt={cert.course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 )}
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(28,43,30,0.4)", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
@@ -71,19 +73,21 @@ export default function CertificatesPage() {
               </div>
               <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <h3 style={{ fontSize: 22, fontWeight: 600, color: THEME.HERO, marginBottom: 8 }}>
-                  {cert.course.programId && cert.course.program ? cert.course.program.title : cert.course.title}
+                  {isProgram ? cert.program?.title : cert.course?.title}
                 </h3>
-                <p style={{ color: THEME.MUTED, fontSize: 14, marginBottom: 4 }}>
-                  Instructor: {cert.course.instructor.name}
-                </p>
+                {!isProgram && (
+                  <p style={{ color: THEME.MUTED, fontSize: 14, marginBottom: 4 }}>
+                    Instructor: {cert.course?.instructor?.name}
+                  </p>
+                )}
                 <p style={{ color: THEME.MUTED, fontSize: 14 }}>
                   Issued: {format(new Date(cert.issuedAt), "MMMM d, yyyy")}
                 </p>
               </div>
               <div style={{ padding: 24, display: "flex", alignItems: "center", gap: "12px", borderLeft: "1px solid rgba(0,0,0,0.05)" }}>
-                {cert.course.programId && (
+                {isProgram && (
                   <Link 
-                    href={`/student/programs/${cert.course.programId}/grade-sheet`}
+                    href={`/student/programs/${cert.programId}/grade-sheet`}
                     style={{ display: "flex", alignItems: "center", gap: 8, background: "white", color: THEME.HERO, border: `1px solid ${THEME.HERO}`, padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none", transition: "opacity 0.2s" }}
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}
@@ -92,7 +96,7 @@ export default function CertificatesPage() {
                   </Link>
                 )}
                 <button 
-                  onClick={() => handleDownload(cert.id, cert.course.slug)}
+                  onClick={() => handleDownload(cert.id, isProgram ? 'program' : cert.course?.slug || 'course')}
                   style={{ display: "flex", alignItems: "center", gap: 8, background: THEME.GOLD, color: "white", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: "pointer", transition: "opacity 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}
@@ -101,7 +105,8 @@ export default function CertificatesPage() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
