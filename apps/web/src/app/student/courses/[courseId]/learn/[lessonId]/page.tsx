@@ -1052,40 +1052,63 @@ export default function LessonPlayerPage() {
               <div className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0">
                 <div className="sticky top-24">
                   {!assignmentSub && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                      <h2 className="font-sans text-lg font-semibold mb-6 text-gray-900">Your Submission</h2>
+                    <div style={{ background: "#FAFAF7", border: "1px solid #DCE0D5", borderRadius: "16px", padding: "32px", boxShadow: "0 4px 24px rgba(0,0,0,0.03)" }}>
+                      <h2 style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "20px", fontWeight: 700, color: "#1A261D", marginBottom: "24px" }}>
+                        Your Submission
+                      </h2>
                       
-                      <div className="space-y-5">
+                      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Response</label>
+                          <label style={{ display: "block", fontSize: "14px", fontWeight: 600, color: "#526658", marginBottom: "8px" }}>Response</label>
                           <textarea 
-                            rows={8}
+                            rows={6}
                             value={submissionResponse}
                             onChange={(e) => setSubmissionResponse(e.target.value)}
                             disabled={isEffectivelyPastDue}
-                            className="w-full bg-white rounded-md p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400 border border-gray-200 resize-y disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                            style={{ 
+                              width: "100%", background: "#FFFFFF", borderRadius: "12px", padding: "16px", 
+                              fontSize: "14px", color: "#1A261D", border: "1px solid #DCE0D5", 
+                              resize: "vertical", minHeight: "140px", outline: "none", transition: "border-color 0.2s" 
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = "#B88645"}
+                            onBlur={(e) => e.target.style.borderColor = "#DCE0D5"}
                             placeholder="Type your thoughtful response here..."
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Attached File <span className="font-normal text-gray-500">(Optional)</span></label>
-                          <label className={`block rounded-md p-6 text-center transition-all bg-white border border-dashed border-gray-300 ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400 hover:bg-gray-50'}`}>
+                          <label style={{ display: "block", fontSize: "14px", fontWeight: 600, color: "#526658", marginBottom: "8px" }}>
+                            Attached File <span style={{ fontWeight: 400, color: "#8F9E93" }}>(Optional)</span>
+                          </label>
+                          <label 
+                            style={{ 
+                              display: "block", background: "#FFFFFF", border: "2px dashed #DCE0D5", 
+                              borderRadius: "12px", padding: "32px 24px", textAlign: "center", cursor: isEffectivelyPastDue ? "not-allowed" : "pointer",
+                              opacity: isEffectivelyPastDue ? 0.6 : 1, transition: "background 0.2s, border-color 0.2s"
+                            }}
+                            onMouseEnter={e => { if(!isEffectivelyPastDue) { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.borderColor = "#B88645"; } }}
+                            onMouseLeave={e => { if(!isEffectivelyPastDue) { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = "#DCE0D5"; } }}
+                          >
                             <input type="file" className="hidden" disabled={isEffectivelyPastDue} onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
-                            <div className="text-sm font-medium text-gray-700">
+                            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D" }}>
                               {submissionFile ? submissionFile.name : "Click to browse or drag & drop"}
                             </div>
                             {!submissionFile && (
-                              <div className="text-xs text-gray-500 mt-1">PDF, DOC, ZIP up to 50MB</div>
+                              <div style={{ fontSize: "12px", color: "#8F9E93", marginTop: "6px" }}>PDF, DOC, ZIP up to 50MB</div>
                             )}
                           </label>
                         </div>
                         
-                        <div className="pt-2">
+                        <div style={{ marginTop: "8px" }}>
                           <button 
                             onClick={onSubmitAssignment}
                             disabled={isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)}
-                            className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed py-2.5 text-sm">
+                            style={{
+                              width: "100%", background: (isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)) ? "#A0A0A0" : "#1A261D",
+                              color: "#FFFFFF", padding: "16px", borderRadius: "12px", fontSize: "15px", fontWeight: 700,
+                              border: "none", cursor: (isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)) ? "not-allowed" : "pointer",
+                              transition: "background 0.2s"
+                            }}>
                             {isSubmittingAssig ? "Submitting..." : "Submit Assignment"}
                           </button>
                         </div>
@@ -1093,39 +1116,43 @@ export default function LessonPlayerPage() {
                       
                       {/* Extension Logic */}
                       {lesson.assignment?.dueDate && (
-                        <div className="mt-6">
+                        <div style={{ marginTop: "24px" }}>
                           {(() => {
                             if (!isPastDue && !isEffectivelyPastDue) return null;
 
                             if (grantedExtension && !isEffectivelyPastDue) {
                               return (
-                                <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-800 text-sm">
-                                  <span className="font-medium">Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
+                                <div style={{ background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: "12px", padding: "16px", color: "#065F46", fontSize: "14px" }}>
+                                  <span style={{ fontWeight: 600 }}>Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
                                 </div>
                               );
                             }
 
                             if (pendingRequest) {
                               return (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-yellow-800 text-sm">
-                                  <span className="font-medium">Extension requested</span> (Pending approval)
+                                <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: "12px", padding: "16px", color: "#92400E", fontSize: "14px" }}>
+                                  <span style={{ fontWeight: 600 }}>Extension requested</span> (Pending approval)
                                 </div>
                               );
                             }
 
                             if (isEffectivelyPastDue) {
                               return (
-                                <div className="bg-red-50 border border-red-200 p-4 rounded-md">
-                                  <p className="text-red-700 text-sm mb-3">This assignment is past due. You must request an extension to submit.</p>
+                                <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "12px", padding: "20px" }}>
+                                  <p style={{ color: "#B91C1C", fontSize: "14px", marginBottom: "16px", fontWeight: 500 }}>This assignment is past due. You must request an extension to submit.</p>
                                   {!isRequestingExtension ? (
-                                    <button onClick={() => setIsRequestingExtension(true)} className="px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-md text-sm hover:bg-red-50 transition-colors shadow-sm">Request Extension</button>
+                                    <button 
+                                      onClick={() => setIsRequestingExtension(true)} 
+                                      style={{ background: "#FFFFFF", border: "1px solid #FECACA", color: "#DC2626", padding: "10px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+                                      Request Extension
+                                    </button>
                                   ) : (
-                                    <div className="flex flex-col gap-3 bg-white p-4 rounded-md border border-red-100 shadow-sm">
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} className="w-full p-2.5 rounded-md border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all resize-y bg-gray-50" />
-                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-2.5 rounded-md border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all bg-gray-50" />
-                                      <div className="flex gap-2 mt-1">
-                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm">Submit Request</button>
-                                        <button onClick={() => setIsRequestingExtension(false)} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-md text-sm hover:bg-gray-50 transition-colors">Cancel</button>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "12px", border: "1px solid #FEE2E2" }}>
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "13px", outline: "none" }} />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "13px", outline: "none" }} />
+                                      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ background: "#DC2626", color: "#FFFFFF", border: "none", padding: "10px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: (!extensionReason || requestExtensionMut.isPending) ? 0.5 : 1 }}>Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", color: "#4B5563", padding: "10px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
                                       </div>
                                     </div>
                                   )}
@@ -1140,12 +1167,12 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && !assignmentSub.isGraded && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center text-center">
-                      <div className="mb-4">
-                        <CheckCircle className="w-10 h-10 text-green-500" strokeWidth={2} />
+                    <div style={{ background: "#FAFAF7", border: "1px solid #DCE0D5", borderRadius: "16px", padding: "40px 32px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", boxShadow: "0 4px 24px rgba(0,0,0,0.03)" }}>
+                      <div style={{ marginBottom: "16px" }}>
+                        <CheckCircle size={48} color="#10B981" strokeWidth={2} />
                       </div>
-                      <h3 className="font-sans text-lg font-semibold text-gray-900 mb-2">Submission Received</h3>
-                      <p className="text-gray-500 text-sm max-w-sm mb-6">
+                      <h3 style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "22px", fontWeight: 700, color: "#1A261D", marginBottom: "12px" }}>Submission Received</h3>
+                      <p style={{ fontSize: "15px", color: "#526658", maxWidth: "280px", margin: "0 auto 28px auto", lineHeight: 1.5 }}>
                         Your work is successfully uploaded and awaiting review.
                       </p>
                       
@@ -1153,11 +1180,18 @@ export default function LessonPlayerPage() {
                         <button 
                           onClick={onUnsubmitAssignment}
                           disabled={isUnsubmittingAssig}
-                          className="bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 disabled:opacity-50 px-5 py-2 text-sm font-medium shadow-sm">
+                          style={{
+                            background: "#FFFFFF", border: "1px solid #DCE0D5", color: "#1A261D", padding: "12px 24px", 
+                            borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: isUnsubmittingAssig ? "not-allowed" : "pointer",
+                            opacity: isUnsubmittingAssig ? 0.6 : 1, transition: "background 0.2s, border-color 0.2s"
+                          }}
+                          onMouseEnter={e => { if(!isUnsubmittingAssig) e.currentTarget.style.borderColor = "#EF4444"; e.currentTarget.style.color = "#EF4444"; }}
+                          onMouseLeave={e => { if(!isUnsubmittingAssig) e.currentTarget.style.borderColor = "#DCE0D5"; e.currentTarget.style.color = "#1A261D"; }}
+                        >
                           {isUnsubmittingAssig ? "Unsubmitting..." : "Unsubmit Assignment"}
                         </button>
                       ) : (
-                        <div className="mt-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 px-4 py-2 rounded-md">
+                        <div style={{ marginTop: "12px", fontSize: "13px", color: "#92400E", background: "#FEF3C7", border: "1px solid #FDE68A", padding: "10px 16px", borderRadius: "8px" }}>
                           Due date has passed. Unsubmitting is disabled.
                         </div>
                       )}
@@ -1165,36 +1199,36 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && assignmentSub.isGraded && (
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div style={{ background: "#FFFFFF", border: "1px solid #DCE0D5", borderRadius: "16px", overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.03)" }}>
                       {/* Top: Score row */}
-                      <div className="flex items-center p-6 border-b border-gray-200 bg-gray-50">
-                        <div className="flex-1 flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Status</span>
-                            <div className="inline-flex items-center gap-1.5 text-green-600 font-medium text-sm">
-                              <CheckCircle className="w-4 h-4" /> Graded
+                      <div style={{ display: "flex", alignItems: "center", padding: "24px 32px", borderBottom: "1px solid #DCE0D5", background: "#FAFAF7" }}>
+                        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Status</span>
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#10B981", fontWeight: 600, fontSize: "15px" }}>
+                              <CheckCircle size={18} /> Graded
                             </div>
                           </div>
                           
-                          <div className="flex flex-col items-end">
-                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Your Score</span>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-2xl font-bold text-gray-900 leading-none">{assignmentSub.grade}</span>
-                              <span className="text-sm text-gray-500">/ {lesson.assignment?.maxScore}</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                            <span style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Your Score</span>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                              <span style={{ fontSize: "32px", fontWeight: 800, color: "#1A261D", lineHeight: 1 }}>{assignmentSub.grade}</span>
+                              <span style={{ fontSize: "14px", color: "#526658", fontWeight: 600 }}>/ {lesson.assignment?.maxScore}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       {/* Bottom: Feedback */}
-                      <div className="p-6">
-                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                      <div style={{ padding: "32px" }}>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "16px" }}>
                           Instructor Feedback
                         </div>
                         {assignmentSub.feedback ? (
-                          <div className="text-sm text-gray-800 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                          <div style={{ fontSize: "15px", color: "#1A261D", lineHeight: 1.6, background: "#FAFAF7", padding: "20px", borderRadius: "12px", border: "1px solid #DCE0D5" }} dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
                         ) : (
-                          <div className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded border border-gray-100">No feedback provided.</div>
+                          <div style={{ fontSize: "14px", color: "#8F9E93", fontStyle: "italic", background: "#FAFAF7", padding: "20px", borderRadius: "12px", border: "1px solid #F3F4F0" }}>No feedback provided.</div>
                         )}
                       </div>
                     </div>
