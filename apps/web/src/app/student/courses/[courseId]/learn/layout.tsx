@@ -426,16 +426,20 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                   borderRadius: "8px",
                                   width: "100%",
                                   textAlign: "left",
-                                  background: isActiveMaterial ? "rgba(212,163,91,0.2)" : "rgba(255,255,255,0.08)",
+                                  position: "relative",
+                                  background: isActiveMaterial ? "rgba(184,134,69,0.18)" : "transparent",
                                   color: "rgba(255,255,255,0.9)",
                                   cursor: "pointer",
                                   marginBottom: "4px",
                                 }}
                               >
+                                {isActiveMaterial && (
+                                  <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: "3px", background: "#D4A35B", borderRadius: "0 4px 4px 0" }} />
+                                )}
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: 0 }}>
                                   <FileText size={16} style={{ marginTop: "2px", color: isActiveMaterial ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: "13px", fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>
+                                    <div style={{ fontSize: "13px", fontWeight: isActiveMaterial ? 600 : 500, color: isActiveMaterial ? "#D4A35B" : "rgba(255,255,255,0.9)" }}>
                                       {item.title}
                                     </div>
                                     {item.description && (
