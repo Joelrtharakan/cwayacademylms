@@ -1065,6 +1065,7 @@ export default function LessonPlayerPage() {
                             value={submissionResponse}
                             onChange={(e) => setSubmissionResponse(e.target.value)}
                             disabled={isEffectivelyPastDue}
+                            data-lenis-prevent="true"
                             style={{ 
                               width: "100%", background: "#FFFFFF", borderRadius: "12px", padding: "16px", 
                               fontSize: "14px", color: "#1A261D", border: "1px solid #DCE0D5", 
@@ -1148,7 +1149,7 @@ export default function LessonPlayerPage() {
                                     </button>
                                   ) : (
                                     <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "12px", border: "1px solid #FEE2E2" }}>
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "13px", outline: "none" }} />
+                                      <textarea data-lenis-prevent="true" value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "13px", outline: "none" }} />
                                       <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "13px", outline: "none" }} />
                                       <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                                         <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ background: "#DC2626", color: "#FFFFFF", border: "none", padding: "10px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: (!extensionReason || requestExtensionMut.isPending) ? 0.5 : 1 }}>Submit Request</button>
