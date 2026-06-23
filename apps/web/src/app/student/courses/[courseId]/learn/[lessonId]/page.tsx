@@ -535,8 +535,8 @@ export default function LessonPlayerPage() {
   const nextButtonClasses = "px-7 py-3 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 min-w-[170px] justify-center bg-[#4A8C5C] text-white hover:bg-[#3B7A54] border border-transparent";
 
   return (
-    <div className="w-full flex flex-col min-h-[calc(100vh-70px)] relative">
-      <div className="flex-1 w-full relative">
+    <div className="w-full flex flex-col h-[calc(100vh-70px)] relative overflow-hidden bg-[#FAFAF7]">
+      <div className="flex-1 w-full relative overflow-y-auto">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
@@ -1350,12 +1350,12 @@ export default function LessonPlayerPage() {
 
                             if (hasPostedDiscussion) {
                               return (
-                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-gradient-to-b from-white to-[#FAFAF7] text-center">
-                                  <div className="w-12 h-12 bg-[#EAF2EC] border border-[#D5E5D9] rounded-full flex items-center justify-center mb-4 shadow-sm">
-                                    <CheckCircle size={22} className="text-[#2C6E3D]" />
+                                <div className="flex flex-col items-center justify-center py-10 px-6 bg-white text-center">
+                                  <div className="w-12 h-12 bg-[#EAF2EC] rounded-full flex items-center justify-center mb-3">
+                                    <CheckCircle size={24} className="text-[#2C6E3D]" />
                                   </div>
-                                  <h4 className="text-[17px] font-bold text-[#1A261D] mb-1.5">Response Submitted</h4>
-                                  <p className="text-[14.5px] text-[#526658] max-w-[85%] leading-relaxed">
+                                  <h4 className="text-[16px] font-bold text-[#1A261D] mb-1">Response Submitted</h4>
+                                  <p className="text-[14px] text-[#526658] max-w-[90%] leading-relaxed">
                                     You have successfully posted your initial response to the instructor's prompt. You can now read and engage with your classmates' replies below.
                                   </p>
                                 </div>
@@ -1586,7 +1586,7 @@ export default function LessonPlayerPage() {
                                   </div>
                                 ) : (
                                   <div className="flex gap-3 items-start mt-4 pt-4 border-t border-[#E4E8E0]/60">
-                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-0.5 shadow-sm">
+                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-[4px] shadow-sm">
                                       ME
                                     </div>
                                     <div className="flex-1 relative bg-white border border-[#E4E8E0] rounded-[24px] flex items-end p-1 shadow-sm focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all">
@@ -1595,7 +1595,7 @@ export default function LessonPlayerPage() {
                                         onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
                                         placeholder="Write a reply..."
                                         rows={1}
-                                        className="flex-1 bg-transparent text-[14.5px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none py-2 px-4 min-h-[38px] max-h-[120px]"
+                                        className="flex-1 bg-transparent text-[14.5px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none py-[8px] px-4 min-h-[36px] max-h-[120px]"
                                         style={{ overflowY: "auto" }}
                                         onWheel={(e) => {
                                           const target = e.currentTarget;
