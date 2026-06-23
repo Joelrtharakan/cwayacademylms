@@ -7,6 +7,7 @@ import { api } from "@/store/auth.store";
 import { ArrowLeft, BookOpen, Download, Loader2, CheckCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
+import { getLetterGrade } from "@/lib/gradeScale";
 
 const DARK = "#1A261D";
 const GOLD = "#C9973A";
@@ -148,8 +149,13 @@ export default function InstructorGradebookPage() {
                         </div>
                       </td>
                       <td style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", textAlign: "center", background: "#FAFAF7" }}>
-                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: "4px" }}>
-                          <span style={{ fontFamily: "Georgia, serif", fontSize: "22px", fontWeight: 700, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? GOLD : "#E53E3E" }}>{student.courseGrade}%</span>
+                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: "6px" }}>
+                          <span style={{ fontFamily: "Georgia, serif", fontSize: "22px", fontWeight: 700, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? GOLD : "#E53E3E" }}>
+                            {getLetterGrade(student.courseGrade)}
+                          </span>
+                          <span style={{ fontSize: "14px", fontWeight: 600, color: MUTED }}>
+                            {student.courseGrade.toFixed(1)}%
+                          </span>
                         </div>
                       </td>
                       {items.map((item: any) => {
