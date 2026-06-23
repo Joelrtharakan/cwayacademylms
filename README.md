@@ -107,6 +107,12 @@ Follow these steps to get the CWAY Academy LMS running on your local machine.
 
 Deploying CWAY Academy requires a VPS (Virtual Private Server) such as an AWS EC2 instance, DigitalOcean Droplet, or Hetzner server running Linux.
 
+### 0. Server Specifications
+To ensure smooth operation of all containerized services (PostgreSQL, Redis, Next.js, Express API, Nginx), the following server specifications are recommended based on your user base:
+- **Minimum (Up to 100 users):** 2 vCPUs, 4GB RAM, 20GB SSD *(Suitable for testing or very small instances with low concurrent traffic)*
+- **Recommended (100 - 200 users):** 4 vCPUs, 8GB RAM, 40GB+ SSD *(Ideal for standard deployments and smooth active sessions)*
+- **High Traffic (200+ users):** 8 vCPUs, 16GB RAM, 80GB+ SSD *(Required for high concurrent loads and heavy database querying)*
+
 ### 1. Server Preparation
 - SSH into your server.
 - Install Docker and Docker Compose.
