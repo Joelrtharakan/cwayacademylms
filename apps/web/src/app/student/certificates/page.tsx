@@ -4,8 +4,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { THEME } from "@/lib/cway-theme";
-import { Award, Download } from "lucide-react";
+import { Award, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
+import Link from "next/link";
 
 export default function CertificatesPage() {
   const { data: certificates, isLoading } = useQuery({
@@ -79,7 +80,17 @@ export default function CertificatesPage() {
                   Issued: {format(new Date(cert.issuedAt), "MMMM d, yyyy")}
                 </p>
               </div>
-              <div style={{ padding: 24, display: "flex", alignItems: "center", borderLeft: "1px solid rgba(0,0,0,0.05)" }}>
+              <div style={{ padding: 24, display: "flex", alignItems: "center", gap: "12px", borderLeft: "1px solid rgba(0,0,0,0.05)" }}>
+                {cert.course.programId && (
+                  <Link 
+                    href={`/student/programs/${cert.course.programId}/grade-sheet`}
+                    style={{ display: "flex", alignItems: "center", gap: 8, background: "white", color: THEME.HERO, border: `1px solid ${THEME.HERO}`, padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none", transition: "opacity 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
+                    onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                  >
+                    <FileText size={18} /> Grade Sheet
+                  </Link>
+                )}
                 <button 
                   onClick={() => handleDownload(cert.id, cert.course.slug)}
                   style={{ display: "flex", alignItems: "center", gap: 8, background: THEME.GOLD, color: "white", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: "pointer", transition: "opacity 0.2s" }}

@@ -64,6 +64,7 @@ export default function GradeSheetPage() {
 
       {/* Grade Sheet Document */}
       <div 
+        id="grade-sheet-container"
         style={{ 
           background: "white", 
           width: "100%", 
@@ -167,8 +168,25 @@ export default function GradeSheetPage() {
 
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          body { background: white !important; }
-          .print-hidden { display: none !important; }
+          body * {
+            visibility: hidden;
+          }
+          #grade-sheet-container, #grade-sheet-container * {
+            visibility: visible;
+          }
+          #grade-sheet-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            max-width: 100% !important;
+            margin: 0;
+            padding: 20px !important;
+            box-shadow: none !important;
+          }
+          .print-hidden, .print-hidden * {
+            display: none !important;
+          }
           @page { margin: 0.5cm; }
         }
       `}} />
