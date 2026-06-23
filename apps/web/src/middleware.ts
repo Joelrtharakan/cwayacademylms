@@ -55,5 +55,5 @@ export default async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: ["/dashboard/:path*"],
-  runtime: "edge",
+  runtime: "experimental-edge",
 };
