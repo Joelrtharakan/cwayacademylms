@@ -439,7 +439,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: 0 }}>
                                   <FileText size={16} style={{ marginTop: "2px", color: isActiveMaterial ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: "13px", fontWeight: isActiveMaterial ? 600 : 500, color: isActiveMaterial ? "#D4A35B" : "rgba(255,255,255,0.9)" }}>
+                                    <div style={{ fontSize: "13px", fontWeight: isActiveMaterial ? 600 : 500, color: isActiveMaterial ? "#D4A35B" : item.isCompleted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)" }}>
                                       {item.title}
                                     </div>
                                     {item.description && (
