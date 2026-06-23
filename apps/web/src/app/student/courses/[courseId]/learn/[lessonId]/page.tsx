@@ -536,7 +536,7 @@ export default function LessonPlayerPage() {
 
   return (
     <div className="w-full flex flex-col h-[calc(100vh-70px)] relative overflow-hidden bg-[#FAFAF7]">
-      <div className="flex-1 w-full relative overflow-y-auto">
+      <div data-lenis-prevent="true" className="flex-1 w-full relative overflow-y-auto">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
