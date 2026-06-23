@@ -1001,95 +1001,91 @@ export default function LessonPlayerPage() {
           const isEffectivelyPastDue = effectiveDueDate ? new Date() > effectiveDueDate : false;
 
           return (
-          <div className="w-full min-h-full bg-gradient-to-br from-slate-50 to-blue-50/40 text-slate-900" style={{ padding: "80px 5% 120px 5%" }}>
-            <div className="max-w-[1150px] mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
+          <div className="w-full min-h-full bg-white text-gray-900" style={{ padding: "48px 5% 120px 5%" }}>
+            <div className="max-w-5xl mx-auto">
               
-              {/* Left Column: Instructions (Premium Modern) */}
-              <div className="flex-1 lg:max-w-[55%]">
-                <div className="mb-10 pb-10 border-b border-slate-200/60">
-                  <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 rounded-full text-[12px] font-bold uppercase tracking-wider mb-6 px-4 py-1.5 shadow-sm">
-                    <ClipboardCheck className="w-4 h-4" /> Assignment
-                  </div>
-                  
-                  <h1 className="font-sans text-4xl md:text-5xl lg:text-[3.25rem] text-slate-900 font-extrabold mb-8 leading-[1.15] tracking-tight">
-                    {lesson.assignment?.title}
-                  </h1>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
-                    {lesson.assignment?.dueDate && (
-                      <div className="flex items-center gap-2.5 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 shadow-sm">
-                        <Calendar className="w-4 h-4 text-blue-500" /> 
-                        <span className="font-semibold text-slate-700 text-[14px]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2.5 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 shadow-sm">
-                      <span className="font-bold uppercase tracking-wider text-[11px] text-slate-500">
-                        Max Score
-                      </span>
-                      <span className="font-extrabold text-slate-800 text-[15px]">
-                        {lesson.assignment?.maxScore} pts
-                      </span>
+              {/* Header Banner */}
+              <div className="mb-10 pb-8 border-b border-gray-200">
+                <div className="inline-flex items-center gap-1.5 text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-3">
+                  <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
+                </div>
+                
+                <h1 className="font-sans text-3xl text-gray-900 font-semibold mb-5 leading-tight tracking-tight">
+                  {lesson.assignment?.title}
+                </h1>
+                
+                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
+                  {lesson.assignment?.dueDate && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" /> 
+                      <span>Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
                     </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold uppercase tracking-wider text-[10px]">Points</span>
+                    <span className="font-medium text-gray-700">{lesson.assignment?.maxScore}</span>
                   </div>
                 </div>
-
-                <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed font-medium" 
-                     style={{ fontSize: "17px" }}
-                     dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
-
-                {lesson.assignment?.attachmentUrl && (
-                  <div className="mt-14 pt-8 border-t border-slate-200/60">
-                    <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-5">Included Resources</h3>
-                    <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" 
-                       className="group inline-flex items-center gap-4 px-6 py-4 bg-white border border-slate-200/60 text-slate-800 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all duration-300 text-[15px] font-bold shadow-sm">
-                      <div className="bg-slate-50 group-hover:bg-blue-50 p-2 rounded-xl transition-colors">
-                        <Download className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" /> 
-                      </div>
-                      Download Attached File
-                    </a>
-                  </div>
-                )}
               </div>
 
-              {/* Right Column: Submission Area (Premium Modern) */}
-              <div className="flex-1 lg:max-w-[45%]">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+                
+                {/* Main Content: Instructions */}
+                <div className="lg:col-span-2">
+                  <div className="prose prose-slate max-w-none text-gray-700 leading-relaxed font-normal" 
+                       style={{ fontSize: "16px" }}
+                       dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
+
+                  {lesson.assignment?.attachmentUrl && (
+                    <div className="mt-12 pt-8 border-t border-gray-100">
+                      <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">Resources</h3>
+                      <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" 
+                         className="inline-flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-[14px] font-medium shadow-sm">
+                        <Download className="w-4 h-4 text-gray-400" /> 
+                        Download Attached File
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+              {/* Right Column: Submission Area (Notion Style) */}
+              <div className="lg:col-span-1">
                 <div className="sticky top-24">
                   {!assignmentSub && (
-                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-10 relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500" />
-                      <h2 className="font-sans text-[1.75rem] font-extrabold mb-8 text-slate-900 tracking-tight">Your Submission</h2>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                      <h2 className="font-sans text-lg font-semibold mb-6 text-gray-900">Your Submission</h2>
                       
-                      <div className="space-y-8">
+                      <div className="space-y-5">
                         <div>
-                          <label className="block text-[13px] font-bold text-slate-700 mb-2.5">Response</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Response</label>
                           <textarea 
                             rows={8}
                             value={submissionResponse}
                             onChange={(e) => setSubmissionResponse(e.target.value)}
                             disabled={isEffectivelyPastDue}
-                            className="w-full bg-slate-50 rounded-2xl p-5 text-[15px] text-slate-900 leading-relaxed focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all duration-300 placeholder:text-slate-400 border border-slate-200 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full bg-white rounded-md p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400 border border-gray-200 resize-y disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                             placeholder="Type your thoughtful response here..."
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-[13px] font-bold text-slate-700 mb-2.5">Attached File <span className="font-medium text-slate-500">(Optional)</span></label>
-                          <label className={`block rounded-2xl p-10 text-center transition-all duration-300 bg-slate-50 border-2 border-dashed border-slate-200 ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 group'}`}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Attached File <span className="font-normal text-gray-500">(Optional)</span></label>
+                          <label className={`block rounded-md p-6 text-center transition-all bg-white border border-dashed border-gray-300 ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400 hover:bg-gray-50'}`}>
                             <input type="file" className="hidden" disabled={isEffectivelyPastDue} onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
-                            <div className="text-[15px] font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
+                            <div className="text-sm font-medium text-gray-700">
                               {submissionFile ? submissionFile.name : "Click to browse or drag & drop"}
                             </div>
                             {!submissionFile && (
-                              <div className="text-[13px] text-slate-500 mt-2 font-medium">PDF, DOC, ZIP up to 50MB</div>
+                              <div className="text-xs text-gray-500 mt-1">PDF, DOC, ZIP up to 50MB</div>
                             )}
                           </label>
                         </div>
                         
-                        <div style={{ marginTop: "40px" }}>
+                        <div className="pt-2">
                           <button 
                             onClick={onSubmitAssignment}
                             disabled={isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)}
-                            className="w-full bg-[#1A261D] hover:bg-[#2D4031] text-white rounded-2xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:translate-y-0 py-4 text-[16px]">
+                            className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed py-2.5 text-sm">
                             {isSubmittingAssig ? "Submitting..." : "Submit Assignment"}
                           </button>
                         </div>
@@ -1097,39 +1093,39 @@ export default function LessonPlayerPage() {
                       
                       {/* Extension Logic */}
                       {lesson.assignment?.dueDate && (
-                        <div className="mt-8">
+                        <div className="mt-6">
                           {(() => {
                             if (!isPastDue && !isEffectivelyPastDue) return null;
 
                             if (grantedExtension && !isEffectivelyPastDue) {
                               return (
-                                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-emerald-800 text-[14px]">
-                                  <span className="font-bold">Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
+                                <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-800 text-sm">
+                                  <span className="font-medium">Extension granted until</span> {effectiveDueDate?.toLocaleDateString()}
                                 </div>
                               );
                             }
 
                             if (pendingRequest) {
                               return (
-                                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 text-amber-800 text-[14px]">
-                                  <span className="font-bold">Extension requested</span> (Pending approval)
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-yellow-800 text-sm">
+                                  <span className="font-medium">Extension requested</span> (Pending approval)
                                 </div>
                               );
                             }
 
                             if (isEffectivelyPastDue) {
                               return (
-                                <div className="bg-red-50 border border-red-100 p-6 rounded-2xl">
-                                  <p className="text-red-700 font-semibold text-[14px] mb-5">This assignment is past due. You must request an extension to submit.</p>
+                                <div className="bg-red-50 border border-red-200 p-4 rounded-md">
+                                  <p className="text-red-700 text-sm mb-3">This assignment is past due. You must request an extension to submit.</p>
                                   {!isRequestingExtension ? (
-                                    <button onClick={() => setIsRequestingExtension(true)} className="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-[13px] hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm">Request Extension</button>
+                                    <button onClick={() => setIsRequestingExtension(true)} className="px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-md text-sm hover:bg-red-50 transition-colors shadow-sm">Request Extension</button>
                                   ) : (
-                                    <div className="flex flex-col gap-4 bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} className="w-full p-4 rounded-xl border border-slate-200 text-[14px] focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-400 transition-all resize-none bg-slate-50" />
-                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-4 rounded-xl border border-slate-200 text-[14px] focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-400 transition-all bg-slate-50" />
-                                      <div className="flex gap-3 mt-2">
-                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold text-[14px] hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm">Submit Request</button>
-                                        <button onClick={() => setIsRequestingExtension(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-[14px] hover:bg-slate-50 transition-colors">Cancel</button>
+                                    <div className="flex flex-col gap-3 bg-white p-4 rounded-md border border-red-100 shadow-sm">
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={3} className="w-full p-2.5 rounded-md border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all resize-y bg-gray-50" />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-2.5 rounded-md border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all bg-gray-50" />
+                                      <div className="flex gap-2 mt-1">
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm">Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-md text-sm hover:bg-gray-50 transition-colors">Cancel</button>
                                       </div>
                                     </div>
                                   )}
@@ -1144,27 +1140,24 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && !assignmentSub.isGraded && (
-                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-12 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                      {/* Decorative top gradient */}
-                      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50 to-transparent" />
-                      
-                      <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 relative z-10 shadow-sm border border-emerald-100 ring-8 ring-emerald-50">
-                        <CheckCircle className="w-12 h-12 text-emerald-500" strokeWidth={2.5} />
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center text-center">
+                      <div className="mb-4">
+                        <CheckCircle className="w-10 h-10 text-green-500" strokeWidth={2} />
                       </div>
-                      <h3 className="font-sans text-[1.75rem] font-extrabold text-slate-900 mb-4 tracking-tight relative z-10">Submission Received</h3>
-                      <p className="text-slate-600 text-[16px] leading-relaxed font-medium max-w-sm mb-10 relative z-10">
-                        Your work is successfully uploaded and awaiting review by the instructor.
+                      <h3 className="font-sans text-lg font-semibold text-gray-900 mb-2">Submission Received</h3>
+                      <p className="text-gray-500 text-sm max-w-sm mb-6">
+                        Your work is successfully uploaded and awaiting review.
                       </p>
                       
                       {!isEffectivelyPastDue ? (
                         <button 
                           onClick={onUnsubmitAssignment}
                           disabled={isUnsubmittingAssig}
-                          className="relative z-10 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all duration-300 disabled:opacity-50 px-8 py-3.5 text-[15px] shadow-sm hover:shadow-md">
+                          className="bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 disabled:opacity-50 px-5 py-2 text-sm font-medium shadow-sm">
                           {isUnsubmittingAssig ? "Unsubmitting..." : "Unsubmit Assignment"}
                         </button>
                       ) : (
-                        <div className="relative z-10 mt-2 text-[14px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-5 py-3.5 rounded-xl shadow-sm">
+                        <div className="mt-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 px-4 py-2 rounded-md">
                           Due date has passed. Unsubmitting is disabled.
                         </div>
                       )}
@@ -1172,40 +1165,36 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && assignmentSub.isGraded && (
-                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden relative">
-                      <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500" />
-                      
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       {/* Top: Score row */}
-                      <div className="flex items-center p-10 border-b border-slate-100 bg-slate-50/50">
-                        <div className="flex-1 flex items-center gap-8">
+                      <div className="flex items-center p-6 border-b border-gray-200 bg-gray-50">
+                        <div className="flex-1 flex items-center justify-between">
                           <div className="flex flex-col">
-                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Status</span>
-                            <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-[15px]">
-                              <CheckCircle className="w-5 h-5" strokeWidth={2.5} /> Graded
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Status</span>
+                            <div className="inline-flex items-center gap-1.5 text-green-600 font-medium text-sm">
+                              <CheckCircle className="w-4 h-4" /> Graded
                             </div>
                           </div>
                           
-                          <div className="w-px h-16 bg-slate-200 mx-2" />
-
-                          <div className="flex flex-col">
-                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Your Score</span>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-4xl font-extrabold text-slate-900 leading-none tracking-tight">{assignmentSub.grade}</span>
-                              <span className="text-[16px] text-slate-500 font-bold">/ {lesson.assignment?.maxScore} pts</span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Your Score</span>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-2xl font-bold text-gray-900 leading-none">{assignmentSub.grade}</span>
+                              <span className="text-sm text-gray-500">/ {lesson.assignment?.maxScore}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       {/* Bottom: Feedback */}
-                      <div className="p-10">
-                        <div className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-5 flex items-center gap-2">
-                          <MessageSquare className="w-4 h-4" /> Instructor Feedback
+                      <div className="p-6">
+                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                          Instructor Feedback
                         </div>
                         {assignmentSub.feedback ? (
-                          <div className="text-[16px] text-slate-800 leading-relaxed font-medium bg-slate-50 p-8 rounded-2xl border border-slate-100" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                          <div className="text-sm text-gray-800 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
                         ) : (
-                          <div className="text-[15px] text-slate-500 italic font-medium bg-slate-50 p-8 rounded-2xl border border-slate-100">No additional feedback provided.</div>
+                          <div className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded border border-gray-100">No feedback provided.</div>
                         )}
                       </div>
                     </div>
@@ -1213,6 +1202,7 @@ export default function LessonPlayerPage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
           );
         })()}
