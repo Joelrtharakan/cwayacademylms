@@ -64,10 +64,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     );
   }
 
-  // If we are in the course player, do not render sidebar or top bar (full width)
   if (isPlayer) {
     return (
-      <div className="min-h-screen bg-cway-cream flex flex-col">
+      <div className="h-screen overflow-hidden bg-cway-cream flex flex-col">
         <main className="flex-1 w-full mx-auto flex flex-col">
           {children}
         </main>

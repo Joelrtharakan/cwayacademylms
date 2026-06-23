@@ -169,7 +169,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       <style>{`
         .course-sidebar-scroll::-webkit-scrollbar {
           width: 6px;
@@ -243,17 +243,6 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                 lineHeight: 1
               }}>
                 CWAY <span style={{ color: "#D4A35B", fontWeight: 400, letterSpacing: "0.2em" }}>ACADEMY</span>
-              </div>
-              <div style={{ 
-                fontFamily: "var(--font-plus-jakarta), sans-serif",
-                fontSize: "9px", 
-                fontWeight: 800, 
-                textTransform: "uppercase", 
-                letterSpacing: "0.2em", 
-                color: "rgba(255,255,255,0.6)", 
-                marginTop: "4px" 
-              }}>
-                Course Player
               </div>
             </div>
           </div>
