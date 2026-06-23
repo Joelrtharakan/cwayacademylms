@@ -135,7 +135,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           
           {/* Mobile Hamburger Menu */}
           <button 
-            className="mr-4"
+            className="mr-4 md:hidden"
             onClick={() => {
               if (window.innerWidth < 768) setIsMobileMenuOpen(true);
               else setIsDesktopCollapsed(!isDesktopCollapsed);

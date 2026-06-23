@@ -96,6 +96,10 @@ export class AuthService {
       throw new AppError("Invalid email or password", 401);
     }
 
+    if (!user.isVerified) {
+      throw new AppError("Please verify your email before logging in", 403);
+    }
+
     const payload = { userId: user.id, role: user.role };
     const accessToken = TokenService.generateAccessToken(payload);
     const refreshToken = TokenService.generateRefreshToken(payload);

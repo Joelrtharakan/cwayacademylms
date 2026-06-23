@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules } from "@/lib/api/modules";
 import { useCourseBuilderStore } from "@/store/course-builder.store";
-import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare, Menu, Sidebar } from "lucide-react";
 import Link from "next/link";
 
 // Panels (To be created)
@@ -22,6 +22,7 @@ export default function ModuleManagementPage() {
   const router = useRouter();
   
   const { activeTab, setActiveTab } = useCourseBuilderStore();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
@@ -38,7 +39,7 @@ export default function ModuleManagementPage() {
 
   if (courseLoading || modulesLoading) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#F7F8F5" }}>
+      <div style={{ display: "flex", minHeight: "calc(100vh - 70px)", width: "100%", alignItems: "center", justifyContent: "center", background: "#F7F8F5" }}>
         <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} />
       </div>
     );
@@ -66,8 +67,17 @@ export default function ModuleManagementPage() {
     <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
       
       {/* Sticky Top Header */}
-      <header style={{ position: "sticky", top: "70px", zIndex: 20, background: "#FFFFFF", padding: "16px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
+      <header style={{ position: "sticky", top: "70px", zIndex: 20, background: "#FFFFFF", padding: "28px 40px 24px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <button 
+            className="flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-[#F3F4F0]"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}
+            title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            <Sidebar size={20} />
+          </button>
+          <div style={{ height: "24px", width: "1px", background: "#E4E8E0" }}></div>
           <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
             <ArrowLeft size={18} /> {course.title}
           </Link>
@@ -80,10 +90,25 @@ export default function ModuleManagementPage() {
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         
-        {/* Sidebar Tabs */}
-        <div className="w-full md:w-[260px] bg-white border-b md:border-b-0 md:border-r border-[#E4E8E0] py-4 md:py-6 shrink-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
-          <h2 className="text-[11px] font-bold text-[#8F9E93] uppercase tracking-widest px-4 md:px-6 mb-4">Manage Content</h2>
-          <nav className="flex md:flex-col min-w-max md:min-w-0 pb-2 md:pb-0 px-2 md:px-0">
+        {/* Premium Sidebar Tabs */}
+        <div 
+          className="bg-[#FAFBF9] border-b md:border-b-0 md:border-r border-[#E4E8E0]/80 shrink-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto transition-all duration-300 ease-in-out" 
+          style={{ 
+            paddingTop: isSidebarOpen ? "20px" : "0", 
+            paddingBottom: isSidebarOpen ? "40px" : "0", 
+            width: isSidebarOpen ? "280px" : "0px",
+            opacity: isSidebarOpen ? 1 : 0,
+            visibility: isSidebarOpen ? "visible" : "hidden"
+          }}
+        >
+          <div style={{ paddingLeft: "32px", paddingRight: "24px", marginBottom: "24px" }}>
+            <h2 style={{ fontSize: "13px", fontWeight: 800, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: "12px", lineHeight: "1.5", whiteSpace: "nowrap" }}>
+              Manage Content
+            </h2>
+            <div style={{ height: "2px", width: "32px", background: "#D4AF37", borderRadius: "999px", opacity: 0.6 }}></div>
+          </div>
+          
+          <nav style={{ display: "flex", flexDirection: "column", gap: "8px", paddingLeft: "32px", paddingRight: "24px" }}>
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
@@ -91,14 +116,37 @@ export default function ModuleManagementPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 md:gap-3 px-4 py-2 md:px-6 md:py-3 cursor-pointer border-none text-left transition-all ${
+                    className={`group cursor-pointer border-none text-left transition-all duration-300 ease-out relative overflow-hidden ${
                       isActive 
-                        ? "bg-[rgba(184,134,69,0.1)] border-b-4 md:border-b-0 md:border-r-4 border-[#B88645]" 
-                        : "bg-transparent border-b-4 md:border-b-0 md:border-r-4 border-transparent hover:bg-[#F7F8F5]"
+                        ? "bg-gradient-to-r from-[#B88645] to-[#D4AF37] shadow-[0_6px_16px_rgba(184,134,69,0.25)]" 
+                        : "bg-transparent hover:bg-[#F0F2EB]/80"
                     }`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      padding: "14px 20px",
+                      borderRadius: "16px",
+                      width: "100%",
+                      transform: isActive ? "translateY(-1px)" : "none"
+                    }}
                   >
-                  <Icon size={18} color={isActive ? "#B88645" : "#8A9E8C"} />
-                  <span style={{ fontSize: "14px", fontWeight: isActive ? 700 : 500, color: isActive ? "#1C2B1E" : "#4A5568" }}>{tab.label}</span>
+                  {/* Subtle active indicator border */}
+                  {isActive && (
+                    <div className="absolute left-0 top-0 bottom-0 bg-white/40" style={{ width: "6px", borderTopLeftRadius: "16px", borderBottomLeftRadius: "16px" }}></div>
+                  )}
+                  
+                  <Icon 
+                    size={20} 
+                    className={`transition-transform duration-300 group-hover:scale-110 shrink-0 ${isActive ? "text-white" : "text-[#8A9E8C]"}`} 
+                  />
+                  
+                  <span 
+                    className={`transition-all duration-300 ${isActive ? "text-white tracking-wide" : "text-[#4A5568]"}`}
+                    style={{ fontSize: "15px", fontWeight: isActive ? 700 : 500 }}
+                  >
+                    {tab.label}
+                  </span>
                 </button>
               );
             })}
@@ -106,7 +154,7 @@ export default function ModuleManagementPage() {
         </div>
 
         {/* Content Area */}
-        <div id="module-content-area" className="flex-1 p-4 md:p-10 overflow-y-auto">
+        <div id="module-content-area" className="flex-1 overflow-y-auto" style={{ padding: "40px" }}>
           <div style={{ maxWidth: "900px", margin: "0 auto" }}>
             {activeTab === "overview" && <ModuleOverviewPanel module={currentModule} />}
             {activeTab === "videos" && <VideosPanel module={currentModule} />}

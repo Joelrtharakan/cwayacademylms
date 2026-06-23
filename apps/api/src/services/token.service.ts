@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 import { redis } from "../utils/redis";
 import { AppError } from "../utils/errors";
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "cway-academy-super-secret-access-token-key-change-me";
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "cway-academy-super-secret-refresh-token-key-change-me";
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
 export interface TokenPayload {
   userId: string;

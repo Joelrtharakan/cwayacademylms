@@ -19,20 +19,29 @@ export class AuthController {
   });
 
   public static login = asyncHandler(async (req: Request, res: Response) => {
-    const { accessToken, refreshToken, user } = await AuthService.login(req.body);
+    try {
+      const { accessToken, refreshToken, user } = await AuthService.login(req.body);
 
-    res.cookie("cway_refresh", refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+      const { logger } = await import("../utils/logger");
+      logger.info(`Successful login: ${user.email}`, { userId: user.id, ip: req.ip });
 
-    res.status(200).json({
-      status: "success",
-      accessToken,
-      user,
-    });
+      res.cookie("cway_refresh", refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(200).json({
+        status: "success",
+        accessToken,
+        user,
+      });
+    } catch (error: any) {
+      const { logger } = await import("../utils/logger");
+      logger.warn(`Failed login attempt for ${req.body?.email || "unknown"}`, { ip: req.ip, error: error.message });
+      throw error;
+    }
   });
 
   public static refresh = asyncHandler(async (req: Request, res: Response) => {
@@ -65,7 +74,7 @@ export class AuthController {
     res.clearCookie("cway_refresh", {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "none",
+      sameSite: isProduction ? "none" : "lax",
     });
 
     res.status(200).json({ status: "success", message: "Logged out" });

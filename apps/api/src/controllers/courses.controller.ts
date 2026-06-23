@@ -4,6 +4,7 @@ import { asyncHandler, AppError } from "../utils/errors";
 import { uploadToR2, generateKey, deleteFromR2 } from "../services/storage.service";
 import { VideoService } from "../services/video.service";
 import { NotificationService } from "../services/notification.service";
+import { verifyCourseOwner, verifySectionOwner, verifyLessonOwner, verifyQuizOwner, verifyQuestionOwner, verifyAssignmentOwner, verifySubmissionOwner, verifyForumAccess, verifyForumPostOwnerOrInstructor, verifyForumReplyOwnerOrInstructor, verifyForumAccessFromPost } from "../utils/authz";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -306,6 +307,7 @@ export const duplicateCourse = asyncHandler(async (req: Request, res: Response) 
 
 export const uploadThumbnail = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  await verifyCourseOwner(id, req.user!);
   if (!req.file) throw new AppError("No file uploaded", 400);
   const ext = req.file.mimetype.split("/")[1];
   const key = generateKey("thumbnails", `${id}-${Date.now()}.${ext}`);
@@ -318,6 +320,7 @@ export const uploadThumbnail = asyncHandler(async (req: Request, res: Response) 
 
 export const uploadPromoVideo = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  await verifyCourseOwner(id, req.user!);
   if (!req.file) throw new AppError("No file uploaded", 400);
   const course = await prisma.course.findUnique({ where: { id } });
   if (!course) throw new AppError("Course not found", 404);
@@ -333,6 +336,7 @@ export const uploadPromoVideo = asyncHandler(async (req: Request, res: Response)
 
 export const createSection = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  await verifyCourseOwner(id, req.user!);
   const { title, order } = req.body;
   if (!title) throw new AppError("Title required", 400);
 
@@ -347,6 +351,7 @@ export const createSection = asyncHandler(async (req: Request, res: Response) =>
 
 export const updateSection = asyncHandler(async (req: Request, res: Response) => {
   const { sectionId } = req.params;
+  await verifySectionOwner(sectionId, req.user!);
   const { title, order } = req.body;
   const section = await prisma.section.update({ where: { id: sectionId }, data: { ...(title && { title }), ...(order !== undefined && { order: Number(order) }) } });
   res.json({ status: "success", data: section });
@@ -354,12 +359,14 @@ export const updateSection = asyncHandler(async (req: Request, res: Response) =>
 
 export const deleteSection = asyncHandler(async (req: Request, res: Response) => {
   const { sectionId } = req.params;
+  await verifySectionOwner(sectionId, req.user!);
   await prisma.section.delete({ where: { id: sectionId } });
   res.json({ status: "success", message: "Section deleted" });
 });
 
 export const reorderSections = asyncHandler(async (req: Request, res: Response) => {
   const { orderedIds } = req.body as { orderedIds: string[] };
+  if (orderedIds.length > 0) await verifySectionOwner(orderedIds[0], req.user!);
   await prisma.$transaction(orderedIds.map((sid, idx) => prisma.section.update({ where: { id: sid }, data: { order: idx } })));
   res.json({ status: "success", message: "Sections reordered" });
 });
@@ -368,6 +375,7 @@ export const reorderSections = asyncHandler(async (req: Request, res: Response) 
 
 export const createLesson = asyncHandler(async (req: Request, res: Response) => {
   const { sectionId } = req.params;
+  await verifySectionOwner(sectionId, req.user!);
   const { title, type = "VIDEO", content, videoUrl, duration, order, isFree = false, isPreview = false } = req.body;
   if (!title) throw new AppError("Title required", 400);
 
@@ -382,6 +390,7 @@ export const createLesson = asyncHandler(async (req: Request, res: Response) => 
 
 export const updateLesson = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
   const data: any = {};
   if (title !== undefined) data.title = title;
@@ -399,18 +408,21 @@ export const updateLesson = asyncHandler(async (req: Request, res: Response) => 
 
 export const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   await prisma.lesson.delete({ where: { id: lessonId } });
   res.json({ status: "success", message: "Lesson deleted" });
 });
 
 export const reorderLessons = asyncHandler(async (req: Request, res: Response) => {
   const { orderedIds } = req.body as { orderedIds: string[] };
+  if (orderedIds.length > 0) await verifyLessonOwner(orderedIds[0], req.user!);
   await prisma.$transaction(orderedIds.map((lid, idx) => prisma.lesson.update({ where: { id: lid }, data: { order: idx } })));
   res.json({ status: "success", message: "Lessons reordered" });
 });
 
 export const uploadLessonVideo = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   if (!req.file) throw new AppError("No file uploaded", 400);
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) throw new AppError("Lesson not found", 404);
@@ -425,6 +437,7 @@ export const uploadLessonVideo = asyncHandler(async (req: Request, res: Response
 
 export const getLessonVideoStatus = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) throw new AppError("Lesson not found", 404);
   if (!lesson.bunnyVideoId) throw new AppError("No video attached to this lesson", 400);
@@ -435,6 +448,7 @@ export const getLessonVideoStatus = asyncHandler(async (req: Request, res: Respo
 
 export const uploadLessonAttachment = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   if (!req.file) throw new AppError("No file uploaded", 400);
   const key = generateKey("attachments", req.file.originalname);
   const { url } = await uploadToR2(req.file.buffer, key, req.file.mimetype);
@@ -447,6 +461,7 @@ export const uploadLessonAttachment = asyncHandler(async (req: Request, res: Res
 
 export const createQuiz = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   const { title, passingScore = 70, timeLimit, maxAttempts = 3 } = req.body;
   const quiz = await prisma.quiz.create({ data: { lessonId, title, passingScore: Number(passingScore), timeLimit: timeLimit ? Number(timeLimit) : null, maxAttempts: Number(maxAttempts) } });
   res.status(201).json({ status: "success", data: { ...quiz, questions: [] } });
@@ -454,6 +469,7 @@ export const createQuiz = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateQuiz = asyncHandler(async (req: Request, res: Response) => {
   const { quizId } = req.params;
+  await verifyQuizOwner(quizId, req.user!);
   const { title, passingScore, timeLimit, maxAttempts } = req.body;
   const data: any = {};
   if (title) data.title = title;
@@ -466,6 +482,7 @@ export const updateQuiz = asyncHandler(async (req: Request, res: Response) => {
 
 export const addQuestion = asyncHandler(async (req: Request, res: Response) => {
   const { quizId } = req.params;
+  await verifyQuizOwner(quizId, req.user!);
   const { text, type = "MCQ", points = 1, order, scriptureRef, answers = [] } = req.body;
   if (!text) throw new AppError("Question text required", 400);
   if (type === "MCQ" && answers.filter((a: any) => a.isCorrect).length !== 1) throw new AppError("MCQ must have exactly 1 correct answer", 400);
@@ -484,6 +501,7 @@ export const addQuestion = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateQuestion = asyncHandler(async (req: Request, res: Response) => {
   const { questionId } = req.params;
+  await verifyQuestionOwner(questionId, req.user!);
   const { text, type, points, scriptureRef, answers } = req.body;
   const data: any = {};
   if (text) data.text = text;
@@ -501,12 +519,14 @@ export const updateQuestion = asyncHandler(async (req: Request, res: Response) =
 
 export const deleteQuestion = asyncHandler(async (req: Request, res: Response) => {
   const { questionId } = req.params;
+  await verifyQuestionOwner(questionId, req.user!);
   await prisma.question.delete({ where: { id: questionId } });
   res.json({ status: "success", message: "Question deleted" });
 });
 
 export const reorderQuestions = asyncHandler(async (req: Request, res: Response) => {
   const { orderedIds } = req.body as { orderedIds: string[] };
+  if (orderedIds.length > 0) await verifyQuestionOwner(orderedIds[0], req.user!);
   await prisma.$transaction(orderedIds.map((qid, idx) => prisma.question.update({ where: { id: qid }, data: { order: idx } })));
   res.json({ status: "success", message: "Questions reordered" });
 });
@@ -515,6 +535,7 @@ export const reorderQuestions = asyncHandler(async (req: Request, res: Response)
 
 export const createAssignment = asyncHandler(async (req: Request, res: Response) => {
   const { lessonId } = req.params;
+  await verifyLessonOwner(lessonId, req.user!);
   const { title, description, dueDate, maxScore = 100 } = req.body;
   const assignment = await prisma.assignment.create({ data: { lessonId, title, description, dueDate: dueDate ? new Date(dueDate) : null, maxScore: Number(maxScore) } });
   res.status(201).json({ status: "success", data: assignment });
@@ -522,6 +543,7 @@ export const createAssignment = asyncHandler(async (req: Request, res: Response)
 
 export const updateAssignment = asyncHandler(async (req: Request, res: Response) => {
   const { assignmentId } = req.params;
+  await verifyAssignmentOwner(assignmentId, req.user!);
   const { title, description, dueDate, maxScore } = req.body;
   const data: any = {};
   if (title) data.title = title;
@@ -564,6 +586,7 @@ export const getAssignmentSubmissions = asyncHandler(async (req: Request, res: R
 
 export const gradeSubmission = asyncHandler(async (req: Request, res: Response) => {
   const { submissionId } = req.params;
+  await verifySubmissionOwner(submissionId, req.user!);
   const { grade, feedback } = req.body;
 
   const submission = await prisma.submission.findUnique({ where: { id: submissionId }, include: { assignment: true } });
@@ -617,6 +640,7 @@ export const getQuizStats = asyncHandler(async (req: Request, res: Response) => 
 
 export const resetQuizAttempts = asyncHandler(async (req: Request, res: Response) => {
   const { quizId } = req.params;
+  await verifyQuizOwner(quizId, req.user!);
   // Make sure the user is an instructor or admin
   const deleted = await prisma.quizAttempt.deleteMany({
     where: { quizId }
@@ -647,6 +671,7 @@ export const getForumPosts = asyncHandler(async (req: Request, res: Response) =>
 
 export const createForumPost = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  await verifyForumAccess(id, req.user!);
   const { title, content } = req.body;
   const forum = await prisma.forum.findUnique({ where: { courseId: id } });
   if (!forum) throw new AppError("Forum not found", 404);
@@ -656,20 +681,23 @@ export const createForumPost = asyncHandler(async (req: Request, res: Response) 
 
 export const pinForumPost = asyncHandler(async (req: Request, res: Response) => {
   const { postId } = req.params;
-  const post = await prisma.forumPost.findUnique({ where: { id: postId } });
+  const post = await prisma.forumPost.findUnique({ where: { id: postId }, select: { forum: { select: { courseId: true } } } });
   if (!post) throw new AppError("Post not found", 404);
-  const updated = await prisma.forumPost.update({ where: { id: postId }, data: { isPinned: !post.isPinned } });
+  await verifyCourseOwner(post.forum.courseId, req.user!);
+  const updated = await prisma.forumPost.update({ where: { id: postId }, data: { isPinned: true } });
   res.json({ status: "success", data: updated });
 });
 
 export const deleteForumPost = asyncHandler(async (req: Request, res: Response) => {
   const { postId } = req.params;
+  await verifyForumPostOwnerOrInstructor(postId, req.user!);
   await prisma.forumPost.delete({ where: { id: postId } });
   res.json({ status: "success", message: "Post deleted" });
 });
 
 export const createForumReply = asyncHandler(async (req: Request, res: Response) => {
   const { postId } = req.params;
+  await verifyForumAccessFromPost(postId, req.user!);
   const { content } = req.body;
   const post = await prisma.forumPost.findUnique({ where: { id: postId } });
   if (!post) throw new AppError("Post not found", 404);
@@ -686,6 +714,7 @@ export const createForumReply = asyncHandler(async (req: Request, res: Response)
 
 export const deleteForumReply = asyncHandler(async (req: Request, res: Response) => {
   const { replyId } = req.params;
+  await verifyForumReplyOwnerOrInstructor(replyId, req.user!);
   await prisma.forumReply.delete({ where: { id: replyId } });
   res.json({ status: "success", message: "Reply deleted" });
 });

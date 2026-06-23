@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, MessageSquare, Save, Edit, Users, X } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Save, Edit, Users, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createLesson, updateLesson, deleteLesson } from "@/lib/api/modules";
 import { api } from "@/store/auth.store";
@@ -92,7 +92,6 @@ export default function ForumsPanel({ module }: { module: any }) {
     onError: () => toast.error("Failed to delete forum"),
   });
 
-  if (isLoading) return <div style={{ padding: "40px", color: "#8F9E93" }}>Loading forums...</div>;
 
   return (
     <div>
@@ -154,18 +153,38 @@ export default function ForumsPanel({ module }: { module: any }) {
               />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Due Date & Time (Optional)</label>
+              <div style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Due Date & Time (Optional)</div>
               <div style={{ display: "flex", gap: "8px" }}>
-                <input 
-                  type="date" 
-                  value={forumDueDate ? forumDueDate.split("T")[0] : ""}
-                  onChange={e => {
-                    const date = e.target.value;
-                    const time = forumDueDate && forumDueDate.includes("T") ? forumDueDate.split("T")[1] : "23:59";
-                    setForumDueDate(date ? `${date}T${time}` : "");
-                  }}
-                  style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D" }}
-                />
+                <div style={{ position: "relative", flex: 1 }}>
+                  <input 
+                    type="text" 
+                    placeholder="DD/MM/YYYY"
+                    readOnly
+                    value={
+                      forumDueDate && forumDueDate.includes("-")
+                        ? (() => {
+                            const parts = forumDueDate.split("T")[0].split("-");
+                            if (parts.length === 3) {
+                               const [yyyy, mm, dd] = parts;
+                               return `${dd}/${mm}/${yyyy}`;
+                            }
+                            return forumDueDate; 
+                          })()
+                        : ""
+                    }
+                    style={{ width: "100%", boxSizing: "border-box", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "14px", outline: "none", color: "#1A261D", background: "#FFFFFF", cursor: "pointer" }}
+                  />
+                  <input 
+                    type="date" 
+                    value={forumDueDate && forumDueDate.includes("-") ? forumDueDate.split("T")[0] : ""}
+                    onChange={e => {
+                      const date = e.target.value;
+                      const time = forumDueDate && forumDueDate.includes("T") ? forumDueDate.split("T")[1] : "23:59";
+                      setForumDueDate(date ? `${date}T${time}` : "");
+                    }}
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 10 }}
+                  />
+                </div>
                 <div style={{ position: "relative", flex: 1 }}>
                   <div 
                     onClick={() => setIsTimeOpen(!isTimeOpen)}
@@ -224,7 +243,9 @@ export default function ForumsPanel({ module }: { module: any }) {
       )}
 
       {/* Forums List */}
-      {!forums || forums.length === 0 ? (
+      {isLoading ? (
+        <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
+      ) : !forums || forums.length === 0 ? (
         !isCreating && !editingForumId && (
           <div style={{ textAlign: "center", padding: "48px 0", background: "#FFFFFF", border: "1px dashed #E4E8E0", borderRadius: "12px" }}>
             <MessageSquare size={32} color="#8F9E93" style={{ margin: "0 auto 12px auto" }} />

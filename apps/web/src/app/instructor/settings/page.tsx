@@ -211,11 +211,11 @@ export default function InstructorSettingsPage() {
     <div style={{ 
       display: "flex", 
       flexDirection: "column", 
-      gap: 40,
+      gap: 24,
       background: `radial-gradient(circle at top right, rgba(184,134,69,0.05) 0%, transparent 40%), radial-gradient(circle at bottom left, rgba(82,102,88,0.05) 0%, transparent 40%)`,
       backgroundColor: BG_ALT,
       minHeight: "100vh",
-      padding: "40px 80px"
+      padding: "24px 80px"
     }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -227,7 +227,7 @@ export default function InstructorSettingsPage() {
       `}</style>
 
       {/* Hero Header Area */}
-      <div style={{ position: "relative", marginBottom: 16 }}>
+      <div style={{ position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
           <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #B88645 0%, #8A6433 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 16px rgba(184,134,69,0.25)" }}>
             <User size={24} color="#FFFFFF" strokeWidth={2} />

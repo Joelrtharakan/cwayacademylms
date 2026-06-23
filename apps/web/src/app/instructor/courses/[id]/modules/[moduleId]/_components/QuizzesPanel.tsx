@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz } from "@/lib/api/modules";
-import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle } from "lucide-react";
+import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import QuestionBuilderModal from "./QuestionBuilderModal";
 import { useConfirm } from "@/components/shared/ConfirmContext";
@@ -183,7 +183,9 @@ export default function QuizzesPanel({ module }: { module: any }) {
       )}
 
       {/* List */}
-      {!quizzes || quizzes.length === 0 ? (
+      {isLoading ? (
+        <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
+      ) : !quizzes || quizzes.length === 0 ? (
         <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
           <Award size={28} color="#A0AEC0" style={{ margin: "0 auto 16px auto" }} />
           <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600, color: "#1A261D" }}>No quizzes</h3>

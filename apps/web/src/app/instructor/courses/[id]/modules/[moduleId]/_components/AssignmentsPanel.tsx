@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createAssignment, getAssignments, deleteAssignment, uploadAssignmentAttachment, updateAssignment, getAssignmentSubmissions, gradeSubmission } from "@/lib/api/modules";
-import { FileText, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, Calendar, Users, ChevronLeft, Download, CheckCircle } from "lucide-react";
+import { FileText, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, Calendar, Users, ChevronLeft, Download, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
@@ -337,16 +337,36 @@ export default function AssignmentsPanel({ module }: { module: any }) {
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Due Date & Time (Optional)</label>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <input 
-                    type="date" 
-                    defaultValue={form.dueDate ? form.dueDate.split("T")[0] : ""}
-                    onChange={e => {
-                      const date = e.target.value;
-                      const time = form.dueDate && form.dueDate.includes("T") ? form.dueDate.split("T")[1] : "23:59";
-                      setForm({ ...form, dueDate: date ? `${date}T${time}` : "" });
-                    }}
-                    style={{ flex: 1, padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
-                  />
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <input 
+                      type="text" 
+                      placeholder="DD/MM/YYYY"
+                      readOnly
+                      value={
+                        form.dueDate && form.dueDate.includes("-")
+                          ? (() => {
+                              const parts = form.dueDate.split("T")[0].split("-");
+                              if (parts.length === 3) {
+                                 const [yyyy, mm, dd] = parts;
+                                 return `${dd}/${mm}/${yyyy}`;
+                              }
+                              return form.dueDate; 
+                            })()
+                          : ""
+                      }
+                      style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", cursor: "pointer", outline: "none", color: "#1A261D" }}
+                    />
+                    <input 
+                      type="date" 
+                      value={form.dueDate && form.dueDate.includes("-") ? form.dueDate.split("T")[0] : ""}
+                      onChange={e => {
+                        const date = e.target.value;
+                        const time = form.dueDate && form.dueDate.includes("T") ? form.dueDate.split("T")[1] : "23:59";
+                        setForm({ ...form, dueDate: date ? `${date}T${time}` : "" });
+                      }}
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 10 }}
+                    />
+                  </div>
                   <div style={{ position: "relative", flex: 1 }}>
                     <div 
                       onClick={() => setIsTimeOpen(!isTimeOpen)}
@@ -418,7 +438,9 @@ export default function AssignmentsPanel({ module }: { module: any }) {
       )}
 
       {/* List */}
-      {!assignments || assignments.length === 0 ? (
+      {isLoading ? (
+        <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
+      ) : !assignments || assignments.length === 0 ? (
         <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
           <FileText size={28} color="#A0AEC0" style={{ margin: "0 auto 16px auto" }} />
           <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600, color: "#1A261D" }}>No assignments</h3>

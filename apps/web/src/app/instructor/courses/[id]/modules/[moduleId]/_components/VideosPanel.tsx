@@ -168,7 +168,7 @@ export default function VideosPanel({ module }: { module: any }) {
 
       {/* Videos List */}
       {isLoading ? (
-        <div style={{ padding: "40px", textAlign: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
+        <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
       ) : videos.length === 0 ? (
         <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
           <Play size={28} color="#A0AEC0" style={{ margin: "0 auto 16px auto" }} />

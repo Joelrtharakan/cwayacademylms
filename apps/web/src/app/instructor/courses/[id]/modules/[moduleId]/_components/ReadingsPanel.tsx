@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createReadingMaterial, getReadingMaterials, deleteReadingMaterial } from "@/lib/api/modules";
-import { BookOpen, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, FileText } from "lucide-react";
+import { BookOpen, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, FileText, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
@@ -131,7 +131,9 @@ export default function ReadingsPanel({ module }: { module: any }) {
       )}
 
       {/* List */}
-      {!materials || materials.length === 0 ? (
+      {isLoading ? (
+        <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
+      ) : !materials || materials.length === 0 ? (
         <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
           <BookOpen size={28} color="#A0AEC0" style={{ margin: "0 auto 16px auto" }} />
           <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600, color: "#1A261D" }}>No reading materials</h3>

@@ -148,7 +148,7 @@ export default function GradeForumPage() {
           )}
 
           {isEditing ? (
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-serif font-bold text-xl text-[#1A261D]">Edit Forum Settings</h3>
                 <button onClick={() => setIsEditing(false)} className="text-[#8A9E8C] hover:text-[#1A261D]"><X size={18} /></button>
@@ -159,7 +159,8 @@ export default function GradeForumPage() {
                 <input 
                   type="text" 
                   value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                  style={{ padding: "12px 16px" }}
                 />
               </div>
 
@@ -168,7 +169,8 @@ export default function GradeForumPage() {
                 <textarea 
                   value={editPrompt} onChange={e => setEditPrompt(e.target.value)}
                   rows={4}
-                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7] resize-y"
+                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7] resize-y"
+                  style={{ padding: "12px 16px" }}
                 />
               </div>
 
@@ -178,13 +180,14 @@ export default function GradeForumPage() {
                   type="number" 
                   value={editMarks} onChange={e => setEditMarks(e.target.value ? Number(e.target.value) : "")}
                   placeholder="e.g. 100"
-                  className="w-full p-3 border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
+                  style={{ padding: "12px 16px" }}
                 />
               </div>
 
-              <div className="flex justify-end gap-3 mt-4">
-                <button onClick={() => setIsEditing(false)} className="px-5 py-2 text-[#8A9E8C] font-bold text-sm">Cancel</button>
-                <button onClick={() => updateForumMut.mutate()} disabled={updateForumMut.isPending} className="flex items-center gap-2 bg-[#1A261D] text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-[#2C3E30] transition-colors disabled:opacity-50">
+              <div className="flex justify-end mt-4" style={{ display: "flex", justifyContent: "flex-end", gap: "16px", marginTop: "16px" }}>
+                <button onClick={() => setIsEditing(false)} className="text-[#8A9E8C] font-bold text-sm" style={{ padding: "10px 20px" }}>Cancel</button>
+                <button onClick={() => updateForumMut.mutate()} disabled={updateForumMut.isPending} className="flex items-center bg-[#1A261D] text-white rounded-xl font-bold text-sm hover:bg-[#2C3E30] transition-colors disabled:opacity-50" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px" }}>
                   <Save size={16} /> {updateForumMut.isPending ? "Saving..." : "Save Settings"}
                 </button>
               </div>

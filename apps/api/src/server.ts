@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
+
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
@@ -12,6 +12,16 @@ import fs from "fs";
 dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
 dotenv.config(); // Fallback to local
 
+// Required Environment Variables Check
+const requiredEnvVars = ["DATABASE_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"];
+const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingVars.length > 0) {
+  console.error(`FATAL: Missing required environment variables: ${missingVars.join(", ")}`);
+  console.error("Please add them to your .env file and restart the server.");
+  process.exit(1);
+}
+
+import { globalLimiter } from "./middleware/rateLimit";
 import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
 import coursesRoutes from "./routes/courses.routes";
@@ -67,13 +77,7 @@ app.use(cors({
 }));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5000, // Limit each IP to 5000 requests per `window`
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', limiter);
+app.use('/api', globalLimiter);
 
 // Logging & Parsing
 if (process.env.NODE_ENV === "development") {
@@ -110,6 +114,8 @@ app.all("*", (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
+import { logger } from "./utils/logger";
+
 // Global Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
@@ -130,7 +136,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         message: err.message,
       });
     } else {
-      console.error("ERROR 💥", err);
+      logger.error(err, { path: req.originalUrl, ip: req.ip, method: req.method });
       res.status(500).json({
         status: "error",
         message: "Something went wrong internally",

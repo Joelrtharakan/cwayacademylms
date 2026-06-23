@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/.8299d194a910755d7caeea449d383b91501b9215-audit.json",
+    "files": [
+        {
+            "date": 1782226454322,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-06-23.log",
+            "hash": "4edd0557a4f1d1edab935d2f4e99ec93f4fb6ce36c464c3d2ea5eedaca6e2d06"
+        }
+    ],
+    "hashType": "sha256"
+}
