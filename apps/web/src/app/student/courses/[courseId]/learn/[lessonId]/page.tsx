@@ -153,6 +153,7 @@ export default function LessonPlayerPage() {
   const [submissionResponse, setSubmissionResponse] = useState("");
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [isSubmittingAssig, setIsSubmittingAssig] = useState(false);
+  const [isUnsubmittingAssig, setIsUnsubmittingAssig] = useState(false);
   const [extensions, setExtensions] = useState<any[]>([]);
   const [extensionRequests, setExtensionRequests] = useState<any[]>([]);
   const [isRequestingExtension, setIsRequestingExtension] = useState(false);
@@ -199,6 +200,22 @@ export default function LessonPlayerPage() {
       alert(err.response?.data?.message || "Failed to submit assignment");
     } finally {
       setIsSubmittingAssig(false);
+    }
+  };
+
+  const onUnsubmitAssignment = async () => {
+    if (!lesson?.assignment?.id) return;
+    setIsUnsubmittingAssig(true);
+    try {
+      await api.delete(`/student/assignments/${lesson.assignment.id}/unsubmit`);
+      setAssignmentSub(null);
+      setSubmissionResponse("");
+      setSubmissionFile(null);
+      toast.success("Assignment unsubmitted successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to unsubmit assignment");
+    } finally {
+      setIsUnsubmittingAssig(false);
     }
   };
 
@@ -971,77 +988,95 @@ export default function LessonPlayerPage() {
           </div>
         )}
 
-        {/* ASSIGNMENT LESSON */}
-        {lesson.type === "ASSIGNMENT" && (
-          <div className="w-full min-h-full bg-white text-[#1A261D]" style={{ padding: "40px 8% 120px 8%" }}>
-            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
+        {lesson.type === "ASSIGNMENT" && (() => {
+          const dueDate = lesson.assignment?.dueDate ? new Date(lesson.assignment.dueDate) : null;
+          const assignmentId = lesson.assignment?.id;
+          const grantedExtension = extensions.find(e => e.itemId === assignmentId);
+          const pendingRequest = extensionRequests.find(r => r.itemId === assignmentId && r.status === "PENDING");
+          
+          let effectiveDueDate = dueDate;
+          if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
+          
+          const isPastDue = dueDate ? new Date() > dueDate : false;
+          const isEffectivelyPastDue = effectiveDueDate ? new Date() > effectiveDueDate : false;
+
+          return (
+          <div className="w-full min-h-full bg-gradient-to-br from-[#FAFAF7] to-[#F2F4F0] text-[#1A261D]" style={{ padding: "64px 8% 120px 8%" }}>
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 xl:gap-24">
               
               {/* Left Column: Instructions */}
-              <div className="flex-1 lg:max-w-[60%]">
-                <div className="mb-12 pb-10 border-b border-[#E4E8E0]" style={{ marginBottom: "48px" }}>
-                  <div className="inline-flex items-center gap-2 bg-[#FAFAF7] border border-[#E4E8E0] rounded-md text-[11px] font-bold uppercase tracking-[0.15em] text-[#4A8C5C] mb-6" style={{ padding: "8px 16px" }}>
+              <div className="flex-1 lg:max-w-[55%] pt-4">
+                <div className="mb-10 pb-10 border-b border-[#E4E8E0]">
+                  <div className="inline-flex items-center gap-2 bg-[#EBF3EE] text-[#4A8C5C] rounded-full text-[11px] font-bold uppercase tracking-[0.2em] mb-6 px-4 py-1.5 shadow-sm">
                     <ClipboardCheck className="w-3.5 h-3.5" /> Assignment
                   </div>
                   
-                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A261D] font-bold mb-8 leading-[1.15] tracking-tight">
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-[4rem] text-[#1A261D] font-bold mb-8 leading-[1.1] tracking-tight">
                     {lesson.assignment?.title}
                   </h1>
                   
-                  <div className="flex flex-wrap items-center gap-6 text-sm text-[#8A9E8C]">
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
                     {lesson.assignment?.dueDate && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5 bg-white border border-[#E4E8E0] rounded-xl px-4 py-2.5 shadow-sm">
                         <Calendar className="w-4 h-4 text-[#C9973A]" /> 
-                        <span className="font-semibold text-[#1A261D]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
+                        <span className="font-bold text-[#1A261D] text-[13px]">Due {new Date(lesson.assignment.dueDate).toLocaleDateString()}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-[#1A261D] uppercase tracking-wider text-[11px] bg-[#FAFAF7] border border-[#E4E8E0] rounded-md" style={{ padding: "8px 16px" }}>
-                        Max Score: {lesson.assignment?.maxScore} pts
+                    <div className="flex items-center gap-2.5 bg-white border border-[#E4E8E0] rounded-xl px-4 py-2.5 shadow-sm">
+                      <span className="font-bold text-[#1A261D] uppercase tracking-wider text-[11px] text-[#8A9E8C]">
+                        Max Score
+                      </span>
+                      <span className="font-black text-[#1A261D] text-[14px]">
+                        {lesson.assignment?.maxScore} pts
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="prose prose-lg max-w-none text-[#1A261D]/80 leading-[1.8] whitespace-pre-wrap font-medium" 
-                     style={{ fontSize: "17px", marginTop: "40px" }}
+                <div className="prose prose-lg max-w-none text-[#3A4A3F] leading-[1.85] font-medium" 
+                     style={{ fontSize: "17px" }}
                      dangerouslySetInnerHTML={{ __html: lesson.assignment?.description || "" }} />
 
                 {lesson.assignment?.attachmentUrl && (
-                  <div className="mt-16 pt-10 border-t border-[#E4E8E0]">
-                    <h3 className="text-xs font-bold text-[#8A9E8C] uppercase tracking-[0.15em] mb-6">Included Resources</h3>
+                  <div className="mt-14 pt-8 border-t border-[#E4E8E0]">
+                    <h3 className="text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.2em] mb-5">Included Resources</h3>
                     <a href={lesson.assignment.attachmentUrl} target="_blank" rel="noreferrer" 
-                       className="inline-flex items-center gap-3 px-6 py-4 bg-[#FAFAF7] border border-[#E4E8E0] text-[#1A261D] rounded-xl hover:bg-white hover:border-[#C9973A] hover:text-[#C9973A] hover:shadow-sm transition-all duration-300 text-[15px] font-bold">
-                      <Download className="w-5 h-5" /> Download Attached File
+                       className="group inline-flex items-center gap-3 px-6 py-4 bg-white border border-[#E4E8E0] text-[#1A261D] rounded-2xl hover:border-[#C9973A] hover:text-[#C9973A] hover:shadow-[0_8px_30px_rgba(201,151,58,0.12)] transition-all duration-300 text-[15px] font-bold">
+                      <div className="bg-[#FAFAF7] group-hover:bg-[#FFFDF8] p-2 rounded-xl transition-colors">
+                        <Download className="w-5 h-5" /> 
+                      </div>
+                      Download Attached File
                     </a>
                   </div>
                 )}
               </div>
 
               {/* Right Column: Submission Area */}
-              <div className="flex-1 lg:max-w-[40%]">
+              <div className="flex-1 lg:max-w-[45%]">
                 <div className="sticky top-24">
                   {!assignmentSub && (
-                    <div className="bg-white rounded-[32px] shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-[#E4E8E0]/60 relative overflow-hidden" style={{ padding: "48px" }}>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C9973A] to-[#E0C17A]" />
-                      <h2 className="font-serif text-3xl font-bold mb-8 text-[#1A261D]">Your Submission</h2>
+                    <div className="bg-white rounded-[32px] shadow-[0_24px_80px_rgba(26,38,29,0.06)] border border-[#E4E8E0]/80 relative overflow-hidden" style={{ padding: "48px" }}>
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#C9973A] via-[#E0C17A] to-[#C9973A]" />
+                      <h2 className="font-serif text-3xl font-bold mb-8 text-[#1A261D] tracking-tight">Your Submission</h2>
                       
                       <div className="space-y-8">
                         <div>
-                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.15em]">Response</label>
+                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.2em]">Response</label>
                           <textarea 
                             rows={8}
                             value={submissionResponse}
                             onChange={(e) => setSubmissionResponse(e.target.value)}
-                            className="w-full bg-[#FAFAF7] rounded-2xl p-6 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#C9973A]/50 transition-all duration-300 placeholder:text-[#8A9E8C]/50 border border-transparent focus:border-[#C9973A]/30 resize-none"
+                            disabled={isEffectivelyPastDue}
+                            className="w-full bg-[#FAFAF7] rounded-2xl p-6 text-[15px] text-[#1A261D] leading-relaxed focus:outline-none focus:ring-4 focus:ring-[#C9973A]/15 focus:bg-white transition-all duration-300 placeholder:text-[#8A9E8C]/50 border-2 border-transparent focus:border-[#C9973A]/30 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
                             placeholder="Type your thoughtful response here..."
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-[11px] font-bold text-[#8A9E8C] uppercase tracking-[0.15em]" style={{ marginBottom: "16px" }}>Attached File <span className="lowercase font-medium tracking-normal">(Optional)</span></label>
-                          <label className="block rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer bg-[#FAFAF7] border border-[#E4E8E0] hover:border-[#C9973A]/50 hover:bg-[#FDFBF7] group">
-                            <input type="file" className="hidden" onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
-                            <div className="text-[15px] font-bold text-[#1A261D]">
+                          <label className="block text-[11px] font-bold text-[#8A9E8C] mb-3 uppercase tracking-[0.2em]">Attached File <span className="lowercase font-medium tracking-normal opacity-70">(Optional)</span></label>
+                          <label className={`block rounded-2xl p-10 text-center transition-all duration-300 bg-[#FAFAF7] border-2 border-dashed border-[#E4E8E0] ${isEffectivelyPastDue ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-[#C9973A]/60 hover:bg-[#FFFDF8] group'}`}>
+                            <input type="file" className="hidden" disabled={isEffectivelyPastDue} onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)} />
+                            <div className="text-[15px] font-bold text-[#1A261D] group-hover:text-[#C9973A] transition-colors">
                               {submissionFile ? submissionFile.name : "Click to browse or drag & drop"}
                             </div>
                             {!submissionFile && (
@@ -1050,43 +1085,34 @@ export default function LessonPlayerPage() {
                           </label>
                         </div>
                         
-                        <div style={{ marginTop: "32px" }}>
+                        <div style={{ marginTop: "40px" }}>
                           <button 
                             onClick={onSubmitAssignment}
-                            disabled={isSubmittingAssig || (!submissionResponse.trim() && !submissionFile)}
-                            className="w-full bg-[#C9973A] text-white rounded-2xl font-bold hover:bg-[#A8792A] hover:shadow-[0_8px_20px_rgba(201,151,58,0.3)] transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0" style={{ fontSize: "14px", padding: "14px 0", letterSpacing: "0.02em" }}>
-                            {isSubmittingAssig ? "Submitting..." : "Submit Assignment"}
+                            disabled={isSubmittingAssig || isEffectivelyPastDue || (!submissionResponse.trim() && !submissionFile)}
+                            className="w-full relative group overflow-hidden bg-gradient-to-r from-[#C9973A] to-[#B8862D] text-white rounded-2xl font-bold shadow-[0_8px_20px_rgba(201,151,58,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(201,151,58,0.35)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0" style={{ fontSize: "15px", padding: "16px 0", letterSpacing: "0.02em" }}>
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                            <span className="relative">{isSubmittingAssig ? "Submitting..." : "Submit Assignment"}</span>
                           </button>
                         </div>
                       </div>
                       
                       {/* Extension Logic */}
                       {lesson.assignment?.dueDate && (
-                        <div style={{ marginTop: "16px", padding: "16px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "8px" }}>
+                        <div className="mt-8 rounded-2xl overflow-hidden">
                           {(() => {
-                            const dueDate = new Date(lesson.assignment.dueDate);
-                            const isPastDue = new Date() > dueDate;
-                            const assignmentId = lesson.assignment.id;
-                            const grantedExtension = extensions.find(e => e.itemId === assignmentId);
-                            const pendingRequest = extensionRequests.find(r => r.itemId === assignmentId && r.status === "PENDING");
-                            
-                            let effectiveDueDate = dueDate;
-                            if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
-                            const isEffectivelyPastDue = new Date() > effectiveDueDate;
-
                             if (!isPastDue && !isEffectivelyPastDue) return null;
 
                             if (grantedExtension && !isEffectivelyPastDue) {
                               return (
-                                <div style={{ color: "#065F46", fontWeight: 600, fontSize: "14px" }}>
-                                  Extension granted until {effectiveDueDate.toLocaleDateString()}
+                                <div className="bg-[#EBF3EE] border-l-4 border-[#4A8C5C] p-4 text-[#065F46] font-semibold text-[14px]">
+                                  Extension granted until {effectiveDueDate?.toLocaleDateString()}
                                 </div>
                               );
                             }
 
                             if (pendingRequest) {
                               return (
-                                <div style={{ color: "#92400E", fontWeight: 600, fontSize: "14px" }}>
+                                <div className="bg-[#FEF3C7] border-l-4 border-[#D97706] p-4 text-[#92400E] font-semibold text-[14px]">
                                   Extension requested (Pending approval)
                                 </div>
                               );
@@ -1094,17 +1120,17 @@ export default function LessonPlayerPage() {
 
                             if (isEffectivelyPastDue) {
                               return (
-                                <div>
-                                  <p style={{ color: "#DC2626", fontWeight: 600, fontSize: "14px", margin: "0 0 12px 0" }}>This assignment is past due. You must request an extension to submit.</p>
+                                <div className="bg-[#FEF2F2] border border-[#FECACA] p-5 rounded-2xl">
+                                  <p className="text-[#DC2626] font-semibold text-[14px] mb-4">This assignment is past due. You must request an extension to submit.</p>
                                   {!isRequestingExtension ? (
-                                    <button onClick={() => setIsRequestingExtension(true)} style={{ padding: "8px 16px", background: "#FFFFFF", border: "1px solid #FECACA", color: "#DC2626", borderRadius: "6px", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}>Request Extension</button>
+                                    <button onClick={() => setIsRequestingExtension(true)} className="px-5 py-2.5 bg-white border border-[#FECACA] text-[#DC2626] rounded-xl font-bold text-[13px] hover:bg-[#FEF2F2] transition-colors">Request Extension</button>
                                   ) : (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={2} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
-                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
-                                      <div style={{ display: "flex", gap: "8px" }}>
-                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ padding: "8px 16px", background: "#DC2626", color: "#FFFFFF", borderRadius: "6px", fontWeight: 600, fontSize: "13px", border: "none", cursor: "pointer" }}>Submit Request</button>
-                                        <button onClick={() => setIsRequestingExtension(false)} style={{ padding: "8px 16px", background: "transparent", color: "#8F9E93", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Cancel</button>
+                                    <div className="flex flex-col gap-4 bg-white p-5 rounded-xl border border-[#FECACA]">
+                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={2} className="w-full p-3 rounded-xl border border-[#E4E8E0] text-[13px] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626]/40 transition-all resize-none" />
+                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} className="p-3 rounded-xl border border-[#E4E8E0] text-[13px] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626]/40 transition-all" />
+                                      <div className="flex gap-3 mt-1">
+                                        <button onClick={() => requestExtensionMut.mutate({ itemId: assignmentId, itemType: "ASSIGNMENT" })} disabled={!extensionReason || requestExtensionMut.isPending} className="px-5 py-2.5 bg-[#DC2626] text-white rounded-xl font-bold text-[13px] hover:bg-[#B91C1C] transition-colors disabled:opacity-50">Submit Request</button>
+                                        <button onClick={() => setIsRequestingExtension(false)} className="px-5 py-2.5 bg-transparent text-[#8A9E8C] rounded-xl font-bold text-[13px] hover:bg-[#FAFAF7] transition-colors">Cancel</button>
                                       </div>
                                     </div>
                                   )}
@@ -1119,45 +1145,52 @@ export default function LessonPlayerPage() {
                   )}
 
                   {assignmentSub && !assignmentSub.isGraded && (
-                    <div className="bg-white rounded-3xl shadow-sm border border-[#E4E8E0] relative overflow-hidden flex flex-col items-center justify-center text-center" style={{ padding: "48px" }}>
-                      <div className="w-20 h-20 bg-[#F2F6F3] rounded-full flex items-center justify-center mb-6 ring-8 ring-[#FAFAF7]">
-                        <CheckCircle className="w-10 h-10 text-[#4A8C5C]" strokeWidth={2.5} />
+                    <div className="bg-white rounded-[32px] shadow-[0_24px_80px_rgba(26,38,29,0.06)] border border-[#E4E8E0]/80 relative overflow-hidden flex flex-col items-center justify-center text-center" style={{ padding: "56px 40px" }}>
+                      <div className="w-24 h-24 bg-gradient-to-br from-[#EBF3EE] to-[#D4E8D9] rounded-full flex items-center justify-center mb-8 shadow-inner ring-[12px] ring-[#FAFAF7]">
+                        <CheckCircle className="w-12 h-12 text-[#4A8C5C]" strokeWidth={2.5} />
                       </div>
-                      <h3 className="font-serif text-3xl font-bold text-[#1A261D] mb-3">Submission Received</h3>
-                      <p className="text-[#8A9E8C] text-[16px] leading-relaxed font-medium max-w-sm mb-8">
+                      <h3 className="font-serif text-3xl font-bold text-[#1A261D] mb-4 tracking-tight">Submission Received</h3>
+                      <p className="text-[#8A9E8C] text-[16px] leading-relaxed font-medium max-w-sm mb-10">
                         Your work is safely uploaded and awaiting review. We will notify you once your instructor posts a grade.
                       </p>
-                      <button 
-                        onClick={() => {
-                          setSubmissionResponse(assignmentSub.content || "");
-                          setAssignmentSub(null);
-                        }}
-                        className="bg-white border border-[#E4E8E0] text-[#1A261D] rounded-xl font-bold hover:bg-[#FAFAF7] hover:border-[#C9973A] transition-all duration-300" style={{ fontSize: "14px", padding: "12px 28px", letterSpacing: "0.02em" }}>
-                        Resubmit Assignment
-                      </button>
+                      
+                      {!isEffectivelyPastDue ? (
+                        <button 
+                          onClick={onUnsubmitAssignment}
+                          disabled={isUnsubmittingAssig}
+                          className="bg-white border-2 border-[#E4E8E0] text-[#1A261D] rounded-2xl font-bold hover:bg-[#FEF2F2] hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-300 disabled:opacity-50 hover:shadow-sm" style={{ fontSize: "15px", padding: "14px 32px", letterSpacing: "0.02em" }}>
+                          {isUnsubmittingAssig ? "Unsubmitting..." : "Unsubmit Assignment"}
+                        </button>
+                      ) : (
+                        <div className="mt-2 text-sm font-semibold text-[#92400E] bg-[#FEF3C7] border border-[#FDE68A] px-5 py-3 rounded-xl shadow-sm">
+                          Due date has passed. Unsubmitting is disabled.
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {assignmentSub && assignmentSub.isGraded && (
-                    <div style={{ background: "#fff", borderRadius: 24, border: "1px solid #E4E8E0", overflow: "hidden" }}>
+                    <div className="bg-white rounded-[32px] shadow-[0_24px_80px_rgba(26,38,29,0.06)] border border-[#E4E8E0]/80 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-[#4A8C5C]" />
+                      
                       {/* Top: Score row */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 24, padding: "36px 36px", borderBottom: "1px solid #E4E8E0" }}>
+                      <div className="flex items-center gap-6 p-10 border-b border-[#E4E8E0]/60 bg-[#FAFAF7]">
                         {/* Score number */}
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontFamily: "var(--font-cormorant, Georgia, serif)", fontWeight: 700, color: "#1A261D", lineHeight: 1, flexShrink: 0 }}>
-                          <span style={{ fontSize: 64 }}>{assignmentSub.grade}</span>
-                          <span style={{ fontSize: 22, color: "#8A9E8C", fontWeight: 400 }}>/ {lesson.assignment?.maxScore}</span>
+                        <div className="flex items-baseline gap-2 font-serif font-bold text-[#1A261D] leading-none shrink-0">
+                          <span className="text-[5rem] tracking-tighter text-[#4A8C5C]">{assignmentSub.grade}</span>
+                          <span className="text-2xl text-[#8A9E8C] font-sans font-medium">/ {lesson.assignment?.maxScore}</span>
                         </div>
-
+                        
                         {/* Divider */}
-                        <div style={{ width: 1, height: 52, background: "#E4E8E0", flexShrink: 0, marginLeft: 8 }} />
+                        <div className="w-px h-16 bg-[#E4E8E0] shrink-0 ml-2" />
 
                         {/* Score label + badge */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0, paddingLeft: 8 }}>
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#4A8C5C", fontWeight: 700, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                            <CheckCircle size={13} strokeWidth={2.5} /> Graded
+                        <div className="flex flex-col gap-1.5 min-w-0 pl-2">
+                          <div className="inline-flex items-center gap-2 text-[#4A8C5C] font-bold text-[11px] tracking-[0.15em] uppercase whitespace-nowrap mb-1">
+                            <CheckCircle className="w-3.5 h-3.5" strokeWidth={2.5} /> Graded
                           </div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#1A261D", whiteSpace: "nowrap" }}>Your Official Score</div>
-                          <div style={{ fontSize: 12, color: "#8A9E8C", whiteSpace: "nowrap" }}>
+                          <div className="text-[15px] font-bold text-[#1A261D] whitespace-nowrap tracking-tight">Your Official Score</div>
+                          <div className="text-[13px] font-medium text-[#8A9E8C] whitespace-nowrap">
                             {assignmentSub.grade >= (lesson.assignment?.maxScore * 0.9) ? "Excellent work!" :
                              assignmentSub.grade >= (lesson.assignment?.maxScore * 0.75) ? "Good job!" :
                              "Keep it up!"}
@@ -1166,14 +1199,14 @@ export default function LessonPlayerPage() {
                       </div>
 
                       {/* Bottom: Feedback */}
-                      <div style={{ padding: "32px 36px" }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#8A9E8C", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                          Instructor Feedback
+                      <div className="p-10">
+                        <div className="text-[11px] font-bold text-[#8A9E8C] tracking-[0.2em] uppercase mb-4 flex items-center gap-2">
+                          <MessageSquare className="w-3.5 h-3.5" /> Instructor Feedback
                         </div>
                         {assignmentSub.feedback ? (
-                          <div style={{ fontSize: 15, color: "#1A261D", lineHeight: 1.8, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
+                          <div className="text-[16px] text-[#3A4A3F] leading-[1.8] font-medium" dangerouslySetInnerHTML={{ __html: assignmentSub.feedback }} />
                         ) : (
-                          <div style={{ fontSize: 15, color: "#8A9E8C", fontStyle: "italic", lineHeight: 1.7 }}>No additional feedback provided.</div>
+                          <div className="text-[15px] text-[#8A9E8C] italic font-medium bg-[#FAFAF7] p-6 rounded-2xl border border-[#E4E8E0]/60">No additional feedback provided.</div>
                         )}
                       </div>
                     </div>
@@ -1182,7 +1215,8 @@ export default function LessonPlayerPage() {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* FORUM LESSON */}
         {lesson.type === "FORUM" && (() => {

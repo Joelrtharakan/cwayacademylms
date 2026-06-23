@@ -25,6 +25,7 @@ router.post("/quizzes/:quizId/submit", studentCtrl.submitQuiz);
 router.get("/assignments", studentCtrl.getMyAssignments);
 router.get("/assignments/:assignmentId/my-submission", studentCtrl.getMySubmission);
 router.post("/assignments/:assignmentId/submit", upload.single("file"), studentCtrl.submitAssignment);
+router.delete("/assignments/:assignmentId/unsubmit", studentCtrl.unsubmitAssignment);
 
 // Readings
 router.get("/modules/:moduleId/reading-materials", studentCtrl.getReadingMaterials);

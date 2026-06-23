@@ -91,6 +91,7 @@ class AuthService {
         await token_service_1.TokenService.storeRefreshToken(user.id, refreshToken);
         await prisma_1.prisma.user.update({
             where: { id: user.id },
+            // @ts-ignore: Stale IDE cache, property exists in schema
             data: { lastLoginAt: new Date() },
         });
         return {
@@ -131,6 +132,7 @@ class AuthService {
             await token_service_1.TokenService.revokeRefreshToken(payload.userId);
             await prisma_1.prisma.user.update({
                 where: { id: payload.userId },
+                // @ts-ignore: Stale IDE cache, property exists in schema
                 data: { lastLogoutAt: new Date() },
             });
         }

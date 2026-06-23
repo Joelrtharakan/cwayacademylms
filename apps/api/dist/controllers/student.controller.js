@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
+exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const certificate_service_1 = require("../services/certificate.service");
@@ -685,6 +685,42 @@ exports.getMySubmission = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     });
     res.json({ status: "success", data: submission });
+});
+exports.unsubmitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { assignmentId } = req.params;
+    const studentId = req.user.id;
+    const assignment = await prisma_1.prisma.assignment.findUnique({
+        where: { id: assignmentId }
+    });
+    if (!assignment)
+        throw new errors_1.AppError("Assignment not found", 404);
+    // Check if due date is passed and no valid extension
+    if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
+        const extension = await prisma_1.prisma.extensionRequest.findFirst({
+            where: {
+                studentId,
+                itemId: assignmentId,
+                itemType: "ASSIGNMENT",
+                status: "APPROVED"
+            }
+        });
+        if (!extension || (extension.requestedDate && new Date() > new Date(extension.requestedDate))) {
+            throw new errors_1.AppError("Cannot unsubmit because the due date has passed and no valid extension exists", 403);
+        }
+    }
+    const existing = await prisma_1.prisma.submission.findFirst({
+        where: { assignmentId, studentId }
+    });
+    if (!existing) {
+        throw new errors_1.AppError("Submission not found", 404);
+    }
+    if (existing.isGraded) {
+        throw new errors_1.AppError("Cannot unsubmit a graded assignment", 400);
+    }
+    await prisma_1.prisma.submission.delete({
+        where: { id: existing.id }
+    });
+    res.json({ status: "success", message: "Assignment unsubmitted" });
 });
 // ==========================================
 // READING MATERIALS

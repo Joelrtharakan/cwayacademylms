@@ -780,6 +780,51 @@ export const getMySubmission = asyncHandler(async (req: Request, res: Response) 
   res.json({ status: "success", data: submission });
 });
 
+export const unsubmitAssignment = asyncHandler(async (req: Request, res: Response) => {
+  const { assignmentId } = req.params;
+  const studentId = req.user!.id;
+
+  const assignment = await prisma.assignment.findUnique({
+    where: { id: assignmentId }
+  });
+
+  if (!assignment) throw new AppError("Assignment not found", 404);
+
+  // Check if due date is passed and no valid extension
+  if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
+    const extension = await prisma.extensionRequest.findFirst({
+      where: {
+        studentId,
+        itemId: assignmentId,
+        itemType: "ASSIGNMENT",
+        status: "APPROVED"
+      }
+    });
+
+    if (!extension || (extension.requestedDate && new Date() > new Date(extension.requestedDate))) {
+      throw new AppError("Cannot unsubmit because the due date has passed and no valid extension exists", 403);
+    }
+  }
+
+  const existing = await prisma.submission.findFirst({
+    where: { assignmentId, studentId }
+  });
+
+  if (!existing) {
+    throw new AppError("Submission not found", 404);
+  }
+
+  if (existing.isGraded) {
+    throw new AppError("Cannot unsubmit a graded assignment", 400);
+  }
+
+  await prisma.submission.delete({
+    where: { id: existing.id }
+  });
+
+  res.json({ status: "success", message: "Assignment unsubmitted" });
+});
+
 // ==========================================
 // READING MATERIALS
 // ==========================================
