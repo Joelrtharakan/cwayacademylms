@@ -78,25 +78,25 @@ export default function ModuleManagementPage() {
         </div>
       </header>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         
         {/* Sidebar Tabs */}
-        <div style={{ width: "260px", background: "#FFFFFF", borderRight: "1px solid #E4E8E0", padding: "24px 0", flexShrink: 0, overflowY: "auto" }}>
-          <h2 style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 24px", marginBottom: "16px" }}>Manage Content</h2>
-          <nav style={{ display: "flex", flexDirection: "column" }}>
+        <div className="w-full md:w-[260px] bg-white border-b md:border-b-0 md:border-r border-[#E4E8E0] py-4 md:py-6 shrink-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
+          <h2 className="text-[11px] font-bold text-[#8F9E93] uppercase tracking-widest px-4 md:px-6 mb-4">Manage Content</h2>
+          <nav className="flex md:flex-col min-w-max md:min-w-0 pb-2 md:pb-0 px-2 md:px-0">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "12px", padding: "12px 24px", cursor: "pointer", background: isActive ? "rgba(184,134,69,0.1)" : "transparent", border: "none", borderRight: isActive ? "4px solid #B88645" : "4px solid transparent", textAlign: "left", transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => !isActive && (e.currentTarget.style.background = "#F7F8F5")}
-                  onMouseLeave={(e) => !isActive && (e.currentTarget.style.background = "transparent")}
-                >
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center gap-2 md:gap-3 px-4 py-2 md:px-6 md:py-3 cursor-pointer border-none text-left transition-all ${
+                      isActive 
+                        ? "bg-[rgba(184,134,69,0.1)] border-b-4 md:border-b-0 md:border-r-4 border-[#B88645]" 
+                        : "bg-transparent border-b-4 md:border-b-0 md:border-r-4 border-transparent hover:bg-[#F7F8F5]"
+                    }`}
+                  >
                   <Icon size={18} color={isActive ? "#B88645" : "#8A9E8C"} />
                   <span style={{ fontSize: "14px", fontWeight: isActive ? 700 : 500, color: isActive ? "#1C2B1E" : "#4A5568" }}>{tab.label}</span>
                 </button>
@@ -106,7 +106,7 @@ export default function ModuleManagementPage() {
         </div>
 
         {/* Content Area */}
-        <div id="module-content-area" style={{ flex: 1, padding: "40px", overflowY: "auto" }}>
+        <div id="module-content-area" className="flex-1 p-4 md:p-10 overflow-y-auto">
           <div style={{ maxWidth: "900px", margin: "0 auto" }}>
             {activeTab === "overview" && <ModuleOverviewPanel module={currentModule} />}
             {activeTab === "videos" && <VideosPanel module={currentModule} />}

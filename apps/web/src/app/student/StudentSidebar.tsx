@@ -485,6 +485,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
             }}
           >
             <button
+              className="hidden md:flex"
               onClick={() => onToggleCollapse()}
               style={{
                 width: "32px",

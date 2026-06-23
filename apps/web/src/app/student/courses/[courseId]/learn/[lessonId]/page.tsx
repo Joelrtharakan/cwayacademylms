@@ -1263,12 +1263,12 @@ export default function LessonPlayerPage() {
           const hasReachedReplyLimit = uniqueOtherAuthorsRepliedTo.size >= 2;
 
           return (
-            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D]" style={{ padding: "56px 8% 120px 8%" }}>
+            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D] px-4 py-8 md:px-[8%] md:py-14 pb-24">
               <div className="max-w-3xl mx-auto">
                 
                 {/* Instructor Question Block */}
-                <div className="bg-white border border-[#E4E8E0] rounded-[24px] shadow-sm overflow-hidden" style={{ marginBottom: '48px' }}>
-                  <div style={{ padding: '32px 40px' }}>
+                <div className="bg-white border border-[#E4E8E0] rounded-[24px] shadow-sm overflow-hidden mb-12">
+                  <div className="p-6 md:p-10">
                     <div className="flex items-center gap-4 mb-8">
                       <div className="w-12 h-12 rounded-full bg-[#1A261D] flex items-center justify-center text-[#C9973A] font-bold text-[15px] shadow-sm border-2 border-white">
                         {getInitials(instructor?.name || enrollment?.course?.instructor?.name || "Course Instructor")}
@@ -1291,7 +1291,7 @@ export default function LessonPlayerPage() {
                   </div>
 
                   {/* Direct Reply to Instructor Input */}
-                  <div className="bg-[#FAFAF7] border-t border-[#E4E8E0]" style={{ padding: '24px 40px' }}>
+                  <div className="bg-[#FAFAF7] border-t border-[#E4E8E0] p-4 md:px-10 md:py-6">
                     <div className="flex gap-5">
                       <div className="w-11 h-11 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[13px] shrink-0 shadow-sm">
                         ME
@@ -1374,8 +1374,7 @@ export default function LessonPlayerPage() {
                                   onChange={e => setNewPostContent(e.target.value)}
                                   placeholder="Write your reply to this prompt..."
                                   rows={4}
-                                  className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed"
-                                  style={{ padding: '24px 24px 64px 24px', overflowY: "auto" }}
+                                  className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed p-4 pb-16 md:p-6 md:pb-16 overflow-y-auto"
                                   onWheel={(e) => {
                                     const target = e.currentTarget;
                                     const isScrollingDown = e.deltaY > 0;

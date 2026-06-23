@@ -512,6 +512,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
             }}
           >
             <button
+              className="hidden md:flex"
               onClick={() => onToggleCollapse()}
               style={{
                 width: "32px",

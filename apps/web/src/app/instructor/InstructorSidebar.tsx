@@ -519,6 +519,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
 
       {/* Floating Edge Toggle (Visible in both states) */}
       <button
+        className="hidden md:flex"
         onClick={() => onToggleCollapse()}
         style={{
           position: "fixed",
