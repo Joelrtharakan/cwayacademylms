@@ -1286,7 +1286,7 @@ export const createProgram = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const updateProgram = asyncHandler(async (req: Request, res: Response) => {
-  const { title, description, duration, tags, status } = req.body;
+  const { title, description, duration, tags, status, applicationsClosed } = req.body;
   const program = await prisma.program.update({
     where: { id: req.params.id },
     data: {
@@ -1295,6 +1295,7 @@ export const updateProgram = asyncHandler(async (req: Request, res: Response) =>
       ...(duration !== undefined && { duration }),
       ...(tags !== undefined && { tags: JSON.stringify(tags) }),
       ...(status !== undefined && { status }),
+      ...(applicationsClosed !== undefined && { applicationsClosed }),
     },
     include: { _count: { select: { courses: true } } },
   });

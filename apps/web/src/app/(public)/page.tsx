@@ -237,6 +237,12 @@ export default function LandingPage() {
     });
   };
 
+  useEffect(() => {
+    if (!isLoadingPrograms || !isLoadingCourses) {
+      setTimeout(() => initRevealAnimations(activeTab), 100);
+    }
+  }, [isLoadingPrograms, isLoadingCourses, activeTab]);
+
   // Stats Counter Animation
   const animateCounter = (el: HTMLElement | null) => {
     if (!el) return;
@@ -1454,9 +1460,15 @@ export default function LandingPage() {
                           {prog.description && <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", maxWidth: "800px", lineHeight: "1.6", position: "relative", zIndex: 1, marginBottom: "2rem" }}>{prog.description}</p>}
                           
                           <div style={{ display: "flex", gap: "1rem", alignItems: "center", position: "relative", zIndex: 1 }}>
-                            <Link href={`/programs/${prog.id}/apply`} className="btn-primary" style={{ background: "white", color: "var(--accent-green)", border: "1px solid white" }}>
-                              Apply for Program
-                            </Link>
+                            {prog.applicationsClosed ? (
+                              <button disabled className="btn-primary" style={{ background: "rgba(255,255,255,0.5)", color: "rgba(44,74,59,0.7)", border: "1px solid rgba(255,255,255,0.5)", cursor: "not-allowed" }}>
+                                Applications Closed
+                              </button>
+                            ) : (
+                              <Link href={`/programs/${prog.id}/apply`} className="btn-primary" style={{ background: "white", color: "var(--accent-green)", border: "1px solid white" }}>
+                                Apply for Program
+                              </Link>
+                            )}
                             <button 
                               onClick={() => toggleProgram(prog.id)} 
                               className="btn-primary"

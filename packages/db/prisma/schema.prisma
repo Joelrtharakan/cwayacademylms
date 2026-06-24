@@ -723,7 +723,8 @@ model Program {
   thumbnailKey String?
   duration    String?   // e.g. "6 months", "4 courses"
   tags        String    @default("[]")
-  status      String    @default("DRAFT") // DRAFT | PUBLISHED
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  applicationsClosed Boolean @default(false)
   courses     Course[]  @relation("ProgramCourses")
   applications ProgramApplication[]
   enrollments  ProgramEnrollment[]

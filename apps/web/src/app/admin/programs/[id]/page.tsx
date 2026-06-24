@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getProgramById, addCourseToProgram } from "@/lib/api/admin";
+import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, BookOpen, UserCircle, Clock, Edit3, MoreVertical, Users, CheckCircle, AlertCircle, Mail } from "lucide-react";
 import Link from "next/link";
@@ -60,6 +61,33 @@ export default function ProgramDetailPage() {
   const { data: program, isLoading } = useQuery({
     queryKey: ["program", id],
     queryFn: () => getProgramById(id),
+  });
+
+  const updateProgramMut = useMutation({
+    mutationFn: (data: any) => api.put(`/admin/programs/${id}`, data),
+    onMutate: async (data: any) => {
+      await queryClient.cancelQueries({ queryKey: ["program", id] });
+      const previousProgram = queryClient.getQueryData(["program", id]);
+      if (previousProgram) {
+        queryClient.setQueryData(["program", id], {
+          ...(previousProgram as any),
+          ...data,
+        });
+      }
+      return { previousProgram };
+    },
+    onError: (err: any, data, context: any) => {
+      if (context?.previousProgram) {
+        queryClient.setQueryData(["program", id], context.previousProgram);
+      }
+      toast.error(err.response?.data?.message || "Failed to update program");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["program", id] });
+    },
+    onSuccess: () => {
+      toast.success("Program updated successfully");
+    },
   });
 
   const addCourseMut = useMutation({
@@ -128,8 +156,8 @@ export default function ProgramDetailPage() {
               <BookOpen size={18} />
             </div>
             <span style={{
-              background: program.status === "PUBLISHED" ? "rgba(74,140,92,0.12)" : "rgba(138,158,140,0.15)",
-              color: program.status === "PUBLISHED" ? "#4A8C5C" : "#8A9E8C",
+              background: program.status === "PUBLISHED" ? "rgba(74,140,92,0.12)" : program.status === "ARCHIVED" ? "rgba(140,58,58,0.12)" : "rgba(138,158,140,0.15)",
+              color: program.status === "PUBLISHED" ? "#4A8C5C" : program.status === "ARCHIVED" ? "#8C3A3A" : "#8A9E8C",
               borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase",
             }}>
               {program.status}
@@ -156,22 +184,125 @@ export default function ProgramDetailPage() {
             )}
           </div>
         </div>
-        <button
-          onClick={() => setShowAddCourse(true)}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "11px 20px",
-            background: "#C9973A",
-            border: "none", borderRadius: 10,
-            color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(201,151,58,0.25)",
-            transition: "all 0.2s", flexShrink: 0,
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "#E8B85A"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "#C9973A"; e.currentTarget.style.transform = "translateY(0)"; }}
-        >
-          <Plus size={16} /> Add Course
-        </button>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {program.status === "ARCHIVED" ? (
+            <button
+              onClick={() => {
+                if (confirm("Are you sure you want to unarchive this program? It will be restored as a Draft.")) {
+                  updateProgramMut.mutate({ status: "DRAFT" });
+                }
+              }}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "11px 20px", background: "transparent",
+                border: "1px solid #4A8C5C", borderRadius: 10,
+                color: "#4A8C5C", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                transition: "all 0.2s", flexShrink: 0,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,140,92,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            >
+              Unarchive
+            </button>
+          ) : (
+            <>
+              {program.status === "DRAFT" && (
+                <button
+                  onClick={() => {
+                    if (confirm("Publish this program? It will be visible to students on the courses page.")) {
+                      updateProgramMut.mutate({ status: "PUBLISHED" });
+                    }
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "11px 20px", background: "transparent",
+                    border: "1px solid #4A8C5C", borderRadius: 10,
+                    color: "#4A8C5C", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    transition: "all 0.2s", flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,140,92,0.05)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  Publish Program
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (confirm("Are you sure you want to archive this program? It will no longer be visible to students.")) {
+                    updateProgramMut.mutate({ status: "ARCHIVED" });
+                  }
+                }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "11px 20px", background: "transparent",
+                  border: "1px solid #8C3A3A", borderRadius: 10,
+                  color: "#8C3A3A", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  transition: "all 0.2s", flexShrink: 0,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(140,58,58,0.05)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                Archive
+              </button>
+            </>
+          )}
+
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "#F5F7F2", padding: "8px 16px", borderRadius: 10,
+            border: "1px solid #E8EAE4"
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#1C2B1E" }}>
+              Applications {program.applicationsClosed ? "Closed" : "Open"}
+            </span>
+            <div 
+              onClick={() => {
+                if (!updateProgramMut.isPending) {
+                  updateProgramMut.mutate({ applicationsClosed: !program.applicationsClosed });
+                }
+              }}
+              style={{
+                width: 36, height: 20, borderRadius: 20,
+                background: program.applicationsClosed ? "#8C3A3A" : "#4A8C5C",
+                position: "relative", 
+                cursor: updateProgramMut.isPending ? "not-allowed" : "pointer",
+                opacity: updateProgramMut.isPending ? 0.5 : 1,
+                transition: "background 0.3s, opacity 0.3s"
+              }}
+            >
+              <div style={{
+                width: 16, height: 16, borderRadius: "50%", background: "white",
+                position: "absolute", top: 2,
+                left: program.applicationsClosed ? 18 : 2,
+                transition: "left 0.3s"
+              }} />
+            </div>
+            {updateProgramMut.isPending && (
+              <div style={{ 
+                width: 14, height: 14, 
+                border: "2px solid #8A9E8C", borderTopColor: "transparent", 
+                borderRadius: "50%", animation: "spin 1s linear infinite" 
+              }} />
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowAddCourse(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "11px 20px",
+              background: "#C9973A",
+              border: "none", borderRadius: 10,
+              color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(201,151,58,0.25)",
+              transition: "all 0.2s", flexShrink: 0,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#E8B85A"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#C9973A"; e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            <Plus size={16} /> Add Course
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

@@ -242,6 +242,22 @@ export default function ProgramApplicationPage() {
     return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>;
   }
 
+  if (program?.applicationsClosed) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F0E8" }}>
+        <div style={{ background: "white", padding: "4rem", borderRadius: "12px", textAlign: "center", maxWidth: "600px", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
+          <h1 style={{ fontSize: "32px", fontFamily: "var(--font-dm-serif)", marginBottom: "1rem", color: "var(--danger, #8C3A3A)" }}>Applications Closed</h1>
+          <p style={{ color: "var(--text-muted)", fontSize: "16px", lineHeight: 1.6, marginBottom: "2rem" }}>
+            We are no longer accepting applications for the <strong>{program?.title}</strong> program at this time. Please check back later or explore other available courses and programs.
+          </p>
+          <button onClick={() => router.push("/#courses")} className="btn-primary">
+            Explore Other Courses
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isSubmitted) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F0E8" }}>
