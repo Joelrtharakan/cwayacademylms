@@ -89,6 +89,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Root Welcome Route
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({ status: "success", message: "Welcome to CWAY Academy API. The backend is running perfectly!" });
+});
+
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "success", message: "CWAY Academy LMS API is healthy" });
