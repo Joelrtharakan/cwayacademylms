@@ -40,9 +40,9 @@ export default async function middleware(req: NextRequest) {
       if (!allowedRoles.includes(userRole)) {
         // Redirect to their own dashboard
         const dashMap: Record<string, string> = {
-          ADMIN: "/dashboard/admin",
-          INSTRUCTOR: "/dashboard/instructor",
-          STUDENT: "/dashboard/student",
+          ADMIN: "/admin/dashboard",
+          INSTRUCTOR: "/instructor/dashboard",
+          STUDENT: "/student/dashboard",
         };
         return NextResponse.redirect(new URL(dashMap[userRole] ?? "/login", req.url));
       }
@@ -52,4 +52,9 @@ export default async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  runtime: 'experimental-edge',
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};
 

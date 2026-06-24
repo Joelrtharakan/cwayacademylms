@@ -63,7 +63,13 @@ export default function ApplicationDetailsPage() {
     window.print();
   };
 
-  if (isLoading) return <div className="p-8">Loading application details...</div>;
+  if (isLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", color: "#8A9E8C" }}>
+        Loading application details...
+      </div>
+    );
+  }
   if (!app) return <div className="p-8">Application not found.</div>;
 
   const permanentAddress = app.permanentAddress ? JSON.parse(app.permanentAddress) : {};
