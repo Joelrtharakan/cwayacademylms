@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api, useAuthStore } from "@/store/auth.store";
+import { getProgramStudentGrades } from "@/lib/api/admin";
 import { getLetterGrade } from "@/lib/gradeScale";
 import { Printer, ArrowLeft } from "lucide-react";
 import { THEME } from "@/lib/cway-theme";
 import Image from "next/image";
 
-export default function GradeSheetPage() {
+export default function AdminGradeSheetPage() {
   const params = useParams();
   const router = useRouter();
-  const programId = params.programId as string;
-  const { user } = useAuthStore();
+  const programId = params.id as string;
+  const studentId = params.studentId as string;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["programGrades", programId],
-    queryFn: () => api.get(`/student/programs/${programId}/grades`).then(res => res.data.data),
-    enabled: !!programId,
+    queryKey: ["adminProgramGrades", programId, studentId],
+    queryFn: () => getProgramStudentGrades(programId, studentId),
+    enabled: !!programId && !!studentId,
   });
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#f4f4f5" }}>
         <div style={{ width: 40, height: 40, border: `4px solid ${THEME.MUTED}`, borderTopColor: THEME.GOLD, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
@@ -37,7 +37,7 @@ export default function GradeSheetPage() {
     );
   }
 
-  const { program, coursesWithGrades } = data;
+  const { program, coursesWithGrades, student } = data;
 
   const totalPercentage = coursesWithGrades.reduce((sum: number, c: any) => sum + c.finalGrade, 0);
   const averagePercentage = coursesWithGrades.length > 0 ? totalPercentage / coursesWithGrades.length : 0;
@@ -52,7 +52,7 @@ export default function GradeSheetPage() {
           onClick={() => router.back()}
           style={{ display: "flex", alignItems: "center", gap: "8px", background: "white", color: THEME.HERO, padding: "8px 16px", borderRadius: "8px", border: "1px solid #e4e4e7", cursor: "pointer", fontWeight: 500 }}
         >
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> Back to Student Details
         </button>
         <button 
           onClick={() => window.print()}
@@ -96,8 +96,8 @@ export default function GradeSheetPage() {
         <div className="gs-student" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", marginBottom: "48px", background: "#fafafa", padding: "24px", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
           <div>
             <p style={{ margin: "0 0 4px 0", fontSize: "11px", color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "1px" }}>Student Name</p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO }}>{user.name}</p>
-            <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: THEME.MUTED }}>{user.email}</p>
+            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO }}>{student?.name || "Student"}</p>
+            <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: THEME.MUTED }}>{student?.email}</p>
           </div>
           <div>
             <p style={{ margin: "0 0 4px 0", fontSize: "11px", color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "1px" }}>Program Enrolled</p>

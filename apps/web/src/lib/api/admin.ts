@@ -253,6 +253,19 @@ export const updateProgram = (id: string, data: {
 export const deleteProgram = (id: string) =>
   api.delete(`${BASE}/programs/${id}`).then((r) => r.data);
 
+export const getProgramStudents = (programId: string) =>
+  api.get(`${BASE}/programs/${programId}/students`).then((r) => r.data.data);
+
+export const getProgramStudentDetails = async (programId: string, studentId: string) => {
+  const res = await api.get(`/admin/programs/${programId}/students/${studentId}`);
+  return res.data.data;
+};
+
+export const getProgramStudentGrades = async (programId: string, studentId: string) => {
+  const res = await api.get(`/admin/programs/${programId}/students/${studentId}/grades`);
+  return res.data.data;
+};
+
 export const addCourseToProgram = (programId: string, data: {
   title: string;
   description?: string;

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz } from "@/lib/api/modules";
-import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle, Loader2 } from "lucide-react";
+import { Award, Plus, X, Edit2, Trash2, GripVertical, Clock, HelpCircle, Loader2, List } from "lucide-react";
+import { useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import QuestionBuilderModal from "./QuestionBuilderModal";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function QuizzesPanel({ module }: { module: any }) {
+  const { id } = useParams() as { id: string };
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
@@ -219,6 +221,9 @@ export default function QuizzesPanel({ module }: { module: any }) {
                     <button onClick={() => handleEditSettings(quiz, item.content)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                       <Edit2 size={16} />
                     </button>
+                    <a href={`/instructor/courses/${id}/quizzes`} style={{ padding: "6px 12px", background: "transparent", border: "1px solid #B88645", color: "#B88645", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                      <List size={14} /> View Attempts
+                    </a>
                     <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "6px 12px", background: "#B88645", border: "none", color: "#FFFFFF", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Edit Questions</button>
                     <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                       <Trash2 size={14} />

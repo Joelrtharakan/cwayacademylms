@@ -23,6 +23,7 @@ import {
   Bell,
   Settings,
   LogOut,
+  MessageSquare,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -51,6 +52,7 @@ const NAV: NavSection[] = [
     items: [
       { name: "Users", href: "/admin/users", icon: Users },
       { name: "Instructors", href: "/admin/instructors", icon: GraduationCap },
+      { name: "Messages", href: "/admin/messages", icon: MessageSquare },
     ],
   },
   {

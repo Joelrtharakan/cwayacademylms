@@ -125,7 +125,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
     include: {
       instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
       category: { select: { id: true, name: true, slug: true } },
-      sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } }, readingMaterials: { orderBy: { order: "asc" } } } },
+      sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { quiz: true } }, readingMaterials: { orderBy: { order: "asc" } } } },
       reviews: { select: { rating: true } },
       announcements: { orderBy: { createdAt: "desc" } },
       _count: { select: { enrollments: true } },
@@ -640,10 +640,14 @@ export const getQuizStats = asyncHandler(async (req: Request, res: Response) => 
 
 export const resetQuizAttempts = asyncHandler(async (req: Request, res: Response) => {
   const { quizId } = req.params;
+  const { studentId } = req.body;
   await verifyQuizOwner(quizId, req.user!);
-  // Make sure the user is an instructor or admin
+  
+  const where: any = { quizId };
+  if (studentId) where.studentId = studentId;
+
   const deleted = await prisma.quizAttempt.deleteMany({
-    where: { quizId }
+    where
   });
   res.json({ status: "success", message: `Reset ${deleted.count} attempts successfully` });
 });

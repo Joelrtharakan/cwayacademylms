@@ -11,7 +11,13 @@ export default function AdminApplicationsPage() {
     queryFn: () => api.get("/admin/applications").then(res => res.data.data),
   });
 
-  if (isLoading) return <div className="p-8">Loading applications...</div>;
+  if (isLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", color: "#8A9E8C" }}>
+        Loading applications...
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">

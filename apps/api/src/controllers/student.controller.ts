@@ -1405,6 +1405,7 @@ export const getProgramGrades = asyncHandler(async (req: Request, res: Response)
     return {
       id: course.id,
       title: course.title,
+      courseCode: course.courseCode,
       finalGrade
     };
   }));

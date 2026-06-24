@@ -1149,6 +1149,125 @@ export const getProgramById = asyncHandler(async (req: Request, res: Response) =
   res.json({ status: "success", data: program });
 });
 
+export const getProgramStudents = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const enrollments = await prisma.programEnrollment.findMany({
+    where: { programId: id },
+    include: {
+      student: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
+    },
+    orderBy: { enrolledAt: "desc" },
+  });
+  res.json({ status: "success", data: enrollments });
+});
+
+export const getProgramStudentDetails = asyncHandler(async (req: Request, res: Response) => {
+  const { id, studentId } = req.params;
+
+  // 1. Get the program enrollment
+  const programEnrollment = await prisma.programEnrollment.findUnique({
+    where: { studentId_programId: { studentId, programId: id } },
+    include: {
+      student: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
+      program: { select: { id: true, title: true } },
+    },
+  });
+
+  if (!programEnrollment) throw new AppError("Student is not enrolled in this program", 404);
+
+  // 2. Get all courses in this program and the student's progress
+  const courses = await prisma.course.findMany({
+    where: { programId: id },
+    select: {
+      id: true,
+      title: true,
+      courseCode: true,
+      status: true,
+      enrollments: {
+        where: { studentId },
+        select: { id: true, progress: true, status: true, enrolledAt: true, completedAt: true },
+      },
+      sections: {
+        select: {
+          lessons: {
+            select: {
+              quiz: {
+                select: {
+                  id: true,
+                  title: true,
+                  passingScore: true,
+                  attempts: {
+                    where: { studentId },
+                    select: { id: true, score: true, passed: true, completedAt: true },
+                    orderBy: { score: 'desc' }
+                  },
+                },
+              },
+              assignment: {
+                select: {
+                  id: true,
+                  title: true,
+                  maxScore: true,
+                  submissions: {
+                    where: { studentId },
+                    select: { id: true, isGraded: true, grade: true, submittedAt: true, gradedAt: true },
+                    orderBy: { submittedAt: 'desc' }
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  // 3. Get certificates related to this student for this program and its courses
+  const courseIds = courses.map(c => c.id);
+  const certificates = await prisma.certificate.findMany({
+    where: {
+      studentId,
+      OR: [
+        { programId: id },
+        { courseId: { in: courseIds } }
+      ]
+    },
+    include: {
+      course: { select: { title: true } },
+      program: { select: { title: true } },
+    },
+    orderBy: { issuedAt: "desc" },
+  });
+
+  res.json({
+    status: "success",
+    data: {
+      programEnrollment,
+      courses: courses.map((course) => {
+        const quizzes: any[] = [];
+        const assignments: any[] = [];
+        course.sections.forEach((section) => {
+          section.lessons.forEach((lesson) => {
+            if (lesson.quiz) quizzes.push(lesson.quiz);
+            if (lesson.assignment) assignments.push(lesson.assignment);
+          });
+        });
+        return {
+          id: course.id,
+          title: course.title,
+          courseCode: course.courseCode,
+          status: course.status,
+          enrollments: course.enrollments,
+          quizzes,
+          assignments,
+        };
+      }),
+      certificates,
+    },
+  });
+});
+
 export const createProgram = asyncHandler(async (req: Request, res: Response) => {
   const { title, description, duration, tags, status } = req.body;
   if (!title) throw new AppError("Title is required", 400);
@@ -1429,4 +1548,97 @@ export const rejectApplication = asyncHandler(async (req: Request, res: Response
     data: { status: "REJECTED" }
   });
   res.json({ status: "success", message: "Application rejected" });
+});
+
+export const getProgramStudentGrades = asyncHandler(async (req: Request, res: Response) => {
+  const { id: programId, studentId } = req.params;
+
+  const program = await prisma.program.findUnique({
+    where: { id: programId },
+    include: {
+      courses: {
+        include: {
+          enrollments: { where: { studentId } }
+        }
+      }
+    }
+  });
+
+  if (!program) throw new AppError("Program not found", 404);
+
+  const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
+    const courseData = await prisma.course.findUnique({
+      where: { id: course.id },
+      include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+    });
+    
+    if (!courseData) return { ...course, finalGrade: 0 };
+
+    const gradedItems: { id: string, type: string, maxScore: number }[] = [];
+    courseData.sections.forEach(sec => {
+      sec.lessons.forEach(lesson => {
+        if (lesson.assignment) gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+        if (lesson.quiz) gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+        if (lesson.type === "FORUM") gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+      });
+    });
+
+    const submissions = await prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
+    const quizAttempts = await prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
+    const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+    const forumDiscussions = await prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
+
+    const grades: Record<string, number | null> = {};
+    gradedItems.forEach(item => grades[item.id] = null);
+
+    submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined) grades[sub.assignmentId] = sub.grade; });
+    quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId]!) grades[qa.quizId] = qa.score; });
+    forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score! > grades[sf.lessonId]!)) grades[sf.lessonId] = sf.score!; });
+
+    let totalEarned = 0;
+    let totalMaxGraded = 0;
+
+    gradedItems.forEach(item => {
+      const score = grades[item.id];
+      if (score !== null && score !== undefined) {
+        totalEarned += score;
+        totalMaxGraded += item.maxScore;
+      }
+    });
+
+    const finalGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+
+    return {
+      id: course.id,
+      title: course.title,
+      courseCode: course.courseCode,
+      finalGrade
+    };
+  }));
+
+  // also get student
+  const student = await prisma.user.findUnique({
+    where: { id: studentId },
+    select: { id: true, name: true, email: true }
+  });
+
+  res.json({ status: "success", data: { program, coursesWithGrades, student } });
+});
+
+export const downloadCertificate = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const certificate = await prisma.certificate.findUnique({
+    where: { id },
+    include: { course: true, program: true }
+  });
+
+  if (!certificate) throw new AppError("Certificate not found", 404);
+
+  const { CertificateService } = await import("../services/certificate.service");
+  const pdfBuffer = await CertificateService.generateCertificatePDF(id);
+
+  res.setHeader("Content-Type", "application/pdf");
+  const slug = certificate.course ? certificate.course.slug : (certificate.program ? certificate.program.id : 'certificate');
+  res.setHeader("Content-Disposition", `attachment; filename="${slug}-certificate.pdf"`);
+  res.send(pdfBuffer);
 });
