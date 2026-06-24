@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Ban, UserCheck, Mail, MapPin, Church, Globe, Calendar, Shield } from "lucide-react";
+import { ArrowLeft, Ban, UserCheck, Mail, MapPin, Church, Globe, Calendar, Shield, MessageCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { getUserById, banUser, unbanUser } from "@/lib/api/admin";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -85,33 +85,46 @@ export default function UserDetailPage() {
       </button>
 
       {/* Header */}
-      <div className="rounded-[20px] p-7 flex flex-col sm:flex-row items-start sm:items-center gap-6 bg-white border border-cway-light-border shadow-sm">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center font-serif font-bold text-[32px] uppercase flex-shrink-0 bg-[#1A261D] text-white shadow-md">
+      <div className="bg-white border border-cway-light-border shadow-sm" style={{ padding: '32px', borderRadius: '24px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '32px', flexWrap: 'wrap' }}>
+        <div className="bg-[#1A261D] text-white shadow-md" style={{ width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'serif', fontWeight: 700, fontSize: '32px', textTransform: 'uppercase', flexShrink: 0 }}>
           {user.name?.slice(0, 2) || "U"}
         </div>
-        <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-serif font-bold text-[26px] text-[#1A261D] leading-none">{user.name}</h1>
-            <span className={`font-sans text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border ${roleBadge}`}>
+        <div style={{ flex: 1, minWidth: '300px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+            <h1 className="font-serif font-bold text-[#1A261D]" style={{ fontSize: '28px', lineHeight: 1 }}>{user.name}</h1>
+            <span className={`font-sans font-bold uppercase border ${roleBadge}`} style={{ fontSize: '11px', letterSpacing: '0.1em', padding: '4px 12px', borderRadius: '999px' }}>
               {user.role}
             </span>
             {user.isBanned && (
-              <span className="font-sans text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider bg-cway-danger/10 text-cway-danger border border-cway-danger/20">
+              <span className="font-sans font-bold uppercase bg-cway-danger/10 text-cway-danger border border-cway-danger/20" style={{ fontSize: '11px', letterSpacing: '0.1em', padding: '4px 12px', borderRadius: '999px' }}>
                 BANNED
               </span>
             )}
           </div>
-          <p className="font-sans text-[14px] mt-2 font-medium text-cway-text-muted">{user.email}</p>
+          <p className="font-sans font-medium text-cway-text-muted" style={{ fontSize: '15px', marginTop: '8px' }}>{user.email}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          
+          <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${user.email || ''}`} target="_blank" rel="noopener noreferrer" className="font-sans font-bold uppercase transition-all border border-cway-light-border text-cway-text-muted hover:text-[#1A261D] hover:bg-cway-light-alt bg-white" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '999px', fontSize: '12px', letterSpacing: '0.1em' }}>
+            <Mail size={16} strokeWidth={2.5} /> Email
+          </a>
+          
+          <button className="font-sans font-bold uppercase transition-all border border-cway-light-border text-cway-text-muted hover:text-[#1A261D] hover:bg-cway-light-alt bg-white" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '999px', fontSize: '12px', letterSpacing: '0.1em' }} onClick={() => router.push(`/admin/messages?userId=${user.id}&name=${encodeURIComponent(user.name || '')}`)}>
+            <MessageCircle size={16} strokeWidth={2.5} /> Message
+          </button>
+          
+          <a href={`tel:${user.phone || ''}`} className="font-sans font-bold uppercase transition-all border border-cway-light-border text-cway-text-muted hover:text-[#1A261D] hover:bg-cway-light-alt bg-white" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '999px', fontSize: '12px', letterSpacing: '0.1em' }}>
+            <Phone size={16} strokeWidth={2.5} /> Call
+          </a>
+
           {user.isBanned ? (
             <button onClick={() => setConfirmState("unban")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-success/50 text-cway-success hover:bg-cway-success/10 bg-white">
+              className="font-sans font-bold uppercase transition-all border border-cway-success/50 text-cway-success hover:bg-cway-success/10 bg-white" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '999px', fontSize: '12px', letterSpacing: '0.1em' }}>
               <UserCheck size={16} strokeWidth={2.5} /> Unban
             </button>
           ) : (
             <button onClick={() => setConfirmState("ban")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-sans text-[12px] font-bold uppercase tracking-wider transition-all border border-cway-danger/50 text-cway-danger hover:bg-cway-danger/10 bg-white">
+              className="font-sans font-bold uppercase transition-all border border-cway-danger/50 text-cway-danger hover:bg-cway-danger/10 bg-white" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '999px', fontSize: '12px', letterSpacing: '0.1em' }}>
               <Ban size={16} strokeWidth={2.5} /> Ban User
             </button>
           )}
@@ -119,46 +132,63 @@ export default function UserDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 overflow-x-auto border-b border-cway-light-border pb-1">
+      <div className="border-b border-cway-light-border [&::-webkit-scrollbar]:hidden" style={{ display: 'flex', gap: '24px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', marginTop: '32px', paddingLeft: '16px' }}>
         {TABS.map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-sans text-[14px] font-bold transition-all relative ${
-              activeTab === tab ? "text-cway-gold" : "text-cway-text-muted hover:text-[#1A261D]"
-            }`}>
+            className="font-sans transition-all"
+            style={{ 
+              paddingBottom: '16px', 
+              fontSize: '15px', 
+              fontWeight: 700, 
+              color: activeTab === tab ? '#C9973A' : '#8A9E8C', 
+              position: 'relative' 
+            }}>
             {tab}
             {activeTab === tab && (
-              <span className="absolute bottom-[-5px] left-0 right-0 h-1 bg-cway-gold rounded-t-full"></span>
+              <span style={{ position: 'absolute', bottom: '-1px', left: 0, right: 0, height: '3px', backgroundColor: '#C9973A', borderTopLeftRadius: '4px', borderTopRightRadius: '4px' }}></span>
             )}
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      <div className="rounded-[20px] p-7 bg-white border border-cway-light-border shadow-sm">
+      <div className="bg-white border border-cway-light-border shadow-sm" style={{ borderRadius: '24px', padding: '40px', marginTop: '24px' }}>
         {activeTab === "Overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-5">
-              <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3">Profile Details</h3>
-              <div className="space-y-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '48px' }}>
+            
+            {/* Left Col: Profile Details */}
+            <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px' }}>
+                Profile Details
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {[
-                { icon: <Mail size={16} />, label: "Email", value: user.email },
-                { icon: <Church size={16} />, label: "Church", value: user.church || "—" },
-                { icon: <MapPin size={16} />, label: "Location", value: user.location || "—" },
-                { icon: <Globe size={16} />, label: "Language", value: user.preferredLanguage },
-                { icon: <Calendar size={16} />, label: "Joined", value: formatDate(user.createdAt) },
-                { icon: <Shield size={16} />, label: "Verified", value: user.isVerified ? "Yes ✓" : "No" },
+                { icon: <Mail size={20} strokeWidth={2} />, label: "Email Address", value: user.email },
+                { icon: <Church size={20} strokeWidth={2} />, label: "Church", value: user.church || "—" },
+                { icon: <MapPin size={20} strokeWidth={2} />, label: "Location", value: user.location || "—" },
+                { icon: <Globe size={20} strokeWidth={2} />, label: "Language", value: user.preferredLanguage },
+                { icon: <Calendar size={20} strokeWidth={2} />, label: "Joined", value: formatDate(user.createdAt) },
+                { icon: <Shield size={20} strokeWidth={2} />, label: "Verified", value: user.isVerified ? "Yes ✓" : "No" },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <span className="text-cway-text-muted/60">{item.icon}</span>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-wider w-24 flex-shrink-0 text-cway-text-muted">{item.label}</span>
-                  <span className="font-sans text-[15px] font-semibold text-[#1A261D]">{item.value}</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div className="bg-[#F7F8F5] border border-cway-light-border text-cway-gold shadow-sm" style={{ width: '48px', height: '48px', minWidth: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {item.icon}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span className="font-sans font-bold uppercase text-cway-text-muted/80" style={{ fontSize: '11px', letterSpacing: '0.15em' }}>{item.label}</span>
+                    <span className="font-sans font-semibold text-[#1A261D]" style={{ fontSize: '16px' }}>{item.value}</span>
+                  </div>
                 </div>
               ))}
               </div>
             </div>
-            <div className="space-y-5">
-              <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3">Quick Stats</h3>
-              <div className="space-y-0.5">
+
+            {/* Right Col: Quick Stats */}
+            <div style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px' }}>
+                Quick Stats
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
               {[
                 { label: "Courses Enrolled", value: user.enrollments?.length ?? 0 },
                 { label: "Courses Completed", value: user.enrollments?.filter((e: any) => e.status === "COMPLETED").length ?? 0 },
@@ -169,99 +199,116 @@ export default function UserDetailPage() {
                   { label: "Payout Rate", value: `${user.payoutPercentage ?? 70}%` },
                 ] : []),
               ].map((stat, i) => (
-                <div key={i} className="flex items-center justify-between py-3 border-b border-cway-light-border/40 last:border-b-0">
-                  <span className="font-sans text-[14px] font-medium text-cway-text-muted">{stat.label}</span>
-                  <span className="font-serif font-bold text-[18px] text-cway-gold">{stat.value}</span>
+                <div key={i} className="bg-[#F7F8F5] border border-cway-light-border/80 shadow-sm transition-all hover:shadow-md" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '32px', borderRadius: '20px', height: '140px' }}>
+                  <span className="font-sans font-bold uppercase text-cway-text-muted" style={{ fontSize: '12px', letterSpacing: '0.1em', marginBottom: '12px' }}>{stat.label}</span>
+                  <span className="font-serif font-bold text-[#1A261D] leading-none" style={{ fontSize: '40px' }}>{stat.value}</span>
                 </div>
               ))}
               </div>
             </div>
+
           </div>
         )}
 
         {activeTab === "Enrollments" && (
-          <div className="space-y-4">
-            <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3 mb-5">Course Enrollments</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px', marginBottom: '16px' }}>
+              Course Enrollments
+            </h3>
             {user.enrollments?.length === 0 ? (
               <p className="font-sans text-[15px] text-center py-12 text-cway-text-muted font-medium">No enrollments yet</p>
             ) : (
-              user.enrollments?.map((e: any) => (
-                <div key={e.id} className="flex items-center gap-6 py-4 border-b border-cway-light-border/50 last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-[15px] font-bold truncate text-[#1A261D]">{e.course?.title}</p>
-                    <p className="font-sans text-[13px] mt-1 text-cway-text-muted font-medium">Enrolled {formatDate(e.enrolledAt)}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {user.enrollments?.map((e: any) => (
+                  <div key={e.id} className="border-b border-cway-light-border/50 last:border-0" style={{ display: 'flex', alignItems: 'center', gap: '32px', paddingBottom: '24px', paddingTop: '8px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="font-sans font-bold truncate text-[#1A261D]" style={{ fontSize: '17px', marginBottom: '4px' }}>{e.course?.title}</p>
+                      <p className="font-sans text-cway-text-muted font-medium" style={{ fontSize: '14px' }}>Enrolled {formatDate(e.enrolledAt)}</p>
+                    </div>
+                    <div style={{ width: '200px', flexShrink: 0 }}>
+                      <ProgressBar value={e.progress ?? 0} />
+                    </div>
+                    <span className="font-sans font-bold flex-shrink-0 uppercase"
+                      style={{ fontSize: '12px', letterSpacing: '0.1em', padding: '6px 16px', borderRadius: '999px', background: `${STATUS_COLOR[e.status] || "#8A9E8C"}15`, color: STATUS_COLOR[e.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[e.status] || "#8A9E8C"}30` }}>
+                      {e.status}
+                    </span>
                   </div>
-                  <div className="w-40 flex-shrink-0"><ProgressBar value={e.progress ?? 0} /></div>
-                  <span className="font-sans text-[11px] font-bold px-3 py-1.5 rounded-full flex-shrink-0 uppercase tracking-wider"
-                    style={{ background: `${STATUS_COLOR[e.status] || "#8A9E8C"}15`, color: STATUS_COLOR[e.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[e.status] || "#8A9E8C"}30` }}>
-                    {e.status}
-                  </span>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
 
         {activeTab === "Courses" && (
-          <div className="space-y-4">
-            <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3 mb-5">Courses Created</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px', marginBottom: '16px' }}>
+              Courses Created
+            </h3>
             {!user.coursesCreated?.length ? (
               <p className="font-sans text-[15px] text-center py-12 text-cway-text-muted font-medium">No courses created</p>
             ) : (
-              user.coursesCreated?.map((c: any) => (
-                <div key={c.id} className="flex items-center justify-between py-4 border-b border-cway-light-border/50 last:border-0">
-                  <span className="font-sans text-[15px] font-bold text-[#1A261D]">{c.title}</span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-sans text-[13px] font-medium text-cway-text-muted bg-cway-light-bg px-3 py-1 rounded-full border border-cway-light-border">{c._count?.enrollments ?? 0} students</span>
-                    <span className="font-sans text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider"
-                      style={{ background: `${STATUS_COLOR[c.status] || "#8A9E8C"}15`, color: STATUS_COLOR[c.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[c.status] || "#8A9E8C"}30` }}>
-                      {c.status}
-                    </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {user.coursesCreated?.map((c: any) => (
+                  <div key={c.id} className="border-b border-cway-light-border/50 last:border-0" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '32px', paddingBottom: '24px', paddingTop: '8px' }}>
+                    <span className="font-sans font-bold text-[#1A261D]" style={{ fontSize: '17px' }}>{c.title}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                      <span className="font-sans font-medium text-cway-text-muted bg-cway-light-bg border border-cway-light-border" style={{ fontSize: '14px', padding: '6px 16px', borderRadius: '999px' }}>{c._count?.enrollments ?? 0} students</span>
+                      <span className="font-sans font-bold uppercase"
+                        style={{ fontSize: '12px', letterSpacing: '0.1em', padding: '6px 16px', borderRadius: '999px', background: `${STATUS_COLOR[c.status] || "#8A9E8C"}15`, color: STATUS_COLOR[c.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[c.status] || "#8A9E8C"}30` }}>
+                        {c.status}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
 
         {activeTab === "Payments" && (
-          <div className="space-y-4">
-            <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3 mb-5">Payment History</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px', marginBottom: '16px' }}>
+              Payment History
+            </h3>
             {!user.payments?.length ? (
               <p className="font-sans text-[15px] text-center py-12 text-cway-text-muted font-medium">No payments yet</p>
             ) : (
-              user.payments?.map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between py-4 border-b border-cway-light-border/50 last:border-0">
-                  <div>
-                    <p className="font-sans text-[15px] font-bold text-[#1A261D]">{p.course?.title}</p>
-                    <p className="font-sans text-[13px] mt-1 text-cway-text-muted font-medium">{formatDate(p.createdAt)}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {user.payments?.map((p: any) => (
+                  <div key={p.id} className="border-b border-cway-light-border/50 last:border-0" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '32px', paddingBottom: '24px', paddingTop: '8px' }}>
+                    <div>
+                      <p className="font-sans font-bold text-[#1A261D]" style={{ fontSize: '17px', marginBottom: '4px' }}>{p.course?.title}</p>
+                      <p className="font-sans text-cway-text-muted font-medium" style={{ fontSize: '14px' }}>{formatDate(p.createdAt)}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                      <span className="font-serif font-bold text-cway-gold" style={{ fontSize: '20px' }}>₹{p.amount?.toLocaleString()}</span>
+                      <span className="font-sans font-bold uppercase"
+                        style={{ fontSize: '12px', letterSpacing: '0.1em', padding: '6px 16px', borderRadius: '999px', background: `${STATUS_COLOR[p.status] || "#8A9E8C"}15`, color: STATUS_COLOR[p.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[p.status] || "#8A9E8C"}30` }}>
+                        {p.status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-serif font-bold text-[18px] text-cway-gold">₹{p.amount?.toLocaleString()}</span>
-                    <span className="font-sans text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider"
-                      style={{ background: `${STATUS_COLOR[p.status] || "#8A9E8C"}15`, color: STATUS_COLOR[p.status] || "#8A9E8C", border: `1px solid ${STATUS_COLOR[p.status] || "#8A9E8C"}30` }}>
-                      {p.status}
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
 
         {activeTab === "Certificates" && (
-          <div className="space-y-4">
-            <h3 className="font-serif text-[20px] font-bold text-[#1A261D] border-b border-cway-light-border/60 pb-3 mb-5">Certificates Earned</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 className="font-serif font-bold text-[#1A261D] border-b border-cway-light-border/60" style={{ fontSize: '22px', paddingBottom: '16px', marginBottom: '16px' }}>
+              Certificates Earned
+            </h3>
             {!user.certificates?.length ? (
               <p className="font-sans text-[15px] text-center py-12 text-cway-text-muted font-medium">No certificates yet</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px', paddingTop: '8px' }}>
                 {user.certificates?.map((cert: any) => (
-                  <div key={cert.id} className="rounded-xl p-5 bg-white border border-cway-light-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-cway-gold/5 rounded-bl-full border-l border-b border-cway-gold/10"></div>
-                    <p className="font-serif font-bold text-[18px] text-[#1A261D] mb-3 relative z-10 leading-tight">{cert.course?.title}</p>
-                    <p className="font-sans text-[12px] font-medium text-cway-text-muted">Issued: {formatDate(cert.issuedAt)}</p>
-                    <p className="font-mono text-[13px] font-bold mt-2 text-cway-gold tracking-widest">{cert.uniqueCode}</p>
+                  <div key={cert.id} className="bg-white border border-cway-light-border shadow-sm transition-all hover:shadow-md relative overflow-hidden" style={{ borderRadius: '20px', padding: '32px' }}>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-cway-gold/5 rounded-bl-full border-l border-b border-cway-gold/10"></div>
+                    <p className="font-serif font-bold text-[#1A261D] relative z-10 leading-tight" style={{ fontSize: '20px', marginBottom: '16px' }}>{cert.course?.title}</p>
+                    <p className="font-sans font-medium text-cway-text-muted" style={{ fontSize: '14px' }}>Issued: {formatDate(cert.issuedAt)}</p>
+                    <p className="font-mono font-bold text-cway-gold tracking-widest" style={{ fontSize: '15px', marginTop: '12px' }}>{cert.uniqueCode}</p>
                   </div>
                 ))}
               </div>
