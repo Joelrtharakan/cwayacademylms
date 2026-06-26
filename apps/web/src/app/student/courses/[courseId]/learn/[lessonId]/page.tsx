@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { useAuthStore, api } from "@/store/auth.store";
+import { useAuthStore, api, fetchWithCache } from "@/store/auth.store";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown, Pencil, Trash2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmContext";
@@ -226,7 +226,7 @@ export default function LessonPlayerPage() {
     const fetchCourseData = async () => {
       if (!courseId) return;
       try {
-        const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+        const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
         enrollmentRef.current = enr;
         setEnrollment(enr);
@@ -258,7 +258,7 @@ export default function LessonPlayerPage() {
       if (!enr) {
         // If enrollment hasn't loaded yet, fetch it
         try {
-          const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+          const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
           enr = enrRes.data.data;
           enrollmentRef.current = enr;
           setEnrollment(enr);

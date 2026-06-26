@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { api, useAuthStore } from "@/store/auth.store";
+import { api, useAuthStore, fetchWithCache } from "@/store/auth.store";
 import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
 import { getLetterGrade } from "@/lib/gradeScale";
 import Link from "next/link";
@@ -59,10 +59,9 @@ export default function CoursePlayerLayout({ children }: { children: React.React
     if (!noteInput.trim() || !lessonId) return;
     setIsSavingNote(true);
     try {
-      const res = await api.post(`/student/lessons/${lessonId}/notes`, {
-        content: noteInput
-      });
-      setMyNotes((prev) => [res.data.data, ...prev]);
+      await api.post(`/student/lessons/${lessonId}/notes`, { content: noteInput });
+      const notesRes = await api.get(`/student/lessons/${lessonId}/my-notes`);
+      setMyNotes(notesRes.data.data || []);
       setNoteInput("");
     } catch (err) {
       console.error("Failed to save note", err);
@@ -81,15 +80,15 @@ export default function CoursePlayerLayout({ children }: { children: React.React
     const fetchData = async () => {
       if (!courseId) return;
       try {
-        const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+        const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
         setEnrollment(enr);
 
-        const progResp = await api.get(`/student/enrollments/${enr.id}/progress`);
+        const progResp = await fetchWithCache(`/student/enrollments/${enr.id}/progress`);
         setProgress(progResp.data.data);
 
         try {
-          const gradeResp = await api.get(`/student/courses/${courseId}/grade`);
+          const gradeResp = await fetchWithCache(`/student/courses/${courseId}/grade`);
           setCourseGrade(gradeResp.data.data);
         } catch (e) {
           console.error("Failed to fetch course grade", e);

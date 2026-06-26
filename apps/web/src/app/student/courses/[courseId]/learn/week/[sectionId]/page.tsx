@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api } from "@/store/auth.store";
+import { api, fetchWithCache } from "@/store/auth.store";
 import { FileText, ArrowLeft, ArrowRight, PlayCircle, BookOpen, CheckCircle, HelpCircle, Edit3, Video, FileText as FileTextIcon, HelpCircle as HelpIcon } from "lucide-react";
 
 export default function WeekDescriptionPage() {
@@ -17,7 +17,7 @@ export default function WeekDescriptionPage() {
   useEffect(() => {
     const fetchSection = async () => {
       try {
-        const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+        const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
         
         // Find the section

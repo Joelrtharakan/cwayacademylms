@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { api } from "@/store/auth.store";
+import { api, fetchWithCache } from "@/store/auth.store";
 
 export default function LearnIndexPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function LearnIndexPage() {
   useEffect(() => {
     const fetchAndRedirect = async () => {
       try {
-        const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+        const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
         const sections = enr.course?.sections || [];
 

@@ -33,9 +33,21 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1
 
 // Create custom Axios client
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
   withCredentials: true,
 });
+
+const apiCache: Record<string, { promise: Promise<any>, timestamp: number }> = {};
+
+export const fetchWithCache = (url: string, maxAge = 60000) => {
+  const now = Date.now();
+  if (apiCache[url] && now - apiCache[url].timestamp < maxAge) {
+    return apiCache[url].promise;
+  }
+  const promise = api.get(url);
+  apiCache[url] = { promise, timestamp: now };
+  return promise;
+};
 
 let refreshPromise: Promise<string | null> | null = null;
 
