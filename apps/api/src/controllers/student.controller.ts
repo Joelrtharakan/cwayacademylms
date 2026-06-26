@@ -379,17 +379,18 @@ export const completeLesson = asyncHandler(async (req: Request, res: Response) =
   // Recalculate progress consistently: count BOTH lessons AND reading materials
   const enrollment2 = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
-    include: {
-      course: { include: { sections: { include: { lessons: true, readingMaterials: true } } } },
-      lessonProgress: { where: { completedAt: { not: null } } },
-      readingMaterialProgress: { where: { completedAt: { not: null } } }
-    }
+    select: { courseId: true }
   });
 
-  const totalItems = enrollment2!.course.sections.reduce(
-    (sum, sec) => sum + sec.lessons.length + sec.readingMaterials.length, 0
-  );
-  const completedItems = enrollment2!.lessonProgress.length + enrollment2!.readingMaterialProgress.length;
+  if (!enrollment2) throw new AppError("Enrollment not found", 404);
+
+  const totalLessons = await prisma.lesson.count({ where: { section: { courseId: enrollment2.courseId } } });
+  const totalMaterials = await prisma.readingMaterial.count({ where: { section: { courseId: enrollment2.courseId } } });
+  const totalItems = totalLessons + totalMaterials;
+
+  const completedLessons = await prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+  const completedMaterials = await prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+  const completedItems = completedLessons + completedMaterials;
   const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
   await prisma.enrollment.update({
@@ -429,30 +430,17 @@ export const completeReadingMaterial = asyncHandler(async (req: Request, res: Re
 
   const refreshedEnrollment = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
-    include: {
-      lessonProgress: true,
-      readingMaterialProgress: true,
-      course: {
-        include: {
-          sections: {
-            include: {
-              lessons: true,
-              readingMaterials: true
-            }
-          }
-        }
-      }
-    }
+    select: { courseId: true }
   });
 
   if (!refreshedEnrollment) throw new AppError("Enrollment not found", 404);
 
-  const totalItems = refreshedEnrollment.course.sections.reduce(
-    (sum, section) => sum + section.lessons.length + section.readingMaterials.length,
-    0
-  );
-  const completedLessonsCount = refreshedEnrollment.lessonProgress.filter(lp => !!lp.completedAt).length;
-  const completedMaterialsCount = refreshedEnrollment.readingMaterialProgress.filter(rmp => !!rmp.completedAt).length;
+  const totalLessons = await prisma.lesson.count({ where: { section: { courseId: refreshedEnrollment.courseId } } });
+  const totalMaterials = await prisma.readingMaterial.count({ where: { section: { courseId: refreshedEnrollment.courseId } } });
+  const totalItems = totalLessons + totalMaterials;
+
+  const completedLessonsCount = await prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+  const completedMaterialsCount = await prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
   const completedItems = completedLessonsCount + completedMaterialsCount;
   const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
