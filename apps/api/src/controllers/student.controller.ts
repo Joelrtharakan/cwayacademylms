@@ -171,14 +171,13 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
             include: {
               lessons: {
                 orderBy: { order: "asc" },
-                include: { quiz: true, assignment: true }
+                include: { 
+                  quiz: { select: { id: true } }, 
+                  assignment: { select: { id: true } } 
+                }
               },
               readingMaterials: {
                 orderBy: { order: "asc" },
-              },
-              discussions: {
-                orderBy: { createdAt: "asc" },
-                include: { author: { select: { id: true, name: true } } }
               }
             }
           }
@@ -206,14 +205,13 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
               include: {
                 lessons: {
                   orderBy: { order: "asc" },
-                  include: { quiz: true, assignment: true }
+                  include: { 
+                    quiz: { select: { id: true } }, 
+                    assignment: { select: { id: true } } 
+                  }
                 },
                 readingMaterials: {
                   orderBy: { order: "asc" },
-                },
-                discussions: {
-                  orderBy: { createdAt: "asc" },
-                  include: { author: { select: { id: true, name: true } } }
                 }
               }
             }
