@@ -13,7 +13,9 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   const params = useParams();
   const pathname = usePathname();
   const courseId = params.courseId as string;
-  const lessonId = params.lessonId as string;
+  const pathParts = pathname.split('/');
+  const isWeekPage = pathname.includes('/week/');
+  const lessonId = !isWeekPage && pathParts.includes('learn') ? pathParts[pathParts.indexOf('learn') + 1] : undefined;
 
   const { user } = useAuthStore();
   const [enrollment, setEnrollment] = useState<any>(null);
@@ -48,6 +50,9 @@ export default function CoursePlayerLayout({ children }: { children: React.React
 
   useEffect(() => {
     setSelectedMaterial(null);
+  }, [pathname]);
+
+  useEffect(() => {
     if (lessonId && isNotesOpen) {
       api.get(`/student/lessons/${lessonId}/my-notes`).then((res) => {
         setMyNotes(res.data.data || []);
