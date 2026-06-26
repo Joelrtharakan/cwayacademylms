@@ -219,16 +219,19 @@ export default function LessonPlayerPage() {
     }
   };
 
+  // Fetch course-level data ONCE (enrollment, instructor, extensions)
+  const enrollmentRef = useRef<any>(null);
+
   useEffect(() => {
-    const fetchLesson = async () => {
+    const fetchCourseData = async () => {
+      if (!courseId) return;
       try {
-        setLoading(true);
-        // Get enrollment
         const enrRes = await api.get(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
+        enrollmentRef.current = enr;
         setEnrollment(enr);
 
-        // Fetch instructor explicitly just in case enrollment doesn't have it
+        // Fetch instructor
         try {
           const cRes = await api.get(`/courses/${courseId}`);
           setInstructor(cRes.data.data.instructor);
@@ -240,6 +243,34 @@ export default function LessonPlayerPage() {
           setExtensions(extRes.data.data.granted || []);
           setExtensionRequests(extRes.data.data.requests || []);
         } catch {}
+      } catch (err) {
+        console.error("Failed to load course data", err);
+      }
+    };
+    fetchCourseData();
+  }, [courseId]);
+
+  // Fetch lesson-specific data when lessonId changes (uses cached enrollment)
+  useEffect(() => {
+    const fetchLesson = async () => {
+      // Wait for enrollment to be available
+      let enr = enrollmentRef.current;
+      if (!enr) {
+        // If enrollment hasn't loaded yet, fetch it
+        try {
+          const enrRes = await api.get(`/student/courses/${courseId}/learn`);
+          enr = enrRes.data.data;
+          enrollmentRef.current = enr;
+          setEnrollment(enr);
+        } catch (err) {
+          console.error("Failed to load lesson", err);
+          setLoading(false);
+          return;
+        }
+      }
+
+      try {
+        setLoading(true);
         
         // Find lesson in sections
         let foundLesson = null;

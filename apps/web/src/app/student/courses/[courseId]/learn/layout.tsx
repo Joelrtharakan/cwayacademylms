@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { api, useAuthStore } from "@/store/auth.store";
 import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
@@ -25,6 +25,17 @@ export default function CoursePlayerLayout({ children }: { children: React.React
       setIsSidebarOpen(false);
     }
   }, []);
+
+  // Auto-scroll sidebar to active item when lesson/page changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const activeEl = document.querySelector('[data-active-lesson="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [lessonId, pathname]);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
@@ -66,7 +77,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   }, {} as Record<string, any>) || {};
 
   useEffect(() => {
-    // Fetch enrollment and progress
+    // Fetch enrollment and progress — only when courseId changes (NOT on every lesson switch)
     const fetchData = async () => {
       if (!courseId) return;
       try {
@@ -84,16 +95,8 @@ export default function CoursePlayerLayout({ children }: { children: React.React
           console.error("Failed to fetch course grade", e);
         }
         
-        // Auto-expand module containing current lesson
-        if (lessonId && enr.course.sections) {
-          const section = enr.course.sections.find((s: any) => 
-            s.lessons.some((l: any) => l.id === lessonId)
-          );
-          if (section) {
-            setExpandedModules(prev => ({ ...prev, [section.id]: true }));
-          }
-        } else if (enr.course.sections && enr.course.sections.length > 0) {
-          // Expand first if no lesson
+        // Expand first module if no lesson selected
+        if (!lessonId && enr.course.sections && enr.course.sections.length > 0) {
           setExpandedModules({ [enr.course.sections[0].id]: true });
         }
       } catch (err: any) {
@@ -104,7 +107,19 @@ export default function CoursePlayerLayout({ children }: { children: React.React
       }
     };
     fetchData();
-  }, [courseId, lessonId, router]);
+  }, [courseId, router]);
+
+  // Auto-expand the module containing the current lesson (lightweight, no API calls)
+  useEffect(() => {
+    if (lessonId && enrollment?.course?.sections) {
+      const section = enrollment.course.sections.find((s: any) => 
+        s.lessons.some((l: any) => l.id === lessonId)
+      );
+      if (section) {
+        setExpandedModules(prev => ({ ...prev, [section.id]: true }));
+      }
+    }
+  }, [lessonId, enrollment]);
 
   if (!enrollment || !progress) {
     return (
@@ -390,6 +405,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                           onClick={() => {
                             router.push(`/student/courses/${courseId}/learn/week/${section.id}`);
                           }}
+                          data-active-lesson={pathname.includes(`/week/${section.id}`) ? "true" : undefined}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -438,6 +454,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                             return (
                               <div
                                 key={`material-${item.id}`}
+                                data-active-lesson={isActiveMaterial ? "true" : undefined}
                                 onClick={() => {
                                   setSelectedMaterial(null);
                                   router.push(`/student/courses/${courseId}/learn/${item.id}`);
@@ -512,6 +529,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                             <Link
                               key={item.lessonId}
                               href={`/student/courses/${courseId}/learn/${item.lessonId}`}
+                              data-active-lesson={isActive ? "true" : undefined}
                               style={{
                                 display: "flex", alignItems: "flex-start", gap: "12px", padding: "10px 12px", borderRadius: "8px",
                                 textDecoration: "none", position: "relative",
