@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
+import { redis } from "../utils/redis";
 import { CertificateService } from "../services/certificate.service";
 
 // ==========================================
@@ -158,31 +159,45 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
 
   console.log(`[getCourseEnrollment] Fetching for studentId=${studentId}, courseId=${courseId}`);
 
+  // Check cache for course curriculum
+  const cacheKey = `course:${courseId}:curriculum`;
+  let cachedCourse = await redis.get(cacheKey);
+  let courseCurriculum;
+
+  if (cachedCourse) {
+    courseCurriculum = JSON.parse(cachedCourse);
+  } else {
+    courseCurriculum = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        instructor: { select: { name: true, email: true, phone: true } },
+        sections: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              orderBy: { order: "asc" },
+              include: { 
+                quiz: { select: { id: true } }, 
+                assignment: { select: { id: true } } 
+              }
+            },
+            readingMaterials: {
+              orderBy: { order: "asc" },
+            }
+          }
+        }
+      }
+    });
+    if (courseCurriculum) {
+      await redis.set(cacheKey, JSON.stringify(courseCurriculum), "EX", 3600);
+    }
+  }
+
   let enrollment = await prisma.enrollment.findUnique({
     where: { studentId_courseId: { studentId, courseId } },
     include: {
       lessonProgress: true,
       readingMaterialProgress: true,
-      course: {
-        include: {
-          instructor: { select: { name: true, email: true, phone: true } },
-          sections: {
-            orderBy: { order: "asc" },
-            include: {
-              lessons: {
-                orderBy: { order: "asc" },
-                include: { 
-                  quiz: { select: { id: true } }, 
-                  assignment: { select: { id: true } } 
-                }
-              },
-              readingMaterials: {
-                orderBy: { order: "asc" },
-              }
-            }
-          }
-        }
-      }
     }
   });
 
@@ -197,26 +212,6 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
       include: {
         lessonProgress: true,
         readingMaterialProgress: true,
-        course: {
-          include: {
-            instructor: { select: { name: true, email: true, phone: true } },
-            sections: {
-              orderBy: { order: "asc" },
-              include: {
-                lessons: {
-                  orderBy: { order: "asc" },
-                  include: { 
-                    quiz: { select: { id: true } }, 
-                    assignment: { select: { id: true } } 
-                  }
-                },
-                readingMaterials: {
-                  orderBy: { order: "asc" },
-                }
-              }
-            }
-          }
-        }
       }
     });
   }
@@ -226,19 +221,18 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
     throw new AppError("Enrollment not found", 404);
   }
 
-  // Map progress into lessons
-  const sections = enrollment.course.sections.map(section => ({
+  const sections = courseCurriculum.sections.map((section: any) => ({
     ...section,
-    lessons: section.lessons.map(lesson => {
-      const prog = enrollment.lessonProgress.find(lp => lp.lessonId === lesson.id);
+    lessons: section.lessons.map((lesson: any) => {
+      const prog = enrollment!.lessonProgress.find((lp: any) => lp.lessonId === lesson.id);
       return {
         ...lesson,
         isCompleted: !!prog?.completedAt,
         watchedSeconds: prog?.watchedSeconds || 0
       };
     }),
-    readingMaterials: section.readingMaterials.map(material => {
-      const materialProg = enrollment.readingMaterialProgress.find(rmp => rmp.readingMaterialId === material.id);
+    readingMaterials: section.readingMaterials.map((material: any) => {
+      const materialProg = enrollment!.readingMaterialProgress.find((rmp: any) => rmp.readingMaterialId === material.id);
       return {
         ...material,
         isCompleted: !!materialProg?.completedAt
@@ -249,7 +243,7 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
   const mappedEnrollment = {
     ...enrollment,
     course: {
-      ...enrollment.course,
+      ...courseCurriculum,
       sections
     }
   };

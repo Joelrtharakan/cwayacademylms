@@ -34,6 +34,22 @@ services:
       timeout: 5s
       retries: 5
 
+  # PgBouncer for Connection Pooling
+  pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: cway_pgbouncer
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://cway:cwaydev@postgres:5432/cway_lms
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 20
+      AUTH_TYPE: any
+    ports:
+      - "6432:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   # pgAdmin (optional, GUI for Postgres)
   pgadmin:
     image: dpage/pgadmin4:latest
