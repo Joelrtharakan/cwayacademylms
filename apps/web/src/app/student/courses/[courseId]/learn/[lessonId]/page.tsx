@@ -370,10 +370,10 @@ export default function LessonPlayerPage() {
     setIsNavigating(true);
     
     if (lesson.type === "READING_MATERIAL") {
-      await markComplete();
+      markComplete();
     } else if (lesson.type === "QUIZ" && quizResult?.passed && !lesson.isCompleted) {
       // Fallback in case submitQuiz failed to mark complete
-      await markComplete();
+      markComplete();
     }
     
     if (!nextItem) {
