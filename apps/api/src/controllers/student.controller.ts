@@ -1284,7 +1284,7 @@ export const getMyCourseGrade = asyncHandler(async (req: Request, res: Response)
   // 1. Find all graded items in this course
   const course = await prisma.course.findUnique({
     where: { id: courseId },
-    include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+    include: { sections: { include: { lessons: { include: { assignment: { select: { id: true, maxScore: true } }, quiz: { select: { id: true } } } } } } }
   });
   if (!course) throw new AppError("Course not found", 404);
 
