@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { api, useAuthStore } from "@/store/auth.store";
 import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
 import { getLetterGrade } from "@/lib/gradeScale";
@@ -11,6 +11,7 @@ import Image from "next/image";
 export default function CoursePlayerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const courseId = params.courseId as string;
   const lessonId = params.lessonId as string;
 
@@ -371,7 +372,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "14px", fontWeight: 600, color: isExpanded ? "#FDFBF7" : "rgba(255,255,255,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: "2px" }}>
-                      Module {index + 1}: {mod.moduleTitle}
+                      {mod.moduleTitle}
                     </div>
                     <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
                       {mod.completedItems}/{mod.totalItems} items
@@ -384,6 +385,40 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                 {isExpanded && (
                   <div style={{ background: "rgba(0,0,0,0.2)", paddingBottom: "12px" }}>
                     <div style={{ padding: "8px 12px" }}>
+                      {section?.description && (
+                        <div
+                          onClick={() => {
+                            router.push(`/student/courses/${courseId}/learn/week/${section.id}`);
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "12px",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            width: "100%",
+                            textAlign: "left",
+                            position: "relative",
+                            background: pathname.includes(`/week/${section.id}`) ? "rgba(184,134,69,0.18)" : "transparent",
+                            color: "rgba(255,255,255,0.9)",
+                            cursor: "pointer",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {pathname.includes(`/week/${section.id}`) && (
+                            <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: "3px", background: "#D4A35B", borderRadius: "0 4px 4px 0" }} />
+                          )}
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: 0 }}>
+                            <FileText size={16} style={{ marginTop: "2px", color: pathname.includes(`/week/${section.id}`) ? "#D4A35B" : "rgba(255,255,255,0.5)", flexShrink: 0 }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: "13px", fontWeight: pathname.includes(`/week/${section.id}`) ? 600 : 500, color: pathname.includes(`/week/${section.id}`) ? "#D4A35B" : "rgba(255,255,255,0.85)" }}>
+                                Week Description
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       {(() => {
                         const videoLessons = mod.lessons.filter((lesson: any) => lesson.type === "VIDEO");
                         const quizLessons = mod.lessons.filter((lesson: any) => lesson.type === "QUIZ");

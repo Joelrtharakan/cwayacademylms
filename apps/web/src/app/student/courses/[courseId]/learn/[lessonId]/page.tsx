@@ -353,6 +353,12 @@ export default function LessonPlayerPage() {
       return;
     }
     
+    // If the next item is in a new section/module, route to the Week Description page first
+    if (lesson.section && nextItem.section && nextItem.section.id !== lesson.section.id) {
+      router.push(`/student/courses/${courseId}/learn/week/${nextItem.section.id}`);
+      return;
+    }
+    
     goToItem(nextItem);
   };
 
@@ -536,7 +542,7 @@ export default function LessonPlayerPage() {
 
   return (
     <div className="w-full flex flex-col h-[calc(100vh-70px)] relative overflow-hidden bg-[#FAFAF7]">
-      <div data-lenis-prevent="true" className="flex-1 w-full relative overflow-y-auto">
+      <div data-lenis-prevent="true" className="flex-1 w-full relative overflow-y-auto overflow-x-hidden">
         {/* VIDEO LESSON */}
         {lesson.type === "VIDEO" && (
           <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-contain">
@@ -1263,367 +1269,314 @@ export default function LessonPlayerPage() {
           const hasReachedReplyLimit = uniqueOtherAuthorsRepliedTo.size >= 2;
 
           return (
-            <div className="w-full min-h-full bg-[#FAFAF7] text-[#1A261D] px-4 py-8 md:px-[8%] md:py-14 pb-24">
-              <div className="max-w-3xl mx-auto">
+            <div style={{ width: "100%", minHeight: "100%", background: "#FAFAF7", display: "flex", justifyContent: "center", padding: "48px 24px 120px 24px" }}>
+              <div style={{ width: "100%", maxWidth: "720px" }}>
                 
-                {/* Instructor Question Block */}
-                <div className="bg-white border border-[#E4E8E0] rounded-[24px] shadow-sm overflow-hidden mb-12">
-                  <div className="p-6 md:p-10">
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="w-12 h-12 rounded-full bg-[#1A261D] flex items-center justify-center text-[#C9973A] font-bold text-[15px] shadow-sm border-2 border-white">
-                        {getInitials(instructor?.name || enrollment?.course?.instructor?.name || "Course Instructor")}
+                {/* ─── Instructor Prompt Card ─── */}
+                <div style={{ background: "#FFFFFF", borderRadius: "20px", border: "1px solid #DCE0D5", boxShadow: "0 4px 24px rgba(0,0,0,0.04)", overflow: "hidden", marginBottom: "32px" }}>
+                  {/* Gold top accent */}
+                  <div style={{ height: "4px", background: "linear-gradient(90deg, #C9973A, #E3B864)" }} />
+                  
+                  <div style={{ padding: "36px 32px 32px 32px" }}>
+                    {/* Instructor info */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "28px" }}>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "#1A261D", display: "flex", alignItems: "center", justifyContent: "center", color: "#C9973A", fontWeight: 700, fontSize: "15px", flexShrink: 0 }}>
+                        {getInitials(instructor?.name || enrollment?.course?.instructor?.name || "I")}
                       </div>
                       <div>
-                        <h4 className="font-bold text-[#1A261D] text-[16px] flex items-center gap-2">
-                          {instructor?.name || enrollment?.course?.instructor?.name || "Course Instructor"}
-                          <span className="px-2 py-0.5 bg-[#FBF6EC] border border-[#C9973A]/20 text-[#C9973A] text-[9px] font-bold uppercase tracking-widest rounded-md">Instructor</span>
-                        </h4>
-                        <div className="text-[13px] text-[#8A9E8C] mt-0.5">Posted a discussion prompt</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontWeight: 700, fontSize: "16px", color: "#1A261D" }}>{instructor?.name || enrollment?.course?.instructor?.name || "Instructor"}</span>
+                          <span style={{ background: "#FBF6EC", color: "#C9973A", fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 8px", borderRadius: "4px" }}>Instructor</span>
+                        </div>
+                        <div style={{ fontSize: "13px", color: "#8A9E8C", marginTop: "2px" }}>Discussion Prompt</div>
                       </div>
                     </div>
 
-                    <h1 className="font-serif text-3xl md:text-4xl text-[#1A261D] font-bold mb-6 leading-tight tracking-tight">{lesson.title}</h1>
+                    {/* Title */}
+                    <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: "28px", fontWeight: 700, color: "#1A261D", margin: "0 0 16px 0", lineHeight: 1.3 }}>{lesson.title}</h1>
+                    
+                    {/* Content */}
                     {lesson.content && (
-                      <div className="text-[#2C3E30] text-[17px] leading-[1.8]">
-                        {lesson.content}
-                      </div>
+                      <p style={{ fontSize: "16px", color: "#3A4D3F", lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>{lesson.content}</p>
                     )}
                   </div>
+                </div>
 
-                  {/* Direct Reply to Instructor Input */}
-                  <div className="bg-[#FAFAF7] border-t border-[#E4E8E0] p-4 md:px-10 md:py-6">
-                    <div className="flex gap-5">
-                      <div className="w-11 h-11 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[13px] shrink-0 shadow-sm">
-                        ME
-                      </div>
-                      <div className="flex-1">
-                        <div className="bg-white rounded-[20px] border border-[#E4E8E0] shadow-sm overflow-hidden focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all relative">
-                          {(() => {
-                            let isEffectivelyPastDue = false;
-                            let showRequestExtension = false;
-                            let showPending = false;
-                            let showGranted = false;
-                            let effectiveDueDate = null;
+                {/* ─── Your Response Card ─── */}
+                <div style={{ background: "#FFFFFF", borderRadius: "20px", border: "1px solid #DCE0D5", boxShadow: "0 4px 24px rgba(0,0,0,0.04)", padding: "32px", marginBottom: "48px" }}>
+                  {(() => {
+                    let isEffectivelyPastDue = false;
+                    let showRequestExtension = false;
+                    let showPending = false;
+                    let showGranted = false;
+                    let effectiveDueDate: Date | null = null;
 
-                            if (lesson.dueDate) {
-                              const dueDate = new Date(lesson.dueDate);
-                              const isPastDue = new Date() > dueDate;
-                              const grantedExtension = extensions.find(e => e.itemId === lesson.id);
-                              const pendingRequest = extensionRequests.find(r => r.itemId === lesson.id && r.status === "PENDING");
-                              
-                              effectiveDueDate = dueDate;
-                              if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
-                              isEffectivelyPastDue = new Date() > effectiveDueDate;
+                    if (lesson.dueDate) {
+                      const dueDate = new Date(lesson.dueDate);
+                      const isPastDue = new Date() > dueDate;
+                      const grantedExtension = extensions.find(e => e.itemId === lesson.id);
+                      const pendingRequest = extensionRequests.find(r => r.itemId === lesson.id && r.status === "PENDING");
+                      
+                      effectiveDueDate = dueDate;
+                      if (grantedExtension) effectiveDueDate = new Date(grantedExtension.extendedDate);
+                      isEffectivelyPastDue = new Date() > effectiveDueDate;
 
-                              if (isPastDue && !isEffectivelyPastDue) {
-                                showGranted = !!grantedExtension;
+                      if (isPastDue && !isEffectivelyPastDue) {
+                        showGranted = !!grantedExtension;
+                      }
+                      if (isEffectivelyPastDue) {
+                        if (pendingRequest) showPending = true;
+                        else showRequestExtension = true;
+                      }
+                    }
+
+                    if (isEffectivelyPastDue && showRequestExtension) {
+                      return (
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                            <XCircle size={20} style={{ color: "#DC2626", flexShrink: 0 }} />
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: "15px", color: "#DC2626" }}>Discussion Locked</div>
+                              <div style={{ fontSize: "13px", color: "#8A9E8C", marginTop: "4px" }}>This forum is past due. Request an extension to participate.</div>
+                            </div>
+                          </div>
+                          {!isRequestingExtension ? (
+                            <button onClick={() => setIsRequestingExtension(true)} style={{ padding: "10px 20px", background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", borderRadius: "10px", fontWeight: 700, fontSize: "13px", cursor: "pointer" }}>Request Extension</button>
+                          ) : (
+                            <div style={{ background: "#FAFAF7", padding: "20px", borderRadius: "12px", border: "1px solid #E4E8E0", marginTop: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                              <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Why do you need an extension?" rows={2} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit", outline: "none", resize: "none" }} />
+                              <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button onClick={() => requestExtensionMut.mutate({ itemId: lesson.id, itemType: "FORUM" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ padding: "10px 20px", background: "#1A261D", color: "#fff", borderRadius: "8px", fontWeight: 700, fontSize: "13px", border: "none", cursor: "pointer", opacity: (!extensionReason || requestExtensionMut.isPending) ? 0.5 : 1 }}>Submit</button>
+                                <button onClick={() => setIsRequestingExtension(false)} style={{ padding: "10px 20px", background: "transparent", color: "#526658", fontWeight: 600, fontSize: "13px", border: "none", cursor: "pointer" }}>Cancel</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (showPending) {
+                      return (
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "#FEF3C7", padding: "16px 20px", borderRadius: "12px", border: "1px solid #FDE68A" }}>
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#D97706", flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: "14px", color: "#92400E" }}>Extension Requested</div>
+                            <div style={{ fontSize: "13px", color: "#92400E", marginTop: "2px" }}>Pending instructor approval.</div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (hasPostedDiscussion) {
+                      return (
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", background: "#F0FAF2", padding: "20px 24px", borderRadius: "14px", border: "1px solid #BBF7D0" }}>
+                          <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <CheckCircle size={22} style={{ color: "#16A34A" }} />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: "15px", color: "#15803D" }}>Response Submitted</div>
+                            <div style={{ fontSize: "13px", color: "#4B5563", marginTop: "4px" }}>You've posted your thoughts. Engage with classmates below!</div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+                          <span style={{ fontWeight: 700, fontSize: "16px", color: "#1A261D" }}>Your Response</span>
+                          {showGranted && effectiveDueDate && (
+                            <span style={{ background: "#F0FAF2", color: "#16A34A", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "6px" }}>Extended to {effectiveDueDate.toLocaleDateString()}</span>
+                          )}
+                        </div>
+                        <textarea
+                          value={newPostContent}
+                          onChange={e => setNewPostContent(e.target.value)}
+                          placeholder="Write your thoughtful response here..."
+                          rows={5}
+                          style={{ width: "100%", padding: "16px 20px", borderRadius: "14px", border: "1px solid #DCE0D5", fontSize: "15px", fontFamily: "inherit", outline: "none", resize: "none", background: "#FAFAF7", lineHeight: 1.7, color: "#1A261D", boxSizing: "border-box" }}
+                        />
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "14px" }}>
+                          <span style={{ fontSize: "12px", color: "#8A9E8C" }}>{newPostContent.length} characters</span>
+                          <button
+                            disabled={!newPostContent.trim() || isPostingForum}
+                            onClick={async () => {
+                              if (!newPostContent.trim()) return;
+                              setIsPostingForum(true);
+                              try {
+                                const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
+                                setForumPosts(prev => [res.data.data, ...prev]);
+                                setNewPostContent("");
+                                if (!lesson.isCompleted) await markComplete();
+                              } catch (err: any) {
+                                console.error(err);
+                                toast.error(err.response?.data?.message || "Failed to post");
+                              } finally {
+                                setIsPostingForum(false);
                               }
-                              if (isEffectivelyPastDue) {
-                                if (pendingRequest) showPending = true;
-                                else showRequestExtension = true;
-                              }
-                            }
-
-                            if (isEffectivelyPastDue && showRequestExtension) {
-                              return (
-                                <div style={{ background: "#FEF2F2", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
-                                  <p style={{ color: "#DC2626", fontWeight: 600, fontSize: "14px", margin: "0 0 12px 0" }}>This forum is past due. You must request an extension to reply.</p>
-                                  {!isRequestingExtension ? (
-                                    <button onClick={() => setIsRequestingExtension(true)} style={{ padding: "8px 16px", background: "#FFFFFF", border: "1px solid #FECACA", color: "#DC2626", borderRadius: "6px", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}>Request Extension</button>
-                                  ) : (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", padding: "16px", borderRadius: "8px", border: "1px solid #FECACA" }}>
-                                      <textarea value={extensionReason} onChange={e => setExtensionReason(e.target.value)} placeholder="Reason for extension..." rows={2} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
-                                      <input type="date" value={extensionRequestedDate} onChange={e => setExtensionRequestedDate(e.target.value)} style={{ padding: "8px", borderRadius: "6px", border: "1px solid #E4E8E0", fontSize: "13px", fontFamily: "inherit" }} />
-                                      <div style={{ display: "flex", gap: "8px" }}>
-                                        <button onClick={() => requestExtensionMut.mutate({ itemId: lesson.id, itemType: "FORUM" })} disabled={!extensionReason || requestExtensionMut.isPending} style={{ padding: "8px 16px", background: "#DC2626", color: "#FFFFFF", borderRadius: "6px", fontWeight: 600, fontSize: "13px", border: "none", cursor: "pointer" }}>Submit Request</button>
-                                        <button onClick={() => setIsRequestingExtension(false)} style={{ padding: "8px 16px", background: "transparent", color: "#8F9E93", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Cancel</button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            }
-
-                            if (showPending) {
-                              return <div style={{ color: "#92400E", fontWeight: 600, fontSize: "14px", padding: "16px", background: "#FEF3C7", borderRadius: "8px" }}>Extension requested (Pending approval)</div>;
-                            }
-
-                            if (hasPostedDiscussion) {
-                              return (
-                                <div className="flex flex-col items-center justify-center py-10 px-6 bg-white text-center">
-                                  <div className="w-12 h-12 bg-[#EAF2EC] rounded-full flex items-center justify-center mb-3">
-                                    <CheckCircle size={24} className="text-[#2C6E3D]" />
-                                  </div>
-                                  <h4 className="text-[16px] font-bold text-[#1A261D] mb-1">Response Submitted</h4>
-                                  <p className="text-[14px] text-[#526658] max-w-[90%] leading-relaxed">
-                                    You have successfully posted your initial response to the instructor's prompt. You can now read and engage with your classmates' replies below.
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <>
-                                {showGranted && effectiveDueDate && (
-                                  <div style={{ padding: "12px 24px 0", color: "#065F46", fontSize: "13px", fontWeight: 600 }}>
-                                    Extension granted until {effectiveDueDate.toLocaleDateString()}
-                                  </div>
-                                )}
-                                <textarea
-                                  value={newPostContent}
-                                  onChange={e => setNewPostContent(e.target.value)}
-                                  placeholder="Write your reply to this prompt..."
-                                  rows={4}
-                                  className="w-full bg-transparent text-[15px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none leading-relaxed p-4 pb-16 md:p-6 md:pb-16 overflow-y-auto"
-                                  onWheel={(e) => {
-                                    const target = e.currentTarget;
-                                    const isScrollingDown = e.deltaY > 0;
-                                    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
-                                    const isAtTop = target.scrollTop <= 0;
-                                    
-                                    if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
-                                      e.stopPropagation();
-                                    }
-                                  }}
-                                />
-                                <div className="absolute bottom-3 right-3 flex items-center gap-3 z-10">
-                                  <span className="text-[12px] text-[#8A9E8C] font-medium">{newPostContent.length > 0 ? `${newPostContent.length} chars` : ""}</span>
-                                  <button
-                                    disabled={!newPostContent.trim() || isPostingForum}
-                                    onClick={async () => {
-                                      if (!newPostContent.trim()) return;
-                                      setIsPostingForum(true);
-                                      try {
-                                        const res = await api.post(`/forums/lessons/${lesson.id}`, { content: newPostContent });
-                                        setForumPosts(prev => [res.data.data, ...prev]);
-                                        setNewPostContent("");
-                                        
-                                        // Mark lesson as complete since student replied
-                                        if (!lesson.isCompleted) {
-                                          await markComplete();
-                                        }
-                                      } catch (err: any) {
-                                        console.error(err);
-                                        toast.error(err.response?.data?.message || "Failed to post reply");
-                                      } finally {
-                                        setIsPostingForum(false);
-                                      }
-                                    }}
-                                    className="flex items-center justify-center w-10 h-10 bg-[#1A261D] text-white rounded-xl hover:bg-[#2C3E30] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-                                  >
-                                    <Send size={16} />
-                                  </button>
-                                </div>
-                              </>
-                            );
-                          })()}
+                            }}
+                            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 24px", background: "#1A261D", color: "#FFFFFF", borderRadius: "999px", fontWeight: 700, fontSize: "14px", border: "none", cursor: "pointer", opacity: (!newPostContent.trim() || isPostingForum) ? 0.4 : 1, transition: "opacity 0.2s" }}
+                          >
+                            Post Response <Send size={14} />
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    );
+                  })()}
+                </div>
+
+                {/* ─── Discussion Section ─── */}
+                <div style={{ marginBottom: "24px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+                    <span style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: "22px", fontWeight: 700, color: "#1A261D" }}>Discussion</span>
+                    <span style={{ background: "#1A261D", color: "#FFFFFF", fontSize: "12px", fontWeight: 700, padding: "2px 10px", borderRadius: "999px", minWidth: "24px", textAlign: "center" }}>{forumPosts.length}</span>
                   </div>
-                </div>
 
-                {/* Classmate Replies Header */}
-                <div className="flex items-center gap-4" style={{ marginTop: '32px', marginBottom: '32px' }}>
-                  <h3 className="font-serif text-2xl font-bold text-[#1A261D]">Classmate Replies</h3>
-                  <span className="bg-white border border-[#E4E8E0] text-[#526658] text-[14px] font-bold rounded-full shadow-sm" style={{ padding: "4px 14px" }}>{forumPosts.length}</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E4E8E0] to-transparent" />
-                </div>
-
-                {/* Discussions Section */}
-                <div>
                   {loadingForum ? (
-                    <div className="py-20 flex flex-col items-center justify-center text-[#8A9E8C]">
-                      <div className="w-8 h-8 border-2 border-[#E4E8E0] border-t-[#C9973A] rounded-full animate-spin mb-4" />
-                      <p className="font-medium text-[15px]">Loading replies...</p>
+                    <div style={{ padding: "60px 0", display: "flex", flexDirection: "column", alignItems: "center", color: "#8A9E8C" }}>
+                      <div style={{ width: "32px", height: "32px", border: "3px solid #E4E8E0", borderTopColor: "#C9973A", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginBottom: "16px" }} />
+                      <span style={{ fontSize: "14px", fontWeight: 500 }}>Loading discussion...</span>
                     </div>
                   ) : forumPosts.length === 0 ? (
-                    <div className="py-20 flex flex-col items-center justify-center text-center bg-white rounded-[24px] border border-dashed border-[#E4E8E0] shadow-sm">
-                      <div className="w-16 h-16 rounded-full bg-[#FAFAF7] border border-[#E4E8E0] flex items-center justify-center mb-6">
-                        <MessageSquare size={24} className="text-[#8A9E8C]" />
-                      </div>
-                      <h4 className="font-serif text-2xl text-[#1A261D] font-bold mb-3">No replies yet</h4>
-                      <p className="text-[#8A9E8C] text-[15px] max-w-sm mx-auto leading-relaxed">Be the first to share your thoughts and answer the instructor's prompt!</p>
+                    <div style={{ padding: "60px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", background: "#FFFFFF", borderRadius: "20px", border: "2px dashed #DCE0D5" }}>
+                      <MessageSquare size={32} style={{ color: "#C9973A", marginBottom: "16px" }} />
+                      <div style={{ fontWeight: 700, fontSize: "18px", color: "#1A261D", marginBottom: "8px" }}>No replies yet</div>
+                      <div style={{ fontSize: "14px", color: "#8A9E8C", maxWidth: "320px" }}>Be the first to share your thoughts!</div>
                     </div>
                   ) : (
-                    <div className="space-y-6">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                       {forumPosts.map((post: any) => (
-                        <div key={post.id} className="group bg-white rounded-[24px] border border-[#E4E8E0] shadow-sm" style={{ padding: '28px 36px' }}>
-                          {/* Post Header */}
-                          <div className="flex items-center gap-4 mb-5">
-                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] flex items-center justify-center text-[#9A6C1A] font-bold text-[14px] border-2 border-white shadow-sm">
-                              {getInitials(post.author?.name)}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-bold text-[#1A261D] text-[15px]">{post.author?.name}</h4>
-                                {post.author?.role !== "STUDENT" && (
-                                  <span className="px-2 py-0.5 bg-[#FBF6EC] text-[#C9973A] text-[9px] font-bold uppercase tracking-wider rounded-md">{post.author?.role}</span>
-                                )}
+                        <div key={post.id} style={{ background: "#FFFFFF", borderRadius: "18px", border: "1px solid #DCE0D5", boxShadow: "0 2px 12px rgba(0,0,0,0.03)", overflow: "hidden" }}>
+                          <div style={{ padding: "24px 28px" }}>
+                            {/* Author Header */}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #E3B864, #C9973A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF", fontWeight: 700, fontSize: "14px", flexShrink: 0 }}>
+                                  {getInitials(post.author?.name)}
+                                </div>
+                                <div>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <span style={{ fontWeight: 700, fontSize: "15px", color: "#1A261D" }}>{post.author?.name}</span>
+                                    {post.author?.role !== "STUDENT" && (
+                                      <span style={{ background: "#FBF6EC", color: "#C9973A", fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "2px 6px", borderRadius: "4px" }}>{post.author?.role}</span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: "12px", color: "#8A9E8C", marginTop: "2px" }}>
+                                    {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-[12px] text-[#8A9E8C] mt-0.5">
-                                {new Date(post.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
-                              </div>
+                              
+                              {/* Edit/Delete */}
+                              {(post.authorId === user?.id || post.author?.id === user?.id) && (
+                                <div style={{ display: "flex", gap: "4px" }}>
+                                  <button onClick={() => { setEditingPostId(post.id); setEditingPostContent(post.content); }} style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: "#8A9E8C", borderRadius: "6px" }} title="Edit"><Pencil size={14} /></button>
+                                  <button onClick={() => handleDeletePost(post.id)} style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: "#8A9E8C", borderRadius: "6px" }} title="Delete"><Trash2 size={14} /></button>
+                                </div>
+                              )}
                             </div>
-                            
-                            {/* Edit/Delete Actions for Author */}
-                            {(post.authorId === user?.id || post.author?.id === user?.id) && (
-                              <div className="flex items-center gap-2 self-start opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => {
-                                    setEditingPostId(post.id);
-                                    setEditingPostContent(post.content);
-                                  }}
-                                  className="p-1.5 text-[#8A9E8C] hover:text-[#B88645] hover:bg-[#FBF6EC] rounded-md transition-colors"
-                                  title="Edit Post"
-                                >
-                                  <Pencil size={15} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeletePost(post.id)}
-                                  className="p-1.5 text-[#8A9E8C] hover:text-[#B03A2E] hover:bg-[#FDF0EE] rounded-md transition-colors"
-                                  title="Delete Post"
-                                >
-                                  <Trash2 size={15} />
-                                </button>
+
+                            {/* Post Body */}
+                            {editingPostId === post.id ? (
+                              <div>
+                                <textarea value={editingPostContent} onChange={e => setEditingPostContent(e.target.value)} style={{ width: "100%", padding: "14px", borderRadius: "12px", border: "1px solid #DCE0D5", fontSize: "15px", fontFamily: "inherit", outline: "none", minHeight: "80px", resize: "none", boxSizing: "border-box" }} />
+                                <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "10px" }}>
+                                  <button onClick={() => setEditingPostId(null)} style={{ padding: "8px 16px", background: "transparent", border: "none", fontWeight: 600, fontSize: "13px", color: "#526658", cursor: "pointer", borderRadius: "8px" }}>Cancel</button>
+                                  <button onClick={() => handleEditPost(post.id)} style={{ padding: "8px 16px", background: "#1A261D", color: "#fff", border: "none", fontWeight: 700, fontSize: "13px", cursor: "pointer", borderRadius: "8px" }}>Save</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: "15px", color: "#2C3E30", lineHeight: 1.7, padding: "16px 20px", background: "#FAFAF7", borderRadius: "14px", border: "1px solid #F0F1ED" }}>
+                                {post.content}
                               </div>
                             )}
                           </div>
 
-                          {/* Post Content */}
-                          {editingPostId === post.id ? (
-                            <div className="mb-6 pl-[60px]">
-                              <textarea
-                                value={editingPostContent}
-                                onChange={e => setEditingPostContent(e.target.value)}
-                                className="w-full bg-white border border-[#E4E8E0] rounded-[16px] text-[15px] text-[#1A261D] outline-none focus:border-[#C9973A] transition-all p-4 min-h-[100px]"
-                              />
-                              <div className="flex gap-2 mt-2 justify-end">
-                                <button onClick={() => setEditingPostId(null)} className="px-4 py-2 text-sm font-medium text-[#526658] hover:bg-[#F7F8F5] rounded-xl transition-colors">Cancel</button>
-                                <button onClick={() => handleEditPost(post.id)} className="px-4 py-2 text-sm font-bold text-white bg-[#1A261D] hover:bg-[#2C3E30] rounded-xl transition-colors">Save</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-[16px] text-[#2C3E30] leading-[1.8] mb-6 pl-[60px]">{post.content}</p>
-                          )}
-
                           {/* Replies Section */}
-                          <div className="ml-[60px]">
+                          <div style={{ borderTop: "1px solid #F0F1ED", background: "#FAFAF7" }}>
+                            {/* Toggle button */}
                             <button
                               onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
-                              className="flex items-center gap-1.5 text-[13px] font-bold text-[#8A9E8C] hover:text-[#1A261D] transition-colors mb-4"
+                              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "14px 28px", width: "100%", background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#8A9E8C", fontFamily: "inherit", textAlign: "left" }}
                             >
-                              <ChevronDown size={14} className={`transition-transform duration-300 ${expandedPost === post.id ? "rotate-180" : ""}`} />
-                              {post.replies?.length || 0} {post.replies?.length === 1 ? "Reply" : "Replies"}
+                              <ChevronDown size={14} style={{ transform: expandedPost === post.id ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }} />
+                              {post.replies?.length || 0} {(post.replies?.length || 0) === 1 ? "Reply" : "Replies"}
                             </button>
 
                             {expandedPost === post.id && (
-                              <div className="space-y-4">
-                                {/* Existing Replies */}
+                              <div style={{ padding: "0 28px 24px 28px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                                {/* Existing replies */}
                                 {post.replies?.map((reply: any) => (
-                                  <div key={reply.id} className="group flex gap-4 bg-[#FAFAF7] p-5 rounded-[20px] border border-[#E4E8E0]">
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 border-2 border-white shadow-sm ${reply.isInstructor ? "bg-[#1A261D] text-[#C9973A]" : "bg-gradient-to-br from-[#F5E6C8] to-[#EDD9A3] text-[#9A6C1A]"}`}>
+                                  <div key={reply.id} style={{ display: "flex", gap: "12px", padding: "16px", background: "#FFFFFF", borderRadius: "14px", border: "1px solid #E4E8E0" }}>
+                                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: reply.isInstructor ? "#1A261D" : "#E4E8E0", color: reply.isInstructor ? "#C9973A" : "#526658", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "12px", flexShrink: 0 }}>
                                       {getInitials(reply.author?.name)}
                                     </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1.5">
-                                        <span className="font-bold text-[#1A261D] text-[14px]">{reply.author?.name}</span>
-                                        {reply.isInstructor && (
-                                          <span className="px-1.5 py-0.5 rounded-md bg-[#1A261D] text-[#C9973A] text-[9px] font-bold uppercase tracking-wider">Instructor</span>
-                                        )}
-                                        <span className="text-[11px] text-[#8A9E8C] ml-auto">
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
+                                        <span style={{ fontWeight: 700, fontSize: "13px", color: "#1A261D" }}>{reply.author?.name}</span>
+                                        {reply.isInstructor && <span style={{ background: "#1A261D", color: "#C9973A", fontSize: "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "2px 6px", borderRadius: "4px" }}>Instructor</span>}
+                                        <span style={{ fontSize: "11px", color: "#8A9E8C" }}>
                                           {new Date(reply.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                                         </span>
+                                        {(reply.authorId === user?.id || reply.author?.id === user?.id) && (
+                                          <span style={{ marginLeft: "auto", display: "flex", gap: "4px" }}>
+                                            <button onClick={() => { setEditingReplyId(reply.id); setEditingReplyContent(reply.content); }} style={{ padding: "3px", background: "none", border: "none", cursor: "pointer", color: "#8A9E8C" }}><Pencil size={12} /></button>
+                                            <button onClick={() => handleDeleteReply(post.id, reply.id)} style={{ padding: "3px", background: "none", border: "none", cursor: "pointer", color: "#8A9E8C" }}><Trash2 size={12} /></button>
+                                          </span>
+                                        )}
                                       </div>
                                       
                                       {editingReplyId === reply.id ? (
-                                        <div className="mt-2">
-                                          <textarea
-                                            value={editingReplyContent}
-                                            onChange={e => setEditingReplyContent(e.target.value)}
-                                            className="w-full bg-white border border-[#E4E8E0] rounded-[12px] text-[14px] text-[#1A261D] outline-none focus:border-[#C9973A] transition-all p-3 min-h-[60px]"
-                                          />
-                                          <div className="flex gap-2 mt-2 justify-end">
-                                            <button onClick={() => setEditingReplyId(null)} className="px-3 py-1.5 text-xs font-medium text-[#526658] hover:bg-[#F7F8F5] rounded-lg transition-colors">Cancel</button>
-                                            <button onClick={() => handleEditReply(post.id, reply.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#1A261D] hover:bg-[#2C3E30] rounded-lg transition-colors">Save</button>
+                                        <div>
+                                          <textarea value={editingReplyContent} onChange={e => setEditingReplyContent(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #DCE0D5", fontSize: "13px", fontFamily: "inherit", outline: "none", minHeight: "50px", resize: "none", boxSizing: "border-box" }} />
+                                          <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end", marginTop: "8px" }}>
+                                            <button onClick={() => setEditingReplyId(null)} style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 600, background: "transparent", border: "none", color: "#526658", cursor: "pointer" }}>Cancel</button>
+                                            <button onClick={() => handleEditReply(post.id, reply.id)} style={{ padding: "6px 12px", fontSize: "12px", fontWeight: 700, background: "#1A261D", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>Save</button>
                                           </div>
                                         </div>
                                       ) : (
-                                        <p className="text-[15px] text-[#526658] leading-relaxed">{reply.content}</p>
+                                        <div style={{ fontSize: "14px", color: "#3A4D3F", lineHeight: 1.6 }}>{reply.content}</div>
                                       )}
                                     </div>
-                                    
-                                    {/* Edit/Delete Actions for Reply Author */}
-                                    {(reply.authorId === user?.id || reply.author?.id === user?.id) && (
-                                      <div className="flex flex-col items-center gap-1 self-start opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                          onClick={() => {
-                                            setEditingReplyId(reply.id);
-                                            setEditingReplyContent(reply.content);
-                                          }}
-                                          className="p-1 text-[#8A9E8C] hover:text-[#B88645] hover:bg-[#FBF6EC] rounded-md transition-colors"
-                                          title="Edit Reply"
-                                        >
-                                          <Pencil size={13} />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteReply(post.id, reply.id)}
-                                          className="p-1 text-[#8A9E8C] hover:text-[#B03A2E] hover:bg-[#FDF0EE] rounded-md transition-colors"
-                                          title="Delete Reply"
-                                        >
-                                          <Trash2 size={13} />
-                                        </button>
-                                      </div>
-                                    )}
                                   </div>
                                 ))}
 
                                 {/* Reply Input */}
                                 {hasReachedReplyLimit && post.authorId !== user?.id && post.author?.id !== user?.id && !uniqueOtherAuthorsRepliedTo.has(post.authorId || post.author?.id) ? (
-                                  <div className="mt-4 text-[13px] text-[#B91C1C] font-medium bg-[#FEF2F2] border border-[#FECACA] p-4 rounded-xl text-center">
-                                    You have reached the maximum allowed replies to other students (2).
+                                  <div style={{ fontSize: "13px", color: "#DC2626", fontWeight: 600, background: "#FEF2F2", padding: "14px 18px", borderRadius: "12px", border: "1px solid #FECACA", textAlign: "center" }}>
+                                    You have reached the maximum reply limit (2 students).
                                   </div>
                                 ) : (
-                                  <div className="flex gap-3 items-start mt-4 pt-4 border-t border-[#E4E8E0]/60">
-                                    <div className="w-9 h-9 rounded-full bg-white border border-[#E4E8E0] flex items-center justify-center text-[#526658] font-bold text-[12px] shrink-0 mt-[4px] shadow-sm">
-                                      ME
-                                    </div>
-                                    <div className="flex-1 relative bg-white border border-[#E4E8E0] rounded-[24px] flex items-end p-1 shadow-sm focus-within:border-[#C9973A] focus-within:ring-1 focus-within:ring-[#C9973A] transition-all">
+                                  <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#FFFFFF", border: "1px solid #DCE0D5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "11px", color: "#526658", flexShrink: 0 }}>ME</div>
+                                    <div style={{ flex: 1, background: "#FFFFFF", border: "1px solid #DCE0D5", borderRadius: "14px", overflow: "hidden" }}>
                                       <textarea
                                         value={replyContent[post.id] || ""}
                                         onChange={e => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
                                         placeholder="Write a reply..."
-                                        rows={1}
-                                        className="flex-1 bg-transparent text-[14.5px] text-[#1A261D] placeholder-[#8A9E8C] outline-none resize-none py-[8px] px-4 min-h-[36px] max-h-[120px]"
-                                        style={{ overflowY: "auto" }}
-                                        onWheel={(e) => {
-                                          const target = e.currentTarget;
-                                          const isScrollingDown = e.deltaY > 0;
-                                          const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1;
-                                          const isAtTop = target.scrollTop <= 0;
-                                          
-                                          if ((isScrollingDown && !isAtBottom) || (!isScrollingDown && !isAtTop)) {
-                                            e.stopPropagation();
-                                          }
-                                        }}
+                                        rows={2}
+                                        style={{ width: "100%", padding: "12px 16px", border: "none", fontSize: "14px", fontFamily: "inherit", outline: "none", resize: "none", background: "transparent", boxSizing: "border-box" }}
                                       />
-                                      <button
-                                        disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
-                                        onClick={async () => {
-                                          const content = replyContent[post.id]?.trim();
-                                          if (!content) return;
-                                          setIsReplying(prev => ({ ...prev, [post.id]: true }));
-                                          try {
-                                            const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
-                                            setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
-                                            setReplyContent(prev => ({ ...prev, [post.id]: "" }));
-                                          } catch {}
-                                          setIsReplying(prev => ({ ...prev, [post.id]: false }));
-                                        }}
-                                        className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-[#1A261D] text-white hover:bg-[#C9973A] transition-colors disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-[#1A261D] ml-1"
-                                      >
-                                        <Send size={15} className="-ml-0.5" />
-                                      </button>
+                                      <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 12px 10px 12px" }}>
+                                        <button
+                                          disabled={!replyContent[post.id]?.trim() || isReplying[post.id]}
+                                          onClick={async () => {
+                                            const content = replyContent[post.id]?.trim();
+                                            if (!content) return;
+                                            setIsReplying(prev => ({ ...prev, [post.id]: true }));
+                                            try {
+                                              const res = await api.post(`/forums/discussions/${post.id}/replies`, { content });
+                                              setForumPosts(prev => prev.map(p => p.id === post.id ? { ...p, replies: [...(p.replies || []), res.data.data] } : p));
+                                              setReplyContent(prev => ({ ...prev, [post.id]: "" }));
+                                            } catch {}
+                                            setIsReplying(prev => ({ ...prev, [post.id]: false }));
+                                          }}
+                                          style={{ padding: "6px 18px", background: "#1A261D", color: "#FFFFFF", borderRadius: "999px", fontWeight: 700, fontSize: "12px", border: "none", cursor: "pointer", opacity: (!replyContent[post.id]?.trim() || isReplying[post.id]) ? 0.35 : 1, transition: "opacity 0.2s" }}
+                                        >
+                                          Reply
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 )}
