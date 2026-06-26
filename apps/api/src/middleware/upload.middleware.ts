@@ -1,5 +1,16 @@
 import multer from 'multer'
 
+// Dangerous executable-like extensions that should never appear inside a filename
+const DANGEROUS_EXTENSIONS = [
+  'php', 'php3', 'php4', 'php5', 'phtml',
+  'exe', 'sh', 'bat', 'cmd', 'com',
+  'py', 'rb', 'pl', 'cgi',
+  'asp', 'aspx', 'jsp', 'jspx',
+  'js', 'mjs', 'ts',
+  'html', 'htm', 'xml',
+  'svg',
+];
+
 // Use memory storage — files held in Buffer, then sent to R2
 export const upload = multer({
   storage: multer.memoryStorage(),
@@ -16,24 +27,30 @@ export const upload = multer({
       'video/mp4', 'video/quicktime', 'video/webm',
       'application/zip',
     ];
-    
+
     // Strict Extension Checking
     const allowedExtensions = [
       '.jpg', '.jpeg', '.png', '.webp',
       '.pdf', '.doc', '.docx', '.ppt', '.pptx',
       '.mp4', '.mov', '.webm', '.zip'
     ];
-    
-    const extMatch = allowedExtensions.some(ext => file.originalname.toLowerCase().endsWith(ext));
+
+    const nameLower = file.originalname.toLowerCase();
+    const extMatch = allowedExtensions.some(ext => nameLower.endsWith(ext));
     const mimeMatch = allowedMimes.includes(file.mimetype);
 
-    // Reject double extensions (e.g., file.php.jpg) to prevent bypass
-    const nameParts = file.originalname.split('.');
-    const hasDoubleExtension = nameParts.length > 2 && !['tar', 'gz'].includes(nameParts[nameParts.length - 1]);
+    // Check for dangerous extensions hidden ANYWHERE inside the filename
+    // e.g. "malware.php.pdf" → parts = ["malware", "php", "pdf"] → "php" is dangerous
+    const nameParts = nameLower.split('.');
+    // Ignore the last part (the real extension) — only inspect intermediate parts
+    const intermediateExtensions = nameParts.slice(1, -1);
+    const hasDangerousExtension = intermediateExtensions.some(part =>
+      DANGEROUS_EXTENSIONS.includes(part)
+    );
 
-    if (extMatch && mimeMatch && !hasDoubleExtension) {
+    if (extMatch && mimeMatch && !hasDangerousExtension) {
       // Sanitize the original filename (strip dangerous chars)
-      file.originalname = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '');
+      file.originalname = file.originalname.replace(/[^a-zA-Z0-9.\-_ ]/g, '');
       cb(null, true);
     } else {
       cb(new Error(`Invalid or unsafe file: ${file.originalname} (${file.mimetype})`));

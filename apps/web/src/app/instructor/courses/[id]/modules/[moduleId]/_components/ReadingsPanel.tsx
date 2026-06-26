@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createReadingMaterial, getReadingMaterials, deleteReadingMaterial } from "@/lib/api/modules";
-import { BookOpen, Plus, X, UploadCloud, Edit2, Trash2, GripVertical, FileText, Loader2 } from "lucide-react";
+import { BookOpen, Plus, X, UploadCloud, Trash2, GripVertical, FileText, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
@@ -11,6 +11,7 @@ export default function ReadingsPanel({ module }: { module: any }) {
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState({ title: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { data: materials, isLoading } = useQuery({
     queryKey: ["readings", module.id],
@@ -20,6 +21,7 @@ export default function ReadingsPanel({ module }: { module: any }) {
   const createMut = useMutation({
     mutationFn: () => {
       if (!selectedFile) throw new Error("File is required");
+      setUploadError(null);
       return createReadingMaterial(module.id, form.title, form.description, selectedFile);
     },
     onSuccess: () => {
@@ -28,9 +30,19 @@ export default function ReadingsPanel({ module }: { module: any }) {
       setIsCreating(false);
       setForm({ title: "", description: "" });
       setSelectedFile(null);
+      setUploadError(null);
       toast.success("Reading material uploaded!");
     },
-    onError: (err: any) => toast.error(err.message || err.response?.data?.message || "Upload failed"),
+    onError: (err: any) => {
+      // Prefer the server's specific error message over the generic axios one
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Upload failed. Please try again.";
+      setUploadError(message);
+      toast.error(message);
+    },
   });
 
   const deleteMut = useMutation({
@@ -69,9 +81,15 @@ export default function ReadingsPanel({ module }: { module: any }) {
         <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "12px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 10px 30px rgba(26,38,29,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
             <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>Upload Reading Material</h3>
-            <button onClick={() => setIsCreating(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
+            <button onClick={() => { setIsCreating(false); setUploadError(null); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
           </div>
           
+          {uploadError && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "rgba(229,62,62,0.06)", border: "1px solid rgba(229,62,62,0.25)", borderRadius: "8px", marginBottom: "16px" }}>
+              <AlertCircle size={16} color="#E53E3E" style={{ marginTop: "2px", flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: "13px", color: "#C53030", fontWeight: 500 }}>{uploadError}</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
               <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Title</label>
