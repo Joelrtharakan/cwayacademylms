@@ -34,36 +34,36 @@ model User {
   updatedAt         DateTime  @updatedAt
 
   // Relations
-  coursesCreated    Course[]           @relation("InstructorCourses")
-  enrollments       Enrollment[]
-  quizAttempts      QuizAttempt[]
-  submissions       Submission[]
-  certificates      Certificate[]
-  reviews           Review[]
-  forumPosts        ForumPost[]
-  forumReplies      ForumReply[]
-  sentMessages      Message[]          @relation("SentMessages")
-  receivedMessages  Message[]          @relation("ReceivedMessages")
-  notifications     Notification[]
-  payments          Payment[]
-  sponsorships      Sponsorship[]
-  blogPosts         BlogPost[]
-  payoutRequests    PayoutRequest[]
-  announcements     Announcement[]
-  discussions       Discussion[]
-  discussionReplies DiscussionReply[]
-  attendanceRecords AttendanceRecord[]
-  socialLinks       String? // JSON: { twitter, linkedin, website }
-  title             String? // e.g. "Dr."
-  credentials       String? // e.g. "M.Th., Ph.D."
-  yearsExperience   Int?
-  expertise         String             @default("[]")
-  notificationPrefs String             @default("{}")
-  notes                Note[]
-  courseInvitations    CourseInvitation[]  @relation("InstructorInvitations")
-  extensions           Extension[]         @relation("StudentExtensions")
-  extensionRequests    ExtensionRequest[]  @relation("StudentExtensionRequests")
-  programEnrollments   ProgramEnrollment[]
+  coursesCreated     Course[]            @relation("InstructorCourses")
+  enrollments        Enrollment[]
+  quizAttempts       QuizAttempt[]
+  submissions        Submission[]
+  certificates       Certificate[]
+  reviews            Review[]
+  forumPosts         ForumPost[]
+  forumReplies       ForumReply[]
+  sentMessages       Message[]           @relation("SentMessages")
+  receivedMessages   Message[]           @relation("ReceivedMessages")
+  notifications      Notification[]
+  payments           Payment[]
+  sponsorships       Sponsorship[]
+  blogPosts          BlogPost[]
+  payoutRequests     PayoutRequest[]
+  announcements      Announcement[]
+  discussions        Discussion[]
+  discussionReplies  DiscussionReply[]
+  attendanceRecords  AttendanceRecord[]
+  socialLinks        String? // JSON: { twitter, linkedin, website }
+  title              String? // e.g. "Dr."
+  credentials        String? // e.g. "M.Th., Ph.D."
+  yearsExperience    Int?
+  expertise          String              @default("[]")
+  notificationPrefs  String              @default("{}")
+  notes              Note[]
+  courseInvitations  CourseInvitation[]  @relation("InstructorInvitations")
+  extensions         Extension[]         @relation("StudentExtensions")
+  extensionRequests  ExtensionRequest[]  @relation("StudentExtensionRequests")
+  programEnrollments ProgramEnrollment[]
 
   @@index([email])
   @@index([role])
@@ -144,6 +144,7 @@ model Course {
   @@index([instructorId])
   @@index([slug])
   @@index([programId])
+  @@index([categoryId])
 }
 
 model Section {
@@ -166,26 +167,26 @@ model Section {
 }
 
 model Lesson {
-  id           String  @id @default(cuid())
+  id           String    @id @default(cuid())
   sectionId    String
-  section      Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  section      Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   title        String
   type         String
   content      String?
   videoUrl     String?
-  duration     Int     @default(0) // seconds
+  duration     Int       @default(0) // seconds
   order        Int
-  isFree       Boolean @default(false)
-  isPreview    Boolean @default(false)
+  isFree       Boolean   @default(false)
+  isPreview    Boolean   @default(false)
   bunnyVideoId String?
   forumMarks   Int?
   dueDate      DateTime? // For forum deadlines
 
-  quiz             Quiz?
-  assignment       Assignment?
-  progress         LessonProgress[]
-  discussions      Discussion[]
-  notes            Note[]
+  quiz        Quiz?
+  assignment  Assignment?
+  progress    LessonProgress[]
+  discussions Discussion[]
+  notes       Note[]
 
   @@index([sectionId])
 }
@@ -210,6 +211,8 @@ model Enrollment {
   @@unique([studentId, courseId])
   @@index([studentId])
   @@index([courseId])
+  @@index([paymentId])
+  @@index([sponsorshipId])
 }
 
 model LessonProgress {
@@ -222,6 +225,7 @@ model LessonProgress {
   watchedSeconds Int        @default(0)
 
   @@unique([enrollmentId, lessonId])
+  @@index([lessonId])
 }
 
 model Quiz {
@@ -236,6 +240,8 @@ model Quiz {
   rubric       Rubric?       @relation(fields: [rubricId], references: [id])
   questions    Question[]
   attempts     QuizAttempt[]
+
+  @@index([rubricId])
 }
 
 model Question {
@@ -258,6 +264,8 @@ model Answer {
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   text       String
   isCorrect  Boolean  @default(false)
+
+  @@index([questionId])
 }
 
 model QuizAttempt {
@@ -273,6 +281,7 @@ model QuizAttempt {
   completedAt DateTime?
 
   @@index([quizId, studentId])
+  @@index([studentId])
 }
 
 model Assignment {
@@ -287,6 +296,8 @@ model Assignment {
   rubricId      String?
   rubric        Rubric?      @relation(fields: [rubricId], references: [id])
   submissions   Submission[]
+
+  @@index([rubricId])
 }
 
 model Submission {
@@ -305,6 +316,7 @@ model Submission {
 
   @@unique([assignmentId, studentId])
   @@index([assignmentId])
+  @@index([studentId])
 }
 
 model Certificate {
@@ -322,6 +334,11 @@ model Certificate {
   downloadUrl       String?
   templateId        String?
   template          CertificateTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([studentId])
+  @@index([courseId])
+  @@index([programId])
+  @@index([templateId])
 }
 
 model CertificateTemplate {
@@ -350,6 +367,7 @@ model Review {
 
   @@unique([courseId, studentId])
   @@index([courseId])
+  @@index([studentId])
 }
 
 model Forum {
@@ -372,6 +390,7 @@ model ForumPost {
   createdAt DateTime     @default(now())
 
   @@index([forumId])
+  @@index([authorId])
 }
 
 model ForumReply {
@@ -384,6 +403,7 @@ model ForumReply {
   createdAt DateTime  @default(now())
 
   @@index([postId])
+  @@index([authorId])
 }
 
 model Message {
@@ -397,6 +417,7 @@ model Message {
   readAt     DateTime?
 
   @@index([senderId, receiverId])
+  @@index([receiverId])
 }
 
 model Notification {
@@ -426,6 +447,9 @@ model Payment {
   isSponsored     Boolean      @default(false)
   createdAt       DateTime     @default(now())
   enrollments     Enrollment[]
+
+  @@index([studentId])
+  @@index([courseId])
 }
 
 model Sponsorship {
@@ -441,6 +465,9 @@ model Sponsorship {
   student         User?    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   courseId        String?
   createdAt       DateTime @default(now())
+
+  @@index([studentId])
+  @@index([courseId])
 }
 
 model Coupon {
@@ -455,6 +482,8 @@ model Coupon {
   course    Course?   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
+
+  @@index([courseId])
 }
 
 model EmailTemplate {
@@ -482,22 +511,23 @@ model SiteSettings {
 }
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  excerpt     String?
-  content     String
-  coverImage  String?
-  coverKey    String?
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  isPublished Boolean  @default(false)
-  readingTime Int? // minutes
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  excerpt      String?
+  content      String
+  coverImage   String?
+  coverKey     String?
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isPublished  Boolean  @default(false)
+  readingTime  Int? // minutes
   customAuthor String? // Optional guest author name
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([slug])
+  @@index([authorId])
 }
 
 model PayoutRequest {
@@ -529,7 +559,9 @@ model ReadingMaterial {
   order       Int      @default(0)
   createdAt   DateTime @default(now())
 
-  progress    ReadingMaterialProgress[]
+  progress ReadingMaterialProgress[]
+
+  @@index([sectionId])
 }
 
 model ReadingMaterialProgress {
@@ -541,6 +573,7 @@ model ReadingMaterialProgress {
   completedAt       DateTime?
 
   @@unique([enrollmentId, readingMaterialId])
+  @@index([readingMaterialId])
 }
 
 model Announcement {
@@ -556,6 +589,10 @@ model Announcement {
   isPinned  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([sectionId])
+  @@index([authorId])
 }
 
 model Discussion {
@@ -576,6 +613,11 @@ model Discussion {
   feedback  String?
   createdAt DateTime          @default(now())
   replies   DiscussionReply[]
+
+  @@index([courseId])
+  @@index([sectionId])
+  @@index([lessonId])
+  @@index([authorId])
 }
 
 model DiscussionReply {
@@ -587,6 +629,9 @@ model DiscussionReply {
   content      String
   isInstructor Boolean    @default(false)
   createdAt    DateTime   @default(now())
+
+  @@index([discussionId])
+  @@index([authorId])
 }
 
 model Rubric {
@@ -601,6 +646,8 @@ model Rubric {
   quizzes     Quiz[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  @@index([courseId])
 }
 
 model RubricCriteria {
@@ -612,6 +659,8 @@ model RubricCriteria {
   maxPoints   Int
   order       Int           @default(0)
   levels      RubricLevel[]
+
+  @@index([rubricId])
 }
 
 model RubricLevel {
@@ -622,6 +671,8 @@ model RubricLevel {
   description String
   points      Int
   order       Int            @default(0)
+
+  @@index([criteriaId])
 }
 
 model AttendanceSession {
@@ -636,6 +687,9 @@ model AttendanceSession {
   sessionType String             @default("LIVE")
   createdAt   DateTime           @default(now())
   records     AttendanceRecord[]
+
+  @@index([courseId])
+  @@index([sectionId])
 }
 
 model AttendanceRecord {
@@ -649,19 +703,20 @@ model AttendanceRecord {
   note      String?
 
   @@unique([sessionId, studentId])
+  @@index([studentId])
 }
 
 model Extension {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   studentId    String
-  student      User      @relation("StudentExtensions", fields: [studentId], references: [id], onDelete: Cascade)
-  itemId       String    // Assignment ID or Lesson ID (for forums)
-  itemType     String    // "ASSIGNMENT" or "FORUM"
+  student      User     @relation("StudentExtensions", fields: [studentId], references: [id], onDelete: Cascade)
+  itemId       String // Assignment ID or Lesson ID (for forums)
+  itemType     String // "ASSIGNMENT" or "FORUM"
   courseId     String
-  course       Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   extendedDate DateTime
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([studentId, itemId])
   @@index([studentId])
@@ -673,8 +728,8 @@ model ExtensionRequest {
   id            String    @id @default(cuid())
   studentId     String
   student       User      @relation("StudentExtensionRequests", fields: [studentId], references: [id], onDelete: Cascade)
-  itemId        String    // Assignment ID or Lesson ID (for forums)
-  itemType      String    // "ASSIGNMENT" or "FORUM"
+  itemId        String // Assignment ID or Lesson ID (for forums)
+  itemType      String // "ASSIGNMENT" or "FORUM"
   courseId      String
   course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   reason        String
@@ -700,37 +755,38 @@ model Curriculum {
 }
 
 model Note {
-  id         String   @id @default(cuid())
-  studentId  String
-  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lessonId   String
-  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  content    String
-  timestamp  Int?     // video timestamp in seconds
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  content   String
+  timestamp Int? // video timestamp in seconds
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, lessonId])
+  @@index([lessonId])
 }
 
 // ─── LMS PROGRAM WORKFLOW (new) ──────────────────────────────────────────────
 
 model Program {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  thumbnail   String?
-  thumbnailKey String?
-  duration    String?   // e.g. "6 months", "4 courses"
-  tags        String    @default("[]")
-  status      String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
-  applicationsClosed Boolean @default(false)
-  courses     Course[]  @relation("ProgramCourses")
-  applications ProgramApplication[]
-  enrollments  ProgramEnrollment[]
-  certificates Certificate[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                 String               @id @default(cuid())
+  title              String
+  description        String?
+  thumbnail          String?
+  thumbnailKey       String?
+  duration           String? // e.g. "6 months", "4 courses"
+  tags               String               @default("[]")
+  status             String               @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  applicationsClosed Boolean              @default(false)
+  courses            Course[]             @relation("ProgramCourses")
+  applications       ProgramApplication[]
+  enrollments        ProgramEnrollment[]
+  certificates       Certificate[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([status])
 }
@@ -751,120 +807,121 @@ model CourseInvitation {
 }
 
 model ProgramApplication {
-  id                 String   @id @default(cuid())
-  programId          String
-  program            Program  @relation(fields: [programId], references: [id])
-  
-  mediumOfStudy      String   @default("English")
-  fullName           String
-  dob                DateTime
-  gender             String
-  maritalStatus      String
-  nationality        String
-  aadhaarNumber      String?
-  passportPhotoUrl   String
-  
-  mobileNumber       String
-  whatsappNumber     String
-  email              String
-  
-  permanentAddress   String // JSON
-  currentAddress     String // JSON
-  
+  id        String  @id @default(cuid())
+  programId String
+  program   Program @relation(fields: [programId], references: [id])
+
+  mediumOfStudy    String   @default("English")
+  fullName         String
+  dob              DateTime
+  gender           String
+  maritalStatus    String
+  nationality      String
+  aadhaarNumber    String?
+  passportPhotoUrl String
+
+  mobileNumber   String
+  whatsappNumber String
+  email          String
+
+  permanentAddress String // JSON
+  currentAddress   String // JSON
+
   highestQualification String
   previousInstitution  String
   yearOfCompletion     String
   marksOrGrade         String
   certificatesUrls     String // JSON array of urls
-  
-  isBornAgain          Boolean
-  churchName           String
-  churchAddress        String // JSON
-  pastorName           String
-  ministryExperience   String?
-  callingStatement     String
-  
-  reference1Name       String
-  reference1Email      String?
-  reference1Phone      String
-  reference1Relation   String
-  reference1Type       String?
-  reference1Token      String?  @unique
-  reference1Status     String   @default("PENDING") // PENDING, SUBMITTED
-  
-  reference2Name       String
-  reference2Email      String?
-  reference2Phone      String
-  reference2Relation   String
-  reference2Type       String?
-  reference2Token      String?  @unique
-  reference2Status     String   @default("PENDING") // PENDING, SUBMITTED
-  
-  declarationName      String
-  status               String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  
-  referenceForms       ReferenceForm[]
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+
+  isBornAgain        Boolean
+  churchName         String
+  churchAddress      String // JSON
+  pastorName         String
+  ministryExperience String?
+  callingStatement   String
+
+  reference1Name     String
+  reference1Email    String?
+  reference1Phone    String
+  reference1Relation String
+  reference1Type     String?
+  reference1Token    String? @unique
+  reference1Status   String  @default("PENDING") // PENDING, SUBMITTED
+
+  reference2Name     String
+  reference2Email    String?
+  reference2Phone    String
+  reference2Relation String
+  reference2Type     String?
+  reference2Token    String? @unique
+  reference2Status   String  @default("PENDING") // PENDING, SUBMITTED
+
+  declarationName String
+  status          String @default("PENDING") // PENDING, APPROVED, REJECTED
+
+  referenceForms ReferenceForm[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([programId])
   @@index([email])
 }
 
 model ReferenceForm {
-  id                 String   @id @default(cuid())
-  applicationId      String
-  application        ProgramApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  referenceIndex     Int      // 1 or 2 to indicate which reference this is
-  type               String   // PASTOR or GENERAL
-  
+  id            String             @id @default(cuid())
+  applicationId String
+  application   ProgramApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  referenceIndex Int // 1 or 2 to indicate which reference this is
+  type           String // PASTOR or GENERAL
+
   // Base fields
   yearsKnown         String
   capacityKnown      String?
   churchEngagement   String?
   spiritualInfluence String?
-  
+
   // Ratings (stored as JSON to handle all 12 areas)
-  ratings            String // JSON e.g. { "Christian Commitment": "Excellent", ... }
-  
-  financialAbility   String?
-  financialHelp      String?  // for pastor only
-  
-  comments           String?
-  attentionAreas     String?  // for general only
-  discussFurther     Boolean  @default(false)
-  recommendation     String
-  
+  ratings String // JSON e.g. { "Christian Commitment": "Excellent", ... }
+
+  financialAbility String?
+  financialHelp    String? // for pastor only
+
+  comments       String?
+  attentionAreas String? // for general only
+  discussFurther Boolean @default(false)
+  recommendation String
+
   // Referee Details
-  refereeName        String
-  refereePosition    String?
-  churchName         String?  // for pastor only
-  denomination       String?  // for pastor only
-  
-  address            String // JSON e.g. { "line1": "...", "city": "..." }
-  phone              String
-  email              String
-  
-  signatureUrl       String?
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  refereeName     String
+  refereePosition String?
+  churchName      String? // for pastor only
+  denomination    String? // for pastor only
+
+  address String // JSON e.g. { "line1": "...", "city": "..." }
+  phone   String
+  email   String
+
+  signatureUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([applicationId, referenceIndex])
 }
 
 model ProgramEnrollment {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   studentId       String
-  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   programId       String
-  program         Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
-  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, DROPPED
-  enrolledAt      DateTime @default(now())
+  program         Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  status          String    @default("ACTIVE") // ACTIVE, COMPLETED, DROPPED
+  enrolledAt      DateTime  @default(now())
   completedAt     DateTime?
-  currentCourseId String?  // Tracks which course in the program they are currently taking
-  
+  currentCourseId String? // Tracks which course in the program they are currently taking
+
   @@unique([studentId, programId])
+  @@index([programId])
 }
