@@ -18,11 +18,13 @@ export default function CurriculumPlannerSection({ course, onSave }: { course: a
 
   useEffect(() => {
     if (curr) {
-      setOverview(curr.overview || "");
+      setOverview(curr.overview || course.description || "");
       try { setObjectives(JSON.parse(curr.objectives || "[]")); } catch (e) {}
       try { setWeeklyPlan(JSON.parse(curr.weeklyPlan || "[]")); } catch (e) {}
+    } else if (curr === null) {
+      setOverview(course.description || "");
     }
-  }, [curr]);
+  }, [curr, course.description]);
 
   const updateMut = useMutation({
     mutationFn: (data: any) => api.put(`/courses/${course.id}/curriculum`, data).then(r => r.data.data),
