@@ -261,8 +261,8 @@ export default function WeekDescriptionPage() {
           <button 
             onClick={() => firstLesson && router.push(`/student/courses/${courseId}/learn/${firstLesson.id}`)}
             disabled={!firstLesson}
-            className="bg-[#1A261D] text-white hover:bg-[#2A3B2D] border border-[#2A3B2D] flex items-center gap-2 font-semibold transition-all shadow-sm shadow-[#1A261D]/10 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ padding: "12px 28px", borderRadius: "999px", fontSize: "14px" }}
+            className="bg-[#4a8c5c] hover:bg-[#3d7a4e] text-white border-transparent flex items-center gap-2 font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ padding: "12px 28px", borderRadius: "999px", fontSize: "16px" }}
           >
             {firstLesson ? "Start First Lesson" : "No Lessons"} <ArrowRight className="w-4 h-4" />
           </button>
