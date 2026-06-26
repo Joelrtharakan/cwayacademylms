@@ -177,8 +177,8 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
             lessons: {
               orderBy: { order: "asc" },
               include: { 
-                quiz: { select: { id: true } }, 
-                assignment: { select: { id: true } } 
+                quiz: { select: { id: true, title: true, timeLimit: true, passingScore: true, maxAttempts: true } }, 
+                assignment: { select: { id: true, title: true, description: true, dueDate: true, maxScore: true, attachmentUrl: true, rubricId: true } } 
               }
             },
             readingMaterials: {
