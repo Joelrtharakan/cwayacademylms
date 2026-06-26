@@ -456,13 +456,10 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                           if (item.itemType === "READING_MATERIAL") {
                             const isActiveMaterial = item.id === lessonId;
                             return (
-                              <div
+                              <Link
                                 key={`material-${item.id}`}
+                                href={`/student/courses/${courseId}/learn/${item.id}`}
                                 data-active-lesson={isActiveMaterial ? "true" : undefined}
-                                onClick={() => {
-                                  setSelectedMaterial(null);
-                                  router.push(`/student/courses/${courseId}/learn/${item.id}`);
-                                }}
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
@@ -471,11 +468,10 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                   padding: "10px 12px",
                                   borderRadius: "8px",
                                   width: "100%",
-                                  textAlign: "left",
+                                  textDecoration: "none",
                                   position: "relative",
                                   background: isActiveMaterial ? "rgba(184,134,69,0.18)" : "transparent",
                                   color: "rgba(255,255,255,0.9)",
-                                  cursor: "pointer",
                                   marginBottom: "4px",
                                 }}
                               >
@@ -519,7 +515,7 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                                     </button>
                                   )}
                                 </div>
-                              </div>
+                              </Link>
                             );
                           }
 

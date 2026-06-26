@@ -364,8 +364,10 @@ export default function LessonPlayerPage() {
     }
   };
 
+  const [isNavigating, setIsNavigating] = useState(false);
   const handleNext = async () => {
     if (!enrollment || !lesson) return;
+    setIsNavigating(true);
     
     if (lesson.type === "READING_MATERIAL") {
       await markComplete();
@@ -391,10 +393,17 @@ export default function LessonPlayerPage() {
     }
     
     goToItem(nextItem);
+    // Don't reset isNavigating, let the component unmount or let Next.js handle the transition.
   };
 
   const previousLesson = previousItem;
   const nextLesson = nextItem;
+
+  useEffect(() => {
+    if (nextLesson) {
+      router.prefetch(`/student/courses/${courseId}/learn/${nextLesson.id}`);
+    }
+  }, [nextLesson, courseId, router]);
 
   const goToLesson = (targetLessonId: string) => {
     router.push(`/student/courses/${courseId}/learn/${targetLessonId}`);
@@ -1656,11 +1665,13 @@ export default function LessonPlayerPage() {
         </div>
         <button 
           onClick={handleNext}
+          disabled={isNavigating}
           title={nextLesson ? "Continue to next lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Return to Dashboard" : "You have reached the end of the course")}
-          className={`${nextButtonClasses}`}
+          className={`${nextButtonClasses} disabled:opacity-70 disabled:cursor-wait`}
           style={{ padding: "12px 24px", borderRadius: "999px" }}
         >
-          {nextLesson ? "Next Lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Exit Course" : "End of Course")} <ArrowRight className="w-4 h-4" />
+          {isNavigating ? "Loading..." : nextLesson ? "Next Lesson" : (enrollment?.completedAt || enrollment?.status === "COMPLETED" ? "Exit Course" : "End of Course")} 
+          {!isNavigating && <ArrowRight className="w-4 h-4" />}
         </button>
       </div>
     </div>
