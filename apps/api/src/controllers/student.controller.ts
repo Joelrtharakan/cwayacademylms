@@ -663,7 +663,7 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
 // ASSIGNMENTS
 // ==========================================
 
-import { uploadToR2, generateKey } from "../services/storage.service";
+import { uploadToR2, generateKey, deleteFromR2, extractR2Key } from "../services/storage.service";
 
 export const submitAssignment = asyncHandler(async (req: Request, res: Response) => {
   const { assignmentId } = req.params;
@@ -714,7 +714,16 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
 
   let submission;
   if (existing) {
-    const finalFileUrl = req.file ? fileUrl : existing.fileUrl;
+    let finalFileUrl = existing.fileUrl;
+    if (req.file) {
+      finalFileUrl = fileUrl;
+      if (existing.fileUrl) {
+        const oldKey = extractR2Key(existing.fileUrl);
+        if (oldKey) {
+          deleteFromR2(oldKey).catch(e => console.error("Failed to delete old assignment file", e));
+        }
+      }
+    }
     submission = await prisma.submission.update({
       where: { id: existing.id },
       data: {
@@ -801,6 +810,13 @@ export const unsubmitAssignment = asyncHandler(async (req: Request, res: Respons
   await prisma.submission.delete({
     where: { id: existing.id }
   });
+
+  if (existing.fileUrl) {
+    const oldKey = extractR2Key(existing.fileUrl);
+    if (oldKey) {
+      deleteFromR2(oldKey).catch(e => console.error("Failed to delete unsubmitted assignment file from R2", e));
+    }
+  }
 
   res.json({ status: "success", message: "Assignment unsubmitted" });
 });
