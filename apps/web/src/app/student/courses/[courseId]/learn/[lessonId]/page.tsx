@@ -782,7 +782,7 @@ export default function LessonPlayerPage() {
                           {lesson.attempts && lesson.attempts.length > 0 ? "Retake Quiz" : "Start Quiz"}
                         </button>
                       ) : (
-                        <div className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#C9973A] text-sm font-bold text-white cursor-not-allowed opacity-80" style={{ padding: '12px 28px' }}>
+                        <div className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#B8872A] text-sm font-bold text-white cursor-not-allowed opacity-80" style={{ padding: '12px 28px' }}>
                           Maximum Attempts Reached
                         </div>
                       )}
