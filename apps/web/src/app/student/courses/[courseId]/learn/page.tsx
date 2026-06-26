@@ -79,7 +79,7 @@ export default function LearnIndexPage() {
   }, [courseId, router]);
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-[#1C2B1E]">
+    <div className="w-full h-full flex items-center justify-center">
       <div className="animate-spin h-8 w-8 border-4 border-[#C9973A] border-t-transparent rounded-full" />
     </div>
   );
