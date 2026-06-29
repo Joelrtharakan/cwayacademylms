@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import { auditLog } from "../middleware/activityLog.middleware";
 import * as AdminController from "../controllers/admin.controller";
 
 const router = Router();
 
 // All admin routes require authentication + ADMIN role
 router.use(authenticate, authorize("ADMIN"));
+// Audit log middleware — auto-captures all admin mutations
+router.use(auditLog);
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
 router.get("/stats", AdminController.getStats);
@@ -16,6 +19,7 @@ router.get("/analytics/revenue", AdminController.getRevenueAnalytics);
 router.get("/analytics/users", AdminController.getUserAnalytics);
 router.get("/analytics/courses", AdminController.getCourseAnalytics);
 router.get("/analytics/enrollments", AdminController.getEnrollmentAnalytics);
+router.get("/analytics/students-time", AdminController.getStudentTimeAnalytics);
 
 // ─── USER MANAGEMENT ─────────────────────────────────────────────────────────
 router.get("/users/export", AdminController.exportUsers);
@@ -96,10 +100,14 @@ router.get("/programs/:id/students/:studentId", AdminController.getProgramStuden
 router.get("/certificates/:id/download", AdminController.downloadCertificate);
 router.post("/courses/:courseId/assign-instructor", AdminController.assignInstructorToCourse);
 
-// ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
+// ─── PROGRAM APPLICATIONS ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 router.get("/applications", AdminController.getApplications);
 router.get("/applications/:id", AdminController.getApplicationById);
 router.post("/applications/:id/approve", AdminController.approveApplication);
 router.post("/applications/:id/reject", AdminController.rejectApplication);
+
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+router.get("/logs", AdminController.getLogs);
+router.get("/logs/stats", AdminController.getLogStats);
 
 export default router;

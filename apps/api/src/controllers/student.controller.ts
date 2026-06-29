@@ -1084,15 +1084,24 @@ export const downloadCertificate = asyncHandler(async (req: Request, res: Respon
 // ==========================================
 
 export const getMyNotifications = asyncHandler(async (req: Request, res: Response) => {
-  const notifications = await prisma.notification.findMany({
-    where: { userId: req.user!.id },
-    orderBy: { createdAt: "desc" },
-    take: 50
-  });
-  const unreadCount = await prisma.notification.count({
-    where: { userId: req.user!.id, isRead: false }
-  });
-  res.json({ status: "success", data: { notifications, unreadCount } });
+  const cacheKey = `notifications:${req.user!.id}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return res.json({ status: "success", data: JSON.parse(cached) });
+
+  const [notifications, unreadCount] = await Promise.all([
+    prisma.notification.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: "desc" },
+      take: 50
+    }),
+    prisma.notification.count({
+      where: { userId: req.user!.id, isRead: false }
+    })
+  ]);
+  
+  const data = { notifications, unreadCount };
+  await redis.set(cacheKey, JSON.stringify(data), "EX", 60);
+  res.json({ status: "success", data });
 });
 
 export const markNotificationRead = asyncHandler(async (req: Request, res: Response) => {
@@ -1101,6 +1110,7 @@ export const markNotificationRead = asyncHandler(async (req: Request, res: Respo
     where: { id, userId: req.user!.id },
     data: { isRead: true }
   });
+  await redis.del(`notifications:${req.user!.id}`);
   res.json({ status: "success", data: { updated: true } });
 });
 
@@ -1109,12 +1119,25 @@ export const markAllNotificationsRead = asyncHandler(async (req: Request, res: R
     where: { userId: req.user!.id, isRead: false },
     data: { isRead: true }
   });
+  await redis.del(`notifications:${req.user!.id}`);
   res.json({ status: "success", data: { updated: true } });
 });
 
 // ==========================================
-// DASHBOARD STATS
-// ==========================================
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────────
+
+export const updateHeartbeat = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ status: "error", message: "Unauthorized" });
+  }
+  // The frontend pings every 60 seconds. We add 60 seconds.
+  await prisma.user.update({
+    where: { id: userId },
+    data: { appActiveSeconds: { increment: 60 } },
+  });
+  res.json({ status: "success" });
+});
 
 export const getStudentDashboard = asyncHandler(async (req: Request, res: Response) => {
   const studentId = req.user!.id;

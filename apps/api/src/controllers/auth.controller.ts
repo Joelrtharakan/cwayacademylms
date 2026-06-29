@@ -14,7 +14,7 @@ export class AuthController {
   public static verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const result = await AuthService.verifyEmail(req.params.token);
     // On success, redirect to login page with verified parameter
-    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login?verified=true`;
+    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.cwayacademy.com"}/login?verified=true`;
     res.redirect(loginUrl);
   });
 
@@ -24,6 +24,22 @@ export class AuthController {
 
       const { logger } = await import("../utils/logger");
       logger.info(`Successful login: ${user.email}`, { userId: user.id, ip: req.ip });
+
+      // Activity log — login success
+      // @ts-ignore: activityLog exists at runtime; ts-node type cache lag after db push
+      prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          actorEmail: user.email,
+          actorName: user.name ?? null,
+          actorRole: user.role,
+          action: "LOGIN",
+          description: `${user.email} logged in`,
+          ipAddress: (req.ip ?? "").replace("::ffff:", ""),
+          userAgent: req.headers["user-agent"] ?? null,
+          status: "SUCCESS",
+        },
+      }).catch(() => {}); // fire-and-forget
 
       res.cookie("cway_refresh", refreshToken, {
         httpOnly: true,
@@ -40,6 +56,21 @@ export class AuthController {
     } catch (error: any) {
       const { logger } = await import("../utils/logger");
       logger.warn(`Failed login attempt for ${req.body?.email || "unknown"}`, { ip: req.ip, error: error.message });
+
+      // Activity log — login failure
+      // @ts-ignore: activityLog exists at runtime; ts-node type cache lag after db push
+      prisma.activityLog.create({
+        data: {
+          userId: null,
+          actorEmail: req.body?.email ?? null,
+          action: "LOGIN_FAILED",
+          description: `Failed login attempt for ${req.body?.email || "unknown"}`,
+          ipAddress: (req.ip ?? "").replace("::ffff:", ""),
+          userAgent: req.headers["user-agent"] ?? null,
+          status: "FAILED",
+        },
+      }).catch(() => {});
+
       throw error;
     }
   });
@@ -67,8 +98,45 @@ export class AuthController {
 
   public static logout = asyncHandler(async (req: Request, res: Response) => {
     const token = req.cookies.cway_refresh;
+    let userId = req.user?.id;
+    let userEmail = req.user?.email;
+    let userRole = req.user?.role;
+
     if (token) {
+      try {
+        const { TokenService } = await import("../services/token.service");
+        const payload = TokenService.verifyRefreshToken(token);
+        if (payload && payload.userId) {
+          userId = payload.userId;
+          if (!userEmail) {
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            if (user) {
+              userEmail = user.email;
+              userRole = user.role;
+            }
+          }
+        }
+      } catch (e) {
+        // invalid token, ignore
+      }
       await AuthService.logout(token);
+    }
+
+    // Activity log — logout
+    if (userId && userEmail) {
+      // @ts-ignore: activityLog exists at runtime; ts-node type cache lag after db push
+      prisma.activityLog.create({
+        data: {
+          userId,
+          actorEmail: userEmail,
+          actorRole: userRole || "STUDENT",
+          action: "LOGOUT",
+          description: `${userEmail} logged out`,
+          ipAddress: (req.ip ?? "").replace("::ffff:", ""),
+          userAgent: req.headers["user-agent"] ?? null,
+          status: "SUCCESS",
+        },
+      }).catch(() => {});
     }
 
     res.clearCookie("cway_refresh", {

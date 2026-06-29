@@ -19,6 +19,9 @@ export const getCourseAnalytics = () =>
 export const getEnrollmentAnalytics = (period: "30d" | "12m" = "12m") =>
   api.get(`${BASE}/analytics/enrollments`, { params: { period } }).then((r) => r.data.data);
 
+export const getStudentTimeAnalytics = (limit: number = 10) =>
+  api.get(`${BASE}/analytics/students-time`, { params: { limit } }).then((r) => r.data.data);
+
 // ─── USERS ───────────────────────────────────────────────────────────────────
 
 export interface UserFilters {
@@ -278,3 +281,22 @@ export const assignInstructorToCourse = (courseId: string, data: {
   adminNote?: string;
 }) => api.post(`${BASE}/courses/${courseId}/assign-instructor`, data).then((r) => r.data);
 
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────
+
+export interface LogFilters {
+  search?: string;
+  action?: string;
+  status?: string;
+  userId?: string;
+  role?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export const getLogs = (filters: LogFilters = {}) =>
+  api.get(`${BASE}/logs`, { params: filters }).then((r) => r.data.data);
+
+export const getLogStats = (days = 30) =>
+  api.get(`${BASE}/logs/stats`, { params: { days } }).then((r) => r.data.data);

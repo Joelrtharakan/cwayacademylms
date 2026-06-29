@@ -214,6 +214,44 @@ export const getEnrollmentAnalytics = asyncHandler(async (req: Request, res: Res
   res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
 });
 
+export const getStudentTimeAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const limit = Math.min(50, Math.max(1, parseInt((req.query.limit as string) || "10")));
+  const cacheKey = `admin:analytics:students-time:${limit}`;
+  
+  const cached = await redis.get(cacheKey);
+  if (cached) return res.json({ status: "success", data: JSON.parse(cached) });
+
+  const results = await prisma.$queryRaw<any[]>`
+    SELECT u.id, u.name, u.email, u.avatar, u."appActiveSeconds",
+           SUM(lp."watchedSeconds") as "watchedSeconds",
+           COUNT(DISTINCT e."courseId") as "enrollmentCount"
+    FROM "User" u
+    LEFT JOIN "Enrollment" e ON e."studentId" = u.id
+    LEFT JOIN "LessonProgress" lp ON lp."enrollmentId" = e.id
+    WHERE u.role = 'STUDENT'
+    GROUP BY u.id, u.name, u.email, u.avatar, u."appActiveSeconds"
+    HAVING (SUM(lp."watchedSeconds") > 0 OR u."appActiveSeconds" > 0)
+    ORDER BY (COALESCE(SUM(lp."watchedSeconds"), 0) + COALESCE(u."appActiveSeconds", 0)) DESC
+    LIMIT ${limit}
+  `;
+
+  const topStudents = results.map((r) => {
+    const totalSeconds = Number(r.watchedSeconds || 0) + Number(r.appActiveSeconds || 0);
+    return {
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      avatar: r.avatar,
+      totalSeconds,
+      enrollmentCount: Number(r.enrollmentCount || 0),
+    };
+  });
+
+  await redis.set(cacheKey, JSON.stringify(topStudents), "EX", 60); // Cache for 60 seconds
+
+  res.json({ status: "success", data: topStudents });
+});
+
 // ─── USER MANAGEMENT ─────────────────────────────────────────────────────────
 
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
@@ -1642,4 +1680,114 @@ export const downloadCertificate = asyncHandler(async (req: Request, res: Respon
   const slug = certificate.course ? certificate.course.slug : (certificate.program ? certificate.program.id : 'certificate');
   res.setHeader("Content-Disposition", `attachment; filename="${slug}-certificate.pdf"`);
   res.send(pdfBuffer);
+});
+
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────
+
+export const getLogs = asyncHandler(async (req: Request, res: Response) => {
+  const page = Math.max(1, parseInt((req.query.page as string) || "1"));
+  const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || "50")));
+  const skip = (page - 1) * limit;
+
+  const action = req.query.action as string | undefined;
+  const resource = req.query.resource as string | undefined;
+  const status = req.query.status as string | undefined;
+  const userId = req.query.userId as string | undefined;
+  const search = req.query.search as string | undefined;
+  const from = req.query.from as string | undefined;
+  const to = req.query.to as string | undefined;
+  const role = req.query.role as string | undefined;
+
+  const where: any = {};
+
+  if (action) where.action = action;
+  if (resource) where.resource = resource;
+  if (status) where.status = status;
+  if (userId) where.userId = userId;
+  if (role) where.actorRole = role;
+
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = new Date(from);
+    if (to) where.createdAt.lte = new Date(to);
+  }
+
+  if (search) {
+    where.OR = [
+      { actorEmail: { contains: search, mode: "insensitive" } },
+      { actorName: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+      { resourceId: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const db = prisma as any;
+  const [logs, total] = await Promise.all([
+    db.activityLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatar: true, role: true },
+        },
+      },
+    }),
+    db.activityLog.count({ where }),
+  ]);
+
+  res.json({
+    status: "success",
+    data: {
+      logs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    },
+  });
+});
+
+export const getLogStats = asyncHandler(async (req: Request, res: Response) => {
+  const days = parseInt((req.query.days as string) || "30");
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  const db = prisma as any;
+  const [total, byAction, byStatus, recentFailures] = await Promise.all([
+    db.activityLog.count({ where: { createdAt: { gte: since } } }),
+    db.activityLog.groupBy({
+      by: ["action"],
+      where: { createdAt: { gte: since } },
+      _count: { action: true },
+      orderBy: { _count: { action: "desc" } },
+    }),
+    db.activityLog.groupBy({
+      by: ["status"],
+      where: { createdAt: { gte: since } },
+      _count: { status: true },
+    }),
+    db.activityLog.count({
+      where: { createdAt: { gte: since }, status: "FAILED" },
+    }),
+  ]);
+
+  const logins = byAction.find((a: any) => a.action === "LOGIN")?._count.action ?? 0;
+  const mutations = byAction
+    .filter((a: any) => !["LOGIN", "LOGOUT", "LOGIN_FAILED"].includes(a.action))
+    .reduce((sum: number, a: any) => sum + a._count.action, 0);
+
+  res.json({
+    status: "success",
+    data: {
+      total,
+      logins,
+      mutations,
+      failures: recentFailures,
+      byAction: byAction.map((a: any) => ({ action: a.action, count: a._count.action })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count.status })),
+    },
+  });
 });

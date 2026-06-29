@@ -4,13 +4,14 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import AdminSidebar from "./AdminSidebar";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, LogOut } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isLoading, initAuth } = useAuthStore();
+  const { user, isLoading, initAuth, logout } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
 
   useEffect(() => {
     initAuth();
@@ -185,33 +186,88 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div style={{ width: "1px", height: "24px", background: "#E4E8E0" }} />
 
             {/* User */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "default" }}>
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "rgba(184,134,69,0.1)",
-                  border: "1.5px solid rgba(184,134,69,0.25)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#B88645",
-                  textTransform: "uppercase" as const,
-                }}
+            <div style={{ position: "relative" }}>
+              <div 
+                style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
-                {user?.name?.slice(0, 2) || "AD"}
-              </div>
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
-                  {user?.name || "Admin"}
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "rgba(184,134,69,0.1)",
+                    border: "1.5px solid rgba(184,134,69,0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    color: "#B88645",
+                    textTransform: "uppercase" as const,
+                  }}
+                >
+                  {user?.name?.slice(0, 2) || "AD"}
                 </div>
-                <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>
-                  Administrator
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
+                    {user?.name || "Admin"}
+                  </div>
+                  <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>
+                    Administrator
+                  </div>
                 </div>
               </div>
+
+              {/* Profile Dropdown */}
+              {isProfileOpen && (
+                <>
+                  <div 
+                    style={{ position: "fixed", inset: 0, zIndex: 40 }} 
+                    onClick={() => setIsProfileOpen(false)} 
+                  />
+                  <div 
+                    style={{ 
+                      position: "absolute", 
+                      top: "calc(100% + 16px)", 
+                      right: 0, 
+                      width: "180px",
+                      background: "#fff", 
+                      borderRadius: "12px", 
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.08)", 
+                      border: "1px solid #E4E8E0",
+                      padding: "8px",
+                      zIndex: 50
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        logout();
+                      }}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        background: "transparent",
+                        border: "none",
+                        color: "#B03A2E",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.2s"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(176,58,46,0.06)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >
+                      <LogOut size={15} /> Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>

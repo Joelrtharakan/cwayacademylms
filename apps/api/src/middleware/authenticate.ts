@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { TokenService } from "../services/token.service";
 import { prisma } from "../utils/prisma";
+import { redis } from "../utils/redis";
 import { AppError, asyncHandler } from "../utils/errors";
 
 // Extend Express Request type
@@ -25,10 +26,27 @@ export const authenticate = asyncHandler(async (req: Request, res: Response, nex
   const token = authHeader.split(" ")[1];
   const decoded = TokenService.verifyAccessToken(token);
 
-  const user = await prisma.user.findUnique({
-    where: { id: decoded.userId },
-    select: { id: true, email: true, role: true, isBanned: true },
-  });
+  const cacheKey = `auth:user:${decoded.userId}`;
+  let user = null;
+  
+  try {
+    const cachedUser = await redis.get(cacheKey);
+    if (cachedUser) user = JSON.parse(cachedUser);
+  } catch (e) {
+    // ignore redis error
+  }
+
+  if (!user) {
+    user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, role: true, isBanned: true },
+    });
+    if (user) {
+      try {
+        await redis.set(cacheKey, JSON.stringify(user), "EX", 60); // Cache for 60 seconds
+      } catch (e) {}
+    }
+  }
 
   if (!user) {
     throw new AppError("The user belonging to this token no longer exists", 401);

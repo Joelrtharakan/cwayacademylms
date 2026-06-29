@@ -64,9 +64,12 @@ model User {
   extensions         Extension[]         @relation("StudentExtensions")
   extensionRequests  ExtensionRequest[]  @relation("StudentExtensionRequests")
   programEnrollments ProgramEnrollment[]
+  activityLogs       ActivityLog[]
+  appActiveSeconds   Int                 @default(0)
 
   @@index([email])
   @@index([role])
+  @@index([createdAt])
 }
 
 model Category {
@@ -213,6 +216,7 @@ model Enrollment {
   @@index([courseId])
   @@index([paymentId])
   @@index([sponsorshipId])
+  @@index([enrolledAt])
 }
 
 model LessonProgress {
@@ -432,6 +436,7 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model Payment {
@@ -450,6 +455,7 @@ model Payment {
 
   @@index([studentId])
   @@index([courseId])
+  @@index([status, createdAt])
 }
 
 model Sponsorship {
@@ -924,4 +930,30 @@ model ProgramEnrollment {
 
   @@unique([studentId, programId])
   @@index([programId])
+}
+
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?                       // null for failed logins / unauthenticated actions
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actorEmail  String?                       // always stored for audit trail
+  actorName   String?
+  actorRole   String?
+  action      String                        // LOGIN | LOGOUT | LOGIN_FAILED | CREATE | UPDATE | DELETE | APPROVE | REJECT | BAN | UNBAN | REFUND | BROADCAST | IMPERSONATE
+  resource    String?                       // e.g. "course", "user", "coupon"
+  resourceId  String?
+  description String?                       // human-readable summary
+  metadata    String?                       // JSON: extra context
+  ipAddress   String?
+  userAgent   String?
+  status      String   @default("SUCCESS")  // SUCCESS | FAILED
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resource])
+  @@index([status])
 }

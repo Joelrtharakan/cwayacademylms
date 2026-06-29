@@ -8,8 +8,8 @@ import {
 } from "recharts";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatCard } from "@/components/admin/StatCard";
-import { getAdminStats, getRevenueAnalytics, getUserAnalytics, getEnrollmentAnalytics, getCourseAnalytics, getUsers } from "@/lib/api/admin";
-import { TrendingUp, Users, GraduationCap, BookOpen, Calendar, BarChart2, Activity, UserPlus } from "lucide-react";
+import { getAdminStats, getRevenueAnalytics, getUserAnalytics, getEnrollmentAnalytics, getCourseAnalytics, getUsers, getStudentTimeAnalytics } from "@/lib/api/admin";
+import { TrendingUp, Users, GraduationCap, BookOpen, Calendar, BarChart2, Activity, UserPlus, Clock } from "lucide-react";
 
 const GOLD = "#B88645";
 const GREEN = "#3D7A4B";
@@ -56,12 +56,33 @@ type Period = "30d" | "12m";
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<Period>("12m");
 
-  const { data: stats } = useQuery({ queryKey: ["admin-stats"], queryFn: getAdminStats });
-  const { data: revenue } = useQuery({ queryKey: ["admin-rev", period], queryFn: () => getRevenueAnalytics(period) });
-  const { data: users } = useQuery({ queryKey: ["admin-users-an", period], queryFn: () => getUserAnalytics(period) });
-  const { data: enrollments } = useQuery({ queryKey: ["admin-enrl", period], queryFn: () => getEnrollmentAnalytics(period) });
-  const { data: courses } = useQuery({ queryKey: ["admin-course-an"], queryFn: getCourseAnalytics });
-  const { data: recentUsers } = useQuery({ queryKey: ["admin-recent-users"], queryFn: () => getUsers({ limit: 4, sortBy: "createdAt", sortOrder: "desc" }) });
+  const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: getAdminStats });
+  const { data: revenue, isLoading: revLoading } = useQuery({ queryKey: ["admin-rev", period], queryFn: () => getRevenueAnalytics(period) });
+  const { data: users, isLoading: usersLoading } = useQuery({ queryKey: ["admin-users-an", period], queryFn: () => getUserAnalytics(period) });
+  const { data: enrollments, isLoading: enrollLoading } = useQuery({ queryKey: ["admin-enrl", period], queryFn: () => getEnrollmentAnalytics(period) });
+  const { data: courses, isLoading: coursesLoading } = useQuery({ queryKey: ["admin-course-an"], queryFn: getCourseAnalytics });
+  const { data: recentUsers, isLoading: recentLoading } = useQuery({ queryKey: ["admin-recent-users"], queryFn: () => getUsers({ limit: 4, sortBy: "createdAt", sortOrder: "desc" }) });
+  const { data: topStudentsTime, isLoading: timeLoading } = useQuery({ 
+    queryKey: ["admin-students-time"], 
+    queryFn: () => getStudentTimeAnalytics(10),
+    refetchInterval: 60000 // Auto-refresh every 60 seconds to show real-time progress!
+  });
+
+  const isLoading = statsLoading || revLoading || usersLoading || enrollLoading || coursesLoading || recentLoading || timeLoading;
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: "40px 48px" }}>
+        <PageHeader title="Analytics & Reports" subtitle="Deep insights into revenue, user growth, and content performance" />
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <Activity size={32} color={GOLD} className="animate-pulse" />
+            <p style={{ color: "#8F9E93", fontWeight: 600, fontSize: "15px" }}>Gathering insights...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const pieData = (courses?.byCategory ?? [])
     .filter((c: any) => c.courseCount > 0)
@@ -192,57 +213,120 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Bottom row: Course performance + Category breakdown */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
-        {/* Top 10 by enrollment */}
-        <div style={{ ...cardStyle }}>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 700, color: "#1A261D", margin: "0 0 24px 0", display: "flex", alignItems: "center", gap: "10px" }}>
-            <BarChart2 size={22} color={PURPLE} /> Top Performing Courses
-          </h2>
-          {(courses?.topByEnrollment ?? []).length === 0 ? (
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#FAFBFA", borderRadius: "12px", border: "1px dashed #E4E8E0", minHeight: "240px" }}>
-              <p style={{ fontSize: "14px", color: "#8F9E93", fontWeight: 500 }}>No course data available yet.</p>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {(courses?.topByEnrollment ?? []).map((c: any, i: number) => (
-                <div key={c.id} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "12px", borderRadius: "12px", transition: "all 0.2s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFBFA"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
-                  <div style={{ 
-                    width: "32px", height: "32px", borderRadius: "8px", background: i < 3 ? "rgba(184,134,69,0.1)" : "#F0F2ED", 
-                    color: i < 3 ? "#B88645" : "#8F9E93", display: "flex", alignItems: "center", justifyContent: "center", 
-                    fontSize: "14px", fontWeight: 800, flexShrink: 0 
-                  }}>
-                    {i + 1}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                      <span style={{ fontSize: "15px", fontWeight: 700, color: "#1A261D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</span>
-                      <span style={{ 
-                        fontSize: "12px", fontWeight: 800, color: "#5C7360", background: "#F0F2ED", padding: "4px 10px", borderRadius: "8px", flexShrink: 0 
-                      }}>
-                        {c.enrollmentCount} <span style={{ fontWeight: 600, color: "#8F9E93" }}>Enrolled</span>
-                      </span>
+      {/* Bottom row: Two balanced columns */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", alignItems: "stretch", marginBottom: "32px" }}>
+        
+        {/* Left Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+          
+          {/* Top 10 by enrollment */}
+          <div style={{ ...cardStyle }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 700, color: "#1A261D", margin: "0 0 24px 0", display: "flex", alignItems: "center", gap: "10px" }}>
+              <BarChart2 size={22} color={PURPLE} /> Top Performing Courses
+            </h2>
+            {(courses?.topByEnrollment ?? []).length === 0 ? (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#FAFBFA", borderRadius: "12px", border: "1px dashed #E4E8E0", minHeight: "240px" }}>
+                <p style={{ fontSize: "14px", color: "#8F9E93", fontWeight: 500 }}>No course data available yet.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {(courses?.topByEnrollment ?? []).map((c: any, i: number) => (
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "12px", borderRadius: "12px", transition: "all 0.2s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFBFA"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                    <div style={{ 
+                      width: "32px", height: "32px", borderRadius: "8px", background: i < 3 ? "rgba(184,134,69,0.1)" : "#F0F2ED", 
+                      color: i < 3 ? "#B88645" : "#8F9E93", display: "flex", alignItems: "center", justifyContent: "center", 
+                      fontSize: "14px", fontWeight: 800, flexShrink: 0 
+                    }}>
+                      {i + 1}
                     </div>
-                    <div style={{ height: "6px", borderRadius: "999px", background: "#F0F2ED", overflow: "hidden" }}>
-                      <div style={{
-                        height: "100%", borderRadius: "999px",
-                        width: `${Math.min(100, (c.enrollmentCount / ((courses?.topByEnrollment?.[0]?.enrollmentCount || 1))) * 100)}%`,
-                        background: i === 0 ? "linear-gradient(90deg, #C9973A 0%, #B88645 100%)" : i < 3 ? GOLD : "#8F9E93",
-                      }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                        <span style={{ fontSize: "15px", fontWeight: 700, color: "#1A261D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</span>
+                        <span style={{ 
+                          fontSize: "12px", fontWeight: 800, color: "#5C7360", background: "#F0F2ED", padding: "4px 10px", borderRadius: "8px", flexShrink: 0 
+                        }}>
+                          {c.enrollmentCount} <span style={{ fontWeight: 600, color: "#8F9E93" }}>Enrolled</span>
+                        </span>
+                      </div>
+                      <div style={{ height: "6px", borderRadius: "999px", background: "#F0F2ED", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%", borderRadius: "999px",
+                          width: `${Math.min(100, (c.enrollmentCount / ((courses?.topByEnrollment?.[0]?.enrollmentCount || 1))) * 100)}%`,
+                          background: i === 0 ? "linear-gradient(90deg, #C9973A 0%, #B88645 100%)" : i < 3 ? GOLD : "#8F9E93",
+                        }} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Top Engaged Students Table */}
+          <div style={{ ...cardStyle, flex: 1, display: "flex", flexDirection: "column" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 700, color: "#1A261D", margin: "0 0 24px 0", display: "flex", alignItems: "center", gap: "10px" }}>
+              <Clock size={22} color={GOLD} /> Top Engaged Students
+            </h2>
+            {(topStudentsTime ?? []).length === 0 ? (
+              <div style={{ padding: "40px 20px", textAlign: "center", background: "#FAFBFA", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
+                <p style={{ fontSize: "14px", color: "#8F9E93", fontWeight: 500, margin: 0 }}>No student engagement data available yet.</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #E8EDE4" }}>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#8F9E93" }}>Student</th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#8F9E93" }}>Enrollments</th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#8F9E93" }}>Total Time Spent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topStudentsTime?.map((student: any, idx: number) => {
+                      const hours = Math.floor(student.totalSeconds / 3600);
+                      const minutes = Math.floor((student.totalSeconds % 3600) / 60);
+                      const timeString = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                      
+                      return (
+                        <tr key={student.id} style={{ borderBottom: idx === topStudentsTime.length - 1 ? "none" : "1px solid #F0F4EE" }}>
+                          <td style={{ padding: "12px 16px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                              {student.avatar ? (
+                                <img src={student.avatar} alt={student.name} style={{ width: "32px", height: "32px", borderRadius: "8px", objectFit: "cover" }} />
+                              ) : (
+                                <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", color: "#B88645", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "14px" }}>
+                                  {student.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div>
+                                <div style={{ fontSize: "14px", fontWeight: 700, color: "#1A261D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>{student.name}</div>
+                                <div style={{ fontSize: "12px", color: "#8F9E93", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>{student.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: "12px 16px", fontSize: "14px", fontWeight: 600, color: "#5C7360" }}>
+                            {student.enrollmentCount}
+                          </td>
+                          <td style={{ padding: "12px 16px", fontSize: "14px", fontWeight: 700, color: "#1A261D" }}>
+                            {timeString}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Category pie and Recent Activity */}
+        {/* Right Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+          
           {/* Category pie */}
-          <div style={{ ...cardStyle, display: "flex", flexDirection: "column", alignSelf: "start", width: "100%" }}>
+          <div style={{ ...cardStyle, display: "flex", flexDirection: "column", width: "100%" }}>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 700, color: "#1A261D", margin: "0 0 24px 0", display: "flex", alignItems: "center", gap: "10px" }}>
               <BookOpen size={22} color={RED} /> Distribution by Category
             </h2>
@@ -307,6 +391,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

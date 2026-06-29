@@ -2,6 +2,7 @@ import { Router } from "express";
 import { upload } from "../middleware/upload.middleware";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import { auditLog } from "../middleware/activityLog.middleware";
 import * as CC from "../controllers/courses.controller";
 
 const router = Router();
@@ -12,6 +13,7 @@ router.get("/courses/:id", (req, res, next) => { try { authenticate(req, res, ()
 router.get("/categories", CC.getPublicCategories);
 
 // ── INSTRUCTOR / ADMIN ───────────────────────────────────────────────────────
+router.use(auditLog);
 router.post("/courses", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createCourse);
 router.put("/courses/:id", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.updateCourse);
 router.delete("/courses/:id", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteCourseInstructor);

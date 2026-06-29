@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Layers,
   LayoutTemplate,
+  Activity,
 } from "lucide-react";
 
 interface NavItem {
@@ -83,6 +84,7 @@ const NAV: NavSection[] = [
       { name: "Certificates", href: "/admin/certificates", icon: Award },
       { name: "Email Templates", href: "/admin/emails", icon: Mail },
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
+      { name: "Activity Logs", href: "/admin/logs", icon: Activity },
       { name: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },

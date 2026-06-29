@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
+import { auditLog } from "../middleware/activityLog.middleware";
 import * as studentCtrl from "../controllers/student.controller";
 import { upload } from "../middleware/upload.middleware";
 
 const router = Router();
 
 router.use(authenticate);
+router.use(auditLog);
 
 // Progress
 router.post("/enrollments", studentCtrl.enrollInCourse);
@@ -60,5 +62,6 @@ router.put("/notifications/:id/read", studentCtrl.markNotificationRead);
 
 // Dashboard Dashboard
 router.get("/dashboard", studentCtrl.getStudentDashboard);
+router.post("/heartbeat", studentCtrl.updateHeartbeat);
 
 export default router;

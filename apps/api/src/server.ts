@@ -121,8 +121,10 @@ app.all("*", (req: Request, res: Response, next: NextFunction) => {
 });
 
 import { logger } from "./utils/logger";
+import { errorLog } from "./middleware/activityLog.middleware";
 
 // Global Error Handling Middleware
+app.use(errorLog);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
   const status = err.status || "error";

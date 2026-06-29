@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 import { prisma } from '../utils/prisma';
 import { format } from 'date-fns';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.cwayacademy.com';
 
 function generateCertificateNumber(): string {
   const now = new Date();
@@ -340,7 +340,7 @@ export class CertificateService {
       uniqueCode: certificate.uniqueCode,
       certificateNumber: certNumber,
       logoUrl: process.env.CWAY_LOGO_URL || 'https://cwayacademy.netlify.app/logo.png?v=3',
-      verifyUrl: `${process.env.APP_URL || 'http://localhost:3000'}/certificate/${certificate.uniqueCode}`
+      verifyUrl: `${process.env.APP_URL || 'https://www.cwayacademy.com'}/certificate/${certificate.uniqueCode}`
     };
 
     // Pick template: if a custom template is assigned, use it.
