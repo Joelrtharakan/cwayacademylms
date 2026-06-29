@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProgramById, addCourseToProgram, removeCourseFromProgram, deleteProgram } from "@/lib/api/admin";
+import { getProgramById, addCourseToProgram, removeCourseFromProgram, deleteProgram } from "@/lib/api/registrar";
 import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, BookOpen, UserCircle, Clock, Edit3, MoreVertical, Users, CheckCircle, AlertCircle, Mail, Trash2 } from "lucide-react";
 import Link from "next/link";
 import * as Tabs from "@radix-ui/react-tabs";
-import { AddCourseModal } from "@/components/admin/lms/AddCourseModal";
-import { AssignInstructorModal } from "@/components/admin/lms/AssignInstructorModal";
+import { AddCourseModal } from "@/components/registrar/lms/AddCourseModal";
+import { AssignInstructorModal } from "@/components/registrar/lms/AssignInstructorModal";
 import { SkeletonRow } from "@/components/shared/SkeletonLoader";
 import { ProgramStudents } from "./_components/ProgramStudents";
 import { useConfirm } from "@/components/shared/ConfirmContext";
@@ -66,7 +66,7 @@ export default function ProgramDetailPage() {
   });
 
   const updateProgramMut = useMutation({
-    mutationFn: (data: any) => api.put(`/admin/programs/${id}`, data),
+    mutationFn: (data: any) => api.put(`/registrar/programs/${id}`, data),
     onMutate: async (data: any) => {
       await queryClient.cancelQueries({ queryKey: ["program", id] });
       const previousProgram = queryClient.getQueryData(["program", id]);
@@ -114,7 +114,7 @@ export default function ProgramDetailPage() {
     mutationFn: () => deleteProgram(id),
     onSuccess: () => {
       toast.success("Program deleted successfully");
-      router.push("/admin/programs");
+      router.push("/registrar/programs");
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to delete program"),
   });
@@ -134,7 +134,7 @@ export default function ProgramDetailPage() {
     return (
       <div style={{ textAlign: "center", padding: "80px 40px" }}>
         <p style={{ color: "#8A9E8C" }}>Program not found</p>
-        <Link href="/admin/programs" style={{ color: "#C9973A" }}>← Back to Programs</Link>
+        <Link href="/registrar/programs" style={{ color: "#C9973A" }}>← Back to Programs</Link>
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function ProgramDetailPage() {
     <div style={{ maxWidth: 1100 }}>
       {/* Back nav */}
       <Link
-        href="/admin/programs"
+        href="/registrar/programs"
         style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#8A9E8C", textDecoration: "none", fontSize: 13, fontWeight: 500, marginBottom: 24, transition: "color 0.15s" }}
         onMouseEnter={(e) => { e.currentTarget.style.color = "#1C2B1E"; }}
         onMouseLeave={(e) => { e.currentTarget.style.color = "#8A9E8C"; }}
@@ -542,7 +542,7 @@ export default function ProgramDetailPage() {
                         </button>
                       )}
                         <Link
-                          href={`/admin/courses?search=${encodeURIComponent(course.title)}`}
+                          href={`/registrar/courses?search=${encodeURIComponent(course.title)}`}
                           style={{
                             display: "flex", alignItems: "center", justifyContent: "center",
                             width: 32, height: 32, borderRadius: 8,

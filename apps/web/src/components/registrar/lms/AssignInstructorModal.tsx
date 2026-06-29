@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Loader2, Search } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getInstructors, assignInstructorToCourse } from "@/lib/api/admin";
+import { getInstructors, assignInstructorToCourse } from "@/lib/api/registrar";
 import { toast } from "sonner";
 
 interface AssignInstructorModalProps {

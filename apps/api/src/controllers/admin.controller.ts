@@ -1496,6 +1496,25 @@ export const createCourse = asyncHandler(async (req: Request, res: Response) => 
   res.status(201).json({ status: "success", data: course, invitation });
 });
 
+export const removeCourseFromProgram = asyncHandler(async (req: Request, res: Response) => {
+  const { programId, courseId } = req.params;
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+  });
+
+  if (!course || course.programId !== programId) {
+    throw new AppError("Course not found in this program", 404);
+  }
+
+  await prisma.course.update({
+    where: { id: courseId },
+    data: { programId: null },
+  });
+
+  res.json({ status: "success", message: "Course removed from program" });
+});
+
 // ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
 export const getApplications = asyncHandler(async (req: Request, res: Response) => {
   const applications = await prisma.programApplication.findMany({

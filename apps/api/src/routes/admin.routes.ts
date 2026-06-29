@@ -94,6 +94,7 @@ router.get("/programs/:id", AdminController.getProgramById);
 router.put("/programs/:id", AdminController.updateProgram);
 router.delete("/programs/:id", AdminController.deleteProgram);
 router.post("/programs/:programId/courses", AdminController.addCourseToProgram);
+router.delete("/programs/:programId/courses/:courseId", AdminController.removeCourseFromProgram);
 router.get("/programs/:id/students", AdminController.getProgramStudents);
 router.get("/programs/:id/students/:studentId/grades", AdminController.getProgramStudentGrades);
 router.get("/programs/:id/students/:studentId", AdminController.getProgramStudentDetails);

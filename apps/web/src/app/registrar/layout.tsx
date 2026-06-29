@@ -3,10 +3,10 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
-import AdminSidebar from "./AdminSidebar";
+import RegistrarSidebar from "./RegistrarSidebar";
 import { Bell, Search, Menu, LogOut } from "lucide-react";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function RegistrarLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isLoading, initAuth, logout } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -21,8 +21,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!isLoading) {
       if (!user) {
         router.push("/login");
-      } else if (user.role === "REGISTRAR") {
-        router.push("/registrar/dashboard");
+      } else if (user.role === "ADMIN") {
+        router.push("/admin/dashboard");
       } else if (user.role === "INSTRUCTOR") {
         router.push("/instructor/dashboard");
       } else if (user.role === "STUDENT") {
@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user || user.role !== "ADMIN") {
+  if (isLoading || !user || user.role !== "REGISTRAR") {
     return (
       <div
         style={{
@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#FAFAF7", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Sidebar (renders its own fixed div + spacer) */}
-      <AdminSidebar 
+      <RegistrarSidebar 
         mobileOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)} 
         collapsed={isDesktopCollapsed}
@@ -213,10 +213,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
                 <div>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
-                    {user?.name || "Admin"}
+                    {user?.name || "Registrar"}
                   </div>
-                  <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>
-                    Administrator
+                  <div style={{ 
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "3px 8px",
+                    borderRadius: "9999px",
+                    background: "rgba(184,134,69,0.15)",
+                    color: "#B88645",
+                    fontSize: "9.5px", 
+                    fontWeight: 800, 
+                    textTransform: "uppercase" as const, 
+                    letterSpacing: "0.15em", 
+                    marginTop: "4px" 
+                  }}>
+                    Registrar
                   </div>
                 </div>
               </div>

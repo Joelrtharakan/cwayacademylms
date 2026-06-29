@@ -150,7 +150,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
     isEnrolled = !!enrollment;
   }
 
-  const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN";
+  const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN" || req.user?.role === "REGISTRAR";
   const ratings = course.reviews.map((r) => r.rating);
 
   // Strip private content for non-enrolled students
@@ -726,14 +726,15 @@ export const deleteForumReply = asyncHandler(async (req: Request, res: Response)
 // ─── INSTRUCTOR STATS ────────────────────────────────────────────────────────
 
 export const getMyCourses = asyncHandler(async (req: Request, res: Response) => {
+  const whereClause = (req.user!.role === "ADMIN" || req.user!.role === "REGISTRAR")
+    ? {}
+    : {
+        instructorId: req.user!.id,
+        OR: [{ invitation: null }, { invitation: { status: "ACCEPTED" } }],
+      };
+
   const courses = await prisma.course.findMany({
-    where: { 
-      instructorId: req.user!.id,
-      OR: [
-        { invitation: null },
-        { invitation: { status: "ACCEPTED" } }
-      ]
-    },
+    where: whereClause,
     orderBy: { createdAt: "desc" },
     include: {
       instructor: { select: { id: true, name: true, avatar: true } },

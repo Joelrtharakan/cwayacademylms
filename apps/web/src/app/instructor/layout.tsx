@@ -70,7 +70,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user || (user.role !== "INSTRUCTOR" && user.role !== "ADMIN")) {
+  if (isLoading || !user || (user.role !== "INSTRUCTOR" && user.role !== "ADMIN" && user.role !== "REGISTRAR")) {
     return (
       <div
         style={{

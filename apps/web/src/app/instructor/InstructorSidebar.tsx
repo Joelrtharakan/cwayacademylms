@@ -220,7 +220,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                 <span style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "13px", fontWeight: 400, letterSpacing: "0.1em", color: "#B88645", textTransform: "uppercase" as const }}>Academy</span>
               </div>
               <div style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.15em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" as const, marginTop: "2px" }}>
-                {user?.role === "ADMIN" ? "Admin (Instructor View)" : "Instructor Panel"}
+                {user?.role === "ADMIN" ? "Admin (Instructor View)" : user?.role === "REGISTRAR" ? "Registrar (Instructor View)" : "Instructor Panel"}
               </div>
             </div>
           </div>
@@ -242,10 +242,10 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
             zIndex: 2,
           }}
         >
-          {user?.role === "ADMIN" && (
+          {(user?.role === "ADMIN" || user?.role === "REGISTRAR") && (
             <div style={{ padding: "0 16px 16px 16px", marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               <Link 
-                href="/admin/courses"
+                href={user.role === "ADMIN" ? "/admin/courses" : "/registrar/courses"}
                 style={{
                   display: "block",
                   padding: "10px",
@@ -262,7 +262,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
                 onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
               >
-                ← Return to Admin Panel
+                ← {user?.role === "ADMIN" ? "Return to Admin Panel" : "Return to Registrar Panel"}
               </Link>
             </div>
           )}
@@ -492,25 +492,25 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                 gap: collapsed ? 0 : "12px",
                 padding: collapsed ? "12px 0" : "12px 14px",
                 borderRadius: "10px",
-                background: "transparent",
-                border: "none",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                transition: "all 0.2s",
                 cursor: "pointer",
                 color: "rgba(255,255,255,0.6)",
                 fontSize: "14px",
                 fontFamily: "var(--font-plus-jakarta), sans-serif",
                 fontWeight: 600,
-                transition: "all 0.15s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(176,58,46,0.15)";
-                e.currentTarget.style.color = "#fca5a5";
+                e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
               }}
             >
-              <LogOut size={18} style={{ flexShrink: 0 }} />
+              <LogOut size={20} style={{ marginRight: collapsed ? "0px" : "12px", strokeWidth: 1.5, opacity: 0.7 }} />
               {!collapsed && <span>Sign out</span>}
             </button>
           </div>

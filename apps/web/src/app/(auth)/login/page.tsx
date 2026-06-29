@@ -59,6 +59,8 @@ function LoginContent() {
 
       if (user.role === "ADMIN") {
         router.push("/admin/dashboard");
+      } else if (user.role === "REGISTRAR") {
+        router.push("/registrar/dashboard");
       } else if (user.role === "INSTRUCTOR") {
         router.push("/instructor/dashboard");
       } else {
