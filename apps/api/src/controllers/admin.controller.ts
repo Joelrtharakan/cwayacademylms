@@ -214,6 +214,25 @@ export const getEnrollmentAnalytics = asyncHandler(async (req: Request, res: Res
   res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
 });
 
+export const getRecentEnrollments = asyncHandler(async (req: Request, res: Response) => {
+  const limit = Math.min(20, Math.max(1, parseInt((req.query.limit as string) || "8")));
+
+  const enrollments = await prisma.enrollment.findMany({
+    orderBy: { enrolledAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      enrolledAt: true,
+      progress: true,
+      status: true,
+      student: { select: { id: true, name: true, email: true, avatar: true } },
+      course: { select: { id: true, title: true } },
+    },
+  });
+
+  res.json({ status: "success", data: enrollments });
+});
+
 export const getStudentTimeAnalytics = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(50, Math.max(1, parseInt((req.query.limit as string) || "10")));
   const cacheKey = `admin:analytics:students-time:${limit}`;

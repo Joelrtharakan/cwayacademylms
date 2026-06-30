@@ -98,7 +98,17 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
       }
     });
 
-    setExpandedSections((prev) => ({ ...prev, ...initialState }));
+    setExpandedSections((prev) => {
+      let hasChanges = false;
+      const next = { ...prev };
+      for (const key in initialState) {
+        if (!next[key]) {
+          next[key] = true;
+          hasChanges = true;
+        }
+      }
+      return hasChanges ? next : prev;
+    });
   }, [pathname]);
 
   const toggleSection = (title: string) => {

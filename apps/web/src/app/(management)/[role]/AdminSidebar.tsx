@@ -9,14 +9,27 @@ import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
+  Users,
+  GraduationCap,
   BookOpen,
   FolderKanban,
+  FileText,
+  CreditCard,
+  HeartHandshake,
+  Percent,
+  BarChart3,
   Award,
+  Mail,
+  Bell,
   Settings,
   LogOut,
+  MessageSquare,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Layers,
+  LayoutTemplate,
+  Activity,
 } from "lucide-react";
 
 interface NavItem {
@@ -25,38 +38,57 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }
 
+import { useManagementPath, useManagementRole } from "@/hooks/useManagementPath";
+
 interface NavSection {
   title: string;
+  category?: string;
   items: NavItem[];
 }
 
-const NAV: NavSection[] = [
+const getNav = (basePath: string): NavSection[] => [
   {
     title: "Overview",
-    items: [{ name: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard }],
+    items: [{ name: "Dashboard", href: `${basePath}/dashboard`, icon: LayoutDashboard }],
+  },
+  {
+    title: "People",
+    items: [
+      { name: "Users", href: `${basePath}/users`, icon: Users },
+      { name: "Instructors", href: `${basePath}/instructors`, icon: GraduationCap },
+      { name: "Messages", href: `${basePath}/messages`, icon: MessageSquare },
+    ],
   },
   {
     title: "Learning",
     items: [
-      { name: "My Courses", href: "/student/my-courses", icon: BookOpen },
+      { name: "Programs", href: `${basePath}/programs`, icon: LayoutTemplate },
+      { name: "Applications", href: `${basePath}/applications`, icon: FileText },
+      { name: "Courses", href: `${basePath}/courses`, icon: BookOpen },
+      { name: "Categories", href: `${basePath}/categories`, icon: FolderKanban },
+      { name: "Blog Posts", href: `${basePath}/blog`, icon: FileText },
     ],
   },
   {
-    title: "Activities",
+    title: "Finance",
     items: [
-      { name: "Assignments", href: "/student/assignments", icon: FolderKanban },
+      { name: "Payments", href: `${basePath}/payments`, icon: CreditCard },
+      { name: "Sponsorships", href: `${basePath}/sponsorships`, icon: HeartHandshake },
+      { name: "Coupons", href: `${basePath}/coupons`, icon: Percent },
     ],
   },
   {
-    title: "Achievements",
-    items: [
-      { name: "Certificates", href: "/student/certificates", icon: Award },
-    ],
+    title: "Analytics",
+    items: [{ name: "Reports", href: `${basePath}/analytics`, icon: BarChart3 }],
   },
   {
-    title: "Account",
+    title: "System",
     items: [
-      { name: "Settings", href: "/student/settings", icon: Settings },
+      { name: "Certificates", href: `${basePath}/certificates`, icon: Award },
+      { name: "Email Templates", href: `${basePath}/emails`, icon: Mail },
+      { name: "Notifications", href: `${basePath}/notifications`, icon: Bell },
+      { name: "Activity Logs", href: `${basePath}/logs`, icon: Activity },
+      { name: "Settings", href: `${basePath}/settings`, icon: Settings },
     ],
   },
 ];
@@ -65,11 +97,14 @@ const NAV: NavSection[] = [
 const EXPANDED_W = 280;
 const COLLAPSED_W = 80;
 
-export default function StudentSidebar({ mobileOpen = false, onClose = () => {}, collapsed = false, onToggleCollapse = () => {} }: { mobileOpen?: boolean, onClose?: () => void, collapsed?: boolean, onToggleCollapse?: () => void }) {
+export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, collapsed = false, onToggleCollapse = () => {} }: { mobileOpen?: boolean, onClose?: () => void, collapsed?: boolean, onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const lenis = useLenis();
+  const basePath = useManagementPath();
+  const role = useManagementRole();
+  const NAV = React.useMemo(() => getNav(basePath), [basePath]);
 
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -84,7 +119,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
       const hasActiveItem = section.items.some(
         (item) => pathname === item.href || pathname.startsWith(item.href + "/")
       );
-      if (hasActiveItem) {
+      if (hasActiveItem && section.title) {
         initialState[section.title] = true;
       }
     });
@@ -100,7 +135,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
       }
       return hasChanges ? next : prev;
     });
-  }, [pathname]);
+  }, [pathname, NAV]);
 
   const toggleSection = (title: string) => {
     if (collapsed) return; // Don't toggle when collapsed
@@ -130,17 +165,17 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
       )}
 
       <style>{`
-        .student-sidebar-scroll::-webkit-scrollbar {
+        .admin-sidebar-scroll::-webkit-scrollbar {
           width: 6px;
         }
-        .student-sidebar-scroll::-webkit-scrollbar-track {
+        .admin-sidebar-scroll::-webkit-scrollbar-track {
           background: transparent;
         }
-        .student-sidebar-scroll::-webkit-scrollbar-thumb {
+        .admin-sidebar-scroll::-webkit-scrollbar-thumb {
           background: rgba(255, 255, 255, 0.2);
           border-radius: 6px;
         }
-        .student-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+        .admin-sidebar-scroll::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 255, 255, 0.35);
         }
       `}</style>
@@ -226,7 +261,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                   color: "rgba(255,255,255,0.6)", 
                   marginTop: "4px" 
                 }}>
-                  Student Portal
+                  {role === "REGISTRAR" ? "Registrar" : "Administration"}
                 </div>
               </div>
             )}
@@ -235,7 +270,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
 
         {/* ── Scrollable Navigation Area (Absolutely positioned middle) ── */}
         <nav
-          className="student-sidebar-scroll"
+          className="admin-sidebar-scroll"
           data-lenis-prevent="true"
           style={{
             position: "absolute",
@@ -317,12 +352,14 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                         const Icon = item.icon;
 
                         return (
-                          <Link
+                          <button
                             key={item.href}
-                            href={item.href}
-                            prefetch={true}
+                            onClick={() => router.push(item.href)}
                             title={collapsed ? item.name : undefined}
                             style={{
+                              width: "100%",
+                              border: "none",
+                              cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
                               gap: collapsed ? 0 : "14px",
@@ -380,7 +417,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                                 {item.name}
                               </span>
                             )}
-                          </Link>
+                          </button>
                         );
                       })}
                     </div>
@@ -439,11 +476,11 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                     flexShrink: 0,
                   }}
                 >
-                  {user?.name?.slice(0, 2) || "ST"}
+                  {user?.name?.slice(0, 2) || "AD"}
                 </div>
                 <div style={{ overflow: "hidden", flex: 1 }}>
                   <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "14px", fontWeight: 700, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {user?.name || "Student"}
+                    {user?.name || "Admin"}
                   </div>
                   <div style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "12px", color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {user?.email}
@@ -529,7 +566,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
       </div>
 
       {/* Spacer to push content right — same width as sidebar */}
-      <div className="hidden md:block" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div className="print:hidden" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
     </>
   );
 }

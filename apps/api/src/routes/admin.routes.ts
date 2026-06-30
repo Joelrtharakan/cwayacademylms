@@ -19,6 +19,7 @@ router.get("/analytics/revenue", AdminController.getRevenueAnalytics);
 router.get("/analytics/users", AdminController.getUserAnalytics);
 router.get("/analytics/courses", AdminController.getCourseAnalytics);
 router.get("/analytics/enrollments", AdminController.getEnrollmentAnalytics);
+router.get("/analytics/recent-enrollments", AdminController.getRecentEnrollments);
 router.get("/analytics/students-time", AdminController.getStudentTimeAnalytics);
 
 // ─── USER MANAGEMENT ─────────────────────────────────────────────────────────

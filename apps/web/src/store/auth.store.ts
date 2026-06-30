@@ -33,7 +33,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1
 
 // Create custom Axios client
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
   withCredentials: true,
 });
 
