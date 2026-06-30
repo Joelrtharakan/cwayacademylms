@@ -40,6 +40,7 @@ router.put("/instructors/:id/payout-percentage", AdminController.updateInstructo
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────
 router.get("/courses", AdminController.getCourses);
 router.post("/courses", AdminController.createCourse);
+router.post("/courses/:id/duplicate", AdminController.duplicateCourse);
 router.post("/courses/:id/approve", AdminController.approveCourse);
 router.post("/courses/:id/reject", AdminController.rejectCourse);
 router.put("/courses/:id/feature", AdminController.featureCourse);

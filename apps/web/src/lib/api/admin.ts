@@ -94,6 +94,9 @@ export interface CourseFilters {
 export const getCourses = (filters: CourseFilters = {}) =>
   api.get(`/admin/courses`, { params: filters }).then((r) => r.data.data);
 
+export const duplicateCourse = (id: string, programId?: string) =>
+  api.post(`/admin/courses/${id}/duplicate`, { programId }).then((r) => r.data.data);
+
 export const approveCourse = (id: string) =>
   api.post(`/admin/courses/${id}/approve`).then((r) => r.data);
 

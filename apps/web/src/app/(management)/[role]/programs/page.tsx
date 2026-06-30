@@ -66,7 +66,7 @@ function ProgramCard({ program }: { program: any }) {
           background: "linear-gradient(90deg, #C9973A, #E8B85A)",
         }} />
 
-        <div style={{ padding: "22px 22px 20px" }}>
+        <div style={{ padding: "22px 22px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
           {/* Icon + status */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
             <div style={{
@@ -84,52 +84,61 @@ function ProgramCard({ program }: { program: any }) {
             <StatusBadge status={program.status} />
           </div>
 
-          {/* Title */}
-          <h3 style={{
-            fontFamily: "Georgia, serif",
-            fontSize: 17,
-            fontWeight: 700,
-            color: "#1C2B1E",
-            margin: "0 0 6px 0",
-            lineHeight: 1.3,
-          }}>
-            {program.title}
-          </h3>
-          {program.description && (
-            <p style={{
-              fontSize: 13,
-              color: "#8A9E8C",
-              margin: "0 0 16px 0",
-              lineHeight: 1.5,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
+          {/* Body */}
+          <div style={{ marginBottom: "24px" }}>
+            {/* Title */}
+            <h3 style={{
+              fontFamily: "Georgia, serif",
+              fontSize: 17,
+              fontWeight: 700,
+              color: "#1C2B1E",
+              margin: "0 0 8px 0",
+              lineHeight: 1.3,
             }}>
-              {program.description}
-            </p>
-          )}
+              {program.title}
+            </h3>
+            {program.description && (
+              <p style={{
+                fontSize: 13,
+                color: "#8A9E8C",
+                margin: 0,
+                lineHeight: 1.5,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}>
+                {program.description}
+              </p>
+            )}
+          </div>
 
-          {/* Stats row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16, paddingTop: 14, borderTop: "1px solid #EEF0EA" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A9E8C", fontSize: 12, fontWeight: 500 }}>
-              <BookOpen size={13} color="#C9973A" />
-              <span>{courseCount} course{courseCount !== 1 ? "s" : ""}</span>
+          {/* Stats Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", paddingTop: "20px", borderTop: "1px solid #EEF0EA", marginTop: "auto" }}>
+            <div>
+              <div style={{ fontSize: 10, color: "#8A9E8C", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Total Courses</div>
+              <div style={{ fontSize: 14, color: "#1C2B1E", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                <BookOpen size={14} color="#C9973A" />
+                {courseCount}
+              </div>
             </div>
-            {publishedCount > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#4A8C5C", fontSize: 12, fontWeight: 600 }}>
-                <span>·</span>
-                <span>{publishedCount} published</span>
+            
+            <div>
+              <div style={{ fontSize: 10, color: "#8A9E8C", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Published</div>
+              <div style={{ fontSize: 14, color: publishedCount > 0 ? "#4A8C5C" : "#8A9E8C", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                <Layers size={14} />
+                {publishedCount}
               </div>
-            )}
-            {program.duration && (
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A9E8C", fontSize: 12, fontWeight: 500 }}>
-                <Clock size={12} color="#8A9E8C" />
-                <span>{program.duration}</span>
-              </div>
-            )}
-            <div style={{ marginLeft: "auto", color: "#C9973A" }}>
-              <ChevronRight size={16} />
+            </div>
+            
+            <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "16px", borderTop: "1px dashed #EEF0EA" }}>
+               <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#8A9E8C", fontSize: 13, fontWeight: 500 }}>
+                 <Clock size={14} />
+                 {program.duration || "Self-paced"}
+               </div>
+               <div style={{ color: "#C9973A", display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 700, transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#E8B85A"} onMouseLeave={(e) => e.currentTarget.style.color = "#C9973A"}>
+                 Manage <ChevronRight size={16} />
+               </div>
             </div>
           </div>
         </div>

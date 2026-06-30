@@ -100,7 +100,7 @@ export default function GradeForumPage() {
 
   if (isModuleLoading || isDiscussionsLoading) {
     return (
-      <div className="p-12 text-[#8A9E8C] font-medium flex items-center gap-3">
+      <div className="min-h-screen flex items-center justify-center p-12 text-[#8A9E8C] font-medium gap-3" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "12px" }}>
         <div className="w-6 h-6 border-2 border-[#C9973A] border-t-transparent rounded-full animate-spin" />
         Loading submissions...
       </div>
@@ -224,8 +224,8 @@ export default function GradeForumPage() {
         </div>
 
         {(!discussions || discussions.length === 0) ? (
-          <div className="bg-white rounded-3xl text-center border border-[#E4E8E0] shadow-sm" style={{ padding: "64px 32px" }}>
-            <MessageSquare size={40} className="text-[#D3D9D5] mx-auto mb-4" style={{ marginBottom: "16px" }} />
+          <div className="bg-white rounded-3xl text-center border border-[#E4E8E0] shadow-sm flex flex-col items-center justify-center" style={{ padding: "64px 32px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <MessageSquare size={40} className="text-[#D3D9D5] mb-4" style={{ marginBottom: "16px" }} />
             <h3 className="text-[#1A261D] font-bold font-serif text-xl mb-2" style={{ marginBottom: "8px" }}>No Submissions Yet</h3>
             <p className="text-[#8A9E8C] text-[15px]">Students haven't posted any replies to this prompt. Check back later!</p>
           </div>

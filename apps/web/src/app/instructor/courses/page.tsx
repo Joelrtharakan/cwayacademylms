@@ -183,7 +183,19 @@ export default function InstructorCoursesPage() {
       {isLoading ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ height: "320px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "16px", animation: "pulse 1.5s infinite", opacity: 0.7 }} />
+            <div key={i} style={{ height: "320px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "16px", animation: "pulse 1.5s infinite", opacity: 0.7, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "#F7F8F5" }} />
+              <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1, gap: "12px" }}>
+                <div style={{ height: "20px", width: "60px", background: "#F7F8F5", borderRadius: "6px" }} />
+                <div style={{ height: "24px", width: "80%", background: "#F7F8F5", borderRadius: "4px" }} />
+                <div style={{ height: "16px", width: "40%", background: "#F7F8F5", borderRadius: "4px" }} />
+                <div style={{ marginTop: "auto", display: "flex", gap: "8px", borderTop: "1px solid #E4E8E0", paddingTop: "16px" }}>
+                   <div style={{ flex: 1, height: "36px", background: "#F7F8F5", borderRadius: "8px" }} />
+                   <div style={{ width: "42px", height: "36px", background: "#F7F8F5", borderRadius: "8px" }} />
+                   <div style={{ width: "42px", height: "36px", background: "#F7F8F5", borderRadius: "8px" }} />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : courses.length === 0 ? (

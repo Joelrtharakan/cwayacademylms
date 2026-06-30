@@ -1207,11 +1207,27 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: "14px", fontWeight: 500, color: "#1A261D", margin: 0 }}>
-                      <span style={{ fontWeight: 600 }}>{log.user?.name || "System"}</span> {log.action ? log.action.replace(/_/g, " ").toLowerCase() : "performed action"} {log.entityType ? <span style={{ fontWeight: 600 }}>{log.entityType.toLowerCase()}</span> : null}
+                      <span style={{ fontWeight: 600 }}>{log.user?.name || log.actorName || "System"}</span>{" "}
+                      {(() => {
+                        const act = log.action || "";
+                        switch(act) {
+                          case "CREATE": return "created a new";
+                          case "UPDATE": return "updated";
+                          case "DELETE": return "deleted";
+                          case "LOGIN": return "logged in";
+                          case "LOGOUT": return "logged out";
+                          case "APPROVE": return "approved";
+                          case "REJECT": return "rejected";
+                          case "BAN": return "banned";
+                          case "UNBAN": return "unbanned";
+                          default: return act ? act.replace(/_/g, " ").toLowerCase() : "performed action";
+                        }
+                      })()}{" "}
+                      {log.resource ? <span style={{ fontWeight: 600 }}>{log.resource.toLowerCase().replace(/_/g, " ")}</span> : null}
                     </p>
-                    {log.details && (
+                    {log.description && (
                       <p style={{ fontSize: "13px", color: "#8F9E93", margin: "4px 0 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {JSON.stringify(log.details)}
+                        {log.description}
                       </p>
                     )}
                   </div>

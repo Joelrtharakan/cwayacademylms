@@ -5,6 +5,7 @@ import { useManagementPath } from "@/hooks/useManagementPath";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
+import { duplicateCourse, getCourses } from "@/lib/api/admin";
 import { toast } from "sonner";
 import { BookOpen, Gift, CreditCard, Heart, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +13,9 @@ import Link from "next/link";
 export default function NewAdminCoursePage() {
   const basePath = useManagementPath();
   const router = useRouter();
+
+  const [mode, setMode] = useState<"NEW" | "EXISTING">("NEW");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -36,6 +40,13 @@ export default function NewAdminCoursePage() {
     queryFn: () => api.get(`/admin/instructors`).then((r) => r.data.data),
   });
 
+  const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
+    queryKey: ["courses-list"],
+    queryFn: () => getCourses(),
+    enabled: mode === "EXISTING"
+  });
+  const coursesList = coursesData?.courses || coursesData || [];
+
   const createMut = useMutation({
     mutationFn: (data: any) => api.post(`/admin/courses`, data).then((r) => r.data.data),
     onSuccess: (data) => {
@@ -47,27 +58,46 @@ export default function NewAdminCoursePage() {
     },
   });
 
+  const duplicateMut = useMutation({
+    mutationFn: (courseId: string) => duplicateCourse(courseId),
+    onSuccess: (data) => {
+      toast.success("Course duplicated successfully");
+      router.push(`${basePath}/courses`);
+    },
+    onError: (e: any) => {
+      toast.error(e?.response?.data?.message || "Failed to duplicate course");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !categoryId || !instructorId) {
-      toast.error("Please fill all required fields");
-      return;
-    }
+    if (mode === "NEW") {
+      if (!title || !categoryId || !instructorId) {
+        toast.error("Please fill all required fields");
+        return;
+      }
 
-    createMut.mutate({
-      title,
-      subtitle,
-      categoryId,
-      instructorId,
-      adminNote,
-      moduleNumber: moduleNumber || undefined,
-      language,
-      level,
-      isFree: pricingType === "FREE" || pricingType === "SCHOLARSHIP",
-      price: pricingType === "PAID" ? Number(price) : 0,
-      currency,
-      tags: pricingType === "SCHOLARSHIP" ? ["Scholarship Eligible"] : [],
-    });
+      createMut.mutate({
+        title,
+        subtitle,
+        categoryId,
+        instructorId,
+        adminNote,
+        moduleNumber: moduleNumber || undefined,
+        language,
+        level,
+        isFree: pricingType === "FREE" || pricingType === "SCHOLARSHIP",
+        price: pricingType === "PAID" ? Number(price) : 0,
+        currency,
+        tags: pricingType === "SCHOLARSHIP" ? ["Scholarship Eligible"] : [],
+      });
+    } else {
+      if (!selectedCourseId) {
+        toast.error("Please select a course to duplicate");
+        return;
+      }
+      duplicateMut.mutate(selectedCourseId);
+    }
   };
 
   const LANGUAGES = ["ENGLISH", "HINDI", "TAMIL", "TELUGU", "KANNADA", "MALAYALAM"];
@@ -89,25 +119,51 @@ export default function NewAdminCoursePage() {
         }}
       >
         {/* Header */}
-        <div style={{ padding: "32px 40px", borderBottom: "1px solid rgba(184,134,69,0.15)", position: "relative" }}>
+        <div style={{ padding: "32px 40px 0", position: "relative" }}>
           <Link href={`${basePath}/courses`} style={{ position: "absolute", left: "40px", top: "38px", color: "#8F9E93", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
             <ArrowLeft size={20} />
           </Link>
-          <div style={{ textAlign: "center" }}>
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "48px", height: "48px", borderRadius: "12px", background: "rgba(184,134,69,0.1)", color: "#B88645", marginBottom: "16px" }}>
               <BookOpen size={24} />
             </div>
             <h1 style={{ fontFamily: "Georgia, serif", fontSize: "32px", fontWeight: 700, color: "#1A261D", margin: "0 0 8px 0" }}>Create Course & Assign Instructor</h1>
-            <p style={{ fontSize: "15px", color: "#8F9E93", margin: 0 }}>This will create a draft and send an invitation to the instructor.</p>
+            <p style={{ fontSize: "15px", color: "#8F9E93", margin: 0 }}>Create a new course from scratch or duplicate an existing one.</p>
           </div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: "1px solid rgba(184,134,69,0.15)", padding: "0 40px" }}>
+          <button
+            type="button"
+            onClick={() => setMode("NEW")}
+            style={{
+              padding: "16px 20px", background: "transparent", border: "none", borderBottom: mode === "NEW" ? "2px solid #B88645" : "2px solid transparent",
+              color: mode === "NEW" ? "#B88645" : "#8F9E93", fontSize: "15px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
+            }}
+          >
+            Create New Course
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("EXISTING")}
+            style={{
+              padding: "16px 20px", background: "transparent", border: "none", borderBottom: mode === "EXISTING" ? "2px solid #B88645" : "2px solid transparent",
+              color: mode === "EXISTING" ? "#B88645" : "#8F9E93", fontSize: "15px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
+            }}
+          >
+            Add from Existing
+          </button>
         </div>
 
         {/* Form Content */}
         <div style={{ padding: "40px" }}>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
             
-            {/* Title & Subtitle */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            {mode === "NEW" ? (
+              <>
+                {/* Title & Subtitle */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Course Title *</label>
                 <input
@@ -289,6 +345,34 @@ export default function NewAdminCoursePage() {
                 </div>
               )}
             </div>
+              </>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>Select Course *</label>
+                  <select
+                    value={selectedCourseId}
+                    onChange={(e) => setSelectedCourseId(e.target.value)}
+                    style={{
+                      width: "100%", padding: "16px", fontSize: "15px", background: "#F7F8F5", border: "1px solid rgba(184,134,69,0.3)", borderRadius: "12px", color: "#1A261D", outline: "none", appearance: "none"
+                    }}
+                    required={mode === "EXISTING"}
+                  >
+                    <option value="" disabled style={{ color: "#000" }}>Select an existing course to duplicate</option>
+                    {isLoadingCourses ? (
+                      <option disabled>Loading...</option>
+                    ) : (
+                      coursesList.map((c: any) => (
+                        <option key={c.id} value={c.id} style={{ color: "#000" }}>{c.title}</option>
+                      ))
+                    )}
+                  </select>
+                  <p style={{ fontSize: "13px", color: "#8F9E93", marginTop: "12px" }}>
+                    This will create a copy of the selected course, including all its sections, lessons, quizzes, and assignments as a new standalone course.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Submit */}
             <div style={{ paddingTop: "16px", borderTop: "1px solid rgba(184,134,69,0.15)", display: "flex", justifyContent: "flex-end", gap: "16px" }}>
@@ -297,15 +381,15 @@ export default function NewAdminCoursePage() {
               </Link>
               <button
                 type="submit"
-                disabled={createMut.isPending || !title || !categoryId || !instructorId || (pricingType === "PAID" && !price)}
+                disabled={createMut.isPending || duplicateMut.isPending || (mode === "NEW" && (!title || !categoryId || !instructorId || (pricingType === "PAID" && !price))) || (mode === "EXISTING" && !selectedCourseId)}
                 style={{
-                  padding: "14px 32px", borderRadius: "999px", fontSize: "15px", fontWeight: 600, background: "#B88645", color: "#FFFFFF", border: "none", cursor: createMut.isPending ? "not-allowed" : "pointer", opacity: createMut.isPending ? 0.7 : 1, transition: "all 0.2s", display: "flex", alignItems: "center", gap: "8px"
+                  padding: "14px 32px", borderRadius: "999px", fontSize: "15px", fontWeight: 600, background: "#B88645", color: "#FFFFFF", border: "none", cursor: (createMut.isPending || duplicateMut.isPending) ? "not-allowed" : "pointer", opacity: (createMut.isPending || duplicateMut.isPending) ? 0.7 : 1, transition: "all 0.2s", display: "flex", alignItems: "center", gap: "8px"
                 }}
-                onMouseEnter={(e) => !createMut.isPending && (e.currentTarget.style.background = "#E8B85A")}
-                onMouseLeave={(e) => !createMut.isPending && (e.currentTarget.style.background = "#B88645")}
+                onMouseEnter={(e) => !(createMut.isPending || duplicateMut.isPending) && (e.currentTarget.style.background = "#E8B85A")}
+                onMouseLeave={(e) => !(createMut.isPending || duplicateMut.isPending) && (e.currentTarget.style.background = "#B88645")}
               >
-                {createMut.isPending ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : null}
-                {createMut.isPending ? "Creating..." : "Create Course & Assign"}
+                {(createMut.isPending || duplicateMut.isPending) ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : null}
+                {createMut.isPending ? "Creating..." : duplicateMut.isPending ? "Duplicating..." : mode === "NEW" ? "Create Course & Assign" : "Duplicate Course"}
               </button>
             </div>
           </form>

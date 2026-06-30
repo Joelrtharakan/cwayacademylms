@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useManagementPath } from "@/hooks/useManagementPath";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProgramById, addCourseToProgram, removeCourseFromProgram, deleteProgram } from "@/lib/api/admin";
+import { getProgramById, addCourseToProgram, removeCourseFromProgram, deleteProgram, duplicateCourse } from "@/lib/api/admin";
 import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, BookOpen, UserCircle, Clock, Edit3, MoreVertical, Users, CheckCircle, AlertCircle, Mail, Trash2 } from "lucide-react";
@@ -101,6 +101,16 @@ export default function ProgramDetailPage() {
       toast.success("Course added to program");
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Failed to add course"),
+  });
+
+  const duplicateCourseMut = useMutation({
+    mutationFn: (courseId: string) => duplicateCourse(courseId, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["program", id] });
+      toast.success("Course duplicated into program");
+      setShowAddCourse(false);
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to duplicate course"),
   });
 
   const removeCourseMut = useMutation({
@@ -591,7 +601,8 @@ export default function ProgramDetailPage() {
         open={showAddCourse}
         programId={id}
         onClose={() => setShowAddCourse(false)}
-        onSubmit={(d) => addCourseMut.mutateAsync(d)}
+        onSubmit={(d) => addCourseMut.mutateAsync(d).then(() => setShowAddCourse(false))}
+        onDuplicate={(courseId) => duplicateCourseMut.mutateAsync(courseId)}
       />
 
       <AssignInstructorModal

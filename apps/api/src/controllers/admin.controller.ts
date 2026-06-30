@@ -1515,6 +1515,147 @@ export const createCourse = asyncHandler(async (req: Request, res: Response) => 
   res.status(201).json({ status: "success", data: course, invitation });
 });
 
+export const duplicateCourse = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { programId } = req.body;
+
+  const originalCourse = await prisma.course.findUnique({
+    where: { id },
+    include: {
+      sections: {
+        include: {
+          lessons: {
+            include: {
+              quiz: { include: { questions: { include: { answers: true } } } },
+              assignment: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!originalCourse) throw new AppError("Course not found", 404);
+
+  const crypto = await import("crypto");
+  const randomHex = crypto.randomBytes(3).toString("hex");
+  const slug = await uniqueSlug(`${originalCourse.title} Copy ${randomHex}`);
+
+  const newCourse = await prisma.$transaction(async (tx) => {
+    const createdCourse = await tx.course.create({
+      data: {
+        title: `${originalCourse.title} (Copy)`,
+        subtitle: originalCourse.subtitle,
+        description: originalCourse.description,
+        thumbnail: originalCourse.thumbnail,
+        promoVideoUrl: originalCourse.promoVideoUrl,
+        price: originalCourse.price,
+        currency: originalCourse.currency,
+        status: "DRAFT",
+        level: originalCourse.level,
+        language: originalCourse.language,
+        moduleNumber: originalCourse.moduleNumber,
+        weeksDuration: originalCourse.weeksDuration,
+        totalLectures: originalCourse.totalLectures,
+        totalDuration: originalCourse.totalDuration,
+        scriptureRef: originalCourse.scriptureRef,
+        isFeatured: originalCourse.isFeatured,
+        isFree: originalCourse.isFree,
+        requirements: originalCourse.requirements,
+        outcomes: originalCourse.outcomes,
+        targetAudience: originalCourse.targetAudience,
+        welcomeMessage: originalCourse.welcomeMessage,
+        congratsMessage: originalCourse.congratsMessage,
+        tags: originalCourse.tags,
+        slug,
+        instructorId: originalCourse.instructorId,
+        categoryId: originalCourse.categoryId,
+        programId: programId || null,
+        invitationStatus: "PENDING",
+        forum: { create: {} },
+        curriculum: { create: {} },
+        sections: {
+          create: originalCourse.sections.map((sec) => ({
+            title: sec.title,
+            description: sec.description,
+            objectives: sec.objectives,
+            weekNumber: sec.weekNumber,
+            isPublished: false,
+            order: sec.order,
+            lessons: {
+              create: sec.lessons.map((les) => ({
+                title: les.title,
+                type: les.type,
+                content: les.content,
+                videoUrl: les.videoUrl,
+                duration: les.duration,
+                order: les.order,
+                isFree: les.isFree,
+                isPreview: les.isPreview,
+                bunnyVideoId: les.bunnyVideoId,
+                forumMarks: les.forumMarks,
+                dueDate: les.dueDate,
+                ...(les.quiz && {
+                  quiz: {
+                    create: {
+                      title: les.quiz.title,
+                      passingScore: les.quiz.passingScore,
+                      timeLimit: les.quiz.timeLimit,
+                      maxAttempts: les.quiz.maxAttempts,
+                      rubricId: les.quiz.rubricId,
+                      questions: {
+                        create: les.quiz.questions.map((q) => ({
+                          text: q.text,
+                          type: q.type,
+                          points: q.points,
+                          order: q.order,
+                          scriptureRef: q.scriptureRef,
+                          answers: {
+                            create: q.answers.map((a) => ({
+                              text: a.text,
+                              isCorrect: a.isCorrect
+                            }))
+                          }
+                        }))
+                      }
+                    }
+                  }
+                }),
+                ...(les.assignment && {
+                  assignment: {
+                    create: {
+                      title: les.assignment.title,
+                      description: les.assignment.description,
+                      dueDate: les.assignment.dueDate,
+                      maxScore: les.assignment.maxScore,
+                      attachmentUrl: les.assignment.attachmentUrl,
+                      rubricId: les.assignment.rubricId
+                    }
+                  }
+                })
+              }))
+            }
+          }))
+        }
+      }
+    });
+
+    await tx.courseInvitation.create({
+      data: {
+        courseId: createdCourse.id,
+        instructorId: createdCourse.instructorId,
+        status: "PENDING"
+      }
+    });
+
+    return createdCourse;
+  }, {
+    timeout: 60000,
+  });
+
+  res.status(201).json({ status: "success", data: newCourse });
+});
+
 export const removeCourseFromProgram = asyncHandler(async (req: Request, res: Response) => {
   const { programId, courseId } = req.params;
 
