@@ -11,6 +11,44 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 
+const NavigationHeader = () => (
+  <>
+    <style dangerouslySetInnerHTML={{ __html: `
+      nav {
+          position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+          background: rgba(250, 250, 247, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(220, 224, 213, 0.6); z-index: 1000;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 5%; font-family: var(--font-plus-jakarta), sans-serif;
+      }
+      .nav-brand { display: flex; align-items: center; gap: 1rem;}
+      .nav-logo-text { font-family: var(--font-cinzel), 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 700; letter-spacing: 3px; color: #1A261D; text-transform: uppercase; line-height: 1; }
+      .nav-logo-text .logo-cway { color: #1A261D; }
+      .nav-logo-text .logo-academy { color: #B88645; font-weight: 400; letter-spacing: 4px; }
+      .nav-links { display: flex; gap: 2.5rem; align-items: center; }
+      .nav-links a { font-size: 12.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #5A6B60; position: relative; padding: 0.5rem 0; text-decoration: none; transition: color 0.35s ease; }
+      .nav-links a:hover, .nav-links a.nav-active { color: #2C4A3B; }
+      .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: #2C4A3B; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+      .nav-links a:hover::after, .nav-links a.nav-active::after { width: 100%; }
+      @media (max-width: 992px) { .nav-links { display: none; } }
+    `}} />
+    <nav>
+      <Link href="/" className="nav-brand" style={{ textDecoration: "none" }}>
+        <img src="/logo.png?v=3" alt="CWAY Academy Logo" style={{ width: "48px", height: "48px", objectFit: "contain", flexShrink: 0 }} />
+        <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
+      </Link>
+      <div className="nav-links">
+        <Link href="/#home">Home</Link>
+        <Link href="/#about">About</Link>
+        <Link href="/#courses" className="nav-active">Courses</Link>
+        <Link href="/#involved">Get Involved</Link>
+        <Link href="/#blog">Blog</Link>
+        <Link href="/#contact">Contact</Link>
+      </div>
+    </nav>
+  </>
+);
+
 export default function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
@@ -58,17 +96,27 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
   };
 
   if (isLoading) return (
-    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Loader2 size={40} className="animate-spin" color="#B88645" />
+    <div style={{ paddingTop: "80px", minHeight: "100vh", background: "#FAFAF7", display: "flex", flexDirection: "column" }}>
+      <NavigationHeader />
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px", opacity: 0.8 }}>
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full blur-xl bg-[#C9973A]/30 animate-pulse"></div>
+          <Loader2 size={48} className="animate-spin text-[#C9973A] relative z-10" />
+        </div>
+        <p className="text-[#5A6B60] font-semibold tracking-widest uppercase text-xs animate-pulse">Loading Course Details...</p>
+      </div>
     </div>
   );
 
   if (error || !course) return (
-    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
-      <AlertTriangle size={48} color="#B03A2E" />
-      <h2 style={{ fontFamily: "Georgia, serif", color: "#1A261D", margin: 0 }}>Course Not Found</h2>
-      <p style={{ color: "#8F9E93", margin: 0 }}>The course you are looking for does not exist or is not published yet.</p>
-      <Link href="/#courses" className="btn-primary" style={{ marginTop: "16px" }}>Back to Courses</Link>
+    <div style={{ paddingTop: "80px", minHeight: "100vh", background: "#FAFAF7", display: "flex", flexDirection: "column" }}>
+      <NavigationHeader />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+        <AlertTriangle size={48} color="#B03A2E" />
+        <h2 style={{ fontFamily: "Georgia, serif", color: "#1A261D", margin: 0, fontSize: "2rem" }}>Course Not Found</h2>
+        <p style={{ color: "#8F9E93", margin: 0 }}>The course you are looking for does not exist or is not published yet.</p>
+        <Link href="/#courses" className="rounded-full bg-[#1A261D] text-white transition hover:bg-[#2C4A3B]" style={{ marginTop: "16px", padding: "12px 28px", fontSize: "14px", fontWeight: "bold" }}>Back to Courses</Link>
+      </div>
     </div>
   );
 
@@ -86,41 +134,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div style={{ paddingTop: "80px" }}>
-      <style dangerouslySetInnerHTML={{ __html: `
-        nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
-            background: rgba(250, 250, 247, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(220, 224, 213, 0.6); z-index: 1000;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 5%; font-family: var(--font-plus-jakarta), sans-serif;
-        }
-        .nav-brand { display: flex; align-items: center; gap: 1rem;}
-        .nav-logo-text { font-family: var(--font-cinzel), 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 700; letter-spacing: 3px; color: #1A261D; text-transform: uppercase; line-height: 1; }
-        .nav-logo-text .logo-cway { color: #1A261D; }
-        .nav-logo-text .logo-academy { color: #B88645; font-weight: 400; letter-spacing: 4px; }
-        .nav-links { display: flex; gap: 2.5rem; align-items: center; }
-        .nav-links a { font-size: 12.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #5A6B60; position: relative; padding: 0.5rem 0; text-decoration: none; transition: color 0.35s ease; }
-        .nav-links a:hover, .nav-links a.nav-active { color: #2C4A3B; }
-        .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: #2C4A3B; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
-        .nav-links a:hover::after, .nav-links a.nav-active::after { width: 100%; }
-        @media (max-width: 992px) { .nav-links { display: none; } }
-      `}} />
-
-      {/* Header Navigation */}
-      <nav>
-        <Link href="/" className="nav-brand" style={{ textDecoration: "none" }}>
-          <img src="/logo.png?v=3" alt="CWAY Academy Logo" style={{ width: "48px", height: "48px", objectFit: "contain", flexShrink: 0 }} />
-          <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
-        </Link>
-        <div className="nav-links">
-          <Link href="/#home">Home</Link>
-          <Link href="/#about">About</Link>
-          <Link href="/#courses" className="nav-active">Courses</Link>
-          <Link href="/#involved">Get Involved</Link>
-          <Link href="/#blog">Blog</Link>
-          <Link href="/#contact">Contact</Link>
-        </div>
-      </nav>
+      <NavigationHeader />
       {/* Draft Banner */}
       {course.status === "DRAFT" && (
         <div style={{ background: "#B88645", color: "#FFFFFF", padding: "12px", textAlign: "center", fontSize: "14px", fontWeight: 600 }}>

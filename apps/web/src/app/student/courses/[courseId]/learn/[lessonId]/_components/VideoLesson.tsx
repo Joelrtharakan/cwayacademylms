@@ -14,9 +14,17 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
 
   const completeMutation = useMutation({
     mutationFn: () => api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/complete`),
-    onSuccess: (res) => {
+    onMutate: () => {
+      // Optimistic UI Update
       setCompleted(true);
       setMarkedThisSession(true);
+    },
+    onError: (err) => {
+      console.error("Failed to mark complete. Reverting optimistic update.", err);
+      setCompleted(false);
+      setMarkedThisSession(false);
+    },
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["enrollment"] });
       // If course is completed, we could show a modal or redirect
       if (res.data.data.courseCompleted) {
@@ -73,7 +81,12 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
             <iframe 
               width="100%" 
               height="100%" 
-              src={lesson.videoUrl.replace("watch?v=", "embed/")} 
+              src={`https://www.youtube.com/embed/${
+                (() => {
+                  const match = lesson.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/);
+                  return (match && match[2].length === 11) ? match[2] : '';
+                })()
+              }?rel=0&modestbranding=1`}
               title={lesson.title}
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 

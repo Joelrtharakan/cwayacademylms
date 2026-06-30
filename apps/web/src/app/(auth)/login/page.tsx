@@ -181,6 +181,19 @@ function LoginContent() {
         </button>
       </div>
 
+      <div style={{ marginTop: '24px', textAlign: 'center' }}>
+        <p className="font-sans" style={{ fontSize: '13px', color: '#526658' }}>
+          Don't have an account?{' '}
+          <Link 
+            href={searchParams.get("enrollCourseId") ? `/register?enrollCourseId=${searchParams.get("enrollCourseId")}` : "/register"}
+            className="font-bold hover:underline" 
+            style={{ color: '#C9973A' }}
+          >
+            Sign up
+          </Link>
+        </p>
+      </div>
+
     </div>
   );
 }

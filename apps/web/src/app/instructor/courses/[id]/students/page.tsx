@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Search, Mail, Download, Phone, MessageSquare } from "lucide-react";
+import { ArrowLeft, Search, Mail, Download, Phone, MessageSquare, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/store/auth.store";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 const GOLD = "var(--gold-primary, #C9A84C)";
 const SURFACE = "#FFFFFF";
@@ -18,6 +19,26 @@ export default function CourseStudentsPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+  const [unenrollingId, setUnenrollingId] = useState<string | null>(null);
+  const [studentToUnenroll, setStudentToUnenroll] = useState<{id: string, name: string} | null>(null);
+
+  const handleUnenroll = async () => {
+    if (!studentToUnenroll) return;
+    
+    setUnenrollingId(studentToUnenroll.id);
+    try {
+      await api.delete(`/instructor/courses/${id}/students/${studentToUnenroll.id}`);
+      toast.success(`${studentToUnenroll.name} has been unenrolled.`);
+      queryClient.invalidateQueries({ queryKey: ["course-enrollments", id] });
+      queryClient.invalidateQueries({ queryKey: ["course-analytics", id] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to unenroll student.");
+    } finally {
+      setUnenrollingId(null);
+      setStudentToUnenroll(null);
+    }
+  };
 
   const { data: analytics, isLoading } = useQuery({
     queryKey: ["course-analytics", id],
@@ -178,6 +199,21 @@ export default function CourseStudentsPage() {
                         <Phone size={16} />
                       </button>
                     )}
+                    <button
+                      onClick={() => setStudentToUnenroll({ id: e.studentId, name: e.student?.name || 'Student' })}
+                      disabled={unenrollingId === e.studentId}
+                      title="Unenroll Student"
+                      style={{ 
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", height: "36px", padding: "0 12px",
+                        color: "#DC2626", background: "var(--cream-light, #F9FAF8)", border: "1px solid var(--border-light, #E2E8F0)", 
+                        borderRadius: "8px", cursor: unenrollingId === e.studentId ? "wait" : "pointer", transition: "all 0.2s",
+                        opacity: unenrollingId === e.studentId ? 0.5 : 1, fontWeight: 600, fontSize: "13px"
+                      }}
+                      onMouseEnter={(ev) => { if (unenrollingId !== e.studentId) { ev.currentTarget.style.background = "#FEF2F2"; ev.currentTarget.style.borderColor = "#FCA5A5"; } }}
+                      onMouseLeave={(ev) => { if (unenrollingId !== e.studentId) { ev.currentTarget.style.background = "var(--cream-light, #F9FAF8)"; ev.currentTarget.style.borderColor = "var(--border-light, #E2E8F0)"; } }}
+                    >
+                      <Trash2 size={16} /> Remove
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -188,6 +224,23 @@ export default function CourseStudentsPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!studentToUnenroll}
+        onOpenChange={(open) => {
+          if (!open) setStudentToUnenroll(null);
+        }}
+        title="Remove Student"
+        description={
+          <>
+            Are you sure you want to unenroll <strong>{studentToUnenroll?.name}</strong> from this course? This action cannot be undone and will delete their progress.
+          </>
+        }
+        confirmLabel="Unenroll Student"
+        danger
+        loading={!!unenrollingId}
+        onConfirm={handleUnenroll}
+      />
     </div>
   );
 }

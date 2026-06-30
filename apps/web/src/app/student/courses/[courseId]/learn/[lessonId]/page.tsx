@@ -114,6 +114,8 @@ export default function LessonPlayerPage() {
   const lastSavedSecond = useRef<number>(0);
   const [cheatStrikes, setCheatStrikes] = useState(0);
   const [showCheatWarning, setShowCheatWarning] = useState(false);
+  const [isStartingQuiz, setIsStartingQuiz] = useState(false);
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
 
   const buildFlowItems = (sections: any[] = []) => {
     return sections.flatMap((section: any) => {
@@ -336,31 +338,40 @@ export default function LessonPlayerPage() {
 
   const markComplete = async () => {
     if (!enrollment || !lesson) return;
+    
+    // Optimistic UI Update: Update state immediately so the button feels instant
+    setLesson((prev: any) => ({ ...prev, isCompleted: true }));
+    setEnrollment((prev: any) => {
+      if (!prev) return prev;
+      const newProgress = [...(prev.lessonProgress || [])];
+      if (lesson.type === "READING_MATERIAL") {
+        const newRmProgress = [...(prev.readingMaterialProgress || [])];
+        if (!newRmProgress.find((p: any) => p.readingMaterialId === lesson.id)) {
+          newRmProgress.push({ readingMaterialId: lesson.id, completedAt: new Date() });
+        }
+        return { ...prev, readingMaterialProgress: newRmProgress };
+      } else {
+        if (!newProgress.find((p: any) => p.lessonId === lesson.id)) {
+          newProgress.push({ lessonId: lesson.id, completedAt: new Date() });
+        }
+        return { ...prev, lessonProgress: newProgress };
+      }
+    });
+
+    // Fire API request in the background
     try {
       if (lesson.type === "READING_MATERIAL") {
         await api.post(`/student/enrollments/${enrollment.id}/reading-materials/${lesson.id}/complete`);
       } else {
         await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
       }
-      setLesson((prev: any) => ({ ...prev, isCompleted: true }));
-      setEnrollment((prev: any) => {
-        if (!prev) return prev;
-        const newProgress = [...(prev.lessonProgress || [])];
-        if (lesson.type === "READING_MATERIAL") {
-          const newRmProgress = [...(prev.readingMaterialProgress || [])];
-          if (!newRmProgress.find((p: any) => p.readingMaterialId === lesson.id)) {
-            newRmProgress.push({ readingMaterialId: lesson.id, completedAt: new Date() });
-          }
-          return { ...prev, readingMaterialProgress: newRmProgress };
-        } else {
-          if (!newProgress.find((p: any) => p.lessonId === lesson.id)) {
-            newProgress.push({ lessonId: lesson.id, completedAt: new Date() });
-          }
-          return { ...prev, lessonProgress: newProgress };
-        }
-      });
+      
+      // Dispatch event to sync sidebar layout
+      window.dispatchEvent(new Event('lessonCompleted'));
+      
     } catch (err) {
-      console.error(err);
+      console.error("Failed to mark complete. Reverting optimistic update.", err);
+      setLesson((prev: any) => ({ ...prev, isCompleted: false }));
     }
   };
 
@@ -369,11 +380,14 @@ export default function LessonPlayerPage() {
     if (!enrollment || !lesson) return;
     setIsNavigating(true);
     
-    if (lesson.type === "READING_MATERIAL") {
+    if (lesson.type === "READING_MATERIAL" && !lesson.isCompleted) {
       markComplete();
-    } else if (lesson.type === "QUIZ" && quizResult?.passed && !lesson.isCompleted) {
-      // Fallback in case submitQuiz failed to mark complete
-      markComplete();
+    } else if (lesson.type === "QUIZ" && !lesson.isCompleted) {
+      const hasPassed = lesson.attempts?.some((a: any) => a.passed) || quizResult?.passed;
+      const maxReached = lesson.quiz?.maxAttempts > 0 && lesson.attempts?.length >= lesson.quiz.maxAttempts;
+      if (hasPassed || maxReached) {
+        markComplete();
+      }
     }
     
     if (!nextItem) {
@@ -426,6 +440,7 @@ export default function LessonPlayerPage() {
 
   const startQuiz = async () => {
     if (!lesson) return;
+    setIsStartingQuiz(true);
     try {
       const res = await api.post(`/student/quizzes/${lesson.quiz.id}/attempt`);
       setQuizData(res.data.data);
@@ -445,11 +460,14 @@ export default function LessonPlayerPage() {
       }
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to start quiz");
+    } finally {
+      setIsStartingQuiz(false);
     }
   };
 
   const submitQuiz = async () => {
     if (!quizData || !lesson) return;
+    setIsSubmittingQuiz(true);
     try {
       const res = await api.post(`/student/quizzes/${lesson.quiz.id}/submit`, {
         attemptId: quizData.attemptId,
@@ -459,10 +477,7 @@ export default function LessonPlayerPage() {
       setQuizState("results");
       
       if (res.data.data.passed || !res.data.data.canRetake) {
-        try {
-          await api.post(`/student/enrollments/${enrollment.id}/lessons/${lessonId}/complete`);
-          setLesson((prev: any) => ({ ...prev, isCompleted: true }));
-        } catch (err) { console.error(err); }
+        await markComplete();
       }
 
       try {
@@ -474,6 +489,8 @@ export default function LessonPlayerPage() {
       }
     } catch (err: any) {
       alert("Failed to submit");
+    } finally {
+      setIsSubmittingQuiz(false);
     }
   };
 
@@ -591,9 +608,10 @@ export default function LessonPlayerPage() {
                 lesson.videoUrl.includes('youtu') ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${
-                      lesson.videoUrl.includes('youtu.be/')
-                        ? lesson.videoUrl.split('youtu.be/')[1].split('?')[0]
-                        : lesson.videoUrl.split('v=')[1]?.split('&')[0]
+                      (() => {
+                        const match = lesson.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/);
+                        return (match && match[2].length === 11) ? match[2] : '';
+                      })()
                     }?rel=0&modestbranding=1`}
                     title={lesson.title}
                     className="w-full h-full border-0"
@@ -776,10 +794,11 @@ export default function LessonPlayerPage() {
                       {(!lesson.quiz?.maxAttempts || !lesson.attempts || lesson.attempts.length < lesson.quiz.maxAttempts) ? (
                         <button
                           onClick={startQuiz}
-                          className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#C9973A] text-sm font-bold text-white shadow-sm transition-all hover:bg-[#B8872A]"
+                          disabled={isStartingQuiz}
+                          className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#C9973A] text-sm font-bold text-white shadow-sm transition-all hover:bg-[#B8872A] disabled:opacity-70 disabled:cursor-wait"
                           style={{ padding: '12px 28px' }}
                         >
-                          {lesson.attempts && lesson.attempts.length > 0 ? "Retake Quiz" : "Start Quiz"}
+                          {isStartingQuiz ? "Starting..." : (lesson.attempts && lesson.attempts.length > 0 ? "Retake Quiz" : "Start Quiz")}
                         </button>
                       ) : (
                         <div className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#B8872A] text-sm font-bold text-white cursor-not-allowed opacity-80" style={{ padding: '12px 28px' }}>
@@ -938,10 +957,11 @@ export default function LessonPlayerPage() {
                     {currentQuestionIdx === quizData.quiz.questions.length - 1 ? (
                       <button
                         onClick={submitQuiz}
-                        className="rounded-full bg-[#C9973A] text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A]"
+                        disabled={isSubmittingQuiz}
+                        className="rounded-full bg-[#C9973A] text-sm font-semibold uppercase tracking-[0.12em] text-[#1A261D] transition hover:bg-[#A8792A] disabled:opacity-70 disabled:cursor-wait"
                         style={{ padding: '0.75rem 1.5rem' }}
                       >
-                        Submit Quiz
+                        {isSubmittingQuiz ? "Submitting..." : "Submit Quiz"}
                       </button>
                     ) : (
                       <button
@@ -990,8 +1010,8 @@ export default function LessonPlayerPage() {
                           Continue to Next Lesson &rarr;
                         </button>
                       ) : quizResult.canRetake ? (
-                        <button onClick={startQuiz} className="rounded-full border border-[#C9973A] text-sm font-semibold text-[#C9973A] transition hover:bg-[#C9973A] hover:text-[#1A261D]" style={{ padding: '10px 24px' }}>
-                          Retake Quiz ({quizResult.attemptsLeft} left)
+                        <button onClick={startQuiz} disabled={isStartingQuiz} className="rounded-full border border-[#C9973A] text-sm font-semibold text-[#C9973A] transition hover:bg-[#C9973A] hover:text-[#1A261D] disabled:opacity-70 disabled:cursor-wait" style={{ padding: '10px 24px' }}>
+                          {isStartingQuiz ? "Starting..." : `Retake Quiz (${quizResult.attemptsLeft} left)`}
                         </button>
                       ) : (
                         <span className="text-[#8A9E8C] text-xs">No attempts left. Contact your instructor.</span>

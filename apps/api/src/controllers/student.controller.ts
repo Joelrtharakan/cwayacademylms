@@ -112,7 +112,8 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
     include: { instructor: { select: { name: true } } }
   });
   
-  if (!course || course.status !== "PUBLISHED") {
+  const isAdminOrInstructor = req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR" || req.user!.role === "REGISTRAR";
+  if (!course || (course.status !== "PUBLISHED" && !isAdminOrInstructor)) {
     throw new AppError("Course not found or not available", 404);
   }
 
@@ -201,8 +202,8 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
     }
   });
 
-  if (!enrollment && req.user!.role === "ADMIN") {
-    console.log(`[getCourseEnrollment] Auto-enrolling ADMIN ${studentId} in course ${courseId} for preview`);
+  if (!enrollment && (req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR" || req.user!.role === "REGISTRAR")) {
+    console.log(`[getCourseEnrollment] Auto-enrolling ${req.user!.role} ${studentId} in course ${courseId} for preview`);
     enrollment = await prisma.enrollment.create({
       data: {
         studentId,

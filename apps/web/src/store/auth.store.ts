@@ -39,6 +39,14 @@ export const api = axios.create({
 
 const apiCache: Record<string, { promise: Promise<any>, timestamp: number }> = {};
 
+export const clearApiCache = (url?: string) => {
+  if (url) {
+    delete apiCache[url];
+  } else {
+    Object.keys(apiCache).forEach(k => delete apiCache[k]);
+  }
+};
+
 export const fetchWithCache = (url: string, maxAge = 60000) => {
   const now = Date.now();
   if (apiCache[url] && now - apiCache[url].timestamp < maxAge) {

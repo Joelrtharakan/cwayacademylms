@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useManagementPath } from "@/hooks/useManagementPath";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings, MoreHorizontal } from "lucide-react";
+import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings, MoreHorizontal, Eye } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -232,7 +232,21 @@ export default function AdminCoursesPage() {
                 onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
               >
                 <ExternalLink size={14} color="#8F9E93" />
-                Preview Course
+                View Landing Page
+              </a>
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item asChild>
+              <a
+                href={`/student/courses/${row.id}/learn`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#1A261D", fontSize: "13px", fontWeight: 500, textDecoration: "none", transition: "background 0.15s", outline: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                <Eye size={14} color="#8F9E93" />
+                Preview as Student
               </a>
             </DropdownMenu.Item>
             

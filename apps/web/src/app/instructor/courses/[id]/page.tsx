@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules, createModule, updateModule, deleteModule, reorderModules } from "@/lib/api/modules";
-import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, ExternalLink, Loader2, Save, X, Clock } from "lucide-react";
+import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, ExternalLink, Loader2, Save, X, Clock, Eye } from "lucide-react";
 import Link from "next/link";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 import { toast } from "react-hot-toast";
@@ -123,6 +123,9 @@ export default function CourseManagementPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 
+          <button onClick={() => window.open(`/student/courses/${id}/learn`, '_blank')} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #B88645", borderRadius: "8px", color: "#B88645", fontSize: "14px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.background = "#B88645"; e.currentTarget.style.color = "#FFFFFF"; }} onMouseLeave={e => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.color = "#B88645"; }}>
+            <Eye size={16} /> View as Student
+          </button>
           <button onClick={() => router.push(`/instructor/courses/${id}/gradebook`)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", color: "#1A261D", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#F7F8F5"} onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
             <BookOpen size={16} /> Gradebook
           </button>

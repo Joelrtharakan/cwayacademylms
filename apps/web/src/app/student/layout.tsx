@@ -20,22 +20,14 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }, [initAuth]);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push("/login");
-      } else if (user.role === "ADMIN") {
-        router.push("/admin/dashboard");
-      } else if (user.role === "REGISTRAR") {
-        router.push("/registrar/dashboard");
-      } else if (user.role === "INSTRUCTOR") {
-        router.push("/instructor/dashboard");
-      }
+    if (!isLoading && !user) {
+      router.push("/login");
     }
   }, [user, isLoading, router]);
 
   const isPlayer = pathname ? pathname.includes('/learn') : false;
 
-  if (isLoading || !user || user.role !== "STUDENT") {
+  if (isLoading || !user) {
     return (
       <div
         style={{

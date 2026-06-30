@@ -53,6 +53,7 @@ router.get("/quizzes/:quizId/stats", authenticate, authorize("INSTRUCTOR", "ADMI
 router.post("/quizzes/:quizId/reset", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.resetQuizAttempts);
 
 router.get("/instructor/courses/:id/students", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
+router.delete("/instructor/courses/:id/students/:studentId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.unenrollStudent);
 router.get("/instructor/courses/:id/gradebook", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorGradebook);
 
 import * as MC from "../controllers/modules.controller";

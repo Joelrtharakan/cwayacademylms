@@ -848,6 +848,27 @@ export const getInstructorCourseStudents = asyncHandler(async (req: Request, res
   res.json({ status: "success", data: enriched });
 });
 
+export const unenrollStudent = asyncHandler(async (req: Request, res: Response) => {
+  const { id: courseId, studentId } = req.params;
+  const course = await prisma.course.findUnique({ where: { id: courseId } });
+  if (!course) throw new AppError("Course not found", 404);
+  
+  if (req.user!.role === "INSTRUCTOR" && course.instructorId !== req.user!.id) {
+    throw new AppError("Not authorized", 403);
+  }
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { studentId_courseId: { studentId, courseId } }
+  });
+  if (!enrollment) throw new AppError("Enrollment not found", 404);
+
+  await prisma.enrollment.delete({
+    where: { id: enrollment.id }
+  });
+
+  res.json({ status: "success", message: "Student unenrolled successfully" });
+});
+
 // ─── COURSE ANALYTICS ────────────────────────────────────────────────────────
 
 export const getCourseAnalytics = asyncHandler(async (req: Request, res: Response) => {

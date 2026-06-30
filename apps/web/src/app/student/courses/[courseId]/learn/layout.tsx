@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { api, useAuthStore, fetchWithCache } from "@/store/auth.store";
+import { api, useAuthStore, fetchWithCache, clearApiCache } from "@/store/auth.store";
 import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
 import { getLetterGrade } from "@/lib/gradeScale";
 import Link from "next/link";
@@ -81,12 +81,15 @@ export default function CoursePlayerLayout({ children }: { children: React.React
   }, {} as Record<string, any>) || {};
 
   useEffect(() => {
+    let currentEnrollmentId: string | null = null;
+    
     // Fetch enrollment and progress — only when courseId changes (NOT on every lesson switch)
     const fetchData = async () => {
       if (!courseId) return;
       try {
         const enrRes = await fetchWithCache(`/student/courses/${courseId}/learn`);
         const enr = enrRes.data.data;
+        currentEnrollmentId = enr.id;
         setEnrollment(enr);
 
         const progResp = await fetchWithCache(`/student/enrollments/${enr.id}/progress`);
@@ -111,6 +114,16 @@ export default function CoursePlayerLayout({ children }: { children: React.React
       }
     };
     fetchData();
+
+    const handleLessonCompleted = () => {
+      if (!courseId) return;
+      clearApiCache(`/student/courses/${courseId}/learn`);
+      if (currentEnrollmentId) clearApiCache(`/student/enrollments/${currentEnrollmentId}/progress`);
+      fetchData();
+    };
+
+    window.addEventListener('lessonCompleted', handleLessonCompleted);
+    return () => window.removeEventListener('lessonCompleted', handleLessonCompleted);
   }, [courseId, router]);
 
   // Auto-expand the module containing the current lesson (lightweight, no API calls)

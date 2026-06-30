@@ -9,7 +9,10 @@ import { prisma } from "../utils/prisma";
 function deriveAction(method: string, path: string): string {
   const lowerPath = path.toLowerCase();
 
-  if (method === "DELETE") return "DELETE";
+  if (method === "DELETE") {
+    if (lowerPath.includes("/students")) return "UNENROLL";
+    return "DELETE";
+  }
 
   if (method === "POST") {
     if (lowerPath.includes("/approve")) return "APPROVE";
@@ -51,6 +54,11 @@ function deriveResource(path: string): { resource: string | null; resourceId: st
   const segments = cleanPath.replace(/^\/api\/v\d+\/admin\/?/, "").split("/").filter(Boolean);
 
   if (segments.length === 0) return { resource: null, resourceId: null };
+
+  if (cleanPath.includes("/courses/") && cleanPath.includes("/students/")) {
+    const studentId = segments[segments.length - 1];
+    return { resource: "student", resourceId: studentId };
+  }
 
   const resourceMap: Record<string, string> = {
     users: "user",
@@ -137,6 +145,7 @@ function buildDescription(action: string, resource: string | null, resourceId: s
     GRADE: `Graded submission${id}`,
     SUBMIT_REVIEW: `Submitted course for review${id}`,
     ENROLL: `Enrolled in course`,
+    UNENROLL: `Unenrolled student${id} from course`,
     DISCUSSION_POST: `Posted discussion`,
     DISCUSSION_REPLY: `Replied to discussion`,
     ERROR: `API Error`,

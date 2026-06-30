@@ -1552,23 +1552,41 @@ export default function LandingPage() {
 
               {standaloneCourses.length > 0 && (
                 <div>
-                  <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>Individual Courses</h2>
+                  <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>Courses</h2>
                   <div className="grid-3">
                     {standaloneCourses.map((c: any, i: number) => (
-                      <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`}>
-                        <div>
-                          <div className="course-badges">
-                            <span className="badge">{c._count?.sections > 0 ? c._count.sections : (c.weeksDuration || 0)} Wks</span>
-                            {c.totalLectures > 0 && <span className="badge">{c.totalLectures} Lectures</span>}
-                            {c.level && <span className="badge">{c.level}</span>}
-                          </div>
-                          <h3 style={{ fontSize: "20px", marginBottom: "0.75rem", fontFamily: "var(--font-dm-serif), serif", color: "var(--text-main)", lineHeight: 1.2 }}>{c.title}</h3>
-                          <p className="body-text" style={{ fontSize: "14.5px" }}>{c.subtitle || c.description?.substring(0, 100) || "Learn the foundations of this topic."}</p>
+                      <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`} style={{ display: "flex", flexDirection: "column", padding: 0 }}>
+                        <div style={{ height: "200px", width: "100%", background: "var(--navy-deep)", position: "relative" }}>
+                          {c.thumbnail ? (
+                            <img src={c.thumbnail} alt={c.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "var(--font-cinzel), serif", fontSize: "20px", textAlign: "center", padding: "1rem" }}>
+                              {c.title}
+                            </div>
+                          )}
                         </div>
-                        <div style={{ marginTop: "1.5rem" }}>
-                          <Link href={`/courses/${c.slug}`} style={{ display: "inline-block", color: "var(--accent-green)", fontWeight: 700, fontSize: "13px", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1px" }}>
-                            View Details →
-                          </Link>
+                        <div className="course-card-body" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "2rem" }}>
+                          <div className="course-badges" style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                            <span style={{ padding: "4px 12px", background: "#F4EDE4", color: "#8B6D43", borderRadius: "100px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
+                              {c._count?.sections > 0 ? c._count.sections : (c.weeksDuration || 0)} WKS
+                            </span>
+                            {c.level && (
+                              <span style={{ padding: "4px 12px", background: "#EAF0E9", color: "#4A6D56", borderRadius: "100px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
+                                {c.level}
+                              </span>
+                            )}
+                          </div>
+                          <h3 style={{ fontSize: "24px", marginBottom: "1rem", fontFamily: "var(--font-dm-serif), var(--font-cinzel), serif", color: "var(--navy-deep)", lineHeight: 1.3, fontWeight: 700 }}>
+                            {c.title}
+                          </h3>
+                          <p className="body-text" style={{ fontSize: "15px", flex: 1, marginBottom: "2rem", color: "var(--text-main)", lineHeight: 1.6 }}>
+                            {c.subtitle || (c.description ? (c.description.length > 100 ? c.description.substring(0, 100) + "..." : c.description) : "Learn the foundations of this topic.")}
+                          </p>
+                          <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: "1.5rem", marginTop: "auto" }}>
+                            <Link href={`/courses/${c.slug}`} style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "var(--navy-deep)", fontWeight: 800, fontSize: "14px", textDecoration: "none", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+                              VIEW DETAILS &rarr;
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     ))}
