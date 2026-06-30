@@ -59,7 +59,11 @@ export const listCourses = asyncHandler(async (req: Request, res: Response) => {
   const [courses, total] = await Promise.all([
     prisma.course.findMany({
       where, skip, take: Number(limit), orderBy,
-      include: {
+      select: {
+        id: true, title: true, slug: true, subtitle: true, thumbnail: true,
+        price: true, currency: true, status: true, level: true, language: true,
+        moduleNumber: true, weeksDuration: true, totalLectures: true, isFree: true,
+        isFeatured: true, programId: true,
         instructor: { select: { id: true, name: true, avatar: true } },
         category: { select: { name: true } },
         _count: { select: { enrollments: true, sections: true } },

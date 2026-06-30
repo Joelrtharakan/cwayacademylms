@@ -9,7 +9,9 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30 * 1000, // 30 seconds
+            staleTime: 5 * 60 * 1000, // 5 minutes — LMS data doesn't change every few seconds
+            gcTime: 10 * 60 * 1000,   // 10 minutes — keep unused cache longer
+            refetchOnWindowFocus: false, // Don't re-fetch when user alt-tabs
             retry: 1,
           },
         },

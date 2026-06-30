@@ -509,8 +509,9 @@ p, h1, h2, h3, h4, h5, h6, a, span, div {
   right: -10%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(201, 168, 76, 0.12) 0%, transparent 70%);
-  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(184, 134, 69, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -961,8 +962,9 @@ section[id] {
 
 /* Premium Glassmorphism Card */
 .glass-card {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(12px) saturate(120%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 8px 32px 0 rgba(44, 74, 59, 0.04);
   border-radius: var(--radius-lg);

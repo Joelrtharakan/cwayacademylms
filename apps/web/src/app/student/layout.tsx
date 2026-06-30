@@ -209,7 +209,7 @@ function NotificationDropdown() {
   const { data: responseData } = useQuery({
     queryKey: ["student-notifications"],
     queryFn: () => api.get("/student/notifications").then(r => r.data.data),
-    refetchInterval: 15000
+    refetchInterval: 60000
   });
 
   const data = responseData?.notifications || [];

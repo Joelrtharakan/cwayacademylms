@@ -1143,57 +1143,58 @@ export const updateHeartbeat = asyncHandler(async (req: Request, res: Response) 
 export const getStudentDashboard = asyncHandler(async (req: Request, res: Response) => {
   const studentId = req.user!.id;
   
-  const enrollmentsRaw = await prisma.enrollment.findMany({
-    where: { studentId },
-    include: {
-      lessonProgress: { where: { completedAt: { not: null } } },
-      readingMaterialProgress: { where: { completedAt: { not: null } } },
-      course: {
-        select: {
-          id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
-          instructor: { select: { name: true } },
-          program: { select: { title: true } },
-          _count: { select: { sections: true } },
-          sections: {
-            include: {
-              lessons: {
-                select: { id: true, type: true, assignment: true }
-              },
-              readingMaterials: {
-                select: { id: true }
+  // Run all independent queries in parallel
+  const [enrollmentsRaw, programEnrollments, certificatesCount, submissions] = await Promise.all([
+    prisma.enrollment.findMany({
+      where: { studentId },
+      include: {
+        lessonProgress: { where: { completedAt: { not: null } } },
+        readingMaterialProgress: { where: { completedAt: { not: null } } },
+        course: {
+          select: {
+            id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
+            instructor: { select: { name: true } },
+            program: { select: { title: true } },
+            _count: { select: { sections: true } },
+            sections: {
+              include: {
+                lessons: {
+                  select: { id: true, type: true, assignment: true }
+                },
+                readingMaterials: {
+                  select: { id: true }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { enrolledAt: "desc" }
+    }),
+    prisma.programEnrollment.findMany({
+      where: { studentId },
+      include: {
+        program: {
+          include: {
+            courses: {
+              orderBy: { createdAt: "asc" },
+              select: {
+                id: true, title: true, slug: true, thumbnail: true,
+                instructor: { select: { name: true } }
               }
             }
           }
         }
       }
-    },
-    orderBy: { enrolledAt: "desc" }
-  });
-
-  const programEnrollments = await prisma.programEnrollment.findMany({
-    where: { studentId },
-    include: {
-      program: {
-        include: {
-          courses: {
-            orderBy: { createdAt: "asc" },
-            select: {
-              id: true, title: true, slug: true, thumbnail: true,
-              instructor: { select: { name: true } }
-            }
-          }
-        }
-      }
-    }
-  });
-
-  const certificatesCount = await prisma.certificate.count({
-    where: { studentId }
-  });
-
-  const submissions = await prisma.submission.findMany({
-    where: { studentId }
-  });
+    }),
+    prisma.certificate.count({
+      where: { studentId }
+    }),
+    prisma.submission.findMany({
+      where: { studentId },
+      select: { assignmentId: true }
+    })
+  ]);
 
   let pendingAssignmentsCount = 0;
   
@@ -1223,8 +1224,13 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
       prisma.enrollment.update({ where: { id: enr.id }, data: { status: "ACTIVE", progress: realProgress, completedAt: null } }).catch(console.error);
     }
 
+    // Strip out heavy nested data (sections/lessons) before sending to client
+    const leanCourse = { ...enr.course } as any;
+    delete leanCourse.sections;
+
     return {
       ...enr,
+      course: leanCourse,
       progress: realProgress,
       status
     };

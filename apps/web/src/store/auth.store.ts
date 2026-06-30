@@ -84,6 +84,9 @@ export const useAuthStore = create<AuthState>()(
       console.error("Logout API failed", e);
     }
     get().clearAuth();
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   },
 
   refreshAccessToken: async () => {

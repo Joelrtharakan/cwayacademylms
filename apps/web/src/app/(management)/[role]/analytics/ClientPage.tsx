@@ -72,7 +72,7 @@ export default function AdminAnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: "40px 48px" }}>
+      <div>
         <PageHeader title="Analytics & Reports" subtitle="Deep insights into revenue, user growth, and content performance" />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>

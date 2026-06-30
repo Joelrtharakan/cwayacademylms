@@ -2,6 +2,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import morgan from "morgan";
 
 import cookieParser from "cookie-parser";
@@ -53,6 +54,9 @@ app.use(helmet({
     }
   }
 }));
+
+// Response compression (gzip)
+app.use(compression());
 
 // CORS — only allow your domains
 const allowedOrigins = [

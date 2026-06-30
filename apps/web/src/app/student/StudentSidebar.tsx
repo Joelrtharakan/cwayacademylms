@@ -71,6 +71,13 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
   const { user, logout } = useAuthStore();
   const lenis = useLenis();
 
+  useEffect(() => {
+    return () => {
+      // Ensure scroll is restored if sidebar unmounts while hovered
+      lenis?.start();
+    };
+  }, [lenis]);
+
   // State to track which sections are expanded.
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
@@ -145,11 +152,8 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
         }
       `}</style>
 
-      {/* Fixed sidebar */}
       <div
         data-lenis-prevent="true"
-        onMouseEnter={() => lenis?.stop()}
-        onMouseLeave={() => lenis?.start()}
         className={`print:hidden md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           position: "fixed",

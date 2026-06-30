@@ -116,7 +116,7 @@ export const getUserAnalytics = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getCourseAnalytics = asyncHandler(async (req: Request, res: Response) => {
-  const [topByEnrollment, topByRating, byCategory, completionRates] = await Promise.all([
+  const [topByEnrollment, topByRating, byCategory, coursesForCompletion, completionGroups] = await Promise.all([
     prisma.course.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { enrollments: { _count: "desc" } },
@@ -147,10 +147,11 @@ export const getCourseAnalytics = asyncHandler(async (req: Request, res: Respons
     }),
     prisma.course.findMany({
       where: { status: "PUBLISHED" },
-      select: {
-        title: true,
-        enrollments: { select: { status: true } },
-      },
+      select: { id: true, title: true }
+    }),
+    prisma.enrollment.groupBy({
+      by: ["courseId", "status"],
+      _count: { id: true },
     }),
   ]);
 
@@ -180,15 +181,16 @@ export const getCourseAnalytics = asyncHandler(async (req: Request, res: Respons
         courseCount: cat._count.courses,
         enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
       })),
-      completionRates: completionRates.map((c) => ({
-        courseTitle: c.title,
-        completionRate:
-          c.enrollments.length
-            ? parseFloat(
-                ((c.enrollments.filter((e) => e.status === "COMPLETED").length / c.enrollments.length) * 100).toFixed(1)
-              )
-            : 0,
-      })),
+      completionRates: coursesForCompletion.map((c) => {
+        const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
+        const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
+        const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
+        
+        return {
+          courseTitle: c.title,
+          completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
+        };
+      }).sort((a, b) => b.completionRate - a.completionRate),
     },
   });
 });
