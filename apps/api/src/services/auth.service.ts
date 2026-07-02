@@ -112,14 +112,15 @@ export class AuthService {
       newPasswordHash = await bcrypt.hash(password, 10);
     }
 
-    await prisma.user.update({
+    // Fire and forget the update to not block login response
+    prisma.user.update({
       where: { id: user.id },
       // @ts-ignore: Stale IDE cache, property exists in schema
       data: { 
         lastLoginAt: new Date(),
         ...(newPasswordHash ? { passwordHash: newPasswordHash } : {})
       },
-    });
+    }).catch(e => console.error("Failed to update lastLoginAt", e));
 
     return {
       accessToken,

@@ -21,9 +21,8 @@ export class TokenService {
 
   public static async storeRefreshToken(userId: string, token: string): Promise<void> {
     const key = `refresh:${userId}`;
-    // 7 days in seconds
     const TTL = 7 * 24 * 60 * 60;
-    await redis.set(key, token, "EX", TTL);
+    redis.set(key, token, "EX", TTL).catch(err => console.error("Redis set error", err));
   }
 
   public static async getRefreshToken(userId: string): Promise<string | null> {

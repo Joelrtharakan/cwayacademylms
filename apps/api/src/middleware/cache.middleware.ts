@@ -12,7 +12,8 @@ export const cacheRoute = (ttlSeconds: number = 300) => {
       return next();
     }
 
-    const key = `cache:${req.originalUrl || req.url}`;
+    const authInfo = req.headers.authorization || req.cookies?.cway_refresh || "anonymous";
+    const key = `cache:${req.originalUrl || req.url}:${authInfo}`;
 
     try {
       const cachedResponse = await redis.get(key);
