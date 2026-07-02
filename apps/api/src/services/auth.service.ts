@@ -106,10 +106,19 @@ export class AuthService {
 
     await TokenService.storeRefreshToken(user.id, refreshToken);
 
+    // Opportunistically re-hash passwords from cost 12 down to 10 for better performance
+    let newPasswordHash = undefined;
+    if (user.passwordHash.includes("$12$")) {
+      newPasswordHash = await bcrypt.hash(password, 10);
+    }
+
     await prisma.user.update({
       where: { id: user.id },
       // @ts-ignore: Stale IDE cache, property exists in schema
-      data: { lastLoginAt: new Date() },
+      data: { 
+        lastLoginAt: new Date(),
+        ...(newPasswordHash ? { passwordHash: newPasswordHash } : {})
+      },
     });
 
     return {

@@ -57,13 +57,6 @@ export default function CourseAnalyticsPage() {
         <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#1A261D", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}><Target size={18} color={GOLD} /> Overall Progress</h3>
           <div style={{ display: "flex", alignItems: "center", height: 220 }}>
-            <ResponsiveContainer width="50%" height="100%">
-              <PieChart>
-                <Pie data={progressData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
-                  {progressData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid rgba(184,134,69,0.3)", borderRadius: 8 }} itemStyle={{ color: "#1A261D" }} />
-              </PieChart>
             </ResponsiveContainer>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
               {progressData.map(d => (

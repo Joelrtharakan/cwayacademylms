@@ -86,7 +86,8 @@ export default function RevenuePage() {
       {/* Chart */}
       <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
         <h3 style={{ fontFamily: "Georgia, serif", fontSize: 18, color: DARK, marginBottom: 20, fontWeight: 700 }}>Earnings Over Time</h3>
-        <ResponsiveContainer width="100%" height={180}>
+        <div style={{ height: "180px", minWidth: 0, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <LineChart data={chartData} margin={{ left: -20 }}>
             <CartesianGrid stroke={BORDER} vertical={false} />
             <XAxis dataKey="month" stroke={MUTED} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
