@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authenticate = void 0;
 const token_service_1 = require("../services/token.service");
 const prisma_1 = require("../utils/prisma");
+const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
 exports.authenticate = (0, errors_1.asyncHandler)(async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -11,10 +12,28 @@ exports.authenticate = (0, errors_1.asyncHandler)(async (req, res, next) => {
     }
     const token = authHeader.split(" ")[1];
     const decoded = token_service_1.TokenService.verifyAccessToken(token);
-    const user = await prisma_1.prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { id: true, email: true, role: true, isBanned: true },
-    });
+    const cacheKey = `auth:user:${decoded.userId}`;
+    let user = null;
+    try {
+        const cachedUser = await redis_1.redis.get(cacheKey);
+        if (cachedUser)
+            user = JSON.parse(cachedUser);
+    }
+    catch (e) {
+        // ignore redis error
+    }
+    if (!user) {
+        user = await prisma_1.prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true, email: true, role: true, isBanned: true },
+        });
+        if (user) {
+            try {
+                await redis_1.redis.set(cacheKey, JSON.stringify(user), "EX", 60); // Cache for 60 seconds
+            }
+            catch (e) { }
+        }
+    }
     if (!user) {
         throw new errors_1.AppError("The user belonging to this token no longer exists", 401);
     }

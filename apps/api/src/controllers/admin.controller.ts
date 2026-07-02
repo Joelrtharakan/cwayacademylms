@@ -72,25 +72,26 @@ export const getStats = asyncHandler(async (req: Request, res: Response) => {
 export const getRevenueAnalytics = asyncHandler(async (req: Request, res: Response) => {
   const period = (req.query.period as string) || "12m";
   const months = period === "7d" ? 1 : period === "30d" ? 1 : 12;
+  const since = new Date(new Date().setMonth(new Date().getMonth() - months));
 
-  const payments = await prisma.payment.findMany({
-    where: {
-      status: "COMPLETED",
-      createdAt: { gte: new Date(new Date().setMonth(new Date().getMonth() - months)) },
-    },
-    include: { enrollments: { select: { id: true } } },
-    orderBy: { createdAt: "asc" },
-  });
+  const stats = await prisma.$queryRaw<any[]>`
+    SELECT 
+      to_char(p."createdAt", 'Mon YYYY') as month,
+      SUM(p.amount) as revenue,
+      COUNT(e.id) as enrollments
+    FROM "Payment" p
+    LEFT JOIN "Enrollment" e ON e."paymentId" = p.id
+    WHERE p.status = 'COMPLETED' AND p."createdAt" >= ${since}
+    GROUP BY to_char(p."createdAt", 'Mon YYYY')
+    ORDER BY MIN(p."createdAt") ASC
+  `;
 
-  const monthMap: Record<string, { revenue: number; enrollments: number }> = {};
-  for (const p of payments) {
-    const key = new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-    if (!monthMap[key]) monthMap[key] = { revenue: 0, enrollments: 0 };
-    monthMap[key].revenue += p.amount;
-    monthMap[key].enrollments += p.enrollments.length;
-  }
+  const data = stats.map((s) => ({
+    month: s.month,
+    revenue: Number(s.revenue || 0),
+    enrollments: Number(s.enrollments || 0),
+  }));
 
-  const data = Object.entries(monthMap).map(([month, v]) => ({ month, ...v }));
   res.json({ status: "success", data });
 });
 
@@ -98,21 +99,24 @@ export const getUserAnalytics = asyncHandler(async (req: Request, res: Response)
   const months = req.query.period === "12m" ? 12 : 1;
   const since = new Date(new Date().setMonth(new Date().getMonth() - months));
 
-  const users = await prisma.user.findMany({
-    where: { createdAt: { gte: since } },
-    select: { createdAt: true, role: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const stats = await prisma.$queryRaw<any[]>`
+    SELECT 
+      to_char("createdAt", 'Mon YYYY') as month,
+      SUM(CASE WHEN role = 'STUDENT' THEN 1 ELSE 0 END) as students,
+      SUM(CASE WHEN role = 'INSTRUCTOR' THEN 1 ELSE 0 END) as instructors
+    FROM "User"
+    WHERE "createdAt" >= ${since}
+    GROUP BY to_char("createdAt", 'Mon YYYY')
+    ORDER BY MIN("createdAt") ASC
+  `;
 
-  const monthMap: Record<string, { students: number; instructors: number }> = {};
-  for (const u of users) {
-    const key = new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-    if (!monthMap[key]) monthMap[key] = { students: 0, instructors: 0 };
-    if (u.role === "STUDENT") monthMap[key].students++;
-    if (u.role === "INSTRUCTOR") monthMap[key].instructors++;
-  }
+  const data = stats.map((s) => ({
+    month: s.month,
+    students: Number(s.students || 0),
+    instructors: Number(s.instructors || 0),
+  }));
 
-  res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
+  res.json({ status: "success", data });
 });
 
 export const getCourseAnalytics = asyncHandler(async (req: Request, res: Response) => {
@@ -199,21 +203,24 @@ export const getEnrollmentAnalytics = asyncHandler(async (req: Request, res: Res
   const months = req.query.period === "12m" ? 12 : 1;
   const since = new Date(new Date().setMonth(new Date().getMonth() - months));
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: { enrolledAt: { gte: since } },
-    select: { enrolledAt: true, status: true },
-    orderBy: { enrolledAt: "asc" },
-  });
+  const stats = await prisma.$queryRaw<any[]>`
+    SELECT 
+      to_char("enrolledAt", 'Mon YYYY') as month,
+      COUNT(*) as "newEnrollments",
+      SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completions
+    FROM "Enrollment"
+    WHERE "enrolledAt" >= ${since}
+    GROUP BY to_char("enrolledAt", 'Mon YYYY')
+    ORDER BY MIN("enrolledAt") ASC
+  `;
 
-  const monthMap: Record<string, { newEnrollments: number; completions: number }> = {};
-  for (const e of enrollments) {
-    const key = new Date(e.enrolledAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-    if (!monthMap[key]) monthMap[key] = { newEnrollments: 0, completions: 0 };
-    monthMap[key].newEnrollments++;
-    if (e.status === "COMPLETED") monthMap[key].completions++;
-  }
+  const data = stats.map((s) => ({
+    month: s.month,
+    newEnrollments: Number(s.newEnrollments || 0),
+    completions: Number(s.completions || 0),
+  }));
 
-  res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
+  res.json({ status: "success", data });
 });
 
 export const getRecentEnrollments = asyncHandler(async (req: Request, res: Response) => {

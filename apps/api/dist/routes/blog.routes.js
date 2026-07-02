@@ -37,11 +37,12 @@ const express_1 = require("express");
 const authenticate_1 = require("../middleware/authenticate");
 const authorize_1 = require("../middleware/authorize");
 const upload_middleware_1 = require("../middleware/upload.middleware");
+const cache_middleware_1 = require("../middleware/cache.middleware");
 const BC = __importStar(require("../controllers/blog.controller"));
 const router = (0, express_1.Router)();
 // Public
-router.get("/posts", BC.getPosts);
-router.get("/posts/:slug", BC.getPostBySlug);
+router.get("/posts", (0, cache_middleware_1.cacheRoute)(300), BC.getPosts);
+router.get("/posts/:slug", (0, cache_middleware_1.cacheRoute)(300), BC.getPostBySlug);
 // Admin / Instructor
 router.post("/posts", authenticate_1.authenticate, (0, authorize_1.authorize)("ADMIN", "INSTRUCTOR"), BC.createPost);
 router.put("/posts/:slug", authenticate_1.authenticate, (0, authorize_1.authorize)("ADMIN", "INSTRUCTOR"), BC.updatePost);

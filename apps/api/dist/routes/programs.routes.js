@@ -39,10 +39,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const PC = __importStar(require("../controllers/programs.controller"));
 const multer_1 = __importDefault(require("multer"));
+const cache_middleware_1 = require("../middleware/cache.middleware");
 const router = (0, express_1.Router)();
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
-router.get("/", PC.getPublicPrograms);
-router.get("/:id", PC.getProgram);
+router.get("/", (0, cache_middleware_1.cacheRoute)(300), PC.getPublicPrograms);
+router.get("/:id", (0, cache_middleware_1.cacheRoute)(300), PC.getProgram);
 router.post("/:id/apply", upload.fields([
     { name: "photo", maxCount: 1 },
     { name: "certificates", maxCount: 5 }

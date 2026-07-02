@@ -3,10 +3,12 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { GraduationCap, TrendingUp, Star, Award, AlertTriangle, ArrowRight, Plus, Activity, BookOpen } from "lucide-react";
+import { GraduationCap, TrendingUp, Star, Award, AlertTriangle, ArrowRight, Plus, Activity, BookOpen, ClipboardCheck, Users, Clock, BarChart3, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getInstructorStats, getInstructorCourses, getCourseAnalytics } from "@/lib/api/instructor";
+import { getInstructorStats, getInstructorCourses, getCourseAnalytics, getInstructorAssignments } from "@/lib/api/instructor";
+import { api } from "@/store/auth.store";
 import { useAuthStore } from "@/store/auth.store";
 import { StatCard } from "@/components/admin/StatCard";
 
@@ -56,9 +58,31 @@ export default function InstructorDashboardPage() {
 
   const { data: analytics } = useQuery({ queryKey: ["course-analytics", firstCourseId], queryFn: () => getCourseAnalytics(firstCourseId!), enabled: !!firstCourseId });
 
-  const revenueData = analytics?.enrollmentsOverTime || Array.from({ length: 6 }, (_, i) => ({
+  // Recent enrollments across all instructor courses
+  const { data: recentEnrollments } = useQuery({
+    queryKey: ["instructor-recent-enrollments"],
+    queryFn: () => api.get("/instructor/courses").then(r => {
+      const allCourses = r.data.data?.courses || [];
+      // Gather enrollments from each course with student info
+      const enrollmentPromises = allCourses.slice(0, 3).map((c: any) =>
+        api.get(`/instructor/courses/${c.id}/students`).then(r => 
+          (r.data.data || []).map((e: any) => ({ ...e, courseTitle: c.title, courseId: c.id }))
+        ).catch(() => [])
+      );
+      return Promise.all(enrollmentPromises).then(results => 
+        results.flat().sort((a: any, b: any) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime()).slice(0, 6)
+      );
+    }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const enrollmentChartData = analytics?.enrollmentsOverTime || Array.from({ length: 6 }, (_, i) => ({
     month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i], count: 0,
   }));
+
+  const completionRate = stats && stats.totalStudents > 0 
+    ? Math.round((stats.totalCompletions / stats.totalStudents) * 100) 
+    : 0;
 
   return (
     <div style={{ maxWidth: "1400px" }}>
@@ -73,12 +97,12 @@ export default function InstructorDashboardPage() {
           </p>
         </div>
       </div>
-
+      {/* KPI Cards */}
       <style>{`
         .kpi-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
           margin-bottom: 32px;
         }
         @media (max-width: 1400px) {
@@ -93,19 +117,18 @@ export default function InstructorDashboardPage() {
         }
       `}</style>
       
-      {/* KPI Cards */}
       <div className="kpi-grid">
         <StatCard
           label="Total Students"
           value={statsLoading ? "—" : (stats?.totalStudents ?? 0).toLocaleString()}
-          icon={GraduationCap}
+          icon={Users}
           loading={statsLoading}
           color="gold"
         />
         <StatCard
-          label="Revenue Earned"
-          value={statsLoading ? "—" : `₹${(stats?.totalRevenue ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`}
-          icon={TrendingUp}
+          label="Active Courses"
+          value={statsLoading ? "—" : (stats?.publishedCourses ?? courses.filter((c: any) => c.status === "PUBLISHED").length).toLocaleString()}
+          icon={BookOpen}
           loading={statsLoading}
           color="green"
         />
@@ -122,6 +145,20 @@ export default function InstructorDashboardPage() {
           icon={Award}
           loading={statsLoading}
           color="blue"
+        />
+        <StatCard
+          label="Completion Rate"
+          value={statsLoading ? "—" : `${completionRate}%`}
+          icon={BarChart3}
+          loading={statsLoading}
+          color="green"
+        />
+        <StatCard
+          label="Pending Grading"
+          value={statsLoading ? "—" : (stats?.pendingSubmissions ?? 0).toLocaleString()}
+          icon={ClipboardCheck}
+          loading={statsLoading}
+          color={stats?.pendingSubmissions > 0 ? "gold" : "blue"}
         />
       </div>
 
@@ -234,7 +271,7 @@ export default function InstructorDashboardPage() {
           </div>
         </div>
 
-        {!revenueData || revenueData.length === 0 ? (
+        {!enrollmentChartData || enrollmentChartData.length === 0 ? (
           <div
             style={{
               height: "260px",
@@ -256,7 +293,7 @@ export default function InstructorDashboardPage() {
         ) : (
           <div style={{ height: "260px" }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <AreaChart data={revenueData} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
+              <AreaChart data={enrollmentChartData} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
                 <defs>
                   <linearGradient id="enrollmentGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#B88645" stopOpacity={0.12} />
@@ -293,8 +330,10 @@ export default function InstructorDashboardPage() {
         )}
       </div>
 
-      {/* Bottom Courses Section */}
+      {/* Bottom Section */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))", gap: "24px" }}>
+        
+        {/* Recent Courses */}
         <div
           style={{
             borderRadius: "16px",
@@ -414,7 +453,9 @@ export default function InstructorDashboardPage() {
                       }}
                     >
                       {course.thumbnail ? (
-                        <img src={course.thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                          <Image src={course.thumbnail} alt="" fill sizes="40px" style={{ objectFit: "cover" }} />
+                        </div>
                       ) : (
                         <BookOpen size={18} />
                       )}
@@ -424,12 +465,123 @@ export default function InstructorDashboardPage() {
                         {course.title}
                       </p>
                       <p style={{ fontSize: "12px", fontWeight: 500, color: "#8F9E93", margin: "2px 0 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        ₹{course.price} • {course._count?.enrollments || 0} students
+                        {course._count?.enrollments || 0} students
                       </p>
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                     <StatusBadge status={course.status} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Student Activity */}
+        <div
+          style={{
+            borderRadius: "16px",
+            background: "#FFFFFF",
+            border: "1px solid #E4E8E0",
+            boxShadow: "0 1px 3px rgba(26,38,29,0.04)",
+            padding: "28px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+            <div>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700, color: "#1A261D", margin: 0 }}>
+                Recent Enrollments
+              </h2>
+              <p style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93", margin: "4px 0 0 0" }}>
+                Latest students to join
+              </p>
+            </div>
+          </div>
+
+          {!recentEnrollments ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: "56px",
+                    borderRadius: "12px",
+                    background: "#F7F8F5",
+                    animation: "pulse 1.5s ease-in-out infinite",
+                  }}
+                />
+              ))}
+            </div>
+          ) : recentEnrollments.length === 0 ? (
+            <div
+              style={{
+                height: "160px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "12px",
+                background: "#F7F8F5",
+                border: "1px dashed #DCE0D5",
+              }}
+            >
+              <p style={{ fontSize: "14px", fontWeight: 500, color: "#8F9E93", margin: 0 }}>
+                No recent enrollments
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {recentEnrollments.map((enrollment: any, i: number) => (
+                <div
+                  key={`${enrollment.studentId}-${enrollment.courseId}-${i}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "12px",
+                    borderRadius: "12px",
+                    background: "transparent",
+                    border: "1px solid transparent",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, width: "100%" }}>
+                    {enrollment.student?.avatar ? (
+                       <Image 
+                         src={enrollment.student.avatar} 
+                         alt={enrollment.student.name || "Student"} 
+                         width={40} 
+                         height={40} 
+                         style={{ borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} 
+                       />
+                    ) : (
+                      <div
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "8px",
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "#F0F2ED",
+                          color: "#526658",
+                          fontWeight: 600,
+                          fontSize: "14px"
+                        }}
+                      >
+                        {enrollment.student?.name?.charAt(0) || "U"}
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {enrollment.student?.name || "Unknown Student"}
+                      </p>
+                      <p style={{ fontSize: "12px", fontWeight: 500, color: "#8F9E93", margin: "2px 0 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        Enrolled in {enrollment.courseTitle}
+                      </p>
+                    </div>
+                    <div style={{ flexShrink: 0, fontSize: "11px", color: "#B88645", fontWeight: 600 }}>
+                      {new Date(enrollment.enrolledAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               ))}

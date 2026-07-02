@@ -2,13 +2,14 @@ import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 import { upload } from "../middleware/upload.middleware";
+import { cacheRoute } from "../middleware/cache.middleware";
 import * as BC from "../controllers/blog.controller";
 
 const router = Router();
 
 // Public
-router.get("/posts", BC.getPosts);
-router.get("/posts/:slug", BC.getPostBySlug);
+router.get("/posts", cacheRoute(300), BC.getPosts);
+router.get("/posts/:slug", cacheRoute(300), BC.getPostBySlug);
 
 // Admin / Instructor
 router.post("/posts", authenticate, authorize("ADMIN", "INSTRUCTOR"), BC.createPost);

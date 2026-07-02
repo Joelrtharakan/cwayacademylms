@@ -35,10 +35,12 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authenticate_1 = require("../middleware/authenticate");
+const activityLog_middleware_1 = require("../middleware/activityLog.middleware");
 const studentCtrl = __importStar(require("../controllers/student.controller"));
 const upload_middleware_1 = require("../middleware/upload.middleware");
 const router = (0, express_1.Router)();
 router.use(authenticate_1.authenticate);
+router.use(activityLog_middleware_1.auditLog);
 // Progress
 router.post("/enrollments", studentCtrl.enrollInCourse);
 router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
@@ -82,4 +84,5 @@ router.put("/notifications/read-all", studentCtrl.markAllNotificationsRead);
 router.put("/notifications/:id/read", studentCtrl.markNotificationRead);
 // Dashboard Dashboard
 router.get("/dashboard", studentCtrl.getStudentDashboard);
+router.post("/heartbeat", studentCtrl.updateHeartbeat);
 exports.default = router;

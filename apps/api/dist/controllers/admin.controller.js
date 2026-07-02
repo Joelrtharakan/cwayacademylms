@@ -36,8 +36,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProgramById = exports.getPrograms = exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
-exports.rejectApplication = exports.approveApplication = exports.getApplicationById = exports.getApplications = exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = void 0;
+exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getStudentTimeAnalytics = exports.getRecentEnrollments = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
+exports.getLogStats = exports.getLogs = exports.downloadCertificate = exports.getProgramStudentGrades = exports.rejectApplication = exports.approveApplication = exports.getApplicationById = exports.getApplications = exports.removeCourseFromProgram = exports.duplicateCourse = exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = exports.getProgramStudentDetails = exports.getProgramStudents = exports.getProgramById = exports.getPrograms = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
@@ -91,47 +91,47 @@ exports.getStats = (0, errors_1.asyncHandler)(async (req, res) => {
 exports.getRevenueAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     const period = req.query.period || "12m";
     const months = period === "7d" ? 1 : period === "30d" ? 1 : 12;
-    const payments = await prisma_1.prisma.payment.findMany({
-        where: {
-            status: "COMPLETED",
-            createdAt: { gte: new Date(new Date().setMonth(new Date().getMonth() - months)) },
-        },
-        include: { enrollments: { select: { id: true } } },
-        orderBy: { createdAt: "asc" },
-    });
-    const monthMap = {};
-    for (const p of payments) {
-        const key = new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-        if (!monthMap[key])
-            monthMap[key] = { revenue: 0, enrollments: 0 };
-        monthMap[key].revenue += p.amount;
-        monthMap[key].enrollments += p.enrollments.length;
-    }
-    const data = Object.entries(monthMap).map(([month, v]) => ({ month, ...v }));
+    const since = new Date(new Date().setMonth(new Date().getMonth() - months));
+    const stats = await prisma_1.prisma.$queryRaw `
+    SELECT 
+      to_char(p."createdAt", 'Mon YYYY') as month,
+      SUM(p.amount) as revenue,
+      COUNT(e.id) as enrollments
+    FROM "Payment" p
+    LEFT JOIN "Enrollment" e ON e."paymentId" = p.id
+    WHERE p.status = 'COMPLETED' AND p."createdAt" >= ${since}
+    GROUP BY to_char(p."createdAt", 'Mon YYYY')
+    ORDER BY MIN(p."createdAt") ASC
+  `;
+    const data = stats.map((s) => ({
+        month: s.month,
+        revenue: Number(s.revenue || 0),
+        enrollments: Number(s.enrollments || 0),
+    }));
     res.json({ status: "success", data });
 });
 exports.getUserAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     const months = req.query.period === "12m" ? 12 : 1;
     const since = new Date(new Date().setMonth(new Date().getMonth() - months));
-    const users = await prisma_1.prisma.user.findMany({
-        where: { createdAt: { gte: since } },
-        select: { createdAt: true, role: true },
-        orderBy: { createdAt: "asc" },
-    });
-    const monthMap = {};
-    for (const u of users) {
-        const key = new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-        if (!monthMap[key])
-            monthMap[key] = { students: 0, instructors: 0 };
-        if (u.role === "STUDENT")
-            monthMap[key].students++;
-        if (u.role === "INSTRUCTOR")
-            monthMap[key].instructors++;
-    }
-    res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
+    const stats = await prisma_1.prisma.$queryRaw `
+    SELECT 
+      to_char("createdAt", 'Mon YYYY') as month,
+      SUM(CASE WHEN role = 'STUDENT' THEN 1 ELSE 0 END) as students,
+      SUM(CASE WHEN role = 'INSTRUCTOR' THEN 1 ELSE 0 END) as instructors
+    FROM "User"
+    WHERE "createdAt" >= ${since}
+    GROUP BY to_char("createdAt", 'Mon YYYY')
+    ORDER BY MIN("createdAt") ASC
+  `;
+    const data = stats.map((s) => ({
+        month: s.month,
+        students: Number(s.students || 0),
+        instructors: Number(s.instructors || 0),
+    }));
+    res.json({ status: "success", data });
 });
 exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
-    const [topByEnrollment, topByRating, byCategory, completionRates] = await Promise.all([
+    const [topByEnrollment, topByRating, byCategory, coursesForCompletion, completionGroups] = await Promise.all([
         prisma_1.prisma.course.findMany({
             where: { status: "PUBLISHED" },
             orderBy: { enrollments: { _count: "desc" } },
@@ -162,10 +162,11 @@ exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
         }),
         prisma_1.prisma.course.findMany({
             where: { status: "PUBLISHED" },
-            select: {
-                title: true,
-                enrollments: { select: { status: true } },
-            },
+            select: { id: true, title: true }
+        }),
+        prisma_1.prisma.enrollment.groupBy({
+            by: ["courseId", "status"],
+            _count: { id: true },
         }),
     ]);
     const calcRating = (reviews) => reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
@@ -192,33 +193,86 @@ exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
                 courseCount: cat._count.courses,
                 enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
             })),
-            completionRates: completionRates.map((c) => ({
-                courseTitle: c.title,
-                completionRate: c.enrollments.length
-                    ? parseFloat(((c.enrollments.filter((e) => e.status === "COMPLETED").length / c.enrollments.length) * 100).toFixed(1))
-                    : 0,
-            })),
+            completionRates: coursesForCompletion.map((c) => {
+                const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
+                const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
+                const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
+                return {
+                    courseTitle: c.title,
+                    completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
+                };
+            }).sort((a, b) => b.completionRate - a.completionRate),
         },
     });
 });
 exports.getEnrollmentAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     const months = req.query.period === "12m" ? 12 : 1;
     const since = new Date(new Date().setMonth(new Date().getMonth() - months));
+    const stats = await prisma_1.prisma.$queryRaw `
+    SELECT 
+      to_char("enrolledAt", 'Mon YYYY') as month,
+      COUNT(*) as "newEnrollments",
+      SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completions
+    FROM "Enrollment"
+    WHERE "enrolledAt" >= ${since}
+    GROUP BY to_char("enrolledAt", 'Mon YYYY')
+    ORDER BY MIN("enrolledAt") ASC
+  `;
+    const data = stats.map((s) => ({
+        month: s.month,
+        newEnrollments: Number(s.newEnrollments || 0),
+        completions: Number(s.completions || 0),
+    }));
+    res.json({ status: "success", data });
+});
+exports.getRecentEnrollments = (0, errors_1.asyncHandler)(async (req, res) => {
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit || "8")));
     const enrollments = await prisma_1.prisma.enrollment.findMany({
-        where: { enrolledAt: { gte: since } },
-        select: { enrolledAt: true, status: true },
-        orderBy: { enrolledAt: "asc" },
+        orderBy: { enrolledAt: "desc" },
+        take: limit,
+        select: {
+            id: true,
+            enrolledAt: true,
+            progress: true,
+            status: true,
+            student: { select: { id: true, name: true, email: true, avatar: true } },
+            course: { select: { id: true, title: true } },
+        },
     });
-    const monthMap = {};
-    for (const e of enrollments) {
-        const key = new Date(e.enrolledAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-        if (!monthMap[key])
-            monthMap[key] = { newEnrollments: 0, completions: 0 };
-        monthMap[key].newEnrollments++;
-        if (e.status === "COMPLETED")
-            monthMap[key].completions++;
-    }
-    res.json({ status: "success", data: Object.entries(monthMap).map(([month, v]) => ({ month, ...v })) });
+    res.json({ status: "success", data: enrollments });
+});
+exports.getStudentTimeAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit || "10")));
+    const cacheKey = `admin:analytics:students-time:${limit}`;
+    const cached = await redis_1.redis.get(cacheKey);
+    if (cached)
+        return res.json({ status: "success", data: JSON.parse(cached) });
+    const results = await prisma_1.prisma.$queryRaw `
+    SELECT u.id, u.name, u.email, u.avatar, u."appActiveSeconds",
+           SUM(lp."watchedSeconds") as "watchedSeconds",
+           COUNT(DISTINCT e."courseId") as "enrollmentCount"
+    FROM "User" u
+    LEFT JOIN "Enrollment" e ON e."studentId" = u.id
+    LEFT JOIN "LessonProgress" lp ON lp."enrollmentId" = e.id
+    WHERE u.role = 'STUDENT'
+    GROUP BY u.id, u.name, u.email, u.avatar, u."appActiveSeconds"
+    HAVING (SUM(lp."watchedSeconds") > 0 OR u."appActiveSeconds" > 0)
+    ORDER BY (COALESCE(SUM(lp."watchedSeconds"), 0) + COALESCE(u."appActiveSeconds", 0)) DESC
+    LIMIT ${limit}
+  `;
+    const topStudents = results.map((r) => {
+        const totalSeconds = Number(r.watchedSeconds || 0) + Number(r.appActiveSeconds || 0);
+        return {
+            id: r.id,
+            name: r.name,
+            email: r.email,
+            avatar: r.avatar,
+            totalSeconds,
+            enrollmentCount: Number(r.enrollmentCount || 0),
+        };
+    });
+    await redis_1.redis.set(cacheKey, JSON.stringify(topStudents), "EX", 60); // Cache for 60 seconds
+    res.json({ status: "success", data: topStudents });
 });
 // ─── USER MANAGEMENT ─────────────────────────────────────────────────────────
 exports.getUsers = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -1037,6 +1091,121 @@ exports.getProgramById = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Program not found", 404);
     res.json({ status: "success", data: program });
 });
+exports.getProgramStudents = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const enrollments = await prisma_1.prisma.programEnrollment.findMany({
+        where: { programId: id },
+        include: {
+            student: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
+        },
+        orderBy: { enrolledAt: "desc" },
+    });
+    res.json({ status: "success", data: enrollments });
+});
+exports.getProgramStudentDetails = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id, studentId } = req.params;
+    // 1. Get the program enrollment
+    const programEnrollment = await prisma_1.prisma.programEnrollment.findUnique({
+        where: { studentId_programId: { studentId, programId: id } },
+        include: {
+            student: { select: { id: true, name: true, email: true, avatar: true, phone: true } },
+            program: { select: { id: true, title: true } },
+        },
+    });
+    if (!programEnrollment)
+        throw new errors_1.AppError("Student is not enrolled in this program", 404);
+    // 2. Get all courses in this program and the student's progress
+    const courses = await prisma_1.prisma.course.findMany({
+        where: { programId: id },
+        select: {
+            id: true,
+            title: true,
+            courseCode: true,
+            status: true,
+            enrollments: {
+                where: { studentId },
+                select: { id: true, progress: true, status: true, enrolledAt: true, completedAt: true },
+            },
+            sections: {
+                select: {
+                    lessons: {
+                        select: {
+                            quiz: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    passingScore: true,
+                                    attempts: {
+                                        where: { studentId },
+                                        select: { id: true, score: true, passed: true, completedAt: true },
+                                        orderBy: { score: 'desc' }
+                                    },
+                                },
+                            },
+                            assignment: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    maxScore: true,
+                                    submissions: {
+                                        where: { studentId },
+                                        select: { id: true, isGraded: true, grade: true, submittedAt: true, gradedAt: true },
+                                        orderBy: { submittedAt: 'desc' }
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        orderBy: { createdAt: "asc" },
+    });
+    // 3. Get certificates related to this student for this program and its courses
+    const courseIds = courses.map(c => c.id);
+    const certificates = await prisma_1.prisma.certificate.findMany({
+        where: {
+            studentId,
+            OR: [
+                { programId: id },
+                { courseId: { in: courseIds } }
+            ]
+        },
+        include: {
+            course: { select: { title: true } },
+            program: { select: { title: true } },
+        },
+        orderBy: { issuedAt: "desc" },
+    });
+    res.json({
+        status: "success",
+        data: {
+            programEnrollment,
+            courses: courses.map((course) => {
+                const quizzes = [];
+                const assignments = [];
+                course.sections.forEach((section) => {
+                    section.lessons.forEach((lesson) => {
+                        if (lesson.quiz)
+                            quizzes.push(lesson.quiz);
+                        if (lesson.assignment)
+                            assignments.push(lesson.assignment);
+                    });
+                });
+                return {
+                    id: course.id,
+                    title: course.title,
+                    courseCode: course.courseCode,
+                    status: course.status,
+                    enrollments: course.enrollments,
+                    quizzes,
+                    assignments,
+                };
+            }),
+            certificates,
+        },
+    });
+});
 exports.createProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     const { title, description, duration, tags, status } = req.body;
     if (!title)
@@ -1053,7 +1222,7 @@ exports.createProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     res.status(201).json({ status: "success", data: program });
 });
 exports.updateProgram = (0, errors_1.asyncHandler)(async (req, res) => {
-    const { title, description, duration, tags, status } = req.body;
+    const { title, description, duration, tags, status, applicationsClosed } = req.body;
     const program = await prisma_1.prisma.program.update({
         where: { id: req.params.id },
         data: {
@@ -1062,6 +1231,7 @@ exports.updateProgram = (0, errors_1.asyncHandler)(async (req, res) => {
             ...(duration !== undefined && { duration }),
             ...(tags !== undefined && { tags: JSON.stringify(tags) }),
             ...(status !== undefined && { status }),
+            ...(applicationsClosed !== undefined && { applicationsClosed }),
         },
         include: { _count: { select: { courses: true } } },
     });
@@ -1190,6 +1360,154 @@ exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
     await notification_service_1.NotificationService.createNotification(instructorId, "COURSE_INVITATION", "You've been assigned a new course", `An admin created '${course.title}' and assigned it to you.`, `/instructor/invitations`);
     res.status(201).json({ status: "success", data: course, invitation });
 });
+exports.duplicateCourse = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const { programId } = req.body;
+    const originalCourse = await prisma_1.prisma.course.findUnique({
+        where: { id },
+        include: {
+            sections: {
+                include: {
+                    lessons: {
+                        include: {
+                            quiz: { include: { questions: { include: { answers: true } } } },
+                            assignment: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+    if (!originalCourse)
+        throw new errors_1.AppError("Course not found", 404);
+    const crypto = await Promise.resolve().then(() => __importStar(require("crypto")));
+    const randomHex = crypto.randomBytes(3).toString("hex");
+    const slug = await uniqueSlug(`${originalCourse.title} Copy ${randomHex}`);
+    const newCourse = await prisma_1.prisma.$transaction(async (tx) => {
+        const createdCourse = await tx.course.create({
+            data: {
+                title: `${originalCourse.title} (Copy)`,
+                subtitle: originalCourse.subtitle,
+                description: originalCourse.description,
+                thumbnail: originalCourse.thumbnail,
+                promoVideoUrl: originalCourse.promoVideoUrl,
+                price: originalCourse.price,
+                currency: originalCourse.currency,
+                status: "DRAFT",
+                level: originalCourse.level,
+                language: originalCourse.language,
+                moduleNumber: originalCourse.moduleNumber,
+                weeksDuration: originalCourse.weeksDuration,
+                totalLectures: originalCourse.totalLectures,
+                totalDuration: originalCourse.totalDuration,
+                scriptureRef: originalCourse.scriptureRef,
+                isFeatured: originalCourse.isFeatured,
+                isFree: originalCourse.isFree,
+                requirements: originalCourse.requirements,
+                outcomes: originalCourse.outcomes,
+                targetAudience: originalCourse.targetAudience,
+                welcomeMessage: originalCourse.welcomeMessage,
+                congratsMessage: originalCourse.congratsMessage,
+                tags: originalCourse.tags,
+                slug,
+                instructorId: originalCourse.instructorId,
+                categoryId: originalCourse.categoryId,
+                programId: programId || null,
+                invitationStatus: "PENDING",
+                forum: { create: {} },
+                curriculum: { create: {} },
+                sections: {
+                    create: originalCourse.sections.map((sec) => ({
+                        title: sec.title,
+                        description: sec.description,
+                        objectives: sec.objectives,
+                        weekNumber: sec.weekNumber,
+                        isPublished: false,
+                        order: sec.order,
+                        lessons: {
+                            create: sec.lessons.map((les) => ({
+                                title: les.title,
+                                type: les.type,
+                                content: les.content,
+                                videoUrl: les.videoUrl,
+                                duration: les.duration,
+                                order: les.order,
+                                isFree: les.isFree,
+                                isPreview: les.isPreview,
+                                bunnyVideoId: les.bunnyVideoId,
+                                forumMarks: les.forumMarks,
+                                dueDate: les.dueDate,
+                                ...(les.quiz && {
+                                    quiz: {
+                                        create: {
+                                            title: les.quiz.title,
+                                            passingScore: les.quiz.passingScore,
+                                            timeLimit: les.quiz.timeLimit,
+                                            maxAttempts: les.quiz.maxAttempts,
+                                            rubricId: les.quiz.rubricId,
+                                            questions: {
+                                                create: les.quiz.questions.map((q) => ({
+                                                    text: q.text,
+                                                    type: q.type,
+                                                    points: q.points,
+                                                    order: q.order,
+                                                    scriptureRef: q.scriptureRef,
+                                                    answers: {
+                                                        create: q.answers.map((a) => ({
+                                                            text: a.text,
+                                                            isCorrect: a.isCorrect
+                                                        }))
+                                                    }
+                                                }))
+                                            }
+                                        }
+                                    }
+                                }),
+                                ...(les.assignment && {
+                                    assignment: {
+                                        create: {
+                                            title: les.assignment.title,
+                                            description: les.assignment.description,
+                                            dueDate: les.assignment.dueDate,
+                                            maxScore: les.assignment.maxScore,
+                                            attachmentUrl: les.assignment.attachmentUrl,
+                                            rubricId: les.assignment.rubricId
+                                        }
+                                    }
+                                })
+                            }))
+                        }
+                    }))
+                }
+            }
+        });
+        await tx.courseInvitation.create({
+            data: {
+                courseId: createdCourse.id,
+                instructorId: createdCourse.instructorId,
+                status: "PENDING"
+            }
+        });
+        return createdCourse;
+    }, {
+        timeout: 60000,
+    });
+    res.status(201).json({ status: "success", data: newCourse });
+});
+exports.removeCourseFromProgram = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { programId, courseId } = req.params;
+    const course = await prisma_1.prisma.course.findUnique({
+        where: { id: courseId },
+    });
+    if (!course || course.programId !== programId) {
+        throw new errors_1.AppError("Course not found in this program", 404);
+    }
+    await prisma_1.prisma.course.update({
+        where: { id: courseId },
+        data: { programId: null },
+    });
+    res.json({ status: "success", message: "Course removed from program" });
+});
 // ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
 exports.getApplications = (0, errors_1.asyncHandler)(async (req, res) => {
     const applications = await prisma_1.prisma.programApplication.findMany({
@@ -1273,4 +1591,191 @@ exports.rejectApplication = (0, errors_1.asyncHandler)(async (req, res) => {
         data: { status: "REJECTED" }
     });
     res.json({ status: "success", message: "Application rejected" });
+});
+exports.getProgramStudentGrades = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id: programId, studentId } = req.params;
+    const program = await prisma_1.prisma.program.findUnique({
+        where: { id: programId },
+        include: {
+            courses: {
+                include: {
+                    enrollments: { where: { studentId } }
+                }
+            }
+        }
+    });
+    if (!program)
+        throw new errors_1.AppError("Program not found", 404);
+    const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
+        const courseData = await prisma_1.prisma.course.findUnique({
+            where: { id: course.id },
+            include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+        });
+        if (!courseData)
+            return { ...course, finalGrade: 0 };
+        const gradedItems = [];
+        courseData.sections.forEach(sec => {
+            sec.lessons.forEach(lesson => {
+                if (lesson.assignment)
+                    gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
+                if (lesson.quiz)
+                    gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
+                if (lesson.type === "FORUM")
+                    gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
+            });
+        });
+        const submissions = await prisma_1.prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
+        const quizAttempts = await prisma_1.prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
+        const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
+        const forumDiscussions = await prisma_1.prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
+        const grades = {};
+        gradedItems.forEach(item => grades[item.id] = null);
+        submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined)
+            grades[sub.assignmentId] = sub.grade; });
+        quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId])
+            grades[qa.quizId] = qa.score; });
+        forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score > grades[sf.lessonId]))
+            grades[sf.lessonId] = sf.score; });
+        let totalEarned = 0;
+        let totalMaxGraded = 0;
+        gradedItems.forEach(item => {
+            const score = grades[item.id];
+            if (score !== null && score !== undefined) {
+                totalEarned += score;
+                totalMaxGraded += item.maxScore;
+            }
+        });
+        const finalGrade = totalMaxGraded > 0 ? Number(((totalEarned / totalMaxGraded) * 100).toFixed(1)) : 0;
+        return {
+            id: course.id,
+            title: course.title,
+            courseCode: course.courseCode,
+            finalGrade
+        };
+    }));
+    // also get student
+    const student = await prisma_1.prisma.user.findUnique({
+        where: { id: studentId },
+        select: { id: true, name: true, email: true }
+    });
+    res.json({ status: "success", data: { program, coursesWithGrades, student } });
+});
+exports.downloadCertificate = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const certificate = await prisma_1.prisma.certificate.findUnique({
+        where: { id },
+        include: { course: true, program: true }
+    });
+    if (!certificate)
+        throw new errors_1.AppError("Certificate not found", 404);
+    const { CertificateService } = await Promise.resolve().then(() => __importStar(require("../services/certificate.service")));
+    const pdfBuffer = await CertificateService.generateCertificatePDF(id);
+    res.setHeader("Content-Type", "application/pdf");
+    const slug = certificate.course ? certificate.course.slug : (certificate.program ? certificate.program.id : 'certificate');
+    res.setHeader("Content-Disposition", `attachment; filename="${slug}-certificate.pdf"`);
+    res.send(pdfBuffer);
+});
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────
+exports.getLogs = (0, errors_1.asyncHandler)(async (req, res) => {
+    const page = Math.max(1, parseInt(req.query.page || "1"));
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "50")));
+    const skip = (page - 1) * limit;
+    const action = req.query.action;
+    const resource = req.query.resource;
+    const status = req.query.status;
+    const userId = req.query.userId;
+    const search = req.query.search;
+    const from = req.query.from;
+    const to = req.query.to;
+    const role = req.query.role;
+    const where = {};
+    if (action)
+        where.action = action;
+    if (resource)
+        where.resource = resource;
+    if (status)
+        where.status = status;
+    if (userId)
+        where.userId = userId;
+    if (role)
+        where.actorRole = role;
+    if (from || to) {
+        where.createdAt = {};
+        if (from)
+            where.createdAt.gte = new Date(from);
+        if (to)
+            where.createdAt.lte = new Date(to);
+    }
+    if (search) {
+        where.OR = [
+            { actorEmail: { contains: search, mode: "insensitive" } },
+            { actorName: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+            { resourceId: { contains: search, mode: "insensitive" } },
+        ];
+    }
+    const db = prisma_1.prisma;
+    const [logs, total] = await Promise.all([
+        db.activityLog.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            skip,
+            take: limit,
+            include: {
+                user: {
+                    select: { id: true, name: true, email: true, avatar: true, role: true },
+                },
+            },
+        }),
+        db.activityLog.count({ where }),
+    ]);
+    res.json({
+        status: "success",
+        data: {
+            logs,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        },
+    });
+});
+exports.getLogStats = (0, errors_1.asyncHandler)(async (req, res) => {
+    const days = parseInt(req.query.days || "30");
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const db = prisma_1.prisma;
+    const [total, byAction, byStatus, recentFailures] = await Promise.all([
+        db.activityLog.count({ where: { createdAt: { gte: since } } }),
+        db.activityLog.groupBy({
+            by: ["action"],
+            where: { createdAt: { gte: since } },
+            _count: { action: true },
+            orderBy: { _count: { action: "desc" } },
+        }),
+        db.activityLog.groupBy({
+            by: ["status"],
+            where: { createdAt: { gte: since } },
+            _count: { status: true },
+        }),
+        db.activityLog.count({
+            where: { createdAt: { gte: since }, status: "FAILED" },
+        }),
+    ]);
+    const logins = byAction.find((a) => a.action === "LOGIN")?._count.action ?? 0;
+    const mutations = byAction
+        .filter((a) => !["LOGIN", "LOGOUT", "LOGIN_FAILED"].includes(a.action))
+        .reduce((sum, a) => sum + a._count.action, 0);
+    res.json({
+        status: "success",
+        data: {
+            total,
+            logins,
+            mutations,
+            failures: recentFailures,
+            byAction: byAction.map((a) => ({ action: a.action, count: a._count.action })),
+            byStatus: byStatus.map((s) => ({ status: s.status, count: s._count.status })),
+        },
+    });
 });

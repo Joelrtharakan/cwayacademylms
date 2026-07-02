@@ -37,23 +37,26 @@ const express_1 = require("express");
 const upload_middleware_1 = require("../middleware/upload.middleware");
 const authenticate_1 = require("../middleware/authenticate");
 const authorize_1 = require("../middleware/authorize");
+const activityLog_middleware_1 = require("../middleware/activityLog.middleware");
+const cache_middleware_1 = require("../middleware/cache.middleware");
 const CC = __importStar(require("../controllers/courses.controller"));
 const router = (0, express_1.Router)();
 // ── PUBLIC ──────────────────────────────────────────────────────────────────
-router.get("/courses", (req, res, next) => { try {
+router.get("/courses", (0, cache_middleware_1.cacheRoute)(300), (req, res, next) => { try {
     (0, authenticate_1.authenticate)(req, res, () => next());
 }
 catch {
     next();
 } }, CC.listCourses);
-router.get("/courses/:id", (req, res, next) => { try {
+router.get("/courses/:id", (0, cache_middleware_1.cacheRoute)(300), (req, res, next) => { try {
     (0, authenticate_1.authenticate)(req, res, () => next());
 }
 catch {
     next();
 } }, CC.getCourse);
-router.get("/categories", CC.getPublicCategories);
+router.get("/categories", (0, cache_middleware_1.cacheRoute)(300), CC.getPublicCategories);
 // ── INSTRUCTOR / ADMIN ───────────────────────────────────────────────────────
+router.use(activityLog_middleware_1.auditLog);
 router.post("/courses", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.createCourse);
 router.put("/courses/:id", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.updateCourse);
 router.delete("/courses/:id", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.deleteCourseInstructor);
@@ -85,6 +88,7 @@ router.get("/quizzes/:quizId/attempts", authenticate_1.authenticate, (0, authori
 router.get("/quizzes/:quizId/stats", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getQuizStats);
 router.post("/quizzes/:quizId/reset", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.resetQuizAttempts);
 router.get("/instructor/courses/:id/students", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorCourseStudents);
+router.delete("/instructor/courses/:id/students/:studentId", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.unenrollStudent);
 router.get("/instructor/courses/:id/gradebook", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), CC.getInstructorGradebook);
 const MC = __importStar(require("../controllers/modules.controller"));
 // ─── Phase 4: Modules & Content ──────────────────────────────────────────────

@@ -150,7 +150,7 @@ export default function AdminAnalyticsPage() {
           <TrendingUp size={24} color={GOLD} /> Financial Performance
         </h2>
         <div style={{ height: "340px", marginTop: "16px" }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart data={revenue ?? []} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -177,7 +177,7 @@ export default function AdminAnalyticsPage() {
             <Users size={22} color={GREEN} /> Audience Growth
           </h2>
           <div style={{ height: "300px" }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={users ?? []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barGap={8}>
                 <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#F0F2ED" />
                 <XAxis dataKey="month" tick={{ fill: "#8F9E93", fontSize: 12, fontWeight: 600, fontFamily: "monospace" }} axisLine={false} tickLine={false} dy={10} />
@@ -198,7 +198,7 @@ export default function AdminAnalyticsPage() {
             <GraduationCap size={22} color={BLUE} /> Engagement Metrics
           </h2>
           <div style={{ height: "300px" }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={enrollments ?? []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#F0F2ED" />
                 <XAxis dataKey="month" tick={{ fill: "#8F9E93", fontSize: 12, fontWeight: 600, fontFamily: "monospace" }} axisLine={false} tickLine={false} dy={10} />

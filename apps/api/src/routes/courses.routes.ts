@@ -3,14 +3,15 @@ import { upload } from "../middleware/upload.middleware";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 import { auditLog } from "../middleware/activityLog.middleware";
+import { cacheRoute } from "../middleware/cache.middleware";
 import * as CC from "../controllers/courses.controller";
 
 const router = Router();
 
 // ── PUBLIC ──────────────────────────────────────────────────────────────────
-router.get("/courses", (req, res, next) => { try { authenticate(req, res, () => next()); } catch { next(); } }, CC.listCourses);
-router.get("/courses/:id", (req, res, next) => { try { authenticate(req, res, () => next()); } catch { next(); } }, CC.getCourse);
-router.get("/categories", CC.getPublicCategories);
+router.get("/courses", cacheRoute(300), (req, res, next) => { try { authenticate(req, res, () => next()); } catch { next(); } }, CC.listCourses);
+router.get("/courses/:id", cacheRoute(300), (req, res, next) => { try { authenticate(req, res, () => next()); } catch { next(); } }, CC.getCourse);
+router.get("/categories", cacheRoute(300), CC.getPublicCategories);
 
 // ── INSTRUCTOR / ADMIN ───────────────────────────────────────────────────────
 router.use(auditLog);

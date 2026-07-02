@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// Trigger API restart
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
+const compression_1 = __importDefault(require("compression"));
 const morgan_1 = __importDefault(require("morgan"));
-const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
@@ -15,6 +16,15 @@ const fs_1 = __importDefault(require("fs"));
 // Load environment variables from workspace root
 dotenv_1.default.config({ path: path_1.default.resolve(process.cwd(), "../../.env") });
 dotenv_1.default.config(); // Fallback to local
+// Required Environment Variables Check
+const requiredEnvVars = ["DATABASE_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"];
+const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingVars.length > 0) {
+    console.error(`FATAL: Missing required environment variables: ${missingVars.join(", ")}`);
+    console.error("Please add them to your .env file and restart the server.");
+    process.exit(1);
+}
+const rateLimit_1 = require("./middleware/rateLimit");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const courses_routes_1 = __importDefault(require("./routes/courses.routes"));
@@ -43,6 +53,8 @@ app.use((0, helmet_1.default)({
         }
     }
 }));
+// Response compression (gzip)
+app.use((0, compression_1.default)());
 // CORS — only allow your domains
 const allowedOrigins = [
     'http://localhost:3000',
@@ -66,13 +78,7 @@ app.use((0, cors_1.default)({
     credentials: true
 }));
 // Rate limiting
-const limiter = (0, express_rate_limit_1.default)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5000, // Limit each IP to 5000 requests per `window`
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use('/api', limiter);
+app.use('/api', rateLimit_1.globalLimiter);
 // Logging & Parsing
 if (process.env.NODE_ENV === "development") {
     app.use((0, morgan_1.default)("dev"));
@@ -83,6 +89,10 @@ else {
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
+// Root Welcome Route
+app.get("/", (req, res) => {
+    res.status(200).json({ status: "success", message: "Welcome to CWAY Academy API. The backend is running perfectly!" });
+});
 // Health Check
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "success", message: "CWAY Academy LMS API is healthy" });
@@ -105,7 +115,10 @@ app.use("/api/v1/references", references_routes_1.default);
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+const logger_1 = require("./utils/logger");
+const activityLog_middleware_1 = require("./middleware/activityLog.middleware");
 // Global Error Handling Middleware
+app.use(activityLog_middleware_1.errorLog);
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const status = err.status || "error";
@@ -126,7 +139,7 @@ app.use((err, req, res, next) => {
             });
         }
         else {
-            console.error("ERROR 💥", err);
+            logger_1.logger.error(err, { path: req.originalUrl, ip: req.ip, method: req.method });
             res.status(500).json({
                 status: "error",
                 message: "Something went wrong internally",

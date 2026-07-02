@@ -40,7 +40,7 @@ exports.CertificateService = exports.PROGRAM_CERTIFICATE_HTML = exports.COURSE_C
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const prisma_1 = require("../utils/prisma");
 const date_fns_1 = require("date-fns");
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.cwayacademy.com';
 function generateCertificateNumber() {
     const now = new Date();
     const yy = now.getFullYear().toString().slice(-2);
@@ -367,7 +367,7 @@ class CertificateService {
             uniqueCode: certificate.uniqueCode,
             certificateNumber: certNumber,
             logoUrl: process.env.CWAY_LOGO_URL || 'https://cwayacademy.netlify.app/logo.png?v=3',
-            verifyUrl: `${process.env.APP_URL || 'http://localhost:3000'}/certificate/${certificate.uniqueCode}`
+            verifyUrl: `${process.env.APP_URL || 'https://www.cwayacademy.com'}/certificate/${certificate.uniqueCode}`
         };
         // Pick template: if a custom template is assigned, use it.
         // Otherwise fall back to the correct built-in default (COURSE or PROGRAM).

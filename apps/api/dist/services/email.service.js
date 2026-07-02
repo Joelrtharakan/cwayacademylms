@@ -13,7 +13,7 @@ exports.sendReferenceFormEmail = sendReferenceFormEmail;
 const resend_1 = require("resend");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY || 're_dummy_key');
 const FROM = process.env.EMAIL_FROM;
-const APP = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP = process.env.NEXT_PUBLIC_APP_URL || 'https://www.cwayacademy.com';
 // Base HTML wrapper — CWAY branded
 function wrap(content, preview) {
     return `<!DOCTYPE html><html><head><meta charset="UTF-8">

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const crypto_1 = __importDefault(require("crypto"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const token_service_1 = require("./token.service");
@@ -22,7 +22,7 @@ class AuthService {
             throw new errors_1.AppError("Email already taken", 400);
         }
         // Hash password
-        const passwordHash = await bcryptjs_1.default.hash(password, 12);
+        const passwordHash = await bcrypt_1.default.hash(password, 10);
         const rawToken = crypto_1.default.randomBytes(32).toString("hex");
         const emailVerifyToken = this.hashToken(rawToken);
         // Create user
@@ -81,9 +81,12 @@ class AuthService {
         if (user.isBanned) {
             throw new errors_1.AppError("Your account has been suspended", 403);
         }
-        const isMatch = await bcryptjs_1.default.compare(password, user.passwordHash);
+        const isMatch = await bcrypt_1.default.compare(password, user.passwordHash);
         if (!isMatch) {
             throw new errors_1.AppError("Invalid email or password", 401);
+        }
+        if (!user.isVerified) {
+            throw new errors_1.AppError("Please verify your email before logging in", 403);
         }
         const payload = { userId: user.id, role: user.role };
         const accessToken = token_service_1.TokenService.generateAccessToken(payload);
@@ -175,7 +178,7 @@ class AuthService {
         if (!user) {
             throw new errors_1.AppError("Invalid or expired reset token", 400);
         }
-        const passwordHash = await bcryptjs_1.default.hash(newPassword, 12);
+        const passwordHash = await bcrypt_1.default.hash(newPassword, 10);
         await prisma_1.prisma.user.update({
             where: { id: user.id },
             data: {
@@ -194,11 +197,11 @@ class AuthService {
         if (!user || !user.passwordHash) {
             throw new errors_1.AppError("User not found", 404);
         }
-        const isMatch = await bcryptjs_1.default.compare(currentPassword, user.passwordHash);
+        const isMatch = await bcrypt_1.default.compare(currentPassword, user.passwordHash);
         if (!isMatch) {
             throw new errors_1.AppError("Incorrect current password", 400);
         }
-        const passwordHash = await bcryptjs_1.default.hash(newPassword, 12);
+        const passwordHash = await bcrypt_1.default.hash(newPassword, 10);
         await prisma_1.prisma.user.update({
             where: { id: userId },
             data: { passwordHash },

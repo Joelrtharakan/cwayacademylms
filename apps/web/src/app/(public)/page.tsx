@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Post {
   slug: string;
@@ -1366,8 +1367,8 @@ export default function LandingPage() {
             <div className="team-list-container">
               <div className="modern-team-row-card reveal">
                 <div className="team-row-left">
-                  <div className="team-avatar-container">
-                    <img src="/Reeju.png" alt="Dr. Reeju Tharakan" className="w-full h-full rounded-full object-cover relative z-10" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", objectPosition: "85% 20%", position: "relative", zIndex: 10 }} />
+                  <div className="team-avatar-container" style={{ position: "relative", overflow: "hidden" }}>
+                    <Image src="/Reeju.png" alt="Dr. Reeju Tharakan" fill sizes="200px" style={{ objectFit: "cover", objectPosition: "85% 20%" }} />
                   </div>
                   <div className="team-role">Executive Director</div>
                   <span className="team-credential-badge">M.Th., Ph.D.</span>
@@ -1385,8 +1386,8 @@ export default function LandingPage() {
 
               <div className="modern-team-row-card reveal stagger-1">
                 <div className="team-row-left">
-                  <div className="team-avatar-container">
-                    <img src="/Robin.png" alt="Pr. Robin Ninan" className="w-full h-full rounded-full object-cover relative z-10" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", objectPosition: "center 20%", position: "relative", zIndex: 10 }} />
+                  <div className="team-avatar-container" style={{ position: "relative", overflow: "hidden" }}>
+                    <Image src="/Robin.png" alt="Pr. Robin Ninan" fill sizes="200px" style={{ objectFit: "cover", objectPosition: "center 20%" }} />
                   </div>
                   <div className="team-role">Director of Training & Outreach</div>
                   <span className="team-credential-badge">M.Div., Media Specialist</span>
@@ -1404,8 +1405,8 @@ export default function LandingPage() {
 
               <div className="modern-team-row-card reveal stagger-2">
                 <div className="team-row-left">
-                  <div className="team-avatar-container">
-                    <img src="/Finny.png" alt="Evg. Finny Philip Varghese" className="w-full h-full rounded-full object-cover relative z-10" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", objectPosition: "center 20%", position: "relative", zIndex: 10 }} />
+                  <div className="team-avatar-container" style={{ position: "relative", overflow: "hidden" }}>
+                    <Image src="/Finny.png" alt="Evg. Finny Philip Varghese" fill sizes="200px" style={{ objectFit: "cover", objectPosition: "center 20%" }} />
                   </div>
                   <div className="team-role">Director of Operations</div>
                   <span className="team-credential-badge">Operations Leader</span>
@@ -1517,8 +1518,8 @@ export default function LandingPage() {
                                   onClick={() => router.push(`/courses/${c.slug}`)}
                                 >
                                   {c.thumbnail ? (
-                                    <div style={{ height: "170px", width: "100%", overflow: "hidden", position: "relative" }}>
-                                      <img src={c.thumbnail} alt={c.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.7s ease" }} onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
+                                    <div className="h-48 rounded-t-2xl relative overflow-hidden bg-gray-100">
+                                      <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover", transition: "transform 0.7s ease" }} onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
                                     </div>
                                   ) : (
                                     <div style={{ height: "170px", width: "100%", background: "linear-gradient(135deg, rgba(184,134,69,0.15), rgba(138,100,51,0.05))", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1556,14 +1557,8 @@ export default function LandingPage() {
                   <div className="grid-3">
                     {standaloneCourses.map((c: any, i: number) => (
                       <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`} style={{ display: "flex", flexDirection: "column", padding: 0 }}>
-                        <div style={{ height: "200px", width: "100%", background: "var(--navy-deep)", position: "relative" }}>
-                          {c.thumbnail ? (
-                            <img src={c.thumbnail} alt={c.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          ) : (
-                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "var(--font-cinzel), serif", fontSize: "20px", textAlign: "center", padding: "1rem" }}>
-                              {c.title}
-                            </div>
-                          )}
+                        <div className="h-48 rounded-t-2xl relative overflow-hidden bg-gray-100">
+                           <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
                         </div>
                         <div className="course-card-body" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "2rem" }}>
                           <div className="course-badges" style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>

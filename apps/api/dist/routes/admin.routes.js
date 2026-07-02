@@ -36,10 +36,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authenticate_1 = require("../middleware/authenticate");
 const authorize_1 = require("../middleware/authorize");
+const activityLog_middleware_1 = require("../middleware/activityLog.middleware");
 const AdminController = __importStar(require("../controllers/admin.controller"));
 const router = (0, express_1.Router)();
 // All admin routes require authentication + ADMIN role
 router.use(authenticate_1.authenticate, (0, authorize_1.authorize)("ADMIN"));
+// Audit log middleware — auto-captures all admin mutations
+router.use(activityLog_middleware_1.auditLog);
 // ─── STATS ───────────────────────────────────────────────────────────────────
 router.get("/stats", AdminController.getStats);
 // ─── ANALYTICS ───────────────────────────────────────────────────────────────
@@ -47,6 +50,8 @@ router.get("/analytics/revenue", AdminController.getRevenueAnalytics);
 router.get("/analytics/users", AdminController.getUserAnalytics);
 router.get("/analytics/courses", AdminController.getCourseAnalytics);
 router.get("/analytics/enrollments", AdminController.getEnrollmentAnalytics);
+router.get("/analytics/recent-enrollments", AdminController.getRecentEnrollments);
+router.get("/analytics/students-time", AdminController.getStudentTimeAnalytics);
 // ─── USER MANAGEMENT ─────────────────────────────────────────────────────────
 router.get("/users/export", AdminController.exportUsers);
 router.get("/users", AdminController.getUsers);
@@ -63,6 +68,7 @@ router.put("/instructors/:id/payout-percentage", AdminController.updateInstructo
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────
 router.get("/courses", AdminController.getCourses);
 router.post("/courses", AdminController.createCourse);
+router.post("/courses/:id/duplicate", AdminController.duplicateCourse);
 router.post("/courses/:id/approve", AdminController.approveCourse);
 router.post("/courses/:id/reject", AdminController.rejectCourse);
 router.put("/courses/:id/feature", AdminController.featureCourse);
@@ -109,10 +115,18 @@ router.get("/programs/:id", AdminController.getProgramById);
 router.put("/programs/:id", AdminController.updateProgram);
 router.delete("/programs/:id", AdminController.deleteProgram);
 router.post("/programs/:programId/courses", AdminController.addCourseToProgram);
+router.delete("/programs/:programId/courses/:courseId", AdminController.removeCourseFromProgram);
+router.get("/programs/:id/students", AdminController.getProgramStudents);
+router.get("/programs/:id/students/:studentId/grades", AdminController.getProgramStudentGrades);
+router.get("/programs/:id/students/:studentId", AdminController.getProgramStudentDetails);
+router.get("/certificates/:id/download", AdminController.downloadCertificate);
 router.post("/courses/:courseId/assign-instructor", AdminController.assignInstructorToCourse);
-// ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
+// ─── PROGRAM APPLICATIONS ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 router.get("/applications", AdminController.getApplications);
 router.get("/applications/:id", AdminController.getApplicationById);
 router.post("/applications/:id/approve", AdminController.approveApplication);
 router.post("/applications/:id/reject", AdminController.rejectApplication);
+// ─── ACTIVITY LOGS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+router.get("/logs", AdminController.getLogs);
+router.get("/logs/stats", AdminController.getLogStats);
 exports.default = router;

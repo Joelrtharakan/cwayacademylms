@@ -10,6 +10,7 @@ import { useAuthStore, api } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
+import Image from "next/image";
 
 const NavigationHeader = () => (
   <>
@@ -34,7 +35,9 @@ const NavigationHeader = () => (
     `}} />
     <nav>
       <Link href="/" className="nav-brand" style={{ textDecoration: "none" }}>
-        <img src="/logo.png?v=3" alt="CWAY Academy Logo" style={{ width: "48px", height: "48px", objectFit: "contain", flexShrink: 0 }} />
+        <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
+          <Image src="/logo.png?v=3" alt="CWAY Academy Logo" fill sizes="48px" style={{ objectFit: "contain" }} />
+        </div>
         <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
       </Link>
       <div className="nav-links">
@@ -189,7 +192,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
               <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "rgba(201,168,76,0.2)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(201,168,76,0.4)", flexShrink: 0, overflow: "hidden" }}>
-                    {course.instructor?.avatar ? <img src={course.instructor.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <BookOpen size={16} color="var(--gold-light)" />}
+                    {course.instructor?.avatar ? (
+                      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                        <Image src={course.instructor.avatar} alt="" fill sizes="42px" style={{ objectFit: "cover" }} />
+                      </div>
+                    ) : <BookOpen size={16} color="var(--gold-light)" />}
                   </div>
                   <div>
                     <div style={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>{course.instructor?.name || "Instructor"}</div>
@@ -211,7 +218,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             {course.programId ? null : (
               <div style={{ background: "var(--cream-light)", borderRadius: "20px", padding: "1.75rem", boxShadow: "var(--shadow-xl)" }}>
                 <div style={{ height: "140px", borderRadius: "12px", background: "linear-gradient(135deg, var(--gold-primary), var(--gold-dark))", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", overflow: "hidden", position: "relative" }}>
-                  {course.thumbnail && <img src={course.thumbnail} alt="" style={{ position: "absolute", width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />}
+                  {course.thumbnail && (
+                    <div style={{ position: "absolute", width: "100%", height: "100%", opacity: 0.5 }}>
+                      <Image src={course.thumbnail} alt="" fill sizes="(max-width: 768px) 100vw, 400px" style={{ objectFit: "cover" }} priority />
+                    </div>
+                  )}
                   <Play size={40} color="white" fill="white" style={{ marginLeft: "4px", position: "relative", zIndex: 1 }} />
                 </div>
                 <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 700, color: "var(--navy-deep)", marginBottom: "0.25rem" }}>

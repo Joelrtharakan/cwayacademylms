@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { Bell, Menu, X, LogOut, Settings, User as UserIcon } from "lucide-react";
@@ -37,7 +38,7 @@ export default function StudentTopnav() {
         {/* Left: Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <Link href="/student/dashboard" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <img src="/logo.png" alt="CWAY Academy" style={{ height: 32, objectFit: "contain" }} />
+            <Image src="/logo.png" alt="CWAY Academy" width={32} height={32} priority style={{ objectFit: "contain" }} />
           </Link>
 
           {/* Center: Desktop Links */}
@@ -91,7 +92,7 @@ export default function StudentTopnav() {
                 <div style={{ fontSize: 11, color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>{user?.role}</div>
               </div>
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
+                <Image src={user.avatar} alt={user.name} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
               ) : (
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(201,151,58,0.1)", color: THEME.GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600 }}>
                   {user?.name?.charAt(0)}

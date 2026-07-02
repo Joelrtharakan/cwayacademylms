@@ -148,6 +148,7 @@ model Course {
   @@index([slug])
   @@index([programId])
   @@index([categoryId])
+  @@index([isFeatured])
 }
 
 model Section {
@@ -217,6 +218,7 @@ model Enrollment {
   @@index([paymentId])
   @@index([sponsorshipId])
   @@index([enrolledAt])
+  @@index([status])
 }
 
 model LessonProgress {
@@ -230,6 +232,7 @@ model LessonProgress {
 
   @@unique([enrollmentId, lessonId])
   @@index([lessonId])
+  @@index([enrollmentId])
 }
 
 model Quiz {
@@ -580,6 +583,7 @@ model ReadingMaterialProgress {
 
   @@unique([enrollmentId, readingMaterialId])
   @@index([readingMaterialId])
+  @@index([enrollmentId])
 }
 
 model Announcement {

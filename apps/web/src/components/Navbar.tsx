@@ -115,10 +115,13 @@ export function Navbar() {
                 background: "white"
               }}
             >
-              <img 
+              <Image 
                 src="/logo.png?v=3" 
                 alt="CWAY Academy Logo" 
-                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                width={44}
+                height={44}
+                priority
+                style={{ objectFit: "contain", display: "block" }}
               />
             </div>
             <div>

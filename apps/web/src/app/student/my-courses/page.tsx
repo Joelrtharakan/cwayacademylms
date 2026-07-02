@@ -7,6 +7,7 @@ import { THEME } from "@/lib/cway-theme";
 import Link from "next/link";
 import { BookOpen, Award, CheckCircle, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function MyCoursesPage() {
   const router = useRouter();
@@ -51,7 +52,9 @@ export default function MyCoursesPage() {
       >
         <div style={{ height: 160, background: THEME.MUTED, position: "relative", filter: isLocked ? "grayscale(100%)" : "none" }}>
           {course.thumbnail && (
-            <img src={course.thumbnail} alt={course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "relative", width: "100%", height: "100%" }}>
+              <Image src={course.thumbnail} alt={course.title} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
           )}
           {isCompleted && (
             <div style={{ position: "absolute", top: 12, right: 12, background: "#8A9E8C", color: "white", padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>

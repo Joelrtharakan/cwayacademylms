@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import { prisma } from "../utils/prisma";
 import { AppError } from "../utils/errors";
 import { TokenService } from "./token.service";
@@ -20,7 +20,7 @@ export class AuthService {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const rawToken = crypto.randomBytes(32).toString("hex");
     const emailVerifyToken = this.hashToken(rawToken);
@@ -209,7 +209,7 @@ export class AuthService {
       throw new AppError("Invalid or expired reset token", 400);
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const passwordHash = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -239,7 +239,7 @@ export class AuthService {
       throw new AppError("Incorrect current password", 400);
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const passwordHash = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: userId },

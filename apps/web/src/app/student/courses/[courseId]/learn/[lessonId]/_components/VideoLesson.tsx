@@ -37,18 +37,22 @@ export default function VideoLesson({ lesson, enrollmentId }: { lesson: any, enr
     mutationFn: (seconds: number) => api.post(`/student/enrollments/${enrollmentId}/lessons/${lesson.id}/progress`, { watchedSeconds: seconds }),
   });
 
+  // Stabilize mutation ref so useEffect doesn't re-fire on every render
+  const progressMutateRef = useRef(progressMutation.mutate);
+  progressMutateRef.current = progressMutation.mutate;
+
   useEffect(() => {
     let interval: any;
     if (videoRef.current && !completed && !markedThisSession) {
       interval = setInterval(() => {
         const currentSeconds = videoRef.current?.currentTime || 0;
         if (currentSeconds > 0) {
-          progressMutation.mutate(Math.floor(currentSeconds));
+          progressMutateRef.current(Math.floor(currentSeconds));
         }
-      }, 10000); // Save progress every 10 seconds
+      }, 15000); // Save progress every 15 seconds
     }
     return () => clearInterval(interval);
-  }, [lesson.id, completed, markedThisSession, progressMutation]);
+  }, [lesson.id, completed, markedThisSession]);
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>

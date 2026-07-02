@@ -455,7 +455,7 @@ export default function AdminDashboardPage() {
           ) : (
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ height: "180px", width: "100%" }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <PieChart>
                     <Pie data={byCategory} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="courseCount" stroke="none">
                       {byCategory.map((entry: any, index: number) => (

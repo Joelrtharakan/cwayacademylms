@@ -14,7 +14,7 @@ import {
   BookOpen,
   ClipboardCheck,
   MessageSquare,
-  Coins,
+
   Settings,
   LogOut,
   ChevronLeft,
@@ -52,10 +52,6 @@ const NAV: NavSection[] = [
       { name: "Assignments", href: "/instructor/assignments", icon: ClipboardCheck },
       { name: "Messages", href: "/instructor/messages", icon: MessageSquare },
     ],
-  },
-  {
-    title: "Earnings",
-    items: [{ name: "Revenue & Payouts", href: "/instructor/revenue", icon: Coins }],
   },
   {
     title: "Account",

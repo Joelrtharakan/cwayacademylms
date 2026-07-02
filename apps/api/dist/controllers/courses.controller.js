@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
-exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = exports.updateMyProfile = exports.uploadAvatar = void 0;
+exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.unenrollStudent = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
+exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
 const video_service_1 = require("../services/video.service");
 const notification_service_1 = require("../services/notification.service");
+const authz_1 = require("../utils/authz");
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function slugify(text) {
     return text
@@ -61,7 +62,11 @@ exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
     const [courses, total] = await Promise.all([
         prisma_1.prisma.course.findMany({
             where, skip, take: Number(limit), orderBy,
-            include: {
+            select: {
+                id: true, title: true, slug: true, subtitle: true, thumbnail: true,
+                price: true, currency: true, status: true, level: true, language: true,
+                moduleNumber: true, weeksDuration: true, totalLectures: true, isFree: true,
+                isFeatured: true, programId: true,
                 instructor: { select: { id: true, name: true, avatar: true } },
                 category: { select: { name: true } },
                 _count: { select: { enrollments: true, sections: true } },
@@ -115,7 +120,7 @@ exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         include: {
             instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
             category: { select: { id: true, name: true, slug: true } },
-            sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } }, readingMaterials: { orderBy: { order: "asc" } } } },
+            sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { quiz: true } }, readingMaterials: { orderBy: { order: "asc" } } } },
             reviews: { select: { rating: true } },
             announcements: { orderBy: { createdAt: "desc" } },
             _count: { select: { enrollments: true } },
@@ -140,7 +145,7 @@ exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         });
         isEnrolled = !!enrollment;
     }
-    const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN";
+    const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN" || req.user?.role === "REGISTRAR";
     const ratings = course.reviews.map((r) => r.rating);
     // Strip private content for non-enrolled students
     const sections = course.sections.map((s) => ({
@@ -298,6 +303,7 @@ exports.duplicateCourse = (0, errors_1.asyncHandler)(async (req, res) => {
 // ─── THUMBNAIL UPLOAD ────────────────────────────────────────────────────────
 exports.uploadThumbnail = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
+    await (0, authz_1.verifyCourseOwner)(id, req.user);
     if (!req.file)
         throw new errors_1.AppError("No file uploaded", 400);
     const ext = req.file.mimetype.split("/")[1];
@@ -309,6 +315,7 @@ exports.uploadThumbnail = (0, errors_1.asyncHandler)(async (req, res) => {
 // ─── PROMO VIDEO UPLOAD ──────────────────────────────────────────────────────
 exports.uploadPromoVideo = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
+    await (0, authz_1.verifyCourseOwner)(id, req.user);
     if (!req.file)
         throw new errors_1.AppError("No file uploaded", 400);
     const course = await prisma_1.prisma.course.findUnique({ where: { id } });
@@ -323,6 +330,7 @@ exports.uploadPromoVideo = (0, errors_1.asyncHandler)(async (req, res) => {
 // ─── SECTIONS ────────────────────────────────────────────────────────────────
 exports.createSection = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
+    await (0, authz_1.verifyCourseOwner)(id, req.user);
     const { title, order } = req.body;
     if (!title)
         throw new errors_1.AppError("Title required", 400);
@@ -336,23 +344,28 @@ exports.createSection = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.updateSection = (0, errors_1.asyncHandler)(async (req, res) => {
     const { sectionId } = req.params;
+    await (0, authz_1.verifySectionOwner)(sectionId, req.user);
     const { title, order } = req.body;
     const section = await prisma_1.prisma.section.update({ where: { id: sectionId }, data: { ...(title && { title }), ...(order !== undefined && { order: Number(order) }) } });
     res.json({ status: "success", data: section });
 });
 exports.deleteSection = (0, errors_1.asyncHandler)(async (req, res) => {
     const { sectionId } = req.params;
+    await (0, authz_1.verifySectionOwner)(sectionId, req.user);
     await prisma_1.prisma.section.delete({ where: { id: sectionId } });
     res.json({ status: "success", message: "Section deleted" });
 });
 exports.reorderSections = (0, errors_1.asyncHandler)(async (req, res) => {
     const { orderedIds } = req.body;
+    if (orderedIds.length > 0)
+        await (0, authz_1.verifySectionOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((sid, idx) => prisma_1.prisma.section.update({ where: { id: sid }, data: { order: idx } })));
     res.json({ status: "success", message: "Sections reordered" });
 });
 // ─── LESSONS ─────────────────────────────────────────────────────────────────
 exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { sectionId } = req.params;
+    await (0, authz_1.verifySectionOwner)(sectionId, req.user);
     const { title, type = "VIDEO", content, videoUrl, duration, order, isFree = false, isPreview = false } = req.body;
     if (!title)
         throw new errors_1.AppError("Title required", 400);
@@ -366,6 +379,7 @@ exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const { title, type, content, videoUrl, duration, order, isFree, isPreview } = req.body;
     const data = {};
     if (title !== undefined)
@@ -389,16 +403,20 @@ exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.deleteLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     await prisma_1.prisma.lesson.delete({ where: { id: lessonId } });
     res.json({ status: "success", message: "Lesson deleted" });
 });
 exports.reorderLessons = (0, errors_1.asyncHandler)(async (req, res) => {
     const { orderedIds } = req.body;
+    if (orderedIds.length > 0)
+        await (0, authz_1.verifyLessonOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((lid, idx) => prisma_1.prisma.lesson.update({ where: { id: lid }, data: { order: idx } })));
     res.json({ status: "success", message: "Lessons reordered" });
 });
 exports.uploadLessonVideo = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     if (!req.file)
         throw new errors_1.AppError("No file uploaded", 400);
     const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId } });
@@ -412,6 +430,7 @@ exports.uploadLessonVideo = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.getLessonVideoStatus = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId } });
     if (!lesson)
         throw new errors_1.AppError("Lesson not found", 404);
@@ -422,6 +441,7 @@ exports.getLessonVideoStatus = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.uploadLessonAttachment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     if (!req.file)
         throw new errors_1.AppError("No file uploaded", 400);
     const key = (0, storage_service_1.generateKey)("attachments", req.file.originalname);
@@ -433,12 +453,14 @@ exports.uploadLessonAttachment = (0, errors_1.asyncHandler)(async (req, res) => 
 // ─── QUIZ ─────────────────────────────────────────────────────────────────────
 exports.createQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const { title, passingScore = 70, timeLimit, maxAttempts = 3 } = req.body;
     const quiz = await prisma_1.prisma.quiz.create({ data: { lessonId, title, passingScore: Number(passingScore), timeLimit: timeLimit ? Number(timeLimit) : null, maxAttempts: Number(maxAttempts) } });
     res.status(201).json({ status: "success", data: { ...quiz, questions: [] } });
 });
 exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     const { quizId } = req.params;
+    await (0, authz_1.verifyQuizOwner)(quizId, req.user);
     const { title, passingScore, timeLimit, maxAttempts } = req.body;
     const data = {};
     if (title)
@@ -454,6 +476,7 @@ exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.addQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
     const { quizId } = req.params;
+    await (0, authz_1.verifyQuizOwner)(quizId, req.user);
     const { text, type = "MCQ", points = 1, order, scriptureRef, answers = [] } = req.body;
     if (!text)
         throw new errors_1.AppError("Question text required", 400);
@@ -472,6 +495,7 @@ exports.addQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.updateQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
     const { questionId } = req.params;
+    await (0, authz_1.verifyQuestionOwner)(questionId, req.user);
     const { text, type, points, scriptureRef, answers } = req.body;
     const data = {};
     if (text)
@@ -491,23 +515,28 @@ exports.updateQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.deleteQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
     const { questionId } = req.params;
+    await (0, authz_1.verifyQuestionOwner)(questionId, req.user);
     await prisma_1.prisma.question.delete({ where: { id: questionId } });
     res.json({ status: "success", message: "Question deleted" });
 });
 exports.reorderQuestions = (0, errors_1.asyncHandler)(async (req, res) => {
     const { orderedIds } = req.body;
+    if (orderedIds.length > 0)
+        await (0, authz_1.verifyQuestionOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((qid, idx) => prisma_1.prisma.question.update({ where: { id: qid }, data: { order: idx } })));
     res.json({ status: "success", message: "Questions reordered" });
 });
 // ─── ASSIGNMENT ───────────────────────────────────────────────────────────────
 exports.createAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
+    await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const { title, description, dueDate, maxScore = 100 } = req.body;
     const assignment = await prisma_1.prisma.assignment.create({ data: { lessonId, title, description, dueDate: dueDate ? new Date(dueDate) : null, maxScore: Number(maxScore) } });
     res.status(201).json({ status: "success", data: assignment });
 });
 exports.updateAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { assignmentId } = req.params;
+    await (0, authz_1.verifyAssignmentOwner)(assignmentId, req.user);
     const { title, description, dueDate, maxScore } = req.body;
     const data = {};
     if (title)
@@ -550,6 +579,7 @@ exports.getAssignmentSubmissions = (0, errors_1.asyncHandler)(async (req, res) =
 });
 exports.gradeSubmission = (0, errors_1.asyncHandler)(async (req, res) => {
     const { submissionId } = req.params;
+    await (0, authz_1.verifySubmissionOwner)(submissionId, req.user);
     const { grade, feedback } = req.body;
     const submission = await prisma_1.prisma.submission.findUnique({ where: { id: submissionId }, include: { assignment: true } });
     if (!submission)
@@ -590,9 +620,13 @@ exports.getQuizStats = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.resetQuizAttempts = (0, errors_1.asyncHandler)(async (req, res) => {
     const { quizId } = req.params;
-    // Make sure the user is an instructor or admin
+    const { studentId } = req.body;
+    await (0, authz_1.verifyQuizOwner)(quizId, req.user);
+    const where = { quizId };
+    if (studentId)
+        where.studentId = studentId;
     const deleted = await prisma_1.prisma.quizAttempt.deleteMany({
-        where: { quizId }
+        where
     });
     res.json({ status: "success", message: `Reset ${deleted.count} attempts successfully` });
 });
@@ -616,6 +650,7 @@ exports.getForumPosts = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.createForumPost = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
+    await (0, authz_1.verifyForumAccess)(id, req.user);
     const { title, content } = req.body;
     const forum = await prisma_1.prisma.forum.findUnique({ where: { courseId: id } });
     if (!forum)
@@ -625,19 +660,22 @@ exports.createForumPost = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.pinForumPost = (0, errors_1.asyncHandler)(async (req, res) => {
     const { postId } = req.params;
-    const post = await prisma_1.prisma.forumPost.findUnique({ where: { id: postId } });
+    const post = await prisma_1.prisma.forumPost.findUnique({ where: { id: postId }, select: { forum: { select: { courseId: true } } } });
     if (!post)
         throw new errors_1.AppError("Post not found", 404);
-    const updated = await prisma_1.prisma.forumPost.update({ where: { id: postId }, data: { isPinned: !post.isPinned } });
+    await (0, authz_1.verifyCourseOwner)(post.forum.courseId, req.user);
+    const updated = await prisma_1.prisma.forumPost.update({ where: { id: postId }, data: { isPinned: true } });
     res.json({ status: "success", data: updated });
 });
 exports.deleteForumPost = (0, errors_1.asyncHandler)(async (req, res) => {
     const { postId } = req.params;
+    await (0, authz_1.verifyForumPostOwnerOrInstructor)(postId, req.user);
     await prisma_1.prisma.forumPost.delete({ where: { id: postId } });
     res.json({ status: "success", message: "Post deleted" });
 });
 exports.createForumReply = (0, errors_1.asyncHandler)(async (req, res) => {
     const { postId } = req.params;
+    await (0, authz_1.verifyForumAccessFromPost)(postId, req.user);
     const { content } = req.body;
     const post = await prisma_1.prisma.forumPost.findUnique({ where: { id: postId } });
     if (!post)
@@ -651,19 +689,20 @@ exports.createForumReply = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.deleteForumReply = (0, errors_1.asyncHandler)(async (req, res) => {
     const { replyId } = req.params;
+    await (0, authz_1.verifyForumReplyOwnerOrInstructor)(replyId, req.user);
     await prisma_1.prisma.forumReply.delete({ where: { id: replyId } });
     res.json({ status: "success", message: "Reply deleted" });
 });
 // ─── INSTRUCTOR STATS ────────────────────────────────────────────────────────
 exports.getMyCourses = (0, errors_1.asyncHandler)(async (req, res) => {
-    const courses = await prisma_1.prisma.course.findMany({
-        where: {
+    const whereClause = (req.user.role === "ADMIN" || req.user.role === "REGISTRAR")
+        ? {}
+        : {
             instructorId: req.user.id,
-            OR: [
-                { invitation: null },
-                { invitation: { status: "ACCEPTED" } }
-            ]
-        },
+            OR: [{ invitation: null }, { invitation: { status: "ACCEPTED" } }],
+        };
+    const courses = await prisma_1.prisma.course.findMany({
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         include: {
             instructor: { select: { id: true, name: true, avatar: true } },
@@ -762,6 +801,24 @@ exports.getInstructorCourseStudents = (0, errors_1.asyncHandler)(async (req, res
         };
     });
     res.json({ status: "success", data: enriched });
+});
+exports.unenrollStudent = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { id: courseId, studentId } = req.params;
+    const course = await prisma_1.prisma.course.findUnique({ where: { id: courseId } });
+    if (!course)
+        throw new errors_1.AppError("Course not found", 404);
+    if (req.user.role === "INSTRUCTOR" && course.instructorId !== req.user.id) {
+        throw new errors_1.AppError("Not authorized", 403);
+    }
+    const enrollment = await prisma_1.prisma.enrollment.findUnique({
+        where: { studentId_courseId: { studentId, courseId } }
+    });
+    if (!enrollment)
+        throw new errors_1.AppError("Enrollment not found", 404);
+    await prisma_1.prisma.enrollment.delete({
+        where: { id: enrollment.id }
+    });
+    res.json({ status: "success", message: "Student unenrolled successfully" });
 });
 // ─── COURSE ANALYTICS ────────────────────────────────────────────────────────
 exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {

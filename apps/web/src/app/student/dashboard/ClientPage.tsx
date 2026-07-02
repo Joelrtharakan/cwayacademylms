@@ -7,6 +7,7 @@ import { useAuthStore, api } from "@/store/auth.store";
 import {
   BookOpen, CheckCircle, Award, ClipboardCheck, ArrowRight, Activity, TrendingUp
 } from "lucide-react";
+import Image from "next/image";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, AreaChart, Area,
@@ -333,11 +334,15 @@ export default function StudentDashboardPage() {
                       }}
                     >
                       {enrollment.course.thumbnail && (
-                        <img 
-                          src={enrollment.course.thumbnail} 
-                          alt="" 
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
+                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                          <Image 
+                            src={enrollment.course.thumbnail} 
+                            alt="" 
+                            fill
+                            sizes="48px"
+                            style={{ objectFit: "cover" }}
+                          />
+                        </div>
                       )}
                     </div>
                     <span

@@ -1,7 +1,4 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
@@ -12,15 +9,8 @@ const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
 const prisma_1 = require("../utils/prisma");
 const token_service_1 = require("../services/token.service");
-const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const rateLimit_1 = require("../middleware/rateLimit");
 const router = (0, express_1.Router)();
-const authLimiter = (0, express_rate_limit_1.default)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 requests per window for auth routes
-    message: "Too many login attempts from this IP, please try again after 15 minutes",
-    standardHeaders: true,
-    legacyHeaders: false,
-});
 // Validation Rules
 const registerRules = [
     (0, express_validator_1.body)("name").trim().notEmpty().withMessage("Name is required"),
@@ -46,13 +36,13 @@ const resetPasswordRules = [
     (0, express_validator_1.body)("newPassword").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
 ];
 // Routes mapping
-router.post("/register", authLimiter, registerRules, validate_1.validate, auth_controller_1.AuthController.register);
+router.post("/register", rateLimit_1.accountLimiter, registerRules, validate_1.validate, auth_controller_1.AuthController.register);
 router.get("/verify-email/:token", auth_controller_1.AuthController.verifyEmail);
-router.post("/login", authLimiter, loginRules, validate_1.validate, auth_controller_1.AuthController.login);
+router.post("/login", rateLimit_1.loginLimiter, loginRules, validate_1.validate, auth_controller_1.AuthController.login);
 router.post("/refresh", auth_controller_1.AuthController.refresh);
 router.post("/logout", auth_controller_1.AuthController.logout);
-router.post("/forgot-password", authLimiter, forgotPasswordRules, validate_1.validate, auth_controller_1.AuthController.forgotPassword);
-router.post("/reset-password", resetPasswordRules, validate_1.validate, auth_controller_1.AuthController.resetPassword);
+router.post("/forgot-password", rateLimit_1.accountLimiter, forgotPasswordRules, validate_1.validate, auth_controller_1.AuthController.forgotPassword);
+router.post("/reset-password", rateLimit_1.accountLimiter, resetPasswordRules, validate_1.validate, auth_controller_1.AuthController.resetPassword);
 // Protected routes
 router.get("/me", authenticate_1.authenticate, auth_controller_1.AuthController.me);
 router.put("/update-password", authenticate_1.authenticate, auth_controller_1.AuthController.updatePassword);

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProgramGrades = exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
+exports.getProgramGrades = exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.updateHeartbeat = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
+const redis_1 = require("../utils/redis");
 const certificate_service_1 = require("../services/certificate.service");
 // ==========================================
 // PROGRESS TRACKING
@@ -103,7 +104,8 @@ exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id: courseId },
         include: { instructor: { select: { name: true } } }
     });
-    if (!course || course.status !== "PUBLISHED") {
+    const isAdminOrInstructor = req.user.role === "ADMIN" || req.user.role === "INSTRUCTOR" || req.user.role === "REGISTRAR";
+    if (!course || (course.status !== "PUBLISHED" && !isAdminOrInstructor)) {
         throw new errors_1.AppError("Course not found or not available", 404);
     }
     const existing = await prisma_1.prisma.enrollment.findUnique({
@@ -140,36 +142,48 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { courseId } = req.params;
     const studentId = req.user.id;
     console.log(`[getCourseEnrollment] Fetching for studentId=${studentId}, courseId=${courseId}`);
+    // Check cache for course curriculum
+    const cacheKey = `course:${courseId}:curriculum`;
+    let cachedCourse = await redis_1.redis.get(cacheKey);
+    let courseCurriculum;
+    if (cachedCourse) {
+        courseCurriculum = JSON.parse(cachedCourse);
+    }
+    else {
+        courseCurriculum = await prisma_1.prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                instructor: { select: { name: true, email: true, phone: true } },
+                sections: {
+                    orderBy: { order: "asc" },
+                    include: {
+                        lessons: {
+                            orderBy: { order: "asc" },
+                            include: {
+                                quiz: { select: { id: true, title: true, timeLimit: true, passingScore: true, maxAttempts: true } },
+                                assignment: { select: { id: true, title: true, description: true, dueDate: true, maxScore: true, attachmentUrl: true, rubricId: true } }
+                            }
+                        },
+                        readingMaterials: {
+                            orderBy: { order: "asc" },
+                        }
+                    }
+                }
+            }
+        });
+        if (courseCurriculum) {
+            await redis_1.redis.set(cacheKey, JSON.stringify(courseCurriculum), "EX", 3600);
+        }
+    }
     let enrollment = await prisma_1.prisma.enrollment.findUnique({
         where: { studentId_courseId: { studentId, courseId } },
         include: {
             lessonProgress: true,
             readingMaterialProgress: true,
-            course: {
-                include: {
-                    instructor: { select: { name: true, email: true, phone: true } },
-                    sections: {
-                        orderBy: { order: "asc" },
-                        include: {
-                            lessons: {
-                                orderBy: { order: "asc" },
-                                include: { quiz: true, assignment: true }
-                            },
-                            readingMaterials: {
-                                orderBy: { order: "asc" },
-                            },
-                            discussions: {
-                                orderBy: { createdAt: "asc" },
-                                include: { author: { select: { id: true, name: true } } }
-                            }
-                        }
-                    }
-                }
-            }
         }
     });
-    if (!enrollment && req.user.role === "ADMIN") {
-        console.log(`[getCourseEnrollment] Auto-enrolling ADMIN ${studentId} in course ${courseId} for preview`);
+    if (!enrollment && (req.user.role === "ADMIN" || req.user.role === "INSTRUCTOR" || req.user.role === "REGISTRAR")) {
+        console.log(`[getCourseEnrollment] Auto-enrolling ${req.user.role} ${studentId} in course ${courseId} for preview`);
         enrollment = await prisma_1.prisma.enrollment.create({
             data: {
                 studentId,
@@ -179,27 +193,6 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
             include: {
                 lessonProgress: true,
                 readingMaterialProgress: true,
-                course: {
-                    include: {
-                        instructor: { select: { name: true, email: true, phone: true } },
-                        sections: {
-                            orderBy: { order: "asc" },
-                            include: {
-                                lessons: {
-                                    orderBy: { order: "asc" },
-                                    include: { quiz: true, assignment: true }
-                                },
-                                readingMaterials: {
-                                    orderBy: { order: "asc" },
-                                },
-                                discussions: {
-                                    orderBy: { createdAt: "asc" },
-                                    include: { author: { select: { id: true, name: true } } }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         });
     }
@@ -207,19 +200,18 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
         console.log(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
         throw new errors_1.AppError("Enrollment not found", 404);
     }
-    // Map progress into lessons
-    const sections = enrollment.course.sections.map(section => ({
+    const sections = courseCurriculum.sections.map((section) => ({
         ...section,
-        lessons: section.lessons.map(lesson => {
-            const prog = enrollment.lessonProgress.find(lp => lp.lessonId === lesson.id);
+        lessons: section.lessons.map((lesson) => {
+            const prog = enrollment.lessonProgress.find((lp) => lp.lessonId === lesson.id);
             return {
                 ...lesson,
                 isCompleted: !!prog?.completedAt,
                 watchedSeconds: prog?.watchedSeconds || 0
             };
         }),
-        readingMaterials: section.readingMaterials.map(material => {
-            const materialProg = enrollment.readingMaterialProgress.find(rmp => rmp.readingMaterialId === material.id);
+        readingMaterials: section.readingMaterials.map((material) => {
+            const materialProg = enrollment.readingMaterialProgress.find((rmp) => rmp.readingMaterialId === material.id);
             return {
                 ...material,
                 isCompleted: !!materialProg?.completedAt
@@ -229,7 +221,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
     const mappedEnrollment = {
         ...enrollment,
         course: {
-            ...enrollment.course,
+            ...courseCurriculum,
             sections
         }
     };
@@ -349,14 +341,16 @@ exports.completeLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     // Recalculate progress consistently: count BOTH lessons AND reading materials
     const enrollment2 = await prisma_1.prisma.enrollment.findUnique({
         where: { id: enrollmentId },
-        include: {
-            course: { include: { sections: { include: { lessons: true, readingMaterials: true } } } },
-            lessonProgress: { where: { completedAt: { not: null } } },
-            readingMaterialProgress: { where: { completedAt: { not: null } } }
-        }
+        select: { courseId: true }
     });
-    const totalItems = enrollment2.course.sections.reduce((sum, sec) => sum + sec.lessons.length + sec.readingMaterials.length, 0);
-    const completedItems = enrollment2.lessonProgress.length + enrollment2.readingMaterialProgress.length;
+    if (!enrollment2)
+        throw new errors_1.AppError("Enrollment not found", 404);
+    const totalLessons = await prisma_1.prisma.lesson.count({ where: { section: { courseId: enrollment2.courseId } } });
+    const totalMaterials = await prisma_1.prisma.readingMaterial.count({ where: { section: { courseId: enrollment2.courseId } } });
+    const totalItems = totalLessons + totalMaterials;
+    const completedLessons = await prisma_1.prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+    const completedMaterials = await prisma_1.prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+    const completedItems = completedLessons + completedMaterials;
     const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
     await prisma_1.prisma.enrollment.update({
         where: { id: enrollmentId },
@@ -390,26 +384,15 @@ exports.completeReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) =>
     });
     const refreshedEnrollment = await prisma_1.prisma.enrollment.findUnique({
         where: { id: enrollmentId },
-        include: {
-            lessonProgress: true,
-            readingMaterialProgress: true,
-            course: {
-                include: {
-                    sections: {
-                        include: {
-                            lessons: true,
-                            readingMaterials: true
-                        }
-                    }
-                }
-            }
-        }
+        select: { courseId: true }
     });
     if (!refreshedEnrollment)
         throw new errors_1.AppError("Enrollment not found", 404);
-    const totalItems = refreshedEnrollment.course.sections.reduce((sum, section) => sum + section.lessons.length + section.readingMaterials.length, 0);
-    const completedLessonsCount = refreshedEnrollment.lessonProgress.filter(lp => !!lp.completedAt).length;
-    const completedMaterialsCount = refreshedEnrollment.readingMaterialProgress.filter(rmp => !!rmp.completedAt).length;
+    const totalLessons = await prisma_1.prisma.lesson.count({ where: { section: { courseId: refreshedEnrollment.courseId } } });
+    const totalMaterials = await prisma_1.prisma.readingMaterial.count({ where: { section: { courseId: refreshedEnrollment.courseId } } });
+    const totalItems = totalLessons + totalMaterials;
+    const completedLessonsCount = await prisma_1.prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+    const completedMaterialsCount = await prisma_1.prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
     const completedItems = completedLessonsCount + completedMaterialsCount;
     const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
     await prisma_1.prisma.enrollment.update({
@@ -645,7 +628,16 @@ exports.submitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     let submission;
     if (existing) {
-        const finalFileUrl = req.file ? fileUrl : existing.fileUrl;
+        let finalFileUrl = existing.fileUrl;
+        if (req.file) {
+            finalFileUrl = fileUrl;
+            if (existing.fileUrl) {
+                const oldKey = (0, storage_service_1.extractR2Key)(existing.fileUrl);
+                if (oldKey) {
+                    (0, storage_service_1.deleteFromR2)(oldKey).catch(e => console.error("Failed to delete old assignment file", e));
+                }
+            }
+        }
         submission = await prisma_1.prisma.submission.update({
             where: { id: existing.id },
             data: {
@@ -721,6 +713,12 @@ exports.unsubmitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     await prisma_1.prisma.submission.delete({
         where: { id: existing.id }
     });
+    if (existing.fileUrl) {
+        const oldKey = (0, storage_service_1.extractR2Key)(existing.fileUrl);
+        if (oldKey) {
+            (0, storage_service_1.deleteFromR2)(oldKey).catch(e => console.error("Failed to delete unsubmitted assignment file from R2", e));
+        }
+    }
     res.json({ status: "success", message: "Assignment unsubmitted" });
 });
 // ==========================================
@@ -953,15 +951,23 @@ exports.downloadCertificate = (0, errors_1.asyncHandler)(async (req, res) => {
 // NOTIFICATIONS
 // ==========================================
 exports.getMyNotifications = (0, errors_1.asyncHandler)(async (req, res) => {
-    const notifications = await prisma_1.prisma.notification.findMany({
-        where: { userId: req.user.id },
-        orderBy: { createdAt: "desc" },
-        take: 50
-    });
-    const unreadCount = await prisma_1.prisma.notification.count({
-        where: { userId: req.user.id, isRead: false }
-    });
-    res.json({ status: "success", data: { notifications, unreadCount } });
+    const cacheKey = `notifications:${req.user.id}`;
+    const cached = await redis_1.redis.get(cacheKey);
+    if (cached)
+        return res.json({ status: "success", data: JSON.parse(cached) });
+    const [notifications, unreadCount] = await Promise.all([
+        prisma_1.prisma.notification.findMany({
+            where: { userId: req.user.id },
+            orderBy: { createdAt: "desc" },
+            take: 50
+        }),
+        prisma_1.prisma.notification.count({
+            where: { userId: req.user.id, isRead: false }
+        })
+    ]);
+    const data = { notifications, unreadCount };
+    await redis_1.redis.set(cacheKey, JSON.stringify(data), "EX", 60);
+    res.json({ status: "success", data });
 });
 exports.markNotificationRead = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
@@ -969,6 +975,7 @@ exports.markNotificationRead = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id, userId: req.user.id },
         data: { isRead: true }
     });
+    await redis_1.redis.del(`notifications:${req.user.id}`);
     res.json({ status: "success", data: { updated: true } });
 });
 exports.markAllNotificationsRead = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -976,61 +983,77 @@ exports.markAllNotificationsRead = (0, errors_1.asyncHandler)(async (req, res) =
         where: { userId: req.user.id, isRead: false },
         data: { isRead: true }
     });
+    await redis_1.redis.del(`notifications:${req.user.id}`);
     res.json({ status: "success", data: { updated: true } });
 });
 // ==========================================
-// DASHBOARD STATS
-// ==========================================
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────────
+exports.updateHeartbeat = (0, errors_1.asyncHandler)(async (req, res) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        return res.status(401).json({ status: "error", message: "Unauthorized" });
+    }
+    // The frontend pings every 60 seconds. We add 60 seconds.
+    await prisma_1.prisma.user.update({
+        where: { id: userId },
+        data: { appActiveSeconds: { increment: 60 } },
+    });
+    res.json({ status: "success" });
+});
 exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
     const studentId = req.user.id;
-    const enrollmentsRaw = await prisma_1.prisma.enrollment.findMany({
-        where: { studentId },
-        include: {
-            lessonProgress: { where: { completedAt: { not: null } } },
-            readingMaterialProgress: { where: { completedAt: { not: null } } },
-            course: {
-                select: {
-                    id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
-                    instructor: { select: { name: true } },
-                    program: { select: { title: true } },
-                    _count: { select: { sections: true } },
-                    sections: {
-                        include: {
-                            lessons: {
-                                select: { id: true, type: true, assignment: true }
-                            },
-                            readingMaterials: {
-                                select: { id: true }
+    // Run all independent queries in parallel
+    const [enrollmentsRaw, programEnrollments, certificatesCount, submissions] = await Promise.all([
+        prisma_1.prisma.enrollment.findMany({
+            where: { studentId },
+            include: {
+                lessonProgress: { where: { completedAt: { not: null } } },
+                readingMaterialProgress: { where: { completedAt: { not: null } } },
+                course: {
+                    select: {
+                        id: true, title: true, slug: true, thumbnail: true, moduleNumber: true,
+                        instructor: { select: { name: true } },
+                        program: { select: { title: true } },
+                        _count: { select: { sections: true } },
+                        sections: {
+                            include: {
+                                lessons: {
+                                    select: { id: true, type: true, assignment: true }
+                                },
+                                readingMaterials: {
+                                    select: { id: true }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { enrolledAt: "desc" }
+        }),
+        prisma_1.prisma.programEnrollment.findMany({
+            where: { studentId },
+            include: {
+                program: {
+                    include: {
+                        courses: {
+                            orderBy: { createdAt: "asc" },
+                            select: {
+                                id: true, title: true, slug: true, thumbnail: true,
+                                instructor: { select: { name: true } }
                             }
                         }
                     }
                 }
             }
-        },
-        orderBy: { enrolledAt: "desc" }
-    });
-    const programEnrollments = await prisma_1.prisma.programEnrollment.findMany({
-        where: { studentId },
-        include: {
-            program: {
-                include: {
-                    courses: {
-                        orderBy: { createdAt: "asc" },
-                        select: {
-                            id: true, title: true, slug: true, thumbnail: true,
-                            instructor: { select: { name: true } }
-                        }
-                    }
-                }
-            }
-        }
-    });
-    const certificatesCount = await prisma_1.prisma.certificate.count({
-        where: { studentId }
-    });
-    const submissions = await prisma_1.prisma.submission.findMany({
-        where: { studentId }
-    });
+        }),
+        prisma_1.prisma.certificate.count({
+            where: { studentId }
+        }),
+        prisma_1.prisma.submission.findMany({
+            where: { studentId },
+            select: { assignmentId: true }
+        })
+    ]);
     let pendingAssignmentsCount = 0;
     const enrollments = enrollmentsRaw.map(enr => {
         let totalItems = 0;
@@ -1054,8 +1077,12 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
             // Fire-and-forget an update to the DB to sync it
             prisma_1.prisma.enrollment.update({ where: { id: enr.id }, data: { status: "ACTIVE", progress: realProgress, completedAt: null } }).catch(console.error);
         }
+        // Strip out heavy nested data (sections/lessons) before sending to client
+        const leanCourse = { ...enr.course };
+        delete leanCourse.sections;
         return {
             ...enr,
+            course: leanCourse,
             progress: realProgress,
             status
         };
@@ -1127,7 +1154,7 @@ exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
     // 1. Find all graded items in this course
     const course = await prisma_1.prisma.course.findUnique({
         where: { id: courseId },
-        include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
+        include: { sections: { include: { lessons: { include: { assignment: { select: { id: true, maxScore: true } }, quiz: { select: { id: true } } } } } } }
     });
     if (!course)
         throw new errors_1.AppError("Course not found", 404);
@@ -1236,6 +1263,7 @@ exports.getProgramGrades = (0, errors_1.asyncHandler)(async (req, res) => {
         return {
             id: course.id,
             title: course.title,
+            courseCode: course.courseCode,
             finalGrade
         };
     }));

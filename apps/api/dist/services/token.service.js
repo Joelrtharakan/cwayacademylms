@@ -7,8 +7,8 @@ exports.TokenService = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "cway-academy-super-secret-access-token-key-change-me";
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "cway-academy-super-secret-refresh-token-key-change-me";
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 class TokenService {
     static generateAccessToken(payload) {
         return jsonwebtoken_1.default.sign(payload, ACCESS_SECRET, { expiresIn: "15m" });

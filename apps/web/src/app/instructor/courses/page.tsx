@@ -7,6 +7,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { getInstructorCourses, deleteCourse, updateCourse } from "@/lib/api/instructor";
 import { useConfirm } from "@/components/shared/ConfirmContext";
+import Image from "next/image";
 
 type StatusFilter = "ALL" | "PUBLISHED" | "DRAFT" | "PENDING" | "REJECTED" | "ARCHIVED";
 
@@ -43,7 +44,9 @@ function CourseCard({ course, onDelete, onArchive }: { course: any; onDelete: (i
       {/* Thumbnail */}
       <div style={{ height: 160, background: "#F7F8F5", position: "relative", overflow: "hidden" }}>
         {course.thumbnail ? (
-          <img src={course.thumbnail} alt={course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+            <Image src={course.thumbnail} alt={course.title} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+          </div>
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <BookOpen size={40} color="rgba(184,134,69,0.2)" />

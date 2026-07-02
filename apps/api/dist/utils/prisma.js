@@ -19,45 +19,43 @@ else {
 const globalForPrisma = globalThis;
 const basePrisma = globalForPrisma.prisma ??
     new client_1.PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
 // Fields to serialize/deserialize
 const arrayFields = ["requirements", "outcomes", "targetAudience", "tags", "variables"];
 const jsonFields = ["answers", "smtpConfig", "stripeConfig", "storageConfig"];
 const allFields = [...arrayFields, ...jsonFields];
+const arrayFieldSet = new Set(arrayFields);
+// Operations that never write data — skip serialization entirely
+const readOps = new Set(["findMany", "findFirst", "findUnique", "findFirstOrThrow", "findUniqueOrThrow", "count", "aggregate", "groupBy"]);
 exports.prisma = basePrisma.$extends({
     query: {
         $allModels: {
             async $allOperations({ model, operation, args, query }) {
-                // Serialize before query
-                if (args.data) {
-                    for (const field of allFields) {
-                        console.log(`[PRISMA INTERCEPTOR] model=${model}, field=${field}`);
-                        if (field === "answers" && model !== "QuizAttempt") {
-                            console.log(`[PRISMA INTERCEPTOR] Skipping stringify for answers on model ${model}`);
-                            continue;
-                        }
-                        if (args.data[field] !== undefined) {
-                            if (typeof args.data[field] !== "string") {
+                const isRead = readOps.has(operation);
+                // Serialize before write queries only
+                if (!isRead) {
+                    if (args.data) {
+                        for (const field of allFields) {
+                            if (field === "answers" && model !== "QuizAttempt")
+                                continue;
+                            if (args.data[field] !== undefined && typeof args.data[field] !== "string") {
                                 args.data[field] = JSON.stringify(args.data[field]);
                             }
                         }
                     }
-                }
-                if (args.update) {
-                    // for updateMany
-                    for (const field of allFields) {
-                        if (field === "answers" && model !== "QuizAttempt")
-                            continue;
-                        if (args.update[field] !== undefined) {
-                            if (typeof args.update[field] !== "string") {
+                    if (args.update) {
+                        for (const field of allFields) {
+                            if (field === "answers" && model !== "QuizAttempt")
+                                continue;
+                            if (args.update[field] !== undefined && typeof args.update[field] !== "string") {
                                 args.update[field] = JSON.stringify(args.update[field]);
                             }
                         }
                     }
                 }
                 const result = await query(args);
-                // Deserialize after query
+                // Deserialize after query (reads and writes that return data)
                 const parseObject = (obj) => {
                     if (!obj)
                         return;
@@ -69,8 +67,7 @@ exports.prisma = basePrisma.$extends({
                                 obj[field] = JSON.parse(obj[field]);
                             }
                             catch (e) {
-                                // Ignore parse errors, fallback to string or empty array depending on field
-                                if (arrayFields.includes(field))
+                                if (arrayFieldSet.has(field))
                                     obj[field] = [];
                             }
                         }
