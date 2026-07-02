@@ -96,6 +96,7 @@ export default function RevenuePage() {
             <Line type="monotone" dataKey="earnings" stroke={GOLD} strokeWidth={2.5} dot={{ fill: GOLD, r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} />
           </LineChart>
         </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Transactions Table */}
