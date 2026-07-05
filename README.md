@@ -2,6 +2,8 @@
 
 Welcome to the **CWAY Academy Learning Management System (LMS)**! This platform is a modern, enterprise-grade, full-stack application designed to facilitate theological training, course management, student engagement, and administration for the CWAY Missions Religious Trust.
 
+This document serves as the comprehensive guide to the project, covering its architecture, features, design system, API, database, and setup instructions.
+
 ---
 
 ## 🏗️ Technical Architecture
@@ -33,28 +35,107 @@ A shared internal package providing type-safe database access across the monorep
 
 ---
 
+## 🎨 Design System & Theme Identity
+
+The LMS follows a highly specific, premium aesthetic designed to look professional, sophisticated, and academic. The entire application UI is constructed around this precise color token system:
+
+- **Dark Green (Hero & Backgrounds):** `#1C2B1E`
+- **Forest (Text):** `#243825`
+- **Gold (Primary Accent):** `#C9973A` — The primary interactive color.
+- **Gold Light (Hover):** `#E8B85A`
+- **Gold Muted:** `#A8792A`
+- **Cream (Primary App Background):** `#F5F0E8`
+- **Text Muted:** `#8A9E8C`
+
+**Semantic Status Colors:**
+- Success: `#4A8C5C`
+- Danger/Destructive: `#8C3A3A`
+- Warning: `#8C6A1A`
+
+---
+
+## ✨ Features & Capabilities
+
+The application has successfully completed all foundational development and is 100% production-ready.
+
+### 🔐 Authentication & Roles
+- Custom JWT-based stateless authentication.
+- Securely isolated roles: `STUDENT`, `INSTRUCTOR`, and `ADMIN`.
+
+### 📚 Course Assembly & Instructor Workflow
+- **Course Builder:** Instructors can draft courses, attach Cloudflare R2-hosted thumbnails, and define prerequisites.
+- **Modular Curriculum:** Courses are broken down into `Modules` → `Lessons`.
+- **Lesson Types:** `VIDEO`, `READING_MATERIAL`, `QUIZ`, and `FORUM`.
+- **Assignments:** File upload assignments with manual grading workflows.
+- **Instructor Analytics:** Dashboards showing enrollments, completion rates, and student activity.
+
+### 🎓 Student Learning Experience
+- **Interactive Learning Player:** Distraction-free unified layout for video playback, syllabus tracking, and dynamic content.
+- **Automated Progress Tracking:** Completed lessons and video watch time sync automatically.
+- **Private Notes System:** Rich-text notes tied directly to the current lesson.
+- **Learning Forums:** Lesson-specific discussion boards.
+- **Assignment Dashboards:** Track pending, awaiting grade, and graded assignments.
+
+### ☁️ Infrastructure & Admin
+- **Cloudflare R2 File Uploads:** All file uploads stream directly to R2.
+- **Automated Email Triggers:** Resend API integration for account verification, password resets, enrollments, and approvals.
+- **CMS Blog Module:** Markdown-powered Blog for Administrators.
+
+---
+
+## 🏗️ Database Architecture
+
+The highly relational database schema is managed via Prisma & PostgreSQL:
+
+1. **User Model:** Has a `role` (`STUDENT`, `INSTRUCTOR`, `ADMIN`).
+2. **Course Model:** Owned by an `INSTRUCTOR`. Has many `Module`s.
+3. **Module Model:** Belongs to a `Course`. Has many `Lesson`s.
+4. **Lesson Model:** Belongs to a `Module`. Types include `VIDEO`, `READING_MATERIAL`, `QUIZ`, or `FORUM`.
+5. **Enrollment Model:** Many-to-many join table tracking overall `progress`.
+6. **LessonProgress Model:** Tracks granular completion state and watch time.
+7. **Submission Model:** A student's uploaded assignment file awaiting grading.
+
+> **CRITICAL DEPLOYMENT NOTE:** Do not attempt to run `prisma migrate dev` against the production database. In production, rely on `prisma db push` or pre-compiled migration SQL scripts depending on your CI/CD strategy.
+
+---
+
+## 📡 API Endpoints Map
+
+The Express.js backend provides the following core endpoints (all protected routes expect a `Bearer <Token>`):
+
+### Authentication (`/api/v1/auth/*`)
+- `POST /register`, `POST /login`, `POST /verify-email`, `GET /me`
+
+### Student Operations (`/api/v1/student/*`)
+- `GET /dashboard`, `POST /enrollments`, `GET /courses/:courseId/learn`
+- `POST /enrollments/:enrollmentId/lessons/:lessonId/complete`
+- `POST /assignments/:assignmentId/submit`, `POST /lessons/:lessonId/notes`
+
+### Instructor Operations (`/api/v1/courses/*`)
+- `POST /`, `GET /my-courses`, `POST /:courseId/modules`, `POST /:courseId/modules/:moduleId/lessons`
+- `PUT /:courseId/publish`, `GET /:courseId/students`, `POST /assignments/:assignmentId/grade`
+
+### Blog Operations (`/api/v1/blog/*`)
+- `GET /posts`, `GET /posts/:slug`, `POST /posts` (Admin), `PUT /posts/:id`
+
+---
+
 ## 🐳 Infrastructure & Docker
 
 The entire stack is containerized for exact parity between your local development environment and the production server.
 
 ### Local Development
-We use Docker to spin up the required external services locally without cluttering your host machine.
-- **PostgreSQL:** Runs on port `5444` to avoid collisions with existing databases.
+- **PostgreSQL:** Runs on port `5444`.
 - **Redis:** Runs on port `6379`.
-- **pgAdmin:** A web-based GUI for managing the database, accessible at `http://localhost:5050`.
+- **pgAdmin:** Accessible at `http://localhost:5050`.
 
 ### Production Stack
-The production environment uses a multi-container architecture orchestrated by `docker-compose.prod.yml`.
-- **Nginx Reverse Proxy:** Routes incoming traffic, handles SSL termination, and serves static assets.
-- **API Container:** Runs the compiled Node.js backend.
-- **Web Container:** Runs the standalone Next.js production server.
-- **Database:** Persistent PostgreSQL volume.
+- Orchestrated by `docker-compose.prod.yml`.
+- Includes Nginx Reverse Proxy, API Container, Web Container, and Persistent PostgreSQL volume.
 
 ---
 
 ## 🚀 Getting Started (Local Development)
-
-Follow these steps to get the CWAY Academy LMS running on your local machine.
 
 ### Prerequisites
 1. **Node.js** (v18 or higher)
@@ -62,39 +143,33 @@ Follow these steps to get the CWAY Academy LMS running on your local machine.
 3. **Git**
 
 ### Installation
-
 1. **Clone the Repository:**
    ```bash
    git clone <your-repo-url>
    cd cway-academy
    ```
-
 2. **Install Dependencies:**
    ```bash
    npm install
    ```
-
 3. **Configure Environment Variables:**
-   Create `.env` files in the following locations based on the provided `.env.example` templates:
+   Create `.env` files based on the `.env.example` templates:
    - Root: `./.env`
    - API: `./apps/api/.env`
    - Web: `./apps/web/.env.local`
 
 4. **Start Local Docker Services:**
-   This spins up your isolated PostgreSQL database.
    ```bash
    npm run docker:dev
    ```
 
 5. **Initialize the Database:**
-   Push the Prisma schema to your new database and generate the TypeScript client.
    ```bash
    npm run db:push
    npm run db:generate
    ```
 
 6. **Start the Development Servers:**
-   Turborepo will concurrently start both the Next.js frontend and the Express backend.
    ```bash
    npm run dev
    ```
@@ -105,74 +180,35 @@ Follow these steps to get the CWAY Academy LMS running on your local machine.
 
 ## 🌍 Production Deployment Guide
 
-Deploying CWAY Academy requires a VPS (Virtual Private Server) such as an AWS EC2 instance, DigitalOcean Droplet, or Hetzner server running Linux.
+Deploy to a VPS (AWS EC2, DigitalOcean, Hetzner, etc.) running Linux.
 
-### 0. Server Specifications
-To ensure smooth operation of all containerized services (PostgreSQL, Redis, Next.js, Express API, Nginx), the following server specifications are recommended based on your user base:
-- **Minimum (Up to 100 users):** 2 vCPUs, 4GB RAM, 20GB SSD *(Suitable for testing or very small instances with low concurrent traffic)*
-- **Recommended (100 - 200 users):** 4 vCPUs, 8GB RAM, 40GB+ SSD *(Ideal for standard deployments and smooth active sessions)*
-- **High Traffic (200+ users):** 8 vCPUs, 16GB RAM, 80GB+ SSD *(Required for high concurrent loads and heavy database querying)*
+### Server Specifications
+- **Minimum:** 2 vCPUs, 4GB RAM, 20GB SSD
+- **Recommended:** 4 vCPUs, 8GB RAM, 40GB+ SSD
+- **High Traffic:** 8 vCPUs, 16GB RAM, 80GB+ SSD
 
-### 1. Server Preparation
-- SSH into your server.
-- Install Docker and Docker Compose.
-- Install Git and clone your repository.
+### Setup
+Create a `.env` file at the root of your repository on the server with production credentials (Database URL, JWT Secret, Cloudflare R2, Resend API).
 
-### 2. Environment Configuration
-Create a `.env` file at the root of your repository on the server. You MUST configure the following critical credentials:
-
-```env
-# Database Configuration
-DATABASE_URL="postgresql://cway:cwaydev@db:5432/cway_lms"
-
-# API & Frontend URLs
-NEXT_PUBLIC_API_URL="https://api.yourdomain.com/api/v1"
-CLIENT_URL="https://academy.yourdomain.com"
-APP_URL="https://academy.yourdomain.com"
-
-# Security
-JWT_SECRET="generate-a-very-long-secure-random-string"
-
-# Cloudflare R2 (File Uploads)
-R2_ACCOUNT_ID="your_cloudflare_account_id"
-R2_ACCESS_KEY_ID="your_r2_access_key"
-R2_SECRET_ACCESS_KEY="your_r2_secret"
-R2_BUCKET_NAME="cway-lms-uploads"
-R2_PUBLIC_URL="https://pub-your-custom-url.r2.dev"
-
-# Resend (Automated Emails)
-RESEND_API_KEY="re_your_api_key"
-EMAIL_FROM="CWAY Academy <noreply@cwayacademy.com>"
-```
-
-### 3. Launching the Stack
-Once your `.env` is secure, build and start the production containers:
+Launch the stack:
 ```bash
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
-This command will:
-1. Build the highly-optimized `standalone` Next.js image.
-2. Compile the TypeScript Express API.
-3. Start the PostgreSQL database with a persistent Docker volume to prevent data loss.
-4. Launch an Nginx proxy to securely route traffic.
 
 ---
 
 ## 📁 Storage & File Management
 
-Because modern deployments rely on ephemeral containers, you **cannot** store uploaded files (like PDFs, assignments, or thumbnails) on the local disk.
+Because modern deployments rely on ephemeral containers, you **cannot** store uploaded files locally. CWAY Academy uses **Cloudflare R2** for all file uploads.
 
-CWAY Academy is pre-configured to stream all file uploads directly to **Cloudflare R2** (an S3-compatible, zero-egress-fee cloud storage provider). 
-
-When a teacher uploads a syllabus or a student submits an assignment:
-1. The Express backend receives the multipart form data.
-2. The file is piped securely to Cloudflare R2.
-3. The public URL of the uploaded file is saved to the PostgreSQL database.
+1. The Express backend receives multipart form data.
+2. The file is securely piped to Cloudflare R2.
+3. The public URL is saved in the PostgreSQL database.
 
 ---
 
 ## 🤝 Contributing & Code Style
 
-- **Strict Typing:** All new features must be strictly typed using TypeScript interfaces. Avoid using `any`.
-- **Styling:** Stick to the predefined Tailwind theme colors (e.g., `text-[#1C2B1E]`, `bg-[#F5F0E8]`). Do not introduce arbitrary colors.
-- **Database Changes:** If you modify `packages/db/prisma/schema.prisma`, you MUST run `npm run db:push` to apply changes locally before committing.
+- **Strict Typing:** All new features must be typed with TypeScript interfaces. Avoid `any`.
+- **Styling:** Strictly follow the predefined Tailwind theme colors (`text-[#1C2B1E]`, `bg-[#F5F0E8]`, etc.). Do not introduce arbitrary colors.
+- **Database Changes:** Run `npm run db:push` to apply changes locally before committing.
