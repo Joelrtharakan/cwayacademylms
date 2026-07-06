@@ -97,7 +97,7 @@ function deriveResource(path: string): { resource: string | null; resourceId: st
   for (let i = segments.length - 1; i >= 0; i--) {
     const s = segments[i];
     // skip action keywords
-    if (["reorder", "approve", "reject", "ban", "unban", "refund", "broadcast", "impersonate", "feature", "link", "assign-instructor", "export", "preview", "test", "students", "grades", "payout-percentage", "courses", "download", "attempt", "submit", "unsubmit", "complete", "grade", "submit-review", "replies", "progress", "my-attempts", "my-submission", "my-notes", "my-attendance", "my", "read-all", "read", "upload-video", "upload-attachment", "upload-avatar", "accept", "decline", "status", "request", "my-requests", "upload-thumbnail", "upload-promo-video"].includes(s)) {
+    if (["reorder", "approve", "reject", "ban", "unban", "refund", "broadcast", "impersonate", "feature", "link", "assign-instructor", "export", "preview", "test", "students", "grades", "courses", "download", "attempt", "submit", "unsubmit", "complete", "grade", "submit-review", "replies", "progress", "my-attempts", "my-submission", "my-notes", "my-attendance", "my", "read-all", "read", "upload-video", "upload-attachment", "upload-avatar", "accept", "decline", "status", "request", "my-requests", "upload-thumbnail", "upload-promo-video"].includes(s)) {
       continue;
     }
     // If it looks like a CUID or UUID or number, it's an ID
@@ -114,7 +114,7 @@ function deriveResource(path: string): { resource: string | null; resourceId: st
   const maybeId = segments[idSegmentIndex];
   const isId =
     maybeId &&
-    !["reorder", "approve", "reject", "ban", "unban", "refund", "broadcast", "impersonate", "feature", "link", "assign-instructor", "export", "preview", "test", "students", "grades", "payout-percentage", "courses", "download", "attempt", "submit", "unsubmit", "complete", "grade", "submit-review", "replies", "progress", "my-attempts", "my-submission", "my-notes", "my-attendance", "my", "read-all", "read", "upload-video", "upload-attachment", "upload-avatar", "accept", "decline", "status", "request", "my-requests", "upload-thumbnail", "upload-promo-video"].includes(maybeId);
+    !["reorder", "approve", "reject", "ban", "unban", "refund", "broadcast", "impersonate", "feature", "link", "assign-instructor", "export", "preview", "test", "students", "grades", "courses", "download", "attempt", "submit", "unsubmit", "complete", "grade", "submit-review", "replies", "progress", "my-attempts", "my-submission", "my-notes", "my-attendance", "my", "read-all", "read", "upload-video", "upload-attachment", "upload-avatar", "accept", "decline", "status", "request", "my-requests", "upload-thumbnail", "upload-promo-video"].includes(maybeId);
 
   return {
     resource,

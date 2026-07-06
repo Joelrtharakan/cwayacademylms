@@ -107,9 +107,6 @@ router.post("/courses/:id/rubrics", authenticate, authorize("INSTRUCTOR", "ADMIN
 
 router.get("/courses/:id/curriculum", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.getCurriculum);
 router.put("/courses/:id/curriculum", authenticate, authorize("INSTRUCTOR", "ADMIN"), MC.updateCurriculum);
-router.get("/instructor/revenue", authenticate, authorize("INSTRUCTOR"), CC.getInstructorRevenue);
-router.post("/instructor/payouts/request", authenticate, authorize("INSTRUCTOR"), CC.requestPayout);
-router.get("/instructor/payouts/history", authenticate, authorize("INSTRUCTOR"), CC.getPayoutHistory);
 
 // Messages
 router.get("/messages", authenticate, CC.getConversations);

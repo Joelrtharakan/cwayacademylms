@@ -11,8 +11,6 @@ import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function AdminInstructorsPage() {
   const qc = useQueryClient();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [payoutVal, setPayoutVal] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newInstructor, setNewInstructor] = useState({ name: "", email: "" });
 
@@ -32,16 +30,7 @@ export default function AdminInstructorsPage() {
     onError: (e: any) => toast.error(e?.response?.data?.message || "Failed to create instructor"),
   });
 
-  const updateMut = useMutation({
-    mutationFn: ({ id, percentage }: { id: string; percentage: number }) =>
-      updateInstructorPayout(id, percentage),
-    onSuccess: () => {
-      toast.success("Payout percentage updated");
-      qc.invalidateQueries({ queryKey: ["admin-instructors"] });
-      setEditingId(null);
-    },
-    onError: (e: any) => toast.error(e?.response?.data?.message || "Failed"),
-  });
+
 
   const confirm = useConfirm();
   const deleteMut = useMutation({
@@ -103,161 +92,46 @@ export default function AdminInstructorsPage() {
         </span>
       ),
     },
-    {
-      key: "payout",
-      header: "Revenue Share",
-      render: (row) =>
-        editingId === row.id ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={payoutVal}
-              onChange={(e) => setPayoutVal(e.target.value)}
-              style={{
-                width: "64px",
-                padding: "6px 0",
-                fontSize: "13px",
-                fontFamily: "monospace",
-                textAlign: "center",
-                borderRadius: "8px",
-                outline: "none",
-                background: "#FFFFFF",
-                border: "1.5px solid #B88645",
-                color: "#1A261D",
-                boxShadow: "0 0 0 3px rgba(184,134,69,0.1)",
-              }}
-              autoFocus
-            />
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#8F9E93" }}>%</span>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "4px",
-              padding: "4px 10px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              fontWeight: 700,
-              background: "rgba(184,134,69,0.08)",
-              color: "#B88645",
-              border: "1px solid rgba(184,134,69,0.15)",
-            }}
-          >
-            <Percent size={11} />
-            {row.payoutPercentage ?? 70}
-          </div>
-        ),
-    },
+
     {
       key: "actions",
       header: "Actions",
-      render: (row) =>
-        editingId === row.id ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <button
-              onClick={() => setEditingId(null)}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-                background: "#F7F8F5",
-                color: "#8F9E93",
-                border: "none",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(176,58,46,0.08)"; e.currentTarget.style.color = "#B03A2E"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#F7F8F5"; e.currentTarget.style.color = "#8F9E93"; }}
-            >
-              <X size={14} />
-            </button>
-            <button
-              onClick={() => updateMut.mutate({ id: row.id, percentage: parseFloat(payoutVal) })}
-              disabled={updateMut.isPending}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-                background: "rgba(61,122,75,0.1)",
-                color: "#3D7A4B",
-                border: "none",
-                cursor: updateMut.isPending ? "not-allowed" : "pointer",
-                opacity: updateMut.isPending ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => { if(!updateMut.isPending) e.currentTarget.style.background = "rgba(61,122,75,0.2)"; }}
-              onMouseLeave={(e) => { if(!updateMut.isPending) e.currentTarget.style.background = "rgba(61,122,75,0.1)"; }}
-            >
-              <Save size={14} />
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <button
-              onClick={() => { setEditingId(row.id); setPayoutVal((row.payoutPercentage ?? 70).toString()); }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "6px 12px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                transition: "all 0.15s",
-                background: "rgba(184,134,69,0.08)",
-                color: "#B88645",
-                border: "1px solid rgba(184,134,69,0.15)",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.15)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(184,134,69,0.08)"; }}
-            >
-              <Percent size={12} /> Adjust
-            </button>
-            <button
-              onClick={async () => {
-                if (await confirm({
-                  title: "Remove Instructor",
-                  message: `Are you sure you want to remove ${row.name}? This will permanently delete their account.`,
-                  confirmText: "Remove",
-                  cancelText: "Cancel"
-                })) {
-                  deleteMut.mutate(row.id);
-                }
-              }}
-              disabled={deleteMut.isPending}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s",
-                background: "rgba(176,58,46,0.08)",
-                color: "#B03A2E",
-                border: "none",
-                cursor: deleteMut.isPending ? "not-allowed" : "pointer",
-                opacity: deleteMut.isPending ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => { if(!deleteMut.isPending) e.currentTarget.style.background = "rgba(176,58,46,0.15)"; }}
-              onMouseLeave={(e) => { if(!deleteMut.isPending) e.currentTarget.style.background = "rgba(176,58,46,0.08)"; }}
-              title="Remove Instructor"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ),
+      render: (row) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={async () => {
+              if (await confirm({
+                title: "Remove Instructor",
+                message: `Are you sure you want to remove ${row.name}? This will permanently delete their account.`,
+                confirmText: "Remove",
+                cancelText: "Cancel"
+              })) {
+                deleteMut.mutate(row.id);
+              }
+            }}
+            disabled={deleteMut.isPending}
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s",
+              background: "rgba(176,58,46,0.08)",
+              color: "#B03A2E",
+              border: "none",
+              cursor: deleteMut.isPending ? "not-allowed" : "pointer",
+              opacity: deleteMut.isPending ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => { if(!deleteMut.isPending) e.currentTarget.style.background = "rgba(176,58,46,0.15)"; }}
+            onMouseLeave={(e) => { if(!deleteMut.isPending) e.currentTarget.style.background = "rgba(176,58,46,0.08)"; }}
+            title="Remove Instructor"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
     },
   ];
 

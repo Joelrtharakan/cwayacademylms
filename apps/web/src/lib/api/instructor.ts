@@ -136,15 +136,9 @@ export const deleteForumReply = (replyId: string) =>
 export const createForumReply = (postId: string, content: string) =>
   api.post(`/forum/posts/${postId}/replies`, { content }).then((r) => r.data.data);
 
-// ─── Revenue & Payouts ───────────────────────────────────────────────────────
-export const getInstructorRevenue = () =>
-  api.get("/instructor/revenue").then((r) => r.data.data);
 
-export const requestPayout = (data: { amount: number; bankDetails?: string; note?: string }) =>
-  api.post("/instructor/payouts/request", data).then((r) => r.data.data);
 
-export const getPayoutHistory = () =>
-  api.get("/instructor/payouts/history").then((r) => r.data.data);
+
 
 // ─── Messages ────────────────────────────────────────────────────────────────
 export const getConversations = () =>

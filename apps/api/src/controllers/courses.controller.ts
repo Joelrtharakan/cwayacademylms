@@ -792,15 +792,14 @@ export const getInstructorStats = asyncHandler(async (req: Request, res: Respons
     prisma.submission.count({ where: { assignment: { lesson: { section: { courseId: { in: courseIds } } } }, isGraded: false } }),
   ]);
 
-  const instructor = await prisma.user.findUnique({ where: { id: instructorId }, select: { payoutPercentage: true } });
-  const totalRevenue = payments.reduce((sum, p) => sum + p.amount * ((instructor?.payoutPercentage || 70) / 100), 0);
+  const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
   const ratings = reviews.map((r) => r.rating);
   const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthPayments = await prisma.payment.findMany({ where: { courseId: { in: courseIds }, status: "COMPLETED", createdAt: { gte: monthStart } }, select: { amount: true } });
-  const revenueThisMonth = monthPayments.reduce((sum, p) => sum + p.amount * ((instructor?.payoutPercentage || 70) / 100), 0);
+  const revenueThisMonth = monthPayments.reduce((sum, p) => sum + p.amount, 0);
 
   res.json({ status: "success", data: { totalStudents: enrollments, totalRevenue, revenueThisMonth, avgRating, totalCompletions: completions, pendingSubmissions, publishedCourses } });
 });
@@ -908,51 +907,6 @@ export const getCourseAnalytics = asyncHandler(async (req: Request, res: Respons
   res.json({ status: "success", data: { enrollmentsOverTime, lessonCompletionRates, revenueOverTime: [], quizStats: [], studentProgress } });
 });
 
-// ─── REVENUE ─────────────────────────────────────────────────────────────────
-
-export const getInstructorRevenue = asyncHandler(async (req: Request, res: Response) => {
-  const instructorId = req.user!.id;
-  const user = await prisma.user.findUnique({ where: { id: instructorId }, select: { payoutPercentage: true } });
-  const pct = (user?.payoutPercentage || 70) / 100;
-
-  const courses = await prisma.course.findMany({ where: { instructorId }, select: { id: true } });
-  const courseIds = courses.map((c) => c.id);
-
-  const payments = await prisma.payment.findMany({
-    where: { courseId: { in: courseIds }, status: "COMPLETED" },
-    orderBy: { createdAt: "desc" },
-    include: { student: { select: { name: true } }, course: { select: { title: true } } },
-  });
-
-  const payouts = await prisma.payoutRequest.findMany({ where: { instructorId } });
-  const paidOut = payouts.filter((p) => p.status === "APPROVED").reduce((sum, p) => sum + p.amount, 0);
-  const totalEarned = payments.reduce((sum, p) => sum + p.amount * pct, 0);
-  const pendingPayout = totalEarned - paidOut;
-
-  res.json({
-    status: "success", data: {
-      totalEarned, pendingPayout, paidOut, platformFeeRate: 100 - (user?.payoutPercentage || 70),
-      transactions: payments.map((p) => ({ id: p.id, amount: p.amount, currency: p.currency, createdAt: p.createdAt, instructorEarnings: p.amount * pct, platformFee: p.amount * (1 - pct), student: p.student, course: p.course })),
-    },
-  });
-});
-
-export const requestPayout = asyncHandler(async (req: Request, res: Response) => {
-  const { amount, bankDetails, note } = req.body;
-  if (!amount || Number(amount) <= 0) throw new AppError("Invalid amount", 400);
-
-  const payout = await prisma.payoutRequest.create({ data: { instructorId: req.user!.id, amount: Number(amount), bankDetails, note } });
-
-  const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
-  await Promise.all(admins.map((a) => NotificationService.createNotification(a.id, "PAYOUT_REQUEST", "New payout request", `An instructor has requested a payout of ₹${amount}`, "/admin/payouts")));
-
-  res.status(201).json({ status: "success", data: payout });
-});
-
-export const getPayoutHistory = asyncHandler(async (req: Request, res: Response) => {
-  const payouts = await prisma.payoutRequest.findMany({ where: { instructorId: req.user!.id }, orderBy: { requestedAt: "desc" } });
-  res.json({ status: "success", data: payouts });
-});
 
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
 

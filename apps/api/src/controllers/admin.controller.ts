@@ -324,7 +324,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
     select: {
       id: true, name: true, email: true, role: true, avatar: true, bio: true, phone: true,
       church: true, location: true, preferredLanguage: true, isVerified: true, isBanned: true,
-      payoutPercentage: true, createdAt: true, updatedAt: true,
+      createdAt: true, updatedAt: true,
       enrollments: {
         take: 20,
         include: { course: { select: { title: true, slug: true } } },
@@ -355,14 +355,14 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError("You cannot change your own role", 400);
   }
 
-  const { name, role, church, location, isVerified, bio, payoutPercentage } = req.body;
+  const { name, role, church, location, isVerified, bio } = req.body;
   const allowedRoles = ["ADMIN", "INSTRUCTOR", "STUDENT"];
   if (role && !allowedRoles.includes(role)) throw new AppError("Invalid role", 400);
 
   const user = await prisma.user.update({
     where: { id },
-    data: { name, role, church, location, isVerified, bio, payoutPercentage },
-    select: { id: true, name: true, email: true, role: true, church: true, location: true, isVerified: true, bio: true, payoutPercentage: true },
+    data: { name, role, church, location, isVerified, bio },
+    select: { id: true, name: true, email: true, role: true, church: true, location: true, isVerified: true, bio: true },
   });
 
   res.json({ status: "success", data: user });
@@ -519,7 +519,7 @@ export const getInstructors = asyncHandler(async (req: Request, res: Response) =
     where: { role: "INSTRUCTOR" },
     select: {
       id: true, name: true, email: true, avatar: true, bio: true, church: true,
-      location: true, createdAt: true, isVerified: true, isBanned: true, payoutPercentage: true,
+      location: true, createdAt: true, isVerified: true, isBanned: true,
       _count: { select: { coursesCreated: true } },
       coursesCreated: {
         select: {
@@ -542,7 +542,7 @@ export const getInstructors = asyncHandler(async (req: Request, res: Response) =
     return {
       id: inst.id, name: inst.name, email: inst.email, avatar: inst.avatar, bio: inst.bio,
       church: inst.church, location: inst.location, createdAt: inst.createdAt,
-      isVerified: inst.isVerified, isBanned: inst.isBanned, payoutPercentage: inst.payoutPercentage,
+      isVerified: inst.isVerified, isBanned: inst.isBanned,
       _count: inst._count, publishedCourses, totalStudents, totalRevenue,
     };
   });
@@ -568,7 +568,6 @@ export const createInstructor = asyncHandler(async (req: Request, res: Response)
       passwordHash,
       role: "INSTRUCTOR",
       isVerified: true, // Auto-verified since admin created them
-      payoutPercentage: 70, // Default CWAY revenue split
     },
     select: {
       id: true, name: true, email: true, role: true, isVerified: true, createdAt: true
@@ -583,20 +582,6 @@ export const createInstructor = asyncHandler(async (req: Request, res: Response)
   res.status(201).json({ status: "success", data: user, message: "Instructor created and email sent." });
 });
 
-export const updateInstructorPayout = asyncHandler(async (req: Request, res: Response) => {
-  const { percentage } = req.body;
-  if (typeof percentage !== "number" || isNaN(percentage) || percentage < 0 || percentage > 100) {
-    throw new AppError("Percentage must be a number between 0 and 100", 400);
-  }
-
-  const user = await prisma.user.update({
-    where: { id: req.params.id, role: "INSTRUCTOR" },
-    data: { payoutPercentage: percentage },
-    select: { id: true, name: true, payoutPercentage: true },
-  });
-
-  res.json({ status: "success", data: user });
-});
 
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────
 

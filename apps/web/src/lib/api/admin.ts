@@ -75,8 +75,7 @@ export const createInstructor = async (payload: { name: string; email: string })
   return data.data;
 };
 
-export const updateInstructorPayout = async (id: string, percentage: number) =>
-  api.put(`/admin/instructors/${id}/payout-percentage`, { percentage }).then((r) => r.data.data);
+
 
 // ─── COURSES ─────────────────────────────────────────────────────────────────
 
