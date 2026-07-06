@@ -14,6 +14,7 @@ import {
   BookOpen,
   ClipboardCheck,
   MessageSquare,
+  MessageCircle,
 
   Settings,
   LogOut,
@@ -51,6 +52,7 @@ const NAV: NavSection[] = [
     items: [
       { name: "Assignments", href: "/instructor/assignments", icon: ClipboardCheck },
       { name: "Messages", href: "/instructor/messages", icon: MessageSquare },
+      { name: "Forums", href: "/instructor/forums", icon: MessageCircle },
     ],
   },
   {
