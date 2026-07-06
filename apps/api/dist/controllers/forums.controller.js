@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteReply = exports.updateReply = exports.deleteDiscussion = exports.updateDiscussion = exports.gradeDiscussion = exports.createForumReply = exports.createForumPost = exports.getLessonForums = void 0;
+exports.getInstructorDiscussions = exports.deleteReply = exports.updateReply = exports.deleteDiscussion = exports.updateDiscussion = exports.gradeDiscussion = exports.createForumReply = exports.createForumPost = exports.getLessonForums = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 exports.getLessonForums = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -179,4 +179,22 @@ exports.deleteReply = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     await prisma_1.prisma.discussionReply.delete({ where: { id: replyId } });
     res.json({ status: "success", message: "Reply deleted" });
+});
+exports.getInstructorDiscussions = (0, errors_1.asyncHandler)(async (req, res) => {
+    const discussions = await prisma_1.prisma.discussion.findMany({
+        where: {
+            course: { instructorId: req.user.id }
+        },
+        include: {
+            author: { select: { id: true, name: true, avatar: true, role: true } },
+            course: { select: { id: true, title: true } },
+            lesson: { select: { id: true, title: true } },
+            replies: {
+                include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
+                orderBy: { createdAt: "asc" }
+            }
+        },
+        orderBy: { createdAt: "desc" }
+    });
+    res.json({ status: "success", data: discussions });
 });

@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/authenticate";
-import { getLessonForums, createForumPost, createForumReply, gradeDiscussion, updateDiscussion, deleteDiscussion, updateReply, deleteReply } from "../controllers/forums.controller";
+import { getLessonForums, createForumPost, createForumReply, gradeDiscussion, updateDiscussion, deleteDiscussion, updateReply, deleteReply, getInstructorDiscussions } from "../controllers/forums.controller";
 import { authorize } from "../middleware/authorize";
 
 const router = Router();
 
 router.use(authenticate);
 
+router.get("/instructor/discussions", authorize("INSTRUCTOR", "ADMIN"), getInstructorDiscussions);
 router.get("/lessons/:lessonId", getLessonForums);
 router.post("/lessons/:lessonId", createForumPost);
 router.post("/discussions/:discussionId/replies", createForumReply);

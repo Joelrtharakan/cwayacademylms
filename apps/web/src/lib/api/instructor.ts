@@ -136,9 +136,11 @@ export const deleteForumReply = (replyId: string) =>
 export const createForumReply = (postId: string, content: string) =>
   api.post(`/forum/posts/${postId}/replies`, { content }).then((r) => r.data.data);
 
+export const getInstructorDiscussions = (params: any = {}) =>
+  api.get("/forums/instructor/discussions", { params }).then((r) => r.data.data);
 
-
-
+export const gradeDiscussion = (discussionId: string, data: { score: number; feedback?: string }) =>
+  api.post(`/forums/discussions/${discussionId}/grade`, data).then((r) => r.data.data);
 
 // ─── Messages ────────────────────────────────────────────────────────────────
 export const getConversations = () =>

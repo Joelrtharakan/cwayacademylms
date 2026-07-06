@@ -6,6 +6,7 @@ const forums_controller_1 = require("../controllers/forums.controller");
 const authorize_1 = require("../middleware/authorize");
 const router = (0, express_1.Router)();
 router.use(authenticate_1.authenticate);
+router.get("/instructor/discussions", (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), forums_controller_1.getInstructorDiscussions);
 router.get("/lessons/:lessonId", forums_controller_1.getLessonForums);
 router.post("/lessons/:lessonId", forums_controller_1.createForumPost);
 router.post("/discussions/:discussionId/replies", forums_controller_1.createForumReply);
