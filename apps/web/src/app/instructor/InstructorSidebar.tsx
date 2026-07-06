@@ -245,7 +245,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
           style={{
             position: "absolute",
             top: "70px",
-            bottom: "140px", // Space for bottom profile section + toggle
+            bottom: "160px", // Space for bottom profile section + toggle
             left: 0,
             right: 0,
             overflowY: "auto",
@@ -347,7 +347,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                             display: "flex",
                             alignItems: "center",
                             gap: collapsed ? 0 : "14px",
-                            padding: collapsed ? "10px 0" : "10px 12px",
+                            padding: collapsed ? "10px 12px" : "10px 12px",
                             borderRadius: "8px",
                             textDecoration: "none",
                             position: "relative",
@@ -434,7 +434,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
             bottom: 0,
             left: 0,
             right: 0,
-            height: "140px",
+            height: "160px",
             borderTop: "1px solid rgba(255,255,255,0.08)",
             background: "transparent",
             zIndex: 3,

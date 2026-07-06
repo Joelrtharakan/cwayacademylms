@@ -244,7 +244,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
           style={{
             position: "absolute",
             top: "70px", // Match new header height
-            bottom: "140px", // Exact space for footer
+            bottom: "160px", // Exact space for footer
             left: 0,
             right: 0,
             overflowY: "auto",
@@ -402,7 +402,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
             bottom: 0,
             left: 0,
             right: 0,
-            height: "140px",
+            height: "160px",
             borderTop: "1px solid rgba(255,255,255,0.08)",
             background: "transparent", // Use the underlying gradient
             zIndex: 3,
