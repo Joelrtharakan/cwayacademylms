@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMessageThread = exports.getConversations = exports.getPayoutHistory = exports.requestPayout = exports.getInstructorRevenue = exports.getCourseAnalytics = exports.unenrollStudent = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
-exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = void 0;
+exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getCourseAnalytics = exports.unenrollStudent = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
+exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
@@ -749,14 +749,13 @@ exports.getInstructorStats = (0, errors_1.asyncHandler)(async (req, res) => {
         prisma_1.prisma.enrollment.count({ where: { courseId: { in: courseIds }, status: "COMPLETED", studentId: { not: instructorId } } }),
         prisma_1.prisma.submission.count({ where: { assignment: { lesson: { section: { courseId: { in: courseIds } } } }, isGraded: false } }),
     ]);
-    const instructor = await prisma_1.prisma.user.findUnique({ where: { id: instructorId }, select: { payoutPercentage: true } });
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount * ((instructor?.payoutPercentage || 70) / 100), 0);
+    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
     const ratings = reviews.map((r) => r.rating);
     const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthPayments = await prisma_1.prisma.payment.findMany({ where: { courseId: { in: courseIds }, status: "COMPLETED", createdAt: { gte: monthStart } }, select: { amount: true } });
-    const revenueThisMonth = monthPayments.reduce((sum, p) => sum + p.amount * ((instructor?.payoutPercentage || 70) / 100), 0);
+    const revenueThisMonth = monthPayments.reduce((sum, p) => sum + p.amount, 0);
     res.json({ status: "success", data: { totalStudents: enrollments, totalRevenue, revenueThisMonth, avgRating, totalCompletions: completions, pendingSubmissions, publishedCourses } });
 });
 exports.getInstructorCourseStudents = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -848,42 +847,6 @@ exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     });
     const studentProgress = { notStarted, inProgress: total - notStarted - completed, completed };
     res.json({ status: "success", data: { enrollmentsOverTime, lessonCompletionRates, revenueOverTime: [], quizStats: [], studentProgress } });
-});
-// ─── REVENUE ─────────────────────────────────────────────────────────────────
-exports.getInstructorRevenue = (0, errors_1.asyncHandler)(async (req, res) => {
-    const instructorId = req.user.id;
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: instructorId }, select: { payoutPercentage: true } });
-    const pct = (user?.payoutPercentage || 70) / 100;
-    const courses = await prisma_1.prisma.course.findMany({ where: { instructorId }, select: { id: true } });
-    const courseIds = courses.map((c) => c.id);
-    const payments = await prisma_1.prisma.payment.findMany({
-        where: { courseId: { in: courseIds }, status: "COMPLETED" },
-        orderBy: { createdAt: "desc" },
-        include: { student: { select: { name: true } }, course: { select: { title: true } } },
-    });
-    const payouts = await prisma_1.prisma.payoutRequest.findMany({ where: { instructorId } });
-    const paidOut = payouts.filter((p) => p.status === "APPROVED").reduce((sum, p) => sum + p.amount, 0);
-    const totalEarned = payments.reduce((sum, p) => sum + p.amount * pct, 0);
-    const pendingPayout = totalEarned - paidOut;
-    res.json({
-        status: "success", data: {
-            totalEarned, pendingPayout, paidOut, platformFeeRate: 100 - (user?.payoutPercentage || 70),
-            transactions: payments.map((p) => ({ id: p.id, amount: p.amount, currency: p.currency, createdAt: p.createdAt, instructorEarnings: p.amount * pct, platformFee: p.amount * (1 - pct), student: p.student, course: p.course })),
-        },
-    });
-});
-exports.requestPayout = (0, errors_1.asyncHandler)(async (req, res) => {
-    const { amount, bankDetails, note } = req.body;
-    if (!amount || Number(amount) <= 0)
-        throw new errors_1.AppError("Invalid amount", 400);
-    const payout = await prisma_1.prisma.payoutRequest.create({ data: { instructorId: req.user.id, amount: Number(amount), bankDetails, note } });
-    const admins = await prisma_1.prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
-    await Promise.all(admins.map((a) => notification_service_1.NotificationService.createNotification(a.id, "PAYOUT_REQUEST", "New payout request", `An instructor has requested a payout of ₹${amount}`, "/admin/payouts")));
-    res.status(201).json({ status: "success", data: payout });
-});
-exports.getPayoutHistory = (0, errors_1.asyncHandler)(async (req, res) => {
-    const payouts = await prisma_1.prisma.payoutRequest.findMany({ where: { instructorId: req.user.id }, orderBy: { requestedAt: "desc" } });
-    res.json({ status: "success", data: payouts });
 });
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
 exports.getConversations = (0, errors_1.asyncHandler)(async (req, res) => {

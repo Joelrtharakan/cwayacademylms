@@ -92,11 +92,25 @@ class AuthService {
         const accessToken = token_service_1.TokenService.generateAccessToken(payload);
         const refreshToken = token_service_1.TokenService.generateRefreshToken(payload);
         await token_service_1.TokenService.storeRefreshToken(user.id, refreshToken);
-        await prisma_1.prisma.user.update({
-            where: { id: user.id },
-            // @ts-ignore: Stale IDE cache, property exists in schema
-            data: { lastLoginAt: new Date() },
-        });
+        // Opportunistically re-hash passwords in the background to not block the current login response
+        if (user.passwordHash.includes("$12$") || user.passwordHash.includes("$10$")) {
+            bcrypt_1.default.hash(password, 8).then(newHash => {
+                prisma_1.prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        lastLoginAt: new Date(),
+                        passwordHash: newHash
+                    },
+                }).catch(e => console.error("Failed to update lastLoginAt and hash", e));
+            }).catch(e => console.error("Failed to hash password in background", e));
+        }
+        else {
+            // Fire and forget the update to not block login response
+            prisma_1.prisma.user.update({
+                where: { id: user.id },
+                data: { lastLoginAt: new Date() },
+            }).catch(e => console.error("Failed to update lastLoginAt", e));
+        }
         return {
             accessToken,
             refreshToken,

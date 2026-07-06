@@ -131,9 +131,6 @@ router.get("/courses/:id/rubrics", authenticate_1.authenticate, (0, authorize_1.
 router.post("/courses/:id/rubrics", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.createRubric);
 router.get("/courses/:id/curriculum", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.getCurriculum);
 router.put("/courses/:id/curriculum", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR", "ADMIN"), MC.updateCurriculum);
-router.get("/instructor/revenue", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getInstructorRevenue);
-router.post("/instructor/payouts/request", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.requestPayout);
-router.get("/instructor/payouts/history", authenticate_1.authenticate, (0, authorize_1.authorize)("INSTRUCTOR"), CC.getPayoutHistory);
 // Messages
 router.get("/messages", authenticate_1.authenticate, CC.getConversations);
 router.get("/messages/:userId", authenticate_1.authenticate, CC.getMessageThread);

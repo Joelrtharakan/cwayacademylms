@@ -12,7 +12,8 @@ const cacheRoute = (ttlSeconds = 300) => {
         if (req.method !== "GET") {
             return next();
         }
-        const key = `cache:${req.originalUrl || req.url}`;
+        const authInfo = req.headers.authorization || req.cookies?.cway_refresh || "anonymous";
+        const key = `cache:${req.originalUrl || req.url}:${authInfo}`;
         try {
             const cachedResponse = await redis_1.redis.get(key);
             if (cachedResponse) {

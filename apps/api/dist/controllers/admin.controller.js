@@ -36,8 +36,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.updateInstructorPayout = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getStudentTimeAnalytics = exports.getRecentEnrollments = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
-exports.getLogStats = exports.getLogs = exports.downloadCertificate = exports.getProgramStudentGrades = exports.rejectApplication = exports.approveApplication = exports.getApplicationById = exports.getApplications = exports.removeCourseFromProgram = exports.duplicateCourse = exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = exports.getProgramStudentDetails = exports.getProgramStudents = exports.getProgramById = exports.getPrograms = void 0;
+exports.getPrograms = exports.updateSettings = exports.getSettings = exports.broadcastNotification = exports.getNotifications = exports.testEmailTemplate = exports.previewEmailTemplate = exports.updateEmailTemplate = exports.createEmailTemplate = exports.getEmailTemplates = exports.previewCertificateTemplate = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.getCertificateTemplates = exports.deleteCoupon = exports.updateCoupon = exports.createCoupon = exports.getCoupons = exports.linkSponsorship = exports.getSponsorships = exports.refundPayment = exports.getPayments = exports.reorderCategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.deleteCourse = exports.featureCourse = exports.rejectCourse = exports.approveCourse = exports.getCourses = exports.createInstructor = exports.getInstructors = exports.exportUsers = exports.impersonateUser = exports.deleteUser = exports.unbanUser = exports.banUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.getStudentTimeAnalytics = exports.getRecentEnrollments = exports.getEnrollmentAnalytics = exports.getCourseAnalytics = exports.getUserAnalytics = exports.getRevenueAnalytics = exports.getStats = void 0;
+exports.getLogStats = exports.getLogs = exports.downloadCertificate = exports.getProgramStudentGrades = exports.rejectApplication = exports.approveApplication = exports.getApplicationById = exports.getApplications = exports.removeCourseFromProgram = exports.duplicateCourse = exports.createCourse = exports.assignInstructorToCourse = exports.addCourseToProgram = exports.deleteProgram = exports.updateProgram = exports.createProgram = exports.getProgramStudentDetails = exports.getProgramStudents = exports.getProgramById = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
 const redis_1 = require("../utils/redis");
@@ -321,7 +321,7 @@ exports.getUserById = (0, errors_1.asyncHandler)(async (req, res) => {
         select: {
             id: true, name: true, email: true, role: true, avatar: true, bio: true, phone: true,
             church: true, location: true, preferredLanguage: true, isVerified: true, isBanned: true,
-            payoutPercentage: true, createdAt: true, updatedAt: true,
+            createdAt: true, updatedAt: true,
             enrollments: {
                 take: 20,
                 include: { course: { select: { title: true, slug: true } } },
@@ -350,14 +350,14 @@ exports.updateUser = (0, errors_1.asyncHandler)(async (req, res) => {
     if (id === req.user.id && req.body.role && req.body.role !== req.user.role) {
         throw new errors_1.AppError("You cannot change your own role", 400);
     }
-    const { name, role, church, location, isVerified, bio, payoutPercentage } = req.body;
+    const { name, role, church, location, isVerified, bio } = req.body;
     const allowedRoles = ["ADMIN", "INSTRUCTOR", "STUDENT"];
     if (role && !allowedRoles.includes(role))
         throw new errors_1.AppError("Invalid role", 400);
     const user = await prisma_1.prisma.user.update({
         where: { id },
-        data: { name, role, church, location, isVerified, bio, payoutPercentage },
-        select: { id: true, name: true, email: true, role: true, church: true, location: true, isVerified: true, bio: true, payoutPercentage: true },
+        data: { name, role, church, location, isVerified, bio },
+        select: { id: true, name: true, email: true, role: true, church: true, location: true, isVerified: true, bio: true },
     });
     res.json({ status: "success", data: user });
 });
@@ -512,7 +512,7 @@ exports.getInstructors = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { role: "INSTRUCTOR" },
         select: {
             id: true, name: true, email: true, avatar: true, bio: true, church: true,
-            location: true, createdAt: true, isVerified: true, isBanned: true, payoutPercentage: true,
+            location: true, createdAt: true, isVerified: true, isBanned: true,
             _count: { select: { coursesCreated: true } },
             coursesCreated: {
                 select: {
@@ -533,7 +533,7 @@ exports.getInstructors = (0, errors_1.asyncHandler)(async (req, res) => {
         return {
             id: inst.id, name: inst.name, email: inst.email, avatar: inst.avatar, bio: inst.bio,
             church: inst.church, location: inst.location, createdAt: inst.createdAt,
-            isVerified: inst.isVerified, isBanned: inst.isBanned, payoutPercentage: inst.payoutPercentage,
+            isVerified: inst.isVerified, isBanned: inst.isBanned,
             _count: inst._count, publishedCourses, totalStudents, totalRevenue,
         };
     });
@@ -556,7 +556,6 @@ exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
             passwordHash,
             role: "INSTRUCTOR",
             isVerified: true, // Auto-verified since admin created them
-            payoutPercentage: 70, // Default CWAY revenue split
         },
         select: {
             id: true, name: true, email: true, role: true, isVerified: true, createdAt: true
@@ -567,18 +566,6 @@ exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
         console.error("Failed to send instructor welcome email:", err);
     });
     res.status(201).json({ status: "success", data: user, message: "Instructor created and email sent." });
-});
-exports.updateInstructorPayout = (0, errors_1.asyncHandler)(async (req, res) => {
-    const { percentage } = req.body;
-    if (typeof percentage !== "number" || isNaN(percentage) || percentage < 0 || percentage > 100) {
-        throw new errors_1.AppError("Percentage must be a number between 0 and 100", 400);
-    }
-    const user = await prisma_1.prisma.user.update({
-        where: { id: req.params.id, role: "INSTRUCTOR" },
-        data: { payoutPercentage: percentage },
-        select: { id: true, name: true, payoutPercentage: true },
-    });
-    res.json({ status: "success", data: user });
 });
 // ─── COURSE MANAGEMENT ───────────────────────────────────────────────────────
 exports.getCourses = (0, errors_1.asyncHandler)(async (req, res) => {

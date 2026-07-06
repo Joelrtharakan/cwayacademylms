@@ -18,9 +18,8 @@ class TokenService {
     }
     static async storeRefreshToken(userId, token) {
         const key = `refresh:${userId}`;
-        // 7 days in seconds
         const TTL = 7 * 24 * 60 * 60;
-        await redis_1.redis.set(key, token, "EX", TTL);
+        redis_1.redis.set(key, token, "EX", TTL).catch(err => console.error("Redis set error", err));
     }
     static async getRefreshToken(userId) {
         const key = `refresh:${userId}`;
