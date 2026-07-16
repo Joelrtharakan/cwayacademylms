@@ -612,7 +612,7 @@ export default function AboutPage() {
               <div className="lg:col-span-3 flex flex-col items-center text-center border-b lg:border-b-0 lg:border-r border-[#DCE0D5]/50 pb-6 lg:pb-0 lg:pr-8 pt-2 w-full">
                 <div className="w-24 h-24 rounded-full mb-4 relative flex items-center justify-center bg-gradient-to-br from-[#2C4A3B] to-[#4A7A62] shadow-xl transition-transform duration-500 group-hover:scale-105">
                   <div className="absolute inset-[-6px] rounded-full border border-dashed border-[var(--gold-primary)] opacity-60 group-hover:rotate-12 transition-transform duration-700" />
-                  <Image src="/Reeju.png" alt="Dr. Reeju Tharakan" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" />
+                  <Image src="/Reeju.png" alt="Dr. Reeju Tharakan" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" priority />
                 </div>
                 <div className="text-[var(--gold-primary)] font-bold text-[10px] tracking-widest uppercase mt-2 mb-3 leading-tight">
                   Executive Director
@@ -644,7 +644,7 @@ export default function AboutPage() {
               <div className="lg:col-span-3 flex flex-col items-center text-center border-b lg:border-b-0 lg:border-r border-[#DCE0D5]/50 pb-6 lg:pb-0 lg:pr-8 pt-2 w-full">
                 <div className="w-24 h-24 rounded-full mb-4 relative flex items-center justify-center bg-gradient-to-br from-[#2C4A3B] to-[#4A7A62] shadow-xl transition-transform duration-500 group-hover:scale-105">
                   <div className="absolute inset-[-6px] rounded-full border border-dashed border-[var(--gold-primary)] opacity-60 group-hover:rotate-12 transition-transform duration-700" />
-                  <Image src="/Robin.png" alt="Pr. Robin Ninan" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" />
+                  <Image src="/Robin.png" alt="Pr. Robin Ninan" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" priority />
                 </div>
                 <div className="text-[var(--gold-primary)] font-bold text-[10px] tracking-widest uppercase mt-2 mb-3 leading-tight">
                   Director of Training & Outreach
@@ -676,7 +676,7 @@ export default function AboutPage() {
               <div className="lg:col-span-3 flex flex-col items-center text-center border-b lg:border-b-0 lg:border-r border-[#DCE0D5]/50 pb-6 lg:pb-0 lg:pr-8 pt-2 w-full">
                 <div className="w-24 h-24 rounded-full mb-4 relative flex items-center justify-center bg-gradient-to-br from-[#2C4A3B] to-[#4A7A62] shadow-xl transition-transform duration-500 group-hover:scale-105">
                   <div className="absolute inset-[-6px] rounded-full border border-dashed border-[var(--gold-primary)] opacity-60 group-hover:rotate-12 transition-transform duration-700" />
-                  <Image src="/Finny.png" alt="Evg. Finny Philip Varghese" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" />
+                  <Image src="/Finny.png" alt="Evg. Finny Philip Varghese" width={96} height={96} className="w-full h-full rounded-full object-cover relative z-10" priority />
                 </div>
                 <div className="text-[var(--gold-primary)] font-bold text-[10px] tracking-widest uppercase mt-2 mb-3 leading-tight">
                   Director of Operations

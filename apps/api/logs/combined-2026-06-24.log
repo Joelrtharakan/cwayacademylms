@@ -1,7 +1,0 @@
-2026-06-24 12:34:36 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
-2026-06-24 12:54:40 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
-2026-06-24 13:16:40 [warn]: Failed login attempt for joelrtharaka880@gmail.com {"ip":"::1","error":"Invalid email or password"}
-2026-06-24 13:16:51 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::1"}
-2026-06-24 14:24:20 [info]: Successful login: dr.reeju@cwayacademy.com {"userId":"cmqku2zbu00013u1qbthq3afd","ip":"::1"}
-2026-06-24 17:02:00 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
-2026-06-24 18:06:39 [info]: Successful login: dr.reeju@cwayacademy.com {"userId":"cmqku2zbu00013u1qbthq3afd","ip":"::1"}

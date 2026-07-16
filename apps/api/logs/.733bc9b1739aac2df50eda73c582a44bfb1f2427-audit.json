@@ -6,36 +6,6 @@
     "auditLog": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/.733bc9b1739aac2df50eda73c582a44bfb1f2427-audit.json",
     "files": [
         {
-            "date": 1782226454321,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-06-23.log",
-            "hash": "7b7e9a869b1d734565c2aa70796b57e08e9e8a8f1ff6f6178700e89eb44d3be9"
-        },
-        {
-            "date": 1782290021191,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-06-24.log",
-            "hash": "972da53cf465536eef289fc08e8a435cd08ffe3ef6882955620ed7f24915b9e2"
-        },
-        {
-            "date": 1782475883855,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-06-26.log",
-            "hash": "9a8b8113275e5dbf8286f4c56b115ce9b39fadebac453b26c18b873768781243"
-        },
-        {
-            "date": 1782715729255,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-06-29.log",
-            "hash": "22652419171597a99059cba65b4e2c1bb01777b5de557f0f3024f8d660ed9c1c"
-        },
-        {
-            "date": 1782814949783,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-06-30.log",
-            "hash": "1d493efe16c020d27a6f19476c33983fb74e7c0874595e20083eebc881f5c02b"
-        },
-        {
-            "date": 1782940499388,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-02.log",
-            "hash": "df3e4f3431251e0f5c2e93571f7e7c9582904dcd681abc2811d461773e312157"
-        },
-        {
             "date": 1783334046029,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-06.log",
             "hash": "d1a55be16e186bc0e40d6999269e79eb54956797e0e88bc98f0f0c1b55164c69"
@@ -44,6 +14,11 @@
             "date": 1783362607451,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-07.log",
             "hash": "cd2271d2be4cbbdb4cdd195298ea4b04c6d761b708bd4723e847a72792998293"
+        },
+        {
+            "date": 1784214894547,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-16.log",
+            "hash": "22d737966457b3e8ed5116c557cd838260112353d1c04664eabe2140b1b5497a"
         }
     ],
     "hashType": "sha256"
