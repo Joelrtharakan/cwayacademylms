@@ -1,16 +1,21 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type DEPLOY to deploy to Production'
+        required: true
+        default: ''
 
 jobs:
   deploy:
+    if: github.event.inputs.confirmation == 'DEPLOY'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS
+      - name: Deploy to Production VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
