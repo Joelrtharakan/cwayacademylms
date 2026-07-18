@@ -38,6 +38,21 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       REDIS_URL: "redis://redis:6379"
 
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/web/.env.production
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: "https://api.cwayacademy.com/api/v1"
+      NEXT_PUBLIC_APP_URL: "https://www.cwayacademy.com"
+
 volumes:
   postgres_prod:
   redis_prod:
