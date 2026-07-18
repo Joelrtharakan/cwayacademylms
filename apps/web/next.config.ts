@@ -25,17 +25,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts", "framer-motion"],
   },
-  webpack: (config) => {
-    config.resolve.alias.canvas = false;
-    config.resolve.alias["@napi-rs/canvas"] = false;
-    return config;
-  },
-  turbopack: {
-    resolveAlias: {
-      canvas: false,
-      "@napi-rs/canvas": false,
-    }
-  }
+  serverExternalPackages: ["canvas", "@napi-rs/canvas"],
 };
 
 export default nextConfig;
