@@ -37,11 +37,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
           style={{ height: '800px', minHeight: '800px', border: 'none' }}
           title="PDF Viewer" 
         />
-        <div className="mt-6 flex flex-col items-center">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium shadow-sm">
-            Open Original PDF in New Tab
-          </a>
-        </div>
       </div>
 
       {/* Rendered PDF Pages purely for Printing (hidden during normal view) */}

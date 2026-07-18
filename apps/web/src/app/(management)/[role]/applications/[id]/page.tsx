@@ -103,6 +103,21 @@ export default function ApplicationDetailsPage() {
           <button onClick={handlePrint} className="flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all" style={{ padding: "10px 24px", borderRadius: "9999px", fontWeight: "600" }}>
             <Download size={18} /> Download PDF
           </button>
+
+          {certificates?.map((url: string, i: number) => 
+            url.toLowerCase().includes('.pdf') ? (
+              <a 
+                key={i} 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all" 
+                style={{ padding: "10px 24px", borderRadius: "9999px", fontWeight: "600", textDecoration: "none" }}
+              >
+                <FileText size={18} /> Open PDF {certificates.length > 1 ? i + 1 : ''}
+              </a>
+            ) : null
+          )}
           
           {app.status === "PENDING" && (
             <>
