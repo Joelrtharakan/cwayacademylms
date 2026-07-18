@@ -64,7 +64,7 @@ services:
       postgres:
         condition: service_healthy
 
-  # Automated Daily Database Backups
+  # Automated Weekly Database Backups
   pgbackup:
     image: prodrigestivill/postgres-backup-local
     container_name: cway_pgbackup
@@ -75,8 +75,8 @@ services:
       POSTGRES_DB: cway_lms
       POSTGRES_USER: cway
       POSTGRES_PASSWORD: cwaydev
-      # Run backup every day at midnight
-      SCHEDULE: "@daily"
+      # Run backup every week
+      SCHEDULE: "@weekly"
       BACKUP_KEEP_DAYS: 7
       BACKUP_KEEP_WEEKS: 4
       BACKUP_KEEP_MONTHS: 6
