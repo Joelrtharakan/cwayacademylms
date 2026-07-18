@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
     config.resolve.alias["@napi-rs/canvas"] = false;
     return config;
   },
+  turbopack: {
+    resolveAlias: {
+      canvas: false,
+      "@napi-rs/canvas": false,
+    }
+  }
 };
 
 export default nextConfig;
