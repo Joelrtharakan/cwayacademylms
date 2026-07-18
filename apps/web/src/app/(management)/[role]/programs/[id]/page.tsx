@@ -9,6 +9,7 @@ import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, BookOpen, UserCircle, Clock, Edit3, MoreVertical, Users, CheckCircle, AlertCircle, Mail, Trash2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import * as Tabs from "@radix-ui/react-tabs";
 import { AddCourseModal } from "@/components/admin/lms/AddCourseModal";
 import { AssignInstructorModal } from "@/components/admin/lms/AssignInstructorModal";
@@ -487,7 +488,9 @@ export default function ProgramDetailPage() {
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       {course.thumbnail ? (
-                        <img src={course.thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                          <Image src={course.thumbnail} alt="" fill sizes="48px" style={{ objectFit: "cover" }} />
+                        </div>
                       ) : (
                         <BookOpen size={16} color="#8A9E8C" />
                       )}

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Upload, BookOpen } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { getCourseById, updateCourse, uploadThumbnail } from "@/lib/api/instructor";
 
 const GOLD = "#B88645";
@@ -208,7 +209,9 @@ export default function EditCoursePage() {
               <div style={{ border: "2px dashed rgba(184,134,69,0.35)", borderRadius: 12, background: "#F7F8F5", padding: 32, textAlign: "center" }}>
                 {thumbnail ? (
                   <div>
-                    <img src={thumbnail} alt="Thumbnail" style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 8 }} />
+                    <div style={{ position: "relative", width: "100%", height: 200, borderRadius: 8, overflow: "hidden" }}>
+                      <Image src={thumbnail} alt="Thumbnail" fill sizes="(max-width: 768px) 100vw, 300px" style={{ objectFit: "cover" }} />
+                    </div>
                     <p style={{ color: GOLD, marginTop: 8, fontSize: 12 }}>Click to replace</p>
                   </div>
                 ) : uploading ? (

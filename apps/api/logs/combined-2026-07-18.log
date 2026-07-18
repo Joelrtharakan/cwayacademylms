@@ -1,0 +1,5 @@
+2026-07-18 01:51:51 [warn]: Failed login attempt for tharakanreeju@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-18 01:51:56 [warn]: Failed login attempt for tharakanreeju@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-18 01:53:03 [warn]: Failed login attempt for joelrtharakan@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-18 01:53:08 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}
+2026-07-18 01:54:25 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}

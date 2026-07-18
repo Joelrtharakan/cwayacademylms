@@ -8,6 +8,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -114,7 +115,9 @@ export default function AdminCoursesPage() {
       render: (row) => (
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {row.thumbnail ? (
-            <img src={row.thumbnail} alt="" style={{ width: "48px", height: "32px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />
+            <div style={{ position: "relative", width: "48px", height: "32px", borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
+              <Image src={row.thumbnail} alt="" fill sizes="48px" style={{ objectFit: "cover" }} />
+            </div>
           ) : (
             <div
               style={{

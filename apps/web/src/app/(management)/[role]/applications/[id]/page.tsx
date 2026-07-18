@@ -8,6 +8,12 @@ import { toast } from "react-hot-toast";
 import { Download, Check, X, ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import dynamic from "next/dynamic";
+
+const PdfViewer = dynamic(
+  () => import("@/components/admin/PdfViewer").then((mod) => mod.PdfViewer),
+  { ssr: false }
+);
 
 export default function ApplicationDetailsPage() {
   const basePath = useManagementPath();
@@ -344,21 +350,28 @@ export default function ApplicationDetailsPage() {
             {/* Attached Documents */}
             {certificates && certificates.length > 0 && (
               <section className="mt-12 pt-12 border-t border-gray-200 print:break-before-page">
-                <h3 className="text-2xl font-bold text-center text-[#1A261D]" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif" }}>
+                <h3 className="text-2xl font-bold text-center text-[#1A261D] print:break-after-avoid" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif" }}>
                   Attached Documents
                 </h3>
                 <div className="flex flex-col gap-8">
-                  {certificates.map((url: string, i: number) => (
-                    <div key={i} className="flex flex-col items-center print:break-inside-avoid mb-4">
-                      <p className="text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold">Document {i + 1}</p>
-                      <img 
-                        src={url} 
-                        alt={`Attached Document ${i + 1}`} 
-                        className="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm"
-                        style={{ maxHeight: "600px", objectFit: "contain" }}
-                      />
-                    </div>
-                  ))}
+                  {certificates.map((url: string, i: number) => {
+                    const isPdf = url.toLowerCase().includes('.pdf');
+                    return (
+                      <div key={i} className="flex flex-col items-center print:break-inside-avoid mb-6">
+                        <p className="text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold">Document {i + 1}</p>
+                        {isPdf ? (
+                          <PdfViewer url={url} />
+                        ) : (
+                          <img 
+                            src={url} 
+                            alt={`Attached Document ${i + 1}`} 
+                            className="max-w-full h-auto border border-gray-300 rounded-lg shadow-sm print:max-h-[800px]"
+                            style={{ maxHeight: "600px", objectFit: "contain" }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -369,10 +382,11 @@ export default function ApplicationDetailsPage() {
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page {
-            margin: 12mm 15mm;
+            margin: 0;
           }
           body {
             background-color: white !important;
+            padding: 15mm !important;
           }
           .print\\:hidden {
             display: none !important;
@@ -392,6 +406,13 @@ export default function ApplicationDetailsPage() {
           .print\\:w-full {
             width: 100% !important;
             max-width: 100% !important;
+          }
+          .react-pdf__Page__canvas {
+            max-width: 100% !important;
+            max-height: 22cm !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain;
           }
           #application-document {
             box-shadow: none !important;

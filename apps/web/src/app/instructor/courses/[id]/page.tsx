@@ -7,6 +7,7 @@ import { api } from "@/store/auth.store";
 import { getModules, createModule, updateModule, deleteModule, reorderModules } from "@/lib/api/modules";
 import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, ExternalLink, Loader2, Save, X, Clock, Eye } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 import { toast } from "react-hot-toast";
 
@@ -112,7 +113,9 @@ export default function CourseManagementPage() {
       <div style={{ background: "#FFFFFF", padding: "24px 40px", borderBottom: "1px solid #E4E8E0", display: "flex", alignItems: "center", gap: "24px" }}>
         <div style={{ width: "120px", height: "80px", background: "#F7F8F5", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {course.thumbnail ? (
-            <img src={course.thumbnail} alt={course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "relative", width: "100%", height: "100%" }}>
+              <Image src={course.thumbnail} alt={course.title} fill sizes="(max-width: 768px) 100vw, 300px" style={{ objectFit: "cover" }} />
+            </div>
           ) : (
             <span style={{ color: "#8F9E93", fontSize: "12px", fontWeight: 600 }}>No Image</span>
           )}

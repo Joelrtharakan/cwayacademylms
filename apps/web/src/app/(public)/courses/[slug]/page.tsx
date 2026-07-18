@@ -36,7 +36,7 @@ const NavigationHeader = () => (
     <nav>
       <Link href="/" className="nav-brand" style={{ textDecoration: "none" }}>
         <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
-          <Image src="/logo.png?v=3" alt="CWAY Academy Logo" fill sizes="48px" style={{ objectFit: "contain" }} />
+          <Image src="/logo.png" alt="CWAY Academy Logo" fill sizes="48px" style={{ objectFit: "contain" }} />
         </div>
         <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
       </Link>

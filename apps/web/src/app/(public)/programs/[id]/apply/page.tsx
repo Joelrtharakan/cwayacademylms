@@ -328,7 +328,7 @@ export default function ProgramApplicationPage() {
       <nav>
         <div className="nav-brand" onClick={() => router.push("/")}>
           <img 
-            src="/logo.png?v=3" 
+            src="/logo.png" 
             alt="CWAY Academy Logo" 
             style={{ width: "48px", height: "48px", objectFit: "contain", flexShrink: 0 }}
           />

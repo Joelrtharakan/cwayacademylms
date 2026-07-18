@@ -165,7 +165,7 @@ export function Footer() {
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.625rem" }}>
                 {links.map((link) => (
                   <li key={link.href}>
-                    <NextLink href={link.href} className="footer-link" prefetch={false}>
+                    <NextLink href={link.href} className="footer-link">
                       {link.label}
                     </NextLink>
                   </li>
@@ -209,9 +209,9 @@ export function Footer() {
             © 2026 CWAY Academy — A Ministry of CWAY Missions, Bangalore, India. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
-            <NextLink href="/privacy" className="footer-link" style={{ fontSize: "0.8rem" }} prefetch={false}>Privacy Policy</NextLink>
-            <NextLink href="/terms" className="footer-link" style={{ fontSize: "0.8rem" }} prefetch={false}>Terms of Service</NextLink>
-            <NextLink href="/sitemap.xml" className="footer-link" style={{ fontSize: "0.8rem" }} prefetch={false}>Sitemap</NextLink>
+            <NextLink href="/privacy" className="footer-link" style={{ fontSize: "0.8rem" }}>Privacy Policy</NextLink>
+            <NextLink href="/terms" className="footer-link" style={{ fontSize: "0.8rem" }}>Terms of Service</NextLink>
+            <NextLink href="/sitemap.xml" className="footer-link" style={{ fontSize: "0.8rem" }}>Sitemap</NextLink>
           </div>
         </div>
       </div>

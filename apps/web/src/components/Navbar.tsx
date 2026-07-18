@@ -96,7 +96,6 @@ export function Navbar() {
           <Link
             href="/"
             onClick={(e) => handleNavClick(e, "/#home")}
-            prefetch={false}
             style={{ display: "flex", alignItems: "center", gap: "0.85rem", textDecoration: "none" }}
             aria-label="CWAY Academy Home"
           >
@@ -116,7 +115,7 @@ export function Navbar() {
               }}
             >
               <Image 
-                src="/logo.png?v=3" 
+                src="/logo.png" 
                 alt="CWAY Academy Logo" 
                 width={44}
                 height={44}
@@ -165,7 +164,6 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  prefetch={false}
                   style={{
                     position: "relative",
                     padding: "0.5rem 0.85rem",
@@ -200,8 +198,7 @@ export function Navbar() {
           {/* CTA Buttons */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }} className="hidden-mobile">
             <Link 
-              href="/login" 
-              prefetch={false}
+              href="/login"
               style={{ 
                 padding: "0.6rem 1.35rem", 
                 fontSize: "0.88rem", 
@@ -287,7 +284,6 @@ export function Navbar() {
                   handleNavClick(e, link.href);
                   setMobileOpen(false);
                 }}
-                prefetch={false}
                 style={{
                   display: "block",
                   padding: "0.75rem 1rem",
@@ -314,8 +310,7 @@ export function Navbar() {
             <div className="mobile-nav-divider"></div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(44, 74, 59, 0.08)" }}>
               <Link 
-                href="/login" 
-                prefetch={false}
+                href="/login"
                 style={{ 
                   textAlign: "center", 
                   padding: "0.75rem", 

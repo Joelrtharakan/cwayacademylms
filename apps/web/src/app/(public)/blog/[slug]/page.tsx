@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
 interface Post {
@@ -58,7 +59,9 @@ export default function SingleBlogPage({ params }: { params: Promise<{ slug: str
         </div>
         
         {post.coverImage && (
-          <img src={post.coverImage} alt={post.title} className="w-full rounded-2xl mb-8 object-cover max-h-96" />
+          <div className="relative w-full rounded-2xl mb-8 overflow-hidden" style={{ height: "384px" }}>
+            <Image src={post.coverImage} alt={post.title} fill sizes="100vw" style={{ objectFit: "cover" }} />
+          </div>
         )}
 
         <div className="prose prose-lg text-[var(--text-secondary)]">
