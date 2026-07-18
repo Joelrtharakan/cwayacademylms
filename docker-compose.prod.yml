@@ -71,6 +71,16 @@ services:
       - api
       - web
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - uptime-kuma:/app/data
+
 volumes:
   postgres_prod:
   redis_prod:
+  uptime-kuma:
