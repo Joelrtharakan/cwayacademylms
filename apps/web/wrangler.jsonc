@@ -9,5 +9,9 @@
     "binding": "ASSETS"
   },
   "minify": true,
-  "usage_model": "unbound"
+  "usage_model": "unbound",
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://www.cwayacademy.com",
+    "NEXT_PUBLIC_API_URL": "https://api.cwayacademy.com/api/v1"
+  }
 }
