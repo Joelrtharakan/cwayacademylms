@@ -26,6 +26,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    container_name: cway_api
     restart: always
     ports:
       - "127.0.0.1:5000:5000"
@@ -45,6 +46,7 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+    container_name: cway_web
     restart: always
     ports:
       - "3000:3000"
@@ -57,6 +59,7 @@ services:
 
   nginx:
     image: nginx:alpine
+    container_name: cway_nginx
     restart: always
     ports:
       - "80:80"
