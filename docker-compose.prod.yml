@@ -73,7 +73,7 @@ services:
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
-    container_name: uptime-kuma
+    container_name: cway_uptime_kuma
     restart: always
     ports:
       - "127.0.0.1:3001:3001"
