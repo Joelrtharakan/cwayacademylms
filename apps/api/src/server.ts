@@ -61,6 +61,7 @@ app.use(compression());
 // CORS — only allow your domains
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   'https://learn.cwayacademy.com',
   'https://cwayacademy.com',
   'https://www.cwayacademy.com',

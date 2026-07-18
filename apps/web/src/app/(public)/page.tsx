@@ -1519,7 +1519,7 @@ export default function LandingPage() {
                                 >
                                   {c.thumbnail ? (
                                     <div className="h-48 rounded-t-2xl relative overflow-hidden bg-gray-100">
-                                      <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" priority style={{ objectFit: "cover", transition: "transform 0.7s ease" }} onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
+                                      <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized quality={100} priority style={{ objectFit: "cover", transition: "transform 0.7s ease" }} onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
                                     </div>
                                   ) : (
                                     <div style={{ height: "170px", width: "100%", background: "linear-gradient(135deg, rgba(184,134,69,0.15), rgba(138,100,51,0.05))", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1558,7 +1558,7 @@ export default function LandingPage() {
                     {standaloneCourses.map((c: any, i: number) => (
                       <div key={c.id} className={`card course-card reveal ${i % 3 === 1 ? "stagger-1" : i % 3 === 2 ? "stagger-2" : ""}`} style={{ display: "flex", flexDirection: "column", padding: 0 }}>
                         <div className="h-48 rounded-t-2xl relative overflow-hidden bg-gray-100">
-                           <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" priority style={{ objectFit: "cover" }} />
+                           <Image src={c.thumbnail} alt={c.title} fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized quality={100} priority style={{ objectFit: "cover" }} />
                         </div>
                         <div className="course-card-body" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "2rem" }}>
                           <div className="course-badges" style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>

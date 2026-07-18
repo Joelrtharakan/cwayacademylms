@@ -156,7 +156,9 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
       {/* Hero */}
       <section style={{ background: "linear-gradient(135deg, var(--navy-deep), var(--navy-mid))", padding: "4rem 0", position: "relative" }}>
         {course.thumbnail && (
-          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.15, backgroundImage: `url(${course.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.15, overflow: "hidden" }}>
+            <Image src={course.thumbnail} alt="Background" fill priority unoptimized quality={100} style={{ objectFit: "cover", objectPosition: "center" }} sizes="100vw" />
+          </div>
         )}
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
           <div style={{ display: "grid", gridTemplateColumns: course.programId ? "1fr" : "1fr 340px", gap: "3rem", alignItems: "start" }}>

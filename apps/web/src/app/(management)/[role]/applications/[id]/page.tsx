@@ -253,9 +253,9 @@ export default function ApplicationDetailsPage() {
             {app.referenceForms && app.referenceForms.map((refForm: any, idx: number) => {
               const ratings = refForm.ratings ? JSON.parse(refForm.ratings) : {};
               return (
-                <section key={refForm.id} className="mt-6 pt-6 border-t border-gray-200 print:break-before-page break-inside-avoid print:mt-0 print:pt-0" style={{ marginBottom: "16px" }}>
-                  <h3 className="text-xl font-bold text-center text-[#1A261D]" style={{ marginBottom: "16px", fontFamily: "var(--font-cinzel), Georgia, serif" }}>
-                    {refForm.type === 'PASTOR' ? "Pastor's Recommendation" : "General Reference"} Form
+                <section key={refForm.id} className="mt-6 pt-6 border-t border-gray-200 print:break-before-page break-inside-avoid print:mt-0 print:pt-20" style={{ marginBottom: "16px" }}>
+                  <h3 className="text-2xl font-bold text-center text-[#1A261D] uppercase" style={{ marginBottom: "24px", fontFamily: "var(--font-cinzel), Georgia, serif", letterSpacing: "0.05em" }}>
+                    {refForm.type === 'PASTOR' ? "Pastor's Recommendation Form" : "General Reference Form"}
                   </h3>
                   
                   <div className="grid grid-cols-2 gap-x-8" style={{ rowGap: "12px", marginBottom: "16px" }}>
@@ -349,9 +349,9 @@ export default function ApplicationDetailsPage() {
 
             {/* Attached Documents */}
             {certificates && certificates.length > 0 && (
-              <section className="mt-12 pt-12 border-t border-gray-200 print:break-before-page">
-                <h3 className="text-2xl font-bold text-center text-[#1A261D] print:break-after-avoid" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif" }}>
-                  Attached Documents
+              <section className="mt-12 pt-12 border-t border-gray-200 print:break-before-page print:pt-20">
+                <h3 className="text-2xl font-bold text-center text-[#1A261D] print:break-after-avoid" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif", letterSpacing: "0.05em" }}>
+                  ATTACHED DOCUMENTS
                 </h3>
                 <div className="flex flex-col gap-8">
                   {certificates.map((url: string, i: number) => {

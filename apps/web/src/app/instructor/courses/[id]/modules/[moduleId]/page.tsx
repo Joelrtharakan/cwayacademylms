@@ -9,13 +9,20 @@ import { useCourseBuilderStore } from "@/store/course-builder.store";
 import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare, Menu, Sidebar } from "lucide-react";
 import Link from "next/link";
 
-// Panels (To be created)
-import ModuleOverviewPanel from "./_components/OverviewPanel";
-import VideosPanel from "./_components/VideosPanel";
-import ReadingsPanel from "./_components/ReadingsPanel";
-import AssignmentsPanel from "./_components/AssignmentsPanel";
-import QuizzesPanel from "./_components/QuizzesPanel";
-import ForumsPanel from "./_components/ForumsPanel";
+import dynamic from "next/dynamic";
+
+const LoadingState = () => (
+  <div className="w-full h-[400px] flex items-center justify-center">
+    <Loader2 size={32} className="animate-spin text-[#B88645]" />
+  </div>
+);
+
+const ModuleOverviewPanel = dynamic(() => import("./_components/OverviewPanel"), { loading: LoadingState });
+const VideosPanel = dynamic(() => import("./_components/VideosPanel"), { loading: LoadingState });
+const ReadingsPanel = dynamic(() => import("./_components/ReadingsPanel"), { loading: LoadingState });
+const AssignmentsPanel = dynamic(() => import("./_components/AssignmentsPanel"), { loading: LoadingState });
+const QuizzesPanel = dynamic(() => import("./_components/QuizzesPanel"), { loading: LoadingState });
+const ForumsPanel = dynamic(() => import("./_components/ForumsPanel"), { loading: LoadingState });
 
 export default function ModuleManagementPage() {
   const { id, moduleId } = useParams() as { id: string; moduleId: string };

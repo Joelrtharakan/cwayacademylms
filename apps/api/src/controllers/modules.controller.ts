@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
+import { redis } from "../utils/redis";
 import { AppError, asyncHandler } from "../utils/errors";
 import { uploadToR2, generateKey, deleteFromR2 } from "../services/storage.service";
 import { VideoService } from "../services/video.service";
@@ -38,11 +39,18 @@ export const createModule = asyncHandler(async (req: Request, res: Response) => 
     },
   });
 
+  await invalidateCourseCache(courseId);
   res.status(201).json({ status: "success", data: section });
 });
 
 export const getModules = asyncHandler(async (req: Request, res: Response) => {
   const { id: courseId } = req.params;
+  const cacheKey = `course:${courseId}:modules`;
+
+  let cached = await redis.get(cacheKey);
+  if (cached) {
+    return res.json({ status: "success", data: JSON.parse(cached) });
+  }
 
   const sections = await prisma.section.findMany({
     where: { courseId },
@@ -61,8 +69,15 @@ export const getModules = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
+  await redis.set(cacheKey, JSON.stringify(sections), "EX", 3600);
   res.json({ status: "success", data: sections });
 });
+
+export const invalidateCourseCache = async (courseId: string) => {
+  if (!courseId) return;
+  await redis.del(`course:${courseId}:modules`);
+  await redis.del(`course:${courseId}:curriculum`);
+};
 
 export const updateModule = asyncHandler(async (req: Request, res: Response) => {
   const { moduleId } = req.params;
@@ -105,6 +120,7 @@ export const deleteModule = asyncHandler(async (req: Request, res: Response) => 
   }
 
   await prisma.section.delete({ where: { id: moduleId } });
+  await invalidateCourseCache(section.courseId);
   res.json({ status: "success", message: "Module deleted successfully" });
 });
 
@@ -130,6 +146,7 @@ export const reorderModules = asyncHandler(async (req: Request, res: Response) =
     )
   );
 
+  await invalidateCourseCache(courseId);
   res.json({ status: "success", message: "Modules reordered successfully" });
 });
 
@@ -172,6 +189,7 @@ export const createLesson = asyncHandler(async (req: Request, res: Response) => 
     },
   });
 
+  await invalidateCourseCache(section.courseId);
   res.status(201).json({ status: "success", data: lesson });
 });
 
@@ -193,6 +211,7 @@ export const updateLesson = asyncHandler(async (req: Request, res: Response) => 
     data: { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks: forumMarks !== undefined ? Number(forumMarks) : undefined },
   });
 
+  await invalidateCourseCache(lesson.section.courseId);
   res.json({ status: "success", data: updated });
 });
 
@@ -209,6 +228,7 @@ export const deleteLesson = asyncHandler(async (req: Request, res: Response) => 
   }
 
   await prisma.lesson.delete({ where: { id: lessonId } });
+  await invalidateCourseCache(lesson.section.courseId);
   res.json({ status: "success", message: "Lesson deleted successfully" });
 });
 
@@ -236,6 +256,7 @@ export const reorderLessons = asyncHandler(async (req: Request, res: Response) =
     )
   );
 
+  await invalidateCourseCache(section.courseId);
   res.json({ status: "success", message: "Lessons reordered successfully" });
 });
 
@@ -344,6 +365,7 @@ export const updateCurriculum = asyncHandler(async (req: Request, res: Response)
     },
   });
 
+  await invalidateCourseCache(courseId);
   res.json({ status: "success", data: curriculum });
 });
 
@@ -467,6 +489,7 @@ export const createReadingMaterial = asyncHandler(async (req: Request, res: Resp
     }
   });
 
+  await invalidateCourseCache(section.courseId);
   res.status(201).json({ status: "success", data: readingMaterial });
 });
 
@@ -499,6 +522,7 @@ export const updateReadingMaterial = asyncHandler(async (req: Request, res: Resp
     data: { title, description, order },
   });
 
+  await invalidateCourseCache(material.section.courseId);
   res.json({ status: "success", data: updated });
 });
 
@@ -520,6 +544,7 @@ export const deleteReadingMaterial = asyncHandler(async (req: Request, res: Resp
   // Delete from DB
   await prisma.readingMaterial.delete({ where: { id } });
 
+  await invalidateCourseCache(material.section.courseId);
   res.json({ status: "success", message: "Reading material deleted successfully" });
 });
 
@@ -547,6 +572,7 @@ export const reorderReadingMaterials = asyncHandler(async (req: Request, res: Re
     )
   );
 
+  await invalidateCourseCache(section.courseId);
   res.json({ status: "success", message: "Reading materials reordered successfully" });
 });
 
@@ -598,6 +624,7 @@ export const createQuiz = asyncHandler(async (req: Request, res: Response) => {
     return { lesson, quiz };
   });
 
+  await invalidateCourseCache(section.courseId);
   res.status(201).json({ status: "success", data: result });
 });
 
@@ -656,6 +683,7 @@ export const updateQuiz = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
+  await invalidateCourseCache(quiz.lesson.section.courseId);
   res.json({ status: "success", data: updatedQuiz });
 });
 
@@ -674,6 +702,7 @@ export const deleteQuiz = asyncHandler(async (req: Request, res: Response) => {
   // Deleting the lesson cascades to quiz, questions, answers, etc.
   await prisma.lesson.delete({ where: { id: quiz.lessonId } });
 
+  await invalidateCourseCache(quiz.lesson.section.courseId);
   res.json({ status: "success", message: "Quiz deleted successfully" });
 });
 
@@ -720,6 +749,7 @@ export const createQuestion = asyncHandler(async (req: Request, res: Response) =
       include: { answers: true }
     });
 
+    await invalidateCourseCache(quiz.lesson.section.courseId);
     res.status(201).json({ status: "success", data: question });
   } catch (error: any) {
     console.error("PRISMA CREATE QUESTION ERROR:", error);
@@ -760,6 +790,7 @@ export const updateQuestion = asyncHandler(async (req: Request, res: Response) =
     include: { answers: true }
   });
 
+  await invalidateCourseCache(question.quiz.lesson.section.courseId);
   res.json({ status: "success", data: updated });
 });
 
@@ -776,6 +807,7 @@ export const deleteQuestion = asyncHandler(async (req: Request, res: Response) =
   }
 
   await prisma.question.delete({ where: { id: questionId } });
+  await invalidateCourseCache(question.quiz.lesson.section.courseId);
   res.json({ status: "success", message: "Question deleted successfully" });
 });
 
@@ -803,6 +835,7 @@ export const reorderQuestions = asyncHandler(async (req: Request, res: Response)
     )
   );
 
+  await invalidateCourseCache(quiz.lesson.section.courseId);
   res.json({ status: "success", message: "Questions reordered successfully" });
 });
 
@@ -852,6 +885,7 @@ export const createAssignment = asyncHandler(async (req: Request, res: Response)
     return { lesson, assignment };
   });
 
+  await invalidateCourseCache(section.courseId);
   res.status(201).json({ status: "success", data: result });
 });
 
@@ -903,6 +937,7 @@ export const updateAssignment = asyncHandler(async (req: Request, res: Response)
     });
   }
 
+  await invalidateCourseCache(assignment.lesson.section.courseId);
   res.json({ status: "success", data: updated });
 });
 
@@ -921,6 +956,7 @@ export const deleteAssignment = asyncHandler(async (req: Request, res: Response)
   // Deleting lesson cascades to assignment and submissions
   await prisma.lesson.delete({ where: { id: assignment.lessonId } });
 
+  await invalidateCourseCache(assignment.lesson.section.courseId);
   res.json({ status: "success", message: "Assignment deleted successfully" });
 });
 

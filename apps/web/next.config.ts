@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://cwayacademy.com",
   },
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "http", hostname: "localhost" },
       { protocol: "http", hostname: "127.0.0.1" },

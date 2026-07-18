@@ -1,0 +1,6 @@
+2026-07-19 01:36:17 [info]: Successful login: admin@cwayacademy.com {"userId":"cmrqsizvo0000mk1jg4pfni6l","ip":"::1"}
+2026-07-19 01:51:20 [warn]: Failed login attempt for admin@cwayacademy.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-19 01:51:25 [warn]: Failed login attempt for admin@cwayacademy.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-19 01:53:06 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
+2026-07-19 02:13:23 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
+2026-07-19 02:21:49 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::1"}
