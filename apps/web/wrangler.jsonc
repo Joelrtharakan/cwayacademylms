@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cwayacademylms",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2024-09-23",
+  "compatibility_date": "2024-11-12",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
@@ -10,8 +10,12 @@
   },
   "minify": true,
   "usage_model": "unbound",
+  "routes": [
+    { "pattern": "www.cwayacademy.com", "custom_domain": true },
+    { "pattern": "cwayacademy.com", "custom_domain": true }
+  ],
   "vars": {
     "NEXT_PUBLIC_APP_URL": "https://www.cwayacademy.com",
-    "NEXT_PUBLIC_API_URL": "https://api.cwayacademy.com/"
+    "NEXT_PUBLIC_API_URL": "https://api.cwayacademy.com/api/v1"
   }
 }
