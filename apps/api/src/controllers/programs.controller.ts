@@ -1,11 +1,20 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
+import { redis } from "../utils/redis";
 import { asyncHandler, AppError } from "../utils/errors";
 import { uploadToR2, generateKey } from "../services/storage.service";
 import crypto from "crypto";
 import { sendReferenceFormEmail } from "../services/email.service";
 
 export const getPublicPrograms = asyncHandler(async (req: Request, res: Response) => {
+  const cacheKey = "cway:public:programs";
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return res.json(JSON.parse(cached));
+  } catch (e) {
+    console.error("Redis get error:", e);
+  }
+
   const programs = await prisma.program.findMany({
     where: { status: "PUBLISHED" },
     include: {
@@ -17,13 +26,31 @@ export const getPublicPrograms = asyncHandler(async (req: Request, res: Response
     },
     orderBy: { createdAt: "desc" }
   });
-  res.json({ status: "success", data: programs });
+  const responseData = { status: "success", data: programs };
+  try {
+    await redis.set(cacheKey, JSON.stringify(responseData), "EX", 3600);
+  } catch (e) {
+    console.error("Redis set error:", e);
+  }
+  res.json(responseData);
 });
 
 export const getProgram = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const program = await prisma.program.findUnique({
-    where: { id },
+
+  let program: any = null;
+  const cacheKey = `cway:program:${id}`;
+  
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) program = JSON.parse(cached);
+  } catch (e) {
+    console.error("Redis get error:", e);
+  }
+
+  if (!program) {
+    program = await prisma.program.findUnique({
+      where: { id },
     include: {
       courses: {
         where: { status: "PUBLISHED" },
@@ -32,6 +59,15 @@ export const getProgram = asyncHandler(async (req: Request, res: Response) => {
       }
     }
   });
+    if (program) {
+      try {
+        await redis.set(cacheKey, JSON.stringify(program), "EX", 3600);
+      } catch (e) {
+        console.error("Redis set error:", e);
+      }
+    }
+  }
+
   if (!program) throw new AppError("Program not found", 404);
   res.json({ status: "success", data: program });
 });

@@ -75,8 +75,19 @@ export const getModules = asyncHandler(async (req: Request, res: Response) => {
 
 export const invalidateCourseCache = async (courseId: string) => {
   if (!courseId) return;
-  await redis.del(`course:${courseId}:modules`);
-  await redis.del(`course:${courseId}:curriculum`);
+  try {
+    await redis.del(`course:${courseId}:modules`);
+    await redis.del(`course:${courseId}:curriculum`);
+    await redis.del(`cway:course:${courseId}`);
+    
+    // Clear all paginated/filtered public catalog caches
+    const keys = await redis.keys("cway:public:courses:*");
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
+  } catch (e) {
+    console.error("Cache invalidation failed", e);
+  }
 };
 
 export const updateModule = asyncHandler(async (req: Request, res: Response) => {
