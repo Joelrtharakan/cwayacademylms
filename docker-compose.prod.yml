@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
+    container_name: cway_postgres
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -16,6 +17,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    container_name: cway_redis
     restart: always
     volumes:
       - redis_prod:/data
