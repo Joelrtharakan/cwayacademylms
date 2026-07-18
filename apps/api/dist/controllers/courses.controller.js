@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getCourseAnalytics = exports.unenrollStudent = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
 exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = void 0;
 const prisma_1 = require("../utils/prisma");
+const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
 const video_service_1 = require("../services/video.service");
@@ -34,10 +35,34 @@ function parseJson(val, fallback = []) {
         return fallback;
     }
 }
+// ─── CACHE HELPER ─────────────────────────────────────────────────────────────
+async function invalidateCourseCache(courseId) {
+    try {
+        if (courseId) {
+            await redis_1.redis.del(`cway:course:${courseId}`);
+        }
+        const keys = await redis_1.redis.keys("cway:public:courses:*");
+        if (keys.length > 0) {
+            await redis_1.redis.del(...keys);
+        }
+    }
+    catch (e) {
+        console.error("Redis invalidation error:", e);
+    }
+}
 // ─── PUBLIC: LIST COURSES ───────────────────────────────────────────────────
 exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
     const { search, category, level, language, isFree, minPrice, maxPrice, sortBy, page = 1, limit = 12 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
+    const cacheKey = `cway:public:courses:${JSON.stringify(req.query)}`;
+    try {
+        const cached = await redis_1.redis.get(cacheKey);
+        if (cached)
+            return res.json(JSON.parse(cached));
+    }
+    catch (e) {
+        console.error("Redis get error:", e);
+    }
     const where = {};
     // Public catalog only shows published courses
     where.status = "PUBLISHED";
@@ -85,7 +110,14 @@ exports.listCourses = (0, errors_1.asyncHandler)(async (req, res) => {
             reviews: undefined,
         };
     });
-    res.json({ status: "success", data: { courses: enriched, total, page: Number(page), pages: Math.ceil(total / Number(limit)) } });
+    const responseData = { status: "success", data: { courses: enriched, total, page: Number(page), pages: Math.ceil(total / Number(limit)) } };
+    try {
+        await redis_1.redis.set(cacheKey, JSON.stringify(responseData), "EX", 3600);
+    }
+    catch (e) {
+        console.error("Redis set error:", e);
+    }
+    res.json(responseData);
 });
 // ─── CREATE COURSE ──────────────────────────────────────────────────────────
 exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -110,23 +142,44 @@ exports.createCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             curriculum: { create: {} }
         },
     });
+    await invalidateCourseCache();
     res.status(201).json({ status: "success", data: course });
 });
 // ─── GET COURSE ─────────────────────────────────────────────────────────────
 exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
-    const course = await prisma_1.prisma.course.findFirst({
-        where: { OR: [{ id }, { slug: id }] },
-        include: {
-            instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
-            category: { select: { id: true, name: true, slug: true } },
-            sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { quiz: true } }, readingMaterials: { orderBy: { order: "asc" } } } },
-            reviews: { select: { rating: true } },
-            announcements: { orderBy: { createdAt: "desc" } },
-            _count: { select: { enrollments: true } },
-            curriculum: true,
-        },
-    });
+    let course = null;
+    const cacheKey = `cway:course:${id}`;
+    try {
+        const cached = await redis_1.redis.get(cacheKey);
+        if (cached)
+            course = JSON.parse(cached);
+    }
+    catch (e) {
+        console.error("Redis get error:", e);
+    }
+    if (!course) {
+        course = await prisma_1.prisma.course.findFirst({
+            where: { OR: [{ id }, { slug: id }] },
+            include: {
+                instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
+                category: { select: { id: true, name: true, slug: true } },
+                sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { quiz: true } }, readingMaterials: { orderBy: { order: "asc" } } } },
+                reviews: { select: { rating: true } },
+                announcements: { orderBy: { createdAt: "desc" } },
+                _count: { select: { enrollments: true } },
+                curriculum: true,
+            },
+        });
+        if (course) {
+            try {
+                await redis_1.redis.set(cacheKey, JSON.stringify(course), "EX", 3600);
+            }
+            catch (e) {
+                console.error("Redis set error:", e);
+            }
+        }
+    }
     if (!course)
         throw new errors_1.AppError("Course not found", 404);
     // Non-published courses only accessible by owner/admin
@@ -234,6 +287,7 @@ exports.updateCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     }
     const updated = await prisma_1.prisma.course.update({ where: { id }, data });
+    await invalidateCourseCache(id);
     res.json({ status: "success", data: updated });
 });
 // ─── DELETE COURSE ──────────────────────────────────────────────────────────
@@ -247,6 +301,7 @@ exports.deleteCourseInstructor = (0, errors_1.asyncHandler)(async (req, res) => 
     if (course._count.enrollments > 0)
         throw new errors_1.AppError(`This course has ${course._count.enrollments} active enrollments. Archive instead of deleting.`, 400);
     await prisma_1.prisma.course.delete({ where: { id } });
+    await invalidateCourseCache(id);
     res.json({ status: "success", message: "Course deleted" });
 });
 // ─── SUBMIT FOR REVIEW ──────────────────────────────────────────────────────
@@ -263,6 +318,7 @@ exports.submitForReview = (0, errors_1.asyncHandler)(async (req, res) => {
     // Notify all admins
     const admins = await prisma_1.prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
     await Promise.all(admins.map((admin) => notification_service_1.NotificationService.createNotification(admin.id, "COURSE_PENDING_REVIEW", `${course.instructor.name} submitted a course for review`, `'${course.title}' is awaiting your approval`, `/admin/courses?status=PENDING`)));
+    await invalidateCourseCache(id);
     res.json({ status: "success", message: "Course submitted for review" });
 });
 // ─── DUPLICATE COURSE ────────────────────────────────────────────────────────
@@ -298,6 +354,7 @@ exports.duplicateCourse = (0, errors_1.asyncHandler)(async (req, res) => {
             });
         }
     }
+    await invalidateCourseCache();
     res.status(201).json({ status: "success", data: { newCourseId: newCourse.id } });
 });
 // ─── THUMBNAIL UPLOAD ────────────────────────────────────────────────────────
@@ -310,6 +367,7 @@ exports.uploadThumbnail = (0, errors_1.asyncHandler)(async (req, res) => {
     const key = (0, storage_service_1.generateKey)("thumbnails", `${id}-${Date.now()}.${ext}`);
     const { url } = await (0, storage_service_1.uploadToR2)(req.file.buffer, key, req.file.mimetype);
     await prisma_1.prisma.course.update({ where: { id }, data: { thumbnail: url } });
+    await invalidateCourseCache(id);
     res.json({ status: "success", data: { thumbnailUrl: url } });
 });
 // ─── PROMO VIDEO UPLOAD ──────────────────────────────────────────────────────
@@ -325,6 +383,7 @@ exports.uploadPromoVideo = (0, errors_1.asyncHandler)(async (req, res) => {
     await video_service_1.VideoService.uploadVideoToBunny(uploadUrl, req.file.buffer);
     const streamUrl = video_service_1.VideoService.getBunnyStreamUrl(videoId);
     await prisma_1.prisma.course.update({ where: { id }, data: { promoVideoUrl: streamUrl } });
+    await invalidateCourseCache(id);
     res.json({ status: "success", data: { videoUrl: streamUrl, videoId } });
 });
 // ─── SECTIONS ────────────────────────────────────────────────────────────────
@@ -340,6 +399,7 @@ exports.createSection = (0, errors_1.asyncHandler)(async (req, res) => {
         sectionOrder = last ? last.order + 1 : 0;
     }
     const section = await prisma_1.prisma.section.create({ data: { courseId: id, title, order: sectionOrder } });
+    await invalidateCourseCache(id);
     res.status(201).json({ status: "success", data: section });
 });
 exports.updateSection = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -347,12 +407,18 @@ exports.updateSection = (0, errors_1.asyncHandler)(async (req, res) => {
     await (0, authz_1.verifySectionOwner)(sectionId, req.user);
     const { title, order } = req.body;
     const section = await prisma_1.prisma.section.update({ where: { id: sectionId }, data: { ...(title && { title }), ...(order !== undefined && { order: Number(order) }) } });
+    const course = await prisma_1.prisma.course.findFirst({ where: { sections: { some: { id: sectionId } } } });
+    if (course)
+        await invalidateCourseCache(course.id);
     res.json({ status: "success", data: section });
 });
 exports.deleteSection = (0, errors_1.asyncHandler)(async (req, res) => {
     const { sectionId } = req.params;
     await (0, authz_1.verifySectionOwner)(sectionId, req.user);
+    const section = await prisma_1.prisma.section.findUnique({ where: { id: sectionId } });
     await prisma_1.prisma.section.delete({ where: { id: sectionId } });
+    if (section)
+        await invalidateCourseCache(section.courseId);
     res.json({ status: "success", message: "Section deleted" });
 });
 exports.reorderSections = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -360,6 +426,11 @@ exports.reorderSections = (0, errors_1.asyncHandler)(async (req, res) => {
     if (orderedIds.length > 0)
         await (0, authz_1.verifySectionOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((sid, idx) => prisma_1.prisma.section.update({ where: { id: sid }, data: { order: idx } })));
+    if (orderedIds.length > 0) {
+        const section = await prisma_1.prisma.section.findUnique({ where: { id: orderedIds[0] } });
+        if (section)
+            await invalidateCourseCache(section.courseId);
+    }
     res.json({ status: "success", message: "Sections reordered" });
 });
 // ─── LESSONS ─────────────────────────────────────────────────────────────────
@@ -375,6 +446,9 @@ exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
         lessonOrder = last ? last.order + 1 : 0;
     }
     const lesson = await prisma_1.prisma.lesson.create({ data: { sectionId, title, type, content, videoUrl, duration: duration ? Number(duration) : 0, order: lessonOrder, isFree: Boolean(isFree), isPreview: Boolean(isPreview) } });
+    const section = await prisma_1.prisma.section.findUnique({ where: { id: sectionId } });
+    if (section)
+        await invalidateCourseCache(section.courseId);
     res.status(201).json({ status: "success", data: lesson });
 });
 exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -399,12 +473,21 @@ exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     if (isPreview !== undefined)
         data.isPreview = Boolean(isPreview);
     const lesson = await prisma_1.prisma.lesson.update({ where: { id: lessonId }, data });
+    const section = await prisma_1.prisma.section.findUnique({ where: { id: lesson.sectionId } });
+    if (section)
+        await invalidateCourseCache(section.courseId);
     res.json({ status: "success", data: lesson });
 });
 exports.deleteLesson = (0, errors_1.asyncHandler)(async (req, res) => {
     const { lessonId } = req.params;
     await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId } });
     await prisma_1.prisma.lesson.delete({ where: { id: lessonId } });
+    if (lesson) {
+        const section = await prisma_1.prisma.section.findUnique({ where: { id: lesson.sectionId } });
+        if (section)
+            await invalidateCourseCache(section.courseId);
+    }
     res.json({ status: "success", message: "Lesson deleted" });
 });
 exports.reorderLessons = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -412,6 +495,14 @@ exports.reorderLessons = (0, errors_1.asyncHandler)(async (req, res) => {
     if (orderedIds.length > 0)
         await (0, authz_1.verifyLessonOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((lid, idx) => prisma_1.prisma.lesson.update({ where: { id: lid }, data: { order: idx } })));
+    if (orderedIds.length > 0) {
+        const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: orderedIds[0] } });
+        if (lesson) {
+            const section = await prisma_1.prisma.section.findUnique({ where: { id: lesson.sectionId } });
+            if (section)
+                await invalidateCourseCache(section.courseId);
+        }
+    }
     res.json({ status: "success", message: "Lessons reordered" });
 });
 exports.uploadLessonVideo = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -419,13 +510,14 @@ exports.uploadLessonVideo = (0, errors_1.asyncHandler)(async (req, res) => {
     await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     if (!req.file)
         throw new errors_1.AppError("No file uploaded", 400);
-    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId } });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId }, include: { section: true } });
     if (!lesson)
         throw new errors_1.AppError("Lesson not found", 404);
     const { videoId, uploadUrl } = await video_service_1.VideoService.createBunnyVideo(lesson.title);
     await video_service_1.VideoService.uploadVideoToBunny(uploadUrl, req.file.buffer);
     const streamUrl = video_service_1.VideoService.getBunnyStreamUrl(videoId);
     await prisma_1.prisma.lesson.update({ where: { id: lessonId }, data: { videoUrl: streamUrl, bunnyVideoId: videoId } });
+    await invalidateCourseCache(lesson.section.courseId);
     res.json({ status: "success", data: { videoId, streamUrl, status: "processing" } });
 });
 exports.getLessonVideoStatus = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -448,6 +540,9 @@ exports.uploadLessonAttachment = (0, errors_1.asyncHandler)(async (req, res) => 
     const { url } = await (0, storage_service_1.uploadToR2)(req.file.buffer, key, req.file.mimetype);
     // Update assignment attachmentUrl
     await prisma_1.prisma.assignment.updateMany({ where: { lessonId }, data: { attachmentUrl: url } });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId }, include: { section: true } });
+    if (lesson)
+        await invalidateCourseCache(lesson.section.courseId);
     res.json({ status: "success", data: { attachmentUrl: url } });
 });
 // ─── QUIZ ─────────────────────────────────────────────────────────────────────
@@ -456,6 +551,9 @@ exports.createQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const { title, passingScore = 70, timeLimit, maxAttempts = 3 } = req.body;
     const quiz = await prisma_1.prisma.quiz.create({ data: { lessonId, title, passingScore: Number(passingScore), timeLimit: timeLimit ? Number(timeLimit) : null, maxAttempts: Number(maxAttempts) } });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId }, include: { section: true } });
+    if (lesson)
+        await invalidateCourseCache(lesson.section.courseId);
     res.status(201).json({ status: "success", data: { ...quiz, questions: [] } });
 });
 exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -472,6 +570,9 @@ exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     if (maxAttempts !== undefined)
         data.maxAttempts = Number(maxAttempts);
     const quiz = await prisma_1.prisma.quiz.update({ where: { id: quizId }, data });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: quiz.lessonId }, include: { section: true } });
+    if (lesson)
+        await invalidateCourseCache(lesson.section.courseId);
     res.json({ status: "success", data: quiz });
 });
 exports.addQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -491,6 +592,9 @@ exports.addQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
         data: { quizId, text, type, points: Number(points), order: qOrder, scriptureRef, answers: { create: answers.map((a) => ({ text: a.text, isCorrect: Boolean(a.isCorrect) })) } },
         include: { answers: true },
     });
+    const quiz = await prisma_1.prisma.quiz.findUnique({ where: { id: quizId }, include: { lesson: { include: { section: true } } } });
+    if (quiz)
+        await invalidateCourseCache(quiz.lesson.section.courseId);
     res.status(201).json({ status: "success", data: question });
 });
 exports.updateQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -511,12 +615,18 @@ exports.updateQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
         data.answers = { create: answers.map((a) => ({ text: a.text, isCorrect: Boolean(a.isCorrect) })) };
     }
     const question = await prisma_1.prisma.question.update({ where: { id: questionId }, data, include: { answers: true } });
+    const quiz = await prisma_1.prisma.quiz.findUnique({ where: { id: question.quizId }, include: { lesson: { include: { section: true } } } });
+    if (quiz)
+        await invalidateCourseCache(quiz.lesson.section.courseId);
     res.json({ status: "success", data: question });
 });
 exports.deleteQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
     const { questionId } = req.params;
     await (0, authz_1.verifyQuestionOwner)(questionId, req.user);
+    const question = await prisma_1.prisma.question.findUnique({ where: { id: questionId }, include: { quiz: { include: { lesson: { include: { section: true } } } } } });
     await prisma_1.prisma.question.delete({ where: { id: questionId } });
+    if (question)
+        await invalidateCourseCache(question.quiz.lesson.section.courseId);
     res.json({ status: "success", message: "Question deleted" });
 });
 exports.reorderQuestions = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -524,6 +634,11 @@ exports.reorderQuestions = (0, errors_1.asyncHandler)(async (req, res) => {
     if (orderedIds.length > 0)
         await (0, authz_1.verifyQuestionOwner)(orderedIds[0], req.user);
     await prisma_1.prisma.$transaction(orderedIds.map((qid, idx) => prisma_1.prisma.question.update({ where: { id: qid }, data: { order: idx } })));
+    if (orderedIds.length > 0) {
+        const question = await prisma_1.prisma.question.findUnique({ where: { id: orderedIds[0] }, include: { quiz: { include: { lesson: { include: { section: true } } } } } });
+        if (question)
+            await invalidateCourseCache(question.quiz.lesson.section.courseId);
+    }
     res.json({ status: "success", message: "Questions reordered" });
 });
 // ─── ASSIGNMENT ───────────────────────────────────────────────────────────────
@@ -532,6 +647,9 @@ exports.createAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     await (0, authz_1.verifyLessonOwner)(lessonId, req.user);
     const { title, description, dueDate, maxScore = 100 } = req.body;
     const assignment = await prisma_1.prisma.assignment.create({ data: { lessonId, title, description, dueDate: dueDate ? new Date(dueDate) : null, maxScore: Number(maxScore) } });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId }, include: { section: true } });
+    if (lesson)
+        await invalidateCourseCache(lesson.section.courseId);
     res.status(201).json({ status: "success", data: assignment });
 });
 exports.updateAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -548,6 +666,9 @@ exports.updateAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     if (maxScore !== undefined)
         data.maxScore = Number(maxScore);
     const assignment = await prisma_1.prisma.assignment.update({ where: { id: assignmentId }, data });
+    const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: assignment.lessonId }, include: { section: true } });
+    if (lesson)
+        await invalidateCourseCache(lesson.section.courseId);
     res.json({ status: "success", data: assignment });
 });
 // ─── GRADING ──────────────────────────────────────────────────────────────────
@@ -581,7 +702,7 @@ exports.gradeSubmission = (0, errors_1.asyncHandler)(async (req, res) => {
     const { submissionId } = req.params;
     await (0, authz_1.verifySubmissionOwner)(submissionId, req.user);
     const { grade, feedback } = req.body;
-    const submission = await prisma_1.prisma.submission.findUnique({ where: { id: submissionId }, include: { assignment: true } });
+    const submission = await prisma_1.prisma.submission.findUnique({ where: { id: submissionId }, include: { assignment: { include: { lesson: { include: { section: true } } } } } });
     if (!submission)
         throw new errors_1.AppError("Submission not found", 404);
     if (grade < 0 || grade > submission.assignment.maxScore)
@@ -591,6 +712,7 @@ exports.gradeSubmission = (0, errors_1.asyncHandler)(async (req, res) => {
         data: { grade: Number(grade), feedback, isGraded: true, gradedAt: new Date() },
     });
     await notification_service_1.NotificationService.createNotification(submission.studentId, "ASSIGNMENT_GRADED", "Your assignment has been graded", `You scored ${grade}/${submission.assignment.maxScore} on '${submission.assignment.title}'`, "/student/assignments");
+    await invalidateCourseCache(submission.assignment.lesson.section.courseId);
     res.json({ status: "success", data: updated });
 });
 // ─── QUIZ RESULTS ────────────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.gradeSubmission = exports.getAssignmentSubmissions = exports.uploadAssignmentAttachment = exports.deleteAssignment = exports.updateAssignment = exports.getAssignments = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.createQuestion = exports.deleteQuiz = exports.updateQuiz = exports.getQuizzes = exports.createQuiz = exports.reorderReadingMaterials = exports.deleteReadingMaterial = exports.updateReadingMaterial = exports.getReadingMaterials = exports.createReadingMaterial = exports.getLessonVideoStatus = exports.uploadVideoToLesson = exports.updateCurriculum = exports.getCurriculum = exports.createRubric = exports.getCourseRubrics = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderModules = exports.deleteModule = exports.updateModule = exports.getModules = exports.createModule = void 0;
+exports.gradeSubmission = exports.getAssignmentSubmissions = exports.uploadAssignmentAttachment = exports.deleteAssignment = exports.updateAssignment = exports.getAssignments = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.createQuestion = exports.deleteQuiz = exports.updateQuiz = exports.getQuizzes = exports.createQuiz = exports.reorderReadingMaterials = exports.deleteReadingMaterial = exports.updateReadingMaterial = exports.getReadingMaterials = exports.createReadingMaterial = exports.getLessonVideoStatus = exports.uploadVideoToLesson = exports.updateCurriculum = exports.getCurriculum = exports.createRubric = exports.getCourseRubrics = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderModules = exports.deleteModule = exports.updateModule = exports.invalidateCourseCache = exports.getModules = exports.createModule = void 0;
 const prisma_1 = require("../utils/prisma");
+const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
 const video_service_1 = require("../services/video.service");
@@ -35,10 +36,16 @@ exports.createModule = (0, errors_1.asyncHandler)(async (req, res) => {
             order: nextOrder,
         },
     });
+    await (0, exports.invalidateCourseCache)(courseId);
     res.status(201).json({ status: "success", data: section });
 });
 exports.getModules = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id: courseId } = req.params;
+    const cacheKey = `course:${courseId}:modules`;
+    let cached = await redis_1.redis.get(cacheKey);
+    if (cached) {
+        return res.json({ status: "success", data: JSON.parse(cached) });
+    }
     const sections = await prisma_1.prisma.section.findMany({
         where: { courseId },
         orderBy: { order: "asc" },
@@ -55,8 +62,27 @@ exports.getModules = (0, errors_1.asyncHandler)(async (req, res) => {
             },
         },
     });
+    await redis_1.redis.set(cacheKey, JSON.stringify(sections), "EX", 3600);
     res.json({ status: "success", data: sections });
 });
+const invalidateCourseCache = async (courseId) => {
+    if (!courseId)
+        return;
+    try {
+        await redis_1.redis.del(`course:${courseId}:modules`);
+        await redis_1.redis.del(`course:${courseId}:curriculum`);
+        await redis_1.redis.del(`cway:course:${courseId}`);
+        // Clear all paginated/filtered public catalog caches
+        const keys = await redis_1.redis.keys("cway:public:courses:*");
+        if (keys.length > 0) {
+            await redis_1.redis.del(...keys);
+        }
+    }
+    catch (e) {
+        console.error("Cache invalidation failed", e);
+    }
+};
+exports.invalidateCourseCache = invalidateCourseCache;
 exports.updateModule = (0, errors_1.asyncHandler)(async (req, res) => {
     const { moduleId } = req.params;
     const { title, description, objectives, weekNumber, isPublished, order } = req.body;
@@ -94,6 +120,7 @@ exports.deleteModule = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Not authorized", 403);
     }
     await prisma_1.prisma.section.delete({ where: { id: moduleId } });
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.json({ status: "success", message: "Module deleted successfully" });
 });
 exports.reorderModules = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -112,6 +139,7 @@ exports.reorderModules = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id },
         data: { order: index },
     })));
+    await (0, exports.invalidateCourseCache)(courseId);
     res.json({ status: "success", message: "Modules reordered successfully" });
 });
 // ─── LESSONS ─────────────────────────────────────────────────────────────────
@@ -149,6 +177,7 @@ exports.createLesson = (0, errors_1.asyncHandler)(async (req, res) => {
             forumMarks: forumMarks ? Number(forumMarks) : null,
         },
     });
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.status(201).json({ status: "success", data: lesson });
 });
 exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -167,6 +196,7 @@ exports.updateLesson = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id: lessonId },
         data: { title, type, content, videoUrl, duration, order, isFree, isPreview, forumMarks: forumMarks !== undefined ? Number(forumMarks) : undefined },
     });
+    await (0, exports.invalidateCourseCache)(lesson.section.courseId);
     res.json({ status: "success", data: updated });
 });
 exports.deleteLesson = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -181,6 +211,7 @@ exports.deleteLesson = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Not authorized", 403);
     }
     await prisma_1.prisma.lesson.delete({ where: { id: lessonId } });
+    await (0, exports.invalidateCourseCache)(lesson.section.courseId);
     res.json({ status: "success", message: "Lesson deleted successfully" });
 });
 exports.reorderLessons = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -201,6 +232,7 @@ exports.reorderLessons = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id },
         data: { order: index },
     })));
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.json({ status: "success", message: "Lessons reordered successfully" });
 });
 // ─── RUBRICS ──────────────────────────────────────────────────────────────────
@@ -294,6 +326,7 @@ exports.updateCurriculum = (0, errors_1.asyncHandler)(async (req, res) => {
             assessmentPlan: assessmentPlan ? JSON.stringify(assessmentPlan) : undefined,
         },
     });
+    await (0, exports.invalidateCourseCache)(courseId);
     res.json({ status: "success", data: curriculum });
 });
 // ─── VIDEO UPLOAD ─────────────────────────────────────────────────────────────
@@ -398,6 +431,7 @@ exports.createReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
             order
         }
     });
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.status(201).json({ status: "success", data: readingMaterial });
 });
 exports.getReadingMaterials = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -424,6 +458,7 @@ exports.updateReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id },
         data: { title, description, order },
     });
+    await (0, exports.invalidateCourseCache)(material.section.courseId);
     res.json({ status: "success", data: updated });
 });
 exports.deleteReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -441,6 +476,7 @@ exports.deleteReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) => {
     await (0, storage_service_1.deleteFromR2)(material.fileKey);
     // Delete from DB
     await prisma_1.prisma.readingMaterial.delete({ where: { id } });
+    await (0, exports.invalidateCourseCache)(material.section.courseId);
     res.json({ status: "success", message: "Reading material deleted successfully" });
 });
 exports.reorderReadingMaterials = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -461,6 +497,7 @@ exports.reorderReadingMaterials = (0, errors_1.asyncHandler)(async (req, res) =>
         where: { id },
         data: { order: index },
     })));
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.json({ status: "success", message: "Reading materials reordered successfully" });
 });
 // ─── QUIZZES ─────────────────────────────────────────────────────────────────
@@ -505,6 +542,7 @@ exports.createQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
         });
         return { lesson, quiz };
     });
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.status(201).json({ status: "success", data: result });
 });
 exports.getQuizzes = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -556,6 +594,7 @@ exports.updateQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
             }
         });
     }
+    await (0, exports.invalidateCourseCache)(quiz.lesson.section.courseId);
     res.json({ status: "success", data: updatedQuiz });
 });
 exports.deleteQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -571,6 +610,7 @@ exports.deleteQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     // Deleting the lesson cascades to quiz, questions, answers, etc.
     await prisma_1.prisma.lesson.delete({ where: { id: quiz.lessonId } });
+    await (0, exports.invalidateCourseCache)(quiz.lesson.section.courseId);
     res.json({ status: "success", message: "Quiz deleted successfully" });
 });
 exports.createQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -613,6 +653,7 @@ exports.createQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
             },
             include: { answers: true }
         });
+        await (0, exports.invalidateCourseCache)(quiz.lesson.section.courseId);
         res.status(201).json({ status: "success", data: question });
     }
     catch (error) {
@@ -649,6 +690,7 @@ exports.updateQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
         data: updateData,
         include: { answers: true }
     });
+    await (0, exports.invalidateCourseCache)(question.quiz.lesson.section.courseId);
     res.json({ status: "success", data: updated });
 });
 exports.deleteQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -663,6 +705,7 @@ exports.deleteQuestion = (0, errors_1.asyncHandler)(async (req, res) => {
         throw new errors_1.AppError("Not authorized", 403);
     }
     await prisma_1.prisma.question.delete({ where: { id: questionId } });
+    await (0, exports.invalidateCourseCache)(question.quiz.lesson.section.courseId);
     res.json({ status: "success", message: "Question deleted successfully" });
 });
 exports.reorderQuestions = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -683,6 +726,7 @@ exports.reorderQuestions = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id },
         data: { order: index },
     })));
+    await (0, exports.invalidateCourseCache)(quiz.lesson.section.courseId);
     res.json({ status: "success", message: "Questions reordered successfully" });
 });
 // ─── ASSIGNMENTS ─────────────────────────────────────────────────────────────
@@ -725,6 +769,7 @@ exports.createAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
         });
         return { lesson, assignment };
     });
+    await (0, exports.invalidateCourseCache)(section.courseId);
     res.status(201).json({ status: "success", data: result });
 });
 exports.getAssignments = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -769,6 +814,7 @@ exports.updateAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
             data: { title }
         });
     }
+    await (0, exports.invalidateCourseCache)(assignment.lesson.section.courseId);
     res.json({ status: "success", data: updated });
 });
 exports.deleteAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -784,6 +830,7 @@ exports.deleteAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     // Deleting lesson cascades to assignment and submissions
     await prisma_1.prisma.lesson.delete({ where: { id: assignment.lessonId } });
+    await (0, exports.invalidateCourseCache)(assignment.lesson.section.courseId);
     res.json({ status: "success", message: "Assignment deleted successfully" });
 });
 exports.uploadAssignmentAttachment = (0, errors_1.asyncHandler)(async (req, res) => {

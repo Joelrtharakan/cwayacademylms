@@ -5,11 +5,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.applyForProgram = exports.getProgram = exports.getPublicPrograms = void 0;
 const prisma_1 = require("../utils/prisma");
+const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
 const storage_service_1 = require("../services/storage.service");
 const crypto_1 = __importDefault(require("crypto"));
 const email_service_1 = require("../services/email.service");
 exports.getPublicPrograms = (0, errors_1.asyncHandler)(async (req, res) => {
+    const cacheKey = "cway:public:programs";
+    try {
+        const cached = await redis_1.redis.get(cacheKey);
+        if (cached)
+            return res.json(JSON.parse(cached));
+    }
+    catch (e) {
+        console.error("Redis get error:", e);
+    }
     const programs = await prisma_1.prisma.program.findMany({
         where: { status: "PUBLISHED" },
         include: {
@@ -21,20 +31,47 @@ exports.getPublicPrograms = (0, errors_1.asyncHandler)(async (req, res) => {
         },
         orderBy: { createdAt: "desc" }
     });
-    res.json({ status: "success", data: programs });
+    const responseData = { status: "success", data: programs };
+    try {
+        await redis_1.redis.set(cacheKey, JSON.stringify(responseData), "EX", 3600);
+    }
+    catch (e) {
+        console.error("Redis set error:", e);
+    }
+    res.json(responseData);
 });
 exports.getProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
-    const program = await prisma_1.prisma.program.findUnique({
-        where: { id },
-        include: {
-            courses: {
-                where: { status: "PUBLISHED" },
-                orderBy: { createdAt: "asc" },
-                include: { _count: { select: { sections: true } } }
+    let program = null;
+    const cacheKey = `cway:program:${id}`;
+    try {
+        const cached = await redis_1.redis.get(cacheKey);
+        if (cached)
+            program = JSON.parse(cached);
+    }
+    catch (e) {
+        console.error("Redis get error:", e);
+    }
+    if (!program) {
+        program = await prisma_1.prisma.program.findUnique({
+            where: { id },
+            include: {
+                courses: {
+                    where: { status: "PUBLISHED" },
+                    orderBy: { createdAt: "asc" },
+                    include: { _count: { select: { sections: true } } }
+                }
+            }
+        });
+        if (program) {
+            try {
+                await redis_1.redis.set(cacheKey, JSON.stringify(program), "EX", 3600);
+            }
+            catch (e) {
+                console.error("Redis set error:", e);
             }
         }
-    });
+    }
     if (!program)
         throw new errors_1.AppError("Program not found", 404);
     res.json({ status: "success", data: program });

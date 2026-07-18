@@ -181,20 +181,27 @@ exports.deleteReply = (0, errors_1.asyncHandler)(async (req, res) => {
     res.json({ status: "success", message: "Reply deleted" });
 });
 exports.getInstructorDiscussions = (0, errors_1.asyncHandler)(async (req, res) => {
-    const discussions = await prisma_1.prisma.discussion.findMany({
-        where: {
-            course: { instructorId: req.user.id }
-        },
-        include: {
-            author: { select: { id: true, name: true, avatar: true, role: true } },
-            course: { select: { id: true, title: true } },
-            lesson: { select: { id: true, title: true } },
-            replies: {
-                include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
-                orderBy: { createdAt: "asc" }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    });
-    res.json({ status: "success", data: discussions });
+    try {
+        const whereClause = (req.user.role === "ADMIN" || req.user.role === "REGISTRAR")
+            ? {}
+            : { course: { instructorId: req.user.id } };
+        const discussions = await prisma_1.prisma.discussion.findMany({
+            where: whereClause,
+            include: {
+                author: { select: { id: true, name: true, avatar: true, role: true } },
+                course: { select: { id: true, title: true } },
+                lesson: { select: { id: true, title: true } },
+                replies: {
+                    include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
+                    orderBy: { createdAt: "asc" }
+                }
+            },
+            orderBy: { createdAt: "desc" }
+        });
+        res.json({ status: "success", data: discussions });
+    }
+    catch (err) {
+        require('fs').writeFileSync(__dirname + '/../../../error-log.txt', err.stack || err.toString());
+        throw err;
+    }
 });

@@ -1193,6 +1193,17 @@ exports.getProgramStudentDetails = (0, errors_1.asyncHandler)(async (req, res) =
         },
     });
 });
+// ─── CACHE HELPER ─────────────────────────────────────────────────────────────
+async function invalidateProgramCache(programId) {
+    try {
+        if (programId)
+            await redis_1.redis.del(`cway:program:${programId}`);
+        await redis_1.redis.del("cway:public:programs");
+    }
+    catch (e) {
+        console.error("Redis invalidation error:", e);
+    }
+}
 exports.createProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     const { title, description, duration, tags, status } = req.body;
     if (!title)
@@ -1206,6 +1217,7 @@ exports.createProgram = (0, errors_1.asyncHandler)(async (req, res) => {
             status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
         },
     });
+    await invalidateProgramCache();
     res.status(201).json({ status: "success", data: program });
 });
 exports.updateProgram = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -1222,6 +1234,7 @@ exports.updateProgram = (0, errors_1.asyncHandler)(async (req, res) => {
         },
         include: { _count: { select: { courses: true } } },
     });
+    await invalidateProgramCache(req.params.id);
     res.json({ status: "success", data: program });
 });
 exports.deleteProgram = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -1237,6 +1250,7 @@ exports.deleteProgram = (0, errors_1.asyncHandler)(async (req, res) => {
         data: { programId: null },
     });
     await prisma_1.prisma.program.delete({ where: { id: req.params.id } });
+    await invalidateProgramCache(req.params.id);
     res.json({ status: "success", message: "Program deleted" });
 });
 exports.addCourseToProgram = (0, errors_1.asyncHandler)(async (req, res) => {
