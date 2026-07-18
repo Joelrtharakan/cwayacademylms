@@ -25,7 +25,17 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts", "framer-motion"],
   },
-  serverExternalPackages: ["canvas", "@napi-rs/canvas"],
+  webpack: (config) => {
+    config.resolve.alias.canvas = path.resolve(__dirname, 'empty.js');
+    config.resolve.alias["@napi-rs/canvas"] = path.resolve(__dirname, 'empty.js');
+    return config;
+  },
+  turbopack: {
+    resolveAlias: {
+      "canvas": "./empty.js",
+      "@napi-rs/canvas": "./empty.js",
+    }
+  }
 };
 
 export default nextConfig;
