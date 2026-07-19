@@ -14,6 +14,10 @@ import { VideoService } from "../services/video.service";
 // ─── STATS ───────────────────────────────────────────────────────────────────
 
 export const getStats = asyncHandler(async (req: Request, res: Response) => {
+  const cacheKey = "admin:dashboard:stats";
+  const cached = await redis.get(cacheKey);
+  if (cached) return res.json({ status: "success", data: JSON.parse(cached) });
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -48,29 +52,34 @@ export const getStats = asyncHandler(async (req: Request, res: Response) => {
     prisma.sponsorship.count({ where: { status: "COMPLETED" } }),
   ]);
 
-  res.json({
-    status: "success",
-    data: {
-      totalUsers,
-      totalStudents,
-      totalInstructors,
-      totalCourses,
-      publishedCourses,
-      pendingApprovals,
-      totalEnrollments,
-      enrollmentsThisMonth,
-      totalRevenue: revenueAll._sum.amount ?? 0,
-      revenueThisMonth: revenueMonth._sum.amount ?? 0,
-      certificatesIssued,
-      activeSponshorships,
-    },
-  });
+  const data = {
+    totalUsers,
+    totalStudents,
+    totalInstructors,
+    totalCourses,
+    publishedCourses,
+    pendingApprovals,
+    totalEnrollments,
+    enrollmentsThisMonth,
+    totalRevenue: revenueAll._sum.amount ?? 0,
+    revenueThisMonth: revenueMonth._sum.amount ?? 0,
+    certificatesIssued,
+    activeSponshorships,
+  };
+
+  await redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
+  res.json({ status: "success", data });
 });
 
 // ─── ANALYTICS ───────────────────────────────────────────────────────────────
 
 export const getRevenueAnalytics = asyncHandler(async (req: Request, res: Response) => {
   const period = (req.query.period as string) || "12m";
+  const cacheKey = `admin:dashboard:revenue:${period}`;
+  
+  const cached = await redis.get(cacheKey);
+  if (cached) return res.json({ status: "success", data: JSON.parse(cached) });
+
   const months = period === "7d" ? 1 : period === "30d" ? 1 : 12;
   const since = new Date(new Date().setMonth(new Date().getMonth() - months));
 
@@ -92,6 +101,7 @@ export const getRevenueAnalytics = asyncHandler(async (req: Request, res: Respon
     enrollments: Number(s.enrollments || 0),
   }));
 
+  await redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
   res.json({ status: "success", data });
 });
 
@@ -120,6 +130,10 @@ export const getUserAnalytics = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getCourseAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const cacheKey = "admin:dashboard:course-analytics";
+  const cached = await redis.get(cacheKey);
+  if (cached) return res.json({ status: "success", data: JSON.parse(cached) });
+
   const [topByEnrollment, topByRating, byCategory, coursesForCompletion, completionGroups] = await Promise.all([
     prisma.course.findMany({
       where: { status: "PUBLISHED" },
@@ -162,41 +176,41 @@ export const getCourseAnalytics = asyncHandler(async (req: Request, res: Respons
   const calcRating = (reviews: { rating: number }[]) =>
     reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
 
-  res.json({
-    status: "success",
-    data: {
-      topByEnrollment: topByEnrollment.map((c) => ({
+  const data = {
+    topByEnrollment: topByEnrollment.map((c) => ({
+      id: c.id,
+      title: c.title,
+      enrollmentCount: c._count.enrollments,
+      rating: parseFloat(calcRating(c.reviews).toFixed(1)),
+    })),
+    topByRating: topByRating
+      .map((c) => ({
         id: c.id,
         title: c.title,
-        enrollmentCount: c._count.enrollments,
         rating: parseFloat(calcRating(c.reviews).toFixed(1)),
-      })),
-      topByRating: topByRating
-        .map((c) => ({
-          id: c.id,
-          title: c.title,
-          rating: parseFloat(calcRating(c.reviews).toFixed(1)),
-          reviewCount: c._count.reviews,
-        }))
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 10),
-      byCategory: byCategory.map((cat) => ({
-        categoryName: cat.name,
-        courseCount: cat._count.courses,
-        enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
-      })),
-      completionRates: coursesForCompletion.map((c) => {
-        const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
-        const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
-        const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
-        
-        return {
-          courseTitle: c.title,
-          completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
-        };
-      }).sort((a, b) => b.completionRate - a.completionRate),
-    },
-  });
+        reviewCount: c._count.reviews,
+      }))
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 10),
+    byCategory: byCategory.map((cat) => ({
+      categoryName: cat.name,
+      courseCount: cat._count.courses,
+      enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
+    })),
+    completionRates: coursesForCompletion.map((c) => {
+      const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
+      const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
+      const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
+      
+      return {
+        courseTitle: c.title,
+        completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
+      };
+    }).sort((a, b) => b.completionRate - a.completionRate),
+  };
+
+  await redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
+  res.json({ status: "success", data });
 });
 
 export const getEnrollmentAnalytics = asyncHandler(async (req: Request, res: Response) => {
