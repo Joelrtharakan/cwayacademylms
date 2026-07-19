@@ -1,9 +1,6 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       confirmation:
@@ -13,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    if: github.event_name == 'push' || github.event.inputs.confirmation == 'DEPLOY'
+    if: github.event.inputs.confirmation == 'DEPLOY'
 
     runs-on: ubuntu-latest
 
