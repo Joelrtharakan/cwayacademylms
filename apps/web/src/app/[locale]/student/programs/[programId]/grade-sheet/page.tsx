@@ -202,28 +202,30 @@ export default function GradeSheetPage() {
           
           #grade-sheet-container {
             position: relative !important;
-            padding: 40px !important;
+            padding: 20px !important;
             margin: 0 auto !important;
             box-shadow: none !important;
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
             border: none !important;
-            page-break-inside: avoid;
-            break-inside: avoid;
             height: auto !important;
             min-height: auto !important;
           }
           
-          .gs-header { margin-bottom: 24px !important; padding-bottom: 12px !important; }
-          .gs-header img { margin-bottom: 12px !important; height: 40px !important; width: auto !important; }
-          .gs-student { margin-bottom: 24px !important; padding: 16px !important; page-break-inside: avoid; }
-          .gs-table { margin-bottom: 24px !important; }
-          .gs-legend { margin-top: 24px !important; padding-top: 16px !important; page-break-inside: avoid; }
-          .gs-signature { margin-top: 32px !important; page-break-inside: avoid; }
+          .gs-header { margin-bottom: 16px !important; padding-bottom: 8px !important; }
+          .gs-header img { margin-bottom: 8px !important; height: 32px !important; width: auto !important; }
+          .gs-student { margin-bottom: 16px !important; padding: 12px !important; page-break-inside: avoid; }
+          .gs-student h3 { font-size: 14px !important; margin-bottom: 2px !important; }
+          .gs-student p { font-size: 11px !important; }
+          .gs-table { margin-bottom: 16px !important; }
+          .gs-legend { margin-top: 16px !important; padding-top: 12px !important; page-break-inside: avoid; }
+          .gs-legend div { font-size: 9px !important; margin-bottom: 4px !important; }
+          .gs-signature { margin-top: 24px !important; page-break-inside: avoid; }
+          .gs-signature div { font-size: 10px !important; }
           
-          td, th { padding-top: 10px !important; padding-bottom: 10px !important; }
-          tfoot td { padding-top: 12px !important; }
+          td, th { padding-top: 6px !important; padding-bottom: 6px !important; font-size: 11px !important; }
+          tfoot td { padding-top: 8px !important; font-size: 12px !important; }
         }
       `}} />
     </div>
