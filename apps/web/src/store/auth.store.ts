@@ -154,7 +154,20 @@ export const useAuthStore = create<AuthState>()(
 }
 ));
 
-// Set up Axios interceptors for handling 401 Unauthorized responses
+const getLocaleFromUrl = () => {
+  if (typeof window === 'undefined') return 'en';
+  const match = window.location.pathname.match(/^\/([a-z]{2})(?:\/|$)/);
+  return match ? match[1] : 'en';
+};
+
+// Set up Axios interceptors for injecting language and handling 401 Unauthorized responses
+api.interceptors.request.use((config) => {
+  if (!config.headers['x-language']) {
+    config.headers['x-language'] = getLocaleFromUrl();
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

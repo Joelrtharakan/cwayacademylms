@@ -95,6 +95,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+import { localizationMiddleware } from "./middleware/localization.middleware";
+app.use(localizationMiddleware);
+
 // Root Welcome Route
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ status: "success", message: "Welcome to CWAY Academy API. The backend is running perfectly!" });

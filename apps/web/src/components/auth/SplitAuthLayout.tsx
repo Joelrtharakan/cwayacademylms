@@ -1,12 +1,15 @@
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface SplitAuthLayoutProps {
   children: React.ReactNode;
 }
 
 export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
+  const t = useTranslations("auth.layout");
+
   return (
     <div className="min-h-screen flex w-full font-sans bg-cway-cream overflow-hidden">
       {/* Background ambient lighting for entire page */}
@@ -49,20 +52,20 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
             
             {/* Small Gold Header */}
             <h3 className="font-sans font-bold" style={{ color: '#C9973A', textTransform: 'uppercase', letterSpacing: '0.25em', fontSize: 'clamp(10px, 1vw, 13px)', marginBottom: 'clamp(16px, 3vh, 32px)' }}>
-              CWAY MISSIONS PRESENTS
+              {t("presents")}
             </h3>
 
             {/* Main Headline */}
             <h1 className="font-serif text-white drop-shadow-xl" style={{ fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em' }}>
-              Coach. Challenge.
+              {t("coach_challenge")}
             </h1>
             <h1 className="font-serif italic drop-shadow-xl" style={{ color: '#C9973A', fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: '1.1', fontWeight: 400, letterSpacing: '-0.01em', marginBottom: 'clamp(24px, 4vh, 40px)' }}>
-              Commission.
+              {t("commission")}
             </h1>
             
             {/* Paragraph Text */}
             <p className="font-sans text-white" style={{ fontSize: 'clamp(14px, 1.5vw, 18px)', maxWidth: '500px', letterSpacing: '0.01em', lineHeight: '1.6', fontWeight: 300, opacity: 0.9 }}>
-              Experience the unique blend of coaching, challenging, and commissioning to shape or enhance your leadership potential.
+              {t("description")}
             </p>
             
           </div>
@@ -74,7 +77,7 @@ export default function SplitAuthLayout({ children }: SplitAuthLayoutProps) {
               className="inline-flex items-center gap-2 font-sans font-bold hover:text-white transition-all duration-300 hover:translate-x-1"
               style={{ fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#A8BCA9' }}
             >
-              <span>←</span> Back to Website
+              {t("back")}
             </Link>
           </div>
         </div>

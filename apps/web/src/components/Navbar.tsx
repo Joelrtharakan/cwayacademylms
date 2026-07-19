@@ -1,20 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LanguageSwitcher } from "./shared/LanguageSwitcher";
+import { useTranslations, useLocale } from "next-intl";
 
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Courses", href: "/courses" },
-  { label: "Get Involved", href: "/get-involved" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
-];
+
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -22,6 +16,18 @@ export function Navbar() {
   const [currentHash, setCurrentHash] = useState("home");
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations("common");
+  const locale = useLocale();
+  const isEn = locale === 'en';
+
+  const navLinks = [
+    { label: t("nav.home"), href: "/" },
+    { label: t("nav.about"), href: "/about" },
+    { label: t("nav.courses"), href: "/courses" },
+    { label: t("nav.getInvolved"), href: "/get-involved" },
+    { label: t("nav.blog"), href: "/blog" },
+    { label: t("nav.contact"), href: "/contact" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -137,7 +143,7 @@ export function Navbar() {
               </div>
               <div
                 style={{
-                  fontSize: "0.68rem",
+                  fontSize: isEn ? "0.68rem" : "0.78rem",
                   color: "var(--text-secondary)",
                   fontWeight: 600,
                   letterSpacing: "0.15em",
@@ -145,7 +151,7 @@ export function Navbar() {
                   opacity: 0.85,
                 }}
               >
-                Coach · Challenge · Commission
+                {t("nav.slogan")}
               </div>
             </div>
           </Link>
@@ -168,7 +174,7 @@ export function Navbar() {
                     position: "relative",
                     padding: "0.5rem 0.85rem",
                     fontWeight: 600,
-                    fontSize: "0.92rem",
+                    fontSize: isEn ? "0.92rem" : "1.05rem",
                     color: isActive ? "var(--gold-primary)" : "var(--navy-deep)",
                     textDecoration: "none",
                     transition: "color 0.3s ease",
@@ -195,13 +201,14 @@ export function Navbar() {
             })}
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons & Language Switcher */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }} className="hidden-mobile">
+            <LanguageSwitcher />
             <Link 
               href="/login"
               style={{ 
                 padding: "0.6rem 1.35rem", 
-                fontSize: "0.88rem", 
+                fontSize: isEn ? "0.88rem" : "1rem", 
                 borderRadius: "50px",
                 background: "#2C4A3B",
                 color: "#FFFFFF",
@@ -226,7 +233,7 @@ export function Navbar() {
                 e.currentTarget.style.boxShadow = "0 4px 12px rgba(44, 74, 59, 0.15)";
               }}
             >
-              Login
+              {t("nav.login")}
             </Link>
           </div>
 
@@ -291,7 +298,7 @@ export function Navbar() {
                   color: "var(--navy-deep)",
                   textDecoration: "none",
                   borderRadius: "10px",
-                  fontSize: "0.98rem",
+                  fontSize: isEn ? "0.98rem" : "1.1rem",
                   transition: "all 0.2s",
                 }}
                 onMouseEnter={(e) => {
@@ -320,12 +327,12 @@ export function Navbar() {
                   border: "2px solid #2C4A3B",
                   textDecoration: "none",
                   fontWeight: 700,
-                  fontSize: "0.95rem",
+                  fontSize: isEn ? "0.95rem" : "1.05rem",
                   letterSpacing: "1px",
                   textTransform: "uppercase"
                 }}
               >
-                Login
+                {t("nav.login")}
               </Link>
             </div>
           </motion.div>

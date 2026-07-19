@@ -388,7 +388,7 @@ export const uploadPromoVideo = asyncHandler(async (req: Request, res: Response)
   const course = await prisma.course.findUnique({ where: { id } });
   if (!course) throw new AppError("Course not found", 404);
 
-  const { videoId, uploadUrl } = await VideoService.createBunnyVideo(course.title);
+  const { videoId, uploadUrl } = await VideoService.createBunnyVideo((course.title as any));
   await VideoService.uploadVideoToBunny(uploadUrl, req.file.buffer);
   const streamUrl = VideoService.getBunnyStreamUrl(videoId);
   await prisma.course.update({ where: { id }, data: { promoVideoUrl: streamUrl } });
@@ -516,7 +516,7 @@ export const uploadLessonVideo = asyncHandler(async (req: Request, res: Response
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { section: true } });
   if (!lesson) throw new AppError("Lesson not found", 404);
 
-  const { videoId, uploadUrl } = await VideoService.createBunnyVideo(lesson.title);
+  const { videoId, uploadUrl } = await VideoService.createBunnyVideo((lesson.title as any));
   await VideoService.uploadVideoToBunny(uploadUrl, req.file.buffer);
   const streamUrl = VideoService.getBunnyStreamUrl(videoId);
 
@@ -938,7 +938,7 @@ export const getInstructorCourseStudents = asyncHandler(async (req: Request, res
     
     for (const lp of e.lessonProgress) {
       if (lp.completedAt && (!lastCompleted || lp.completedAt > lastCompleted.date)) {
-        lastCompleted = { title: lp.lesson.title, date: lp.completedAt };
+        lastCompleted = { title: (lp.lesson.title as any), date: lp.completedAt };
       }
     }
     for (const rp of e.readingMaterialProgress) {

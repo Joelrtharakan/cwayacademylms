@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { acceptInvitation, declineInvitation } from "@/lib/api/instructor";
 import { toast } from "sonner";
 import { BookOpen, Clock, Mail, Loader2, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface InvitationCardProps {
   invitation: {
@@ -27,24 +28,25 @@ interface InvitationCardProps {
 export function InvitationCard({ invitation }: InvitationCardProps) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("instructor.invitations.card");
 
   const acceptMut = useMutation({
     mutationFn: () => acceptInvitation(invitation.id),
     onSuccess: () => {
-      toast.success("Invitation accepted! The course is now in your dashboard.");
+      toast.success(t("toastAccepted"));
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
       queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to accept"),
+    onError: (err: any) => toast.error(err.response?.data?.message || t("toastAcceptFail")),
   });
 
   const declineMut = useMutation({
     mutationFn: () => declineInvitation(invitation.id),
     onSuccess: () => {
-      toast.success("Invitation declined.");
+      toast.success(t("toastDeclined"));
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to decline"),
+    onError: (err: any) => toast.error(err.response?.data?.message || t("toastDeclineFail")),
   });
 
   const isPending = invitation.status === "PENDING";
@@ -52,10 +54,10 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
   const isDeclined = invitation.status === "DECLINED";
 
   const statusConfig = {
-    PENDING: { bg: "rgba(201,151,58,0.1)", border: "rgba(201,151,58,0.3)", color: "#C9973A", label: "Awaiting Response" },
-    ACCEPTED: { bg: "rgba(74,140,92,0.08)", border: "rgba(74,140,92,0.25)", color: "#4A8C5C", label: "Accepted" },
-    DECLINED: { bg: "rgba(140,58,58,0.08)", border: "rgba(140,58,58,0.2)", color: "#8C3A3A", label: "Declined" },
-  }[invitation.status] || { bg: "#FAFAF8", border: "#E4E8E0", color: "#8A9E8C", label: "Unknown" };
+    PENDING: { bg: "rgba(201,151,58,0.1)", border: "rgba(201,151,58,0.3)", color: "#C9973A", label: t("statusPending") },
+    ACCEPTED: { bg: "rgba(74,140,92,0.08)", border: "rgba(74,140,92,0.25)", color: "#4A8C5C", label: t("statusAccepted") },
+    DECLINED: { bg: "rgba(140,58,58,0.08)", border: "rgba(140,58,58,0.2)", color: "#8C3A3A", label: t("statusDeclined") },
+  }[invitation.status] || { bg: "#FAFAF8", border: "#E4E8E0", color: "#8A9E8C", label: t("statusUnknown") };
 
   return (
     <div
@@ -121,7 +123,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
             {invitation.course.weeksDuration && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#8A9E8C" }}>
                 <Clock size={12} />
-                <span>{invitation.course.weeksDuration} weeks</span>
+                <span>{t("weeks", { count: invitation.course.weeksDuration })}</span>
               </div>
             )}
             <span style={{ fontSize: 12, color: "#8A9E8C" }}>
@@ -146,7 +148,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
         <div style={{ padding: "0 20px 16px 20px" }}>
           <div style={{ background: "#F9FAFC", borderRadius: 12, padding: "12px 16px", border: "1px solid #EEF0EA" }}>
             <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#C9973A", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              <Mail size={12} /> Note from Admin
+              <Mail size={12} /> {t("noteFromAdmin")}
             </p>
             <p style={{ fontSize: 14, color: "#4A5D4E", margin: 0, lineHeight: 1.6 }}>
               {invitation.adminNote}
@@ -183,7 +185,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
             }}
           >
             {declineMut.isPending ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <XCircle size={16} />}
-            Decline
+            {t("btnDecline")}
           </button>
           <button
             onClick={() => acceptMut.mutate()}
@@ -208,7 +210,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
             }}
           >
             {acceptMut.isPending ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <CheckCircle size={16} />}
-            Accept & Add to My Courses
+            {t("btnAccept")}
           </button>
         </div>
       )}

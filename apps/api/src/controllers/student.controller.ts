@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
 import { redis } from "../utils/redis";
 import { CertificateService } from "../services/certificate.service";
+import { resolveTranslation } from "../utils/localization";
 
 // ==========================================
 // PROGRESS TRACKING
@@ -67,7 +68,7 @@ async function checkAndCompleteCourse(enrollmentId: string, studentId: string, o
     
     if (completedEnrollments === programCourseIds.length) {
       isProgramCertificate = true;
-      programTitle = programCourses[0]?.program?.title || "";
+      programTitle = resolveTranslation(programCourses[0]?.program?.title, "en") || "";
       const programId = enrollment.course.programId;
       // Issue program certificate
       await CertificateService.issueProgramCertificate(studentId, programId);
@@ -138,12 +139,12 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
     await sendEnrollmentConfirmationEmail(
       { name: (user as any).name || "Student", email: user.email },
       {
-        title: course.title,
+        title: resolveTranslation(course.title, "en"),
         id: course.id,
         moduleNumber: course.moduleNumber,
         weeksDuration: course.weeksDuration,
         instructorName: course.instructor.name,
-        welcomeMessage: course.welcomeMessage,
+        welcomeMessage: resolveTranslation(course.welcomeMessage, "en"),
         scriptureRef: course.scriptureRef
       }
     );
@@ -1320,13 +1321,13 @@ export const getMyCourseGrade = asyncHandler(async (req: Request, res: Response)
   course.sections.forEach(sec => {
     sec.lessons.forEach(lesson => {
       if (lesson.assignment) {
-        gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: sec.title });
+        gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: resolveTranslation(sec.title, (req as any).locale) });
       }
       if (lesson.quiz) {
-        gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: sec.title });
+        gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: resolveTranslation(sec.title, (req as any).locale) });
       }
       if (lesson.type === "FORUM") {
-        gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: sec.title });
+        gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: resolveTranslation(sec.title, (req as any).locale) });
       }
     });
   });

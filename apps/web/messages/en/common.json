@@ -1,0 +1,51 @@
+{
+  "title": "CWAY Academy",
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "courses": "Courses",
+    "getInvolved": "Get Involved",
+    "blog": "Blog",
+    "contact": "Contact",
+    "login": "Login",
+    "slogan": "Coach · Challenge · Commission"
+  },
+  "footer": {
+    "categories": {
+      "ministry": "Ministry",
+      "academics": "Academics",
+      "getInvolved": "Get Involved",
+      "support": "Support"
+    },
+    "links": {
+      "about": "About CWAY",
+      "mission": "Our Mission",
+      "leadership": "Leadership Team",
+      "trust": "CWAY Missions Trust",
+      "blog": "Blog & Insights",
+      "allCourses": "All Courses",
+      "certPrograms": "Certificate Programs",
+      "dipPrograms": "Diploma Programs",
+      "overview": "Course Overview",
+      "apply": "Apply Now",
+      "donate": "Donate",
+      "partner": "Partnership",
+      "scholarship": "Scholarship Fund",
+      "prayer": "Prayer Requests",
+      "volunteer": "Volunteer",
+      "contact": "Contact Us",
+      "faq": "Admissions FAQ",
+      "portal": "Student Portal",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "sitemap": "Sitemap"
+    },
+    "info": "Equipping rural pastors, lay leaders, and Christian disciples through Bible-based theological education and leadership training in local Indian languages.",
+    "address": "Bangalore, Karnataka, India",
+    "rights": "© 2026 CWAY Academy — A Ministry of CWAY Missions, Bangalore, India. All rights reserved.",
+    "scripture": {
+      "verse": "Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you.",
+      "ref": "— Matthew 28:19–20 (ESV)"
+    }
+  }
+}

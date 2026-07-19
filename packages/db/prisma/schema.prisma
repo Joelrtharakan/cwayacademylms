@@ -73,7 +73,7 @@ model User {
 
 model Category {
   id        String     @id @default(cuid())
-  name      String
+  name      Json
   slug      String     @unique
   icon      String?
   order     Int        @default(0)
@@ -86,11 +86,11 @@ model Category {
 
 model Course {
   id              String  @id @default(cuid())
-  title           String
+  title           Json
   slug            String  @unique
   courseCode      String?
-  subtitle        String?
-  description     String?
+  subtitle        Json?
+  description     Json?
   thumbnail       String?
   promoVideoUrl   String?
   price           Float   @default(0)
@@ -105,11 +105,11 @@ model Course {
   scriptureRef    String?
   isFeatured      Boolean @default(false)
   isFree          Boolean @default(true)
-  requirements    String  @default("[]")
-  outcomes        String  @default("[]")
-  targetAudience  String  @default("[]")
-  welcomeMessage  String?
-  congratsMessage String?
+  requirements    Json    @default("{}")
+  outcomes        Json    @default("{}")
+  targetAudience  Json    @default("{}")
+  welcomeMessage  Json?
+  congratsMessage Json?
   tags            String  @default("[]")
   rejectionReason String?
 
@@ -154,8 +154,8 @@ model Section {
   id                 String              @id @default(cuid())
   courseId           String
   course             Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  title              String
-  description        String?
+  title              Json
+  description        Json?
   objectives         String              @default("[]") // JSON array
   weekNumber         Int?
   isPublished        Boolean             @default(false)
@@ -173,9 +173,9 @@ model Lesson {
   id           String    @id @default(cuid())
   sectionId    String
   section      Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  title        String
+  title        Json
   type         String
-  content      String?
+  content      Json?
   videoUrl     String?
   duration     Int       @default(0) // seconds
   order        Int
@@ -238,7 +238,7 @@ model Quiz {
   id           String        @id @default(cuid())
   lessonId     String        @unique
   lesson       Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  title        String
+  title        Json
   passingScore Int           @default(70)
   timeLimit    Int? // seconds, null = no limit
   maxAttempts  Int           @default(3)
@@ -254,7 +254,7 @@ model Question {
   id           String   @id @default(cuid())
   quizId       String
   quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  text         String
+  text         Json
   type         String   @default("MCQ")
   points       Int      @default(1)
   order        Int
@@ -268,7 +268,7 @@ model Answer {
   id         String   @id @default(cuid())
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  text       String
+  text       Json
   isCorrect  Boolean  @default(false)
 
   @@index([questionId])
@@ -294,8 +294,8 @@ model Assignment {
   id            String       @id @default(cuid())
   lessonId      String       @unique
   lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  title         String
-  description   String
+  title         Json
+  description   Json
   dueDate       DateTime?
   maxScore      Int          @default(100)
   attachmentUrl String?
@@ -768,8 +768,8 @@ model Note {
 
 model Program {
   id                 String               @id @default(cuid())
-  title              String
-  description        String?
+  title              Json
+  description        Json?
   thumbnail          String?
   thumbnailKey       String?
   duration           String? // e.g. "6 months", "4 courses"

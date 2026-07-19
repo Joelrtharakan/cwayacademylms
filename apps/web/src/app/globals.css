@@ -2064,3 +2064,9 @@ section[id] {
 .mobile-sidebar-overlay.active {
   display: block;
 }
+
+/* Indic Typography Fix */
+/* Letter spacing breaks ligatures and conjuncts in Brahmic scripts */
+html[lang="hi"] *, html[lang="ta"] *, html[lang="te"] *, html[lang="ml"] *, html[lang="kn"] * {
+  letter-spacing: normal !important;
+}

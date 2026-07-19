@@ -2,38 +2,42 @@
 import NextLink from "next/link";
 import { BookOpen, Mail, Phone, MapPin, Globe, Share2, Rss, Link as LinkIcon } from "lucide-react";
 
-const footerLinks = {
-  "Ministry": [
-    { label: "About CWAY", href: "/about" },
-    { label: "Our Mission", href: "/about#mission" },
-    { label: "Leadership Team", href: "/leadership" },
-    { label: "CWAY Missions Trust", href: "/about#trust" },
-    { label: "Blog & Insights", href: "/blog" },
-  ],
-  "Academics": [
-    { label: "All Courses", href: "/courses" },
-    { label: "Certificate Programs", href: "/courses?level=CERTIFICATE" },
-    { label: "Diploma Programs", href: "/courses?level=DIPLOMA" },
-    { label: "Course Overview", href: "/courses/overview" },
-    { label: "Apply Now", href: "/apply" },
-  ],
-  "Get Involved": [
-    { label: "Donate", href: "/donate" },
-    { label: "Partnership", href: "/get-involved#partner" },
-    { label: "Scholarship Fund", href: "/donate#scholarship" },
-    { label: "Prayer Requests", href: "/prayer" },
-    { label: "Volunteer", href: "/get-involved#volunteer" },
-  ],
-  "Support": [
-    { label: "Contact Us", href: "/contact" },
-    { label: "Admissions FAQ", href: "/admissions#faq" },
-    { label: "Student Portal", href: "/login" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-  ],
-};
+import { useTranslations } from "next-intl";
 
 export function Footer() {
+  const t = useTranslations("common.footer");
+
+  const footerLinks = {
+    [t("categories.ministry")]: [
+      { label: t("links.about"), href: "/about" },
+      { label: t("links.mission"), href: "/about#mission" },
+      { label: t("links.leadership"), href: "/leadership" },
+      { label: t("links.trust"), href: "/about#trust" },
+      { label: t("links.blog"), href: "/blog" },
+    ],
+    [t("categories.academics")]: [
+      { label: t("links.allCourses"), href: "/courses" },
+      { label: t("links.certPrograms"), href: "/courses?level=CERTIFICATE" },
+      { label: t("links.dipPrograms"), href: "/courses?level=DIPLOMA" },
+      { label: t("links.overview"), href: "/courses/overview" },
+      { label: t("links.apply"), href: "/apply" },
+    ],
+    [t("categories.getInvolved")]: [
+      { label: t("links.donate"), href: "/donate" },
+      { label: t("links.partner"), href: "/get-involved#partner" },
+      { label: t("links.scholarship"), href: "/donate#scholarship" },
+      { label: t("links.prayer"), href: "/prayer" },
+      { label: t("links.volunteer"), href: "/get-involved#volunteer" },
+    ],
+    [t("categories.support")]: [
+      { label: t("links.contact"), href: "/contact" },
+      { label: t("links.faq"), href: "/admissions#faq" },
+      { label: t("links.portal"), href: "/login" },
+      { label: t("links.privacy"), href: "/privacy" },
+      { label: t("links.terms"), href: "/terms" },
+    ],
+  };
+
   return (
     <footer className="footer" role="contentinfo">
       {/* Main Footer */}
@@ -81,14 +85,14 @@ export function Footer() {
             </div>
 
             <p style={{ fontSize: "0.875rem", lineHeight: 1.8, marginBottom: "1.5rem", color: "rgba(255,255,255,0.6)" }}>
-              Equipping rural pastors, lay leaders, and Christian disciples through Bible-based theological education and leadership training in local Indian languages.
+              {t("info")}
             </p>
 
             <div style={{ marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
                 <MapPin size={14} color="var(--gold-primary)" />
                 <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>
-                  Bangalore, Karnataka, India
+                  {t("address")}
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
@@ -186,10 +190,10 @@ export function Footer() {
           }}
         >
           <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, margin: 0 }}>
-            "Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you."
+            {t("scripture.verse")}
           </p>
           <span style={{ display: "block", marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--gold-light)", fontWeight: 600, letterSpacing: "0.08em" }}>
-            — Matthew 28:19–20 (ESV)
+            {t("scripture.ref")}
           </span>
         </div>
 
@@ -206,12 +210,12 @@ export function Footer() {
           }}
         >
           <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", margin: 0 }}>
-            © 2026 CWAY Academy — A Ministry of CWAY Missions, Bangalore, India. All rights reserved.
+            {t("rights")}
           </p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
-            <NextLink href="/privacy" className="footer-link" style={{ fontSize: "0.8rem" }}>Privacy Policy</NextLink>
-            <NextLink href="/terms" className="footer-link" style={{ fontSize: "0.8rem" }}>Terms of Service</NextLink>
-            <NextLink href="/sitemap.xml" className="footer-link" style={{ fontSize: "0.8rem" }}>Sitemap</NextLink>
+            <NextLink href="/privacy" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.privacy")}</NextLink>
+            <NextLink href="/terms" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.terms")}</NextLink>
+            <NextLink href="/sitemap.xml" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.sitemap")}</NextLink>
           </div>
         </div>
       </div>

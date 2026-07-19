@@ -1,0 +1,14 @@
+ALTER TABLE "Answer" ALTER COLUMN "text" TYPE json USING json_build_object('en', "text");
+ALTER TABLE "Assignment" ALTER COLUMN "title" TYPE json USING json_build_object('en', "title");
+ALTER TABLE "Assignment" ALTER COLUMN "description" TYPE json USING json_build_object('en', "description");
+ALTER TABLE "Category" ALTER COLUMN "name" TYPE json USING json_build_object('en', "name");
+ALTER TABLE "Course" ALTER COLUMN "title" TYPE json USING json_build_object('en', "title");
+ALTER TABLE "Course" ALTER COLUMN "subtitle" TYPE json USING CASE WHEN "subtitle" IS NULL THEN NULL ELSE json_build_object('en', "subtitle") END;
+ALTER TABLE "Course" ALTER COLUMN "description" TYPE json USING CASE WHEN "description" IS NULL THEN NULL ELSE json_build_object('en', "description") END;
+ALTER TABLE "Lesson" ALTER COLUMN "title" TYPE json USING json_build_object('en', "title");
+ALTER TABLE "Lesson" ALTER COLUMN "content" TYPE json USING CASE WHEN "content" IS NULL THEN NULL ELSE json_build_object('en', "content") END;
+ALTER TABLE "Program" ALTER COLUMN "title" TYPE json USING json_build_object('en', "title");
+ALTER TABLE "Program" ALTER COLUMN "description" TYPE json USING CASE WHEN "description" IS NULL THEN NULL ELSE json_build_object('en', "description") END;
+ALTER TABLE "Question" ALTER COLUMN "text" TYPE json USING json_build_object('en', "text");
+ALTER TABLE "Quiz" ALTER COLUMN "text" TYPE json USING json_build_object('en', "text");
+ALTER TABLE "Section" ALTER COLUMN "title" TYPE json USING json_build_object('en', "title");

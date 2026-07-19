@@ -194,7 +194,7 @@ export const applyForProgram = asyncHandler(async (req: Request, res: Response) 
     sendReferenceFormEmail(
       { name: reference1Name, email: reference1Email },
       fullName,
-      application.program.title,
+      (application.program.title as any),
       reference1Token
     ).catch(err => console.error("Failed to send reference 1 email:", err));
   }
@@ -203,7 +203,7 @@ export const applyForProgram = asyncHandler(async (req: Request, res: Response) 
     sendReferenceFormEmail(
       { name: reference2Name, email: reference2Email },
       fullName,
-      application.program.title,
+      (application.program.title as any),
       reference2Token
     ).catch(err => console.error("Failed to send reference 2 email:", err));
   }

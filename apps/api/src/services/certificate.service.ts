@@ -328,11 +328,11 @@ export class CertificateService {
     }
 
     const isProgram = certificate.type === 'PROGRAM';
-    const displayName = isProgram ? certificate.program?.title || 'Program' : certificate.course?.title || 'Course';
+    const displayName = isProgram ? (certificate.program?.title as any) || 'Program' : (certificate.course?.title as any) || 'Course';
 
     const templateData: Record<string, string> = {
       studentName: certificate.student.name,
-      courseName: displayName,
+      courseName: displayName as string,
       moduleNumber: certificate.course?.moduleNumber?.toString() || '',
       scriptureRef: certificate.course?.scriptureRef || '',
       instructorName: certificate.course?.instructor?.name || '',
@@ -408,7 +408,7 @@ export class CertificateService {
       const { sendCertificateIssuedEmail } = await import('./email.service');
       await sendCertificateIssuedEmail(
         { name: certificate.student.name, email: certificate.student.email },
-        { title: certificate.course?.title || 'Course' },
+        { title: (certificate.course?.title as any) || 'Course' },
         certificate.uniqueCode
       );
     } catch (e) {
@@ -448,7 +448,7 @@ export class CertificateService {
       const { sendCertificateIssuedEmail } = await import('./email.service');
       await sendCertificateIssuedEmail(
         { name: certificate.student.name, email: certificate.student.email },
-        { title: certificate.program?.title || 'Program' },
+        { title: (certificate.program?.title as any) || 'Program' },
         certificate.uniqueCode
       );
     } catch (e) {

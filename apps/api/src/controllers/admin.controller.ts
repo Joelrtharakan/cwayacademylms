@@ -661,7 +661,7 @@ export const approveCourse = asyncHandler(async (req: Request, res: Response) =>
   try {
     await sendCourseApprovedEmail(
       { name: course.instructor.name, email: course.instructor.email },
-      { title: course.title, slug: course.slug, id: course.id }
+      { title: (course.title as any), slug: (course.slug as any), id: course.id }
     );
   } catch (e) {
     console.error("[Email] Failed to send course approved email:", e);
@@ -1776,7 +1776,7 @@ export const approveApplication = asyncHandler(async (req: Request, res: Respons
 
   if (password) {
     const { sendAdmissionEmail } = await import("../services/email.service");
-    await sendAdmissionEmail({ name: user.name, email: user.email }, password, application.program.title);
+    await sendAdmissionEmail({ name: user.name, email: user.email }, password, (application.program.title as any));
   }
 
   res.json({ status: "success", message: "Application approved successfully" });

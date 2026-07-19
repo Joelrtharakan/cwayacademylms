@@ -398,7 +398,7 @@ export const uploadVideoToLesson = asyncHandler(async (req: Request, res: Respon
     throw new AppError("Not authorized", 403);
   }
 
-  const { videoId, uploadUrl } = await VideoService.createBunnyVideo(lesson.title);
+  const { videoId, uploadUrl } = await VideoService.createBunnyVideo((lesson.title as any));
   
   // Note: For real large files, we should stream directly to Bunny or use client-side upload.
   // This is a buffer upload (suitable for small files or chunked via multer)
