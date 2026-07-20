@@ -230,7 +230,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <ConfirmProvider>
-              <Toaster position="top-right" richColors />
+              <Toaster position="top-right" richColors closeButton />
               <SessionManager />
               <GlobalReveal />
               <SmoothScroll>

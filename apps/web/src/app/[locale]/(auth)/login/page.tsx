@@ -42,7 +42,7 @@ function LoginContent() {
       const { accessToken, user } = response.data;
 
       setAuth(user, accessToken);
-      toast.success(t("success", { name: user.name }));
+      toast.success(t("success", { name: user.name }), { duration: 2000 });
 
       // Handle auto-enrollment intent
       const enrollCourseId = searchParams.get("enrollCourseId");
