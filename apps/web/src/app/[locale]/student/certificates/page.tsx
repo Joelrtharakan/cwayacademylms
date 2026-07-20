@@ -6,7 +6,7 @@ import { api } from "@/store/auth.store";
 import { THEME } from "@/lib/cway-theme";
 import { Award, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
 export default function CertificatesPage() {

@@ -2,7 +2,8 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft, Users, PlayCircle, Award, Target } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { getCourseAnalytics, getCourseById } from "@/lib/api/instructor";

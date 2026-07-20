@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { useAuthStore, api } from "@/store/auth.store";
 import StudentSidebar from "./StudentSidebar";
 import { Bell, Search, Check, X, Menu } from "lucide-react";
@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { LocaleGuard } from "@/components/shared/LocaleGuard";
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -198,7 +199,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             padding: "clamp(16px, 4vw, 32px) clamp(16px, 5vw, 36px)",
           }}
         >
-          {children}
+          <LocaleGuard>{children}</LocaleGuard>
         </main>
       </div>
     </div>

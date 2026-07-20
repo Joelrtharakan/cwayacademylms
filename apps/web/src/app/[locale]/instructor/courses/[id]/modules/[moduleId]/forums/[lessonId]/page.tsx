@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { updateLesson } from "@/lib/api/modules";
 import { ArrowLeft, Users, MessageSquare, CheckCircle, ChevronDown, ChevronUp, Edit3, X, Save } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 const getInitials = (name: string) => {
   if (!name) return "ST";

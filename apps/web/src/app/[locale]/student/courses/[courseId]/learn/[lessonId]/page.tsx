@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore, api, fetchWithCache } from "@/store/auth.store";
 import { CheckCircle, XCircle, HelpCircle, ClipboardCheck, ArrowLeft, ArrowRight, Download, Calendar, MessageSquare, Send, ChevronDown, Pencil, Trash2, Clock } from "lucide-react";

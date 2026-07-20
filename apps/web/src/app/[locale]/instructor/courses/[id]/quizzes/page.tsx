@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft, CheckCircle, XCircle, RotateCcw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/store/auth.store";

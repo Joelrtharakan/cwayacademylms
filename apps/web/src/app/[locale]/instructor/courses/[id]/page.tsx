@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules, createModule, updateModule, deleteModule, reorderModules } from "@/lib/api/modules";
 import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, ExternalLink, Loader2, Save, X, Clock, Eye } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 import { toast } from "react-hot-toast";

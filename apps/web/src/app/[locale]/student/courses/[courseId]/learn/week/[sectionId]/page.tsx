@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { api, fetchWithCache } from "@/store/auth.store";
 import { FileText, ArrowLeft, ArrowRight, PlayCircle, BookOpen, CheckCircle, HelpCircle, Edit3, Video, FileText as FileTextIcon, HelpCircle as HelpIcon } from "lucide-react";
 

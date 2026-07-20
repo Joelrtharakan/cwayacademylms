@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/routing";
 import { api, useAuthStore, fetchWithCache, clearApiCache } from "@/store/auth.store";
 import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
 import { getLetterGrade } from "@/lib/gradeScale";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 

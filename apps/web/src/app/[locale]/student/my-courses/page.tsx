@@ -4,9 +4,8 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { THEME } from "@/lib/cway-theme";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/routing";
 import { BookOpen, Award, CheckCircle, FileText } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 

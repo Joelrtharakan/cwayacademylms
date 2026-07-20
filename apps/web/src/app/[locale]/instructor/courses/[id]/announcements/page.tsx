@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2, Megaphone, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { getInstructorAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/api/instructor";
 import { api } from "@/store/auth.store";

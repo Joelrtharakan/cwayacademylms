@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft, MessageSquare, Pin, Trash2, CornerDownRight, Send } from "lucide-react";
 import { getForumPosts, createForumPost, createForumReply, pinForumPost, deleteForumPost, deleteForumReply } from "@/lib/api/instructor";
 import { useAuthStore, api } from "@/store/auth.store";

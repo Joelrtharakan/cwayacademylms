@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Upload, BookOpen } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { getCourseById, updateCourse, uploadThumbnail } from "@/lib/api/instructor";
 

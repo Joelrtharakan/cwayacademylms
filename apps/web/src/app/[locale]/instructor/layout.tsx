@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useAuthStore } from "@/store/auth.store";
 import { useQuery } from "@tanstack/react-query";
 import { getInvitations } from "@/lib/api/instructor";
@@ -10,6 +10,7 @@ import { Bell, Search, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { LocaleGuard } from "@/components/shared/LocaleGuard";
 
 export default function InstructorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -389,7 +390,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
             padding: "clamp(16px, 4vw, 32px) clamp(16px, 5vw, 36px)",
           }}
         >
-          {children}
+          <LocaleGuard>{children}</LocaleGuard>
         </main>
       </div>
     </div>

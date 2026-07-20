@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, BookOpen, Edit2, Trash2, Users, Archive } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { getInstructorCourses, deleteCourse, updateCourse } from "@/lib/api/instructor";
 import { useConfirm } from "@/components/shared/ConfirmContext";

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api, useAuthStore } from "@/store/auth.store";
 import { getLetterGrade } from "@/lib/gradeScale";

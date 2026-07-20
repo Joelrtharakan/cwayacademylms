@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useAuthStore, api } from "@/store/auth.store";
 import {
   BookOpen, CheckCircle, Award, ClipboardCheck, ArrowRight, Activity, TrendingUp

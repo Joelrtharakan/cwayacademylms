@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { BookOpen, Image as ImageIcon, FileText, LayoutList, Award, ClipboardCheck, Users, CheckCircle2, Loader2, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 // Placeholder components for the 8 sections
 import BasicInfoSection from "@/components/instructor/setup/BasicInfoSection";

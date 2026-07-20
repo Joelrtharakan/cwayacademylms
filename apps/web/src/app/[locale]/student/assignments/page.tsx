@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { THEME } from "@/lib/cway-theme";
 import { ClipboardList, Clock, CheckCircle, ArrowRight, BookOpen, AlertCircle } from "lucide-react";
 import { api } from "@/store/auth.store";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
 export default function AssignmentsPage() {

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Clock, Check, X, Calendar } from "lucide-react";
 import { api } from "@/store/auth.store";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 export default function ExtensionsPage() {
   const { id } = useParams() as { id: string };

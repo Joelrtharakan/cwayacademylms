@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { api, fetchWithCache } from "@/store/auth.store";
 
 export default function LearnIndexPage() {

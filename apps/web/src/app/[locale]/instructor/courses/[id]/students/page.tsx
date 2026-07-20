@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { ArrowLeft, Search, Mail, Download, Phone, MessageSquare, Trash2, AlertTriangle } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { api } from "@/store/auth.store";
 import { format } from "date-fns";
 import { toast } from "sonner";

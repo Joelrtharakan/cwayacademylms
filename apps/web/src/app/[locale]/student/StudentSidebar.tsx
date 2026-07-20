@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, Link } from "@/i18n/routing";
 import { useLenis } from "lenis/react";
 import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";

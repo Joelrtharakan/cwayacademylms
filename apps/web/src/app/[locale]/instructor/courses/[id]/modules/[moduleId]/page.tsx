@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules } from "@/lib/api/modules";
 import { useCourseBuilderStore } from "@/store/course-builder.store";
 import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare, Menu, Sidebar } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 import dynamic from "next/dynamic";
 

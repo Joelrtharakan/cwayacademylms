@@ -6,7 +6,7 @@ import { Plus, Trash2, MessageSquare, Save, Edit, Users, X, Loader2 } from "luci
 import { toast } from "sonner";
 import { createLesson, updateLesson, deleteLesson } from "@/lib/api/modules";
 import { api } from "@/store/auth.store";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function ForumsPanel({ module }: { module: any }) {
