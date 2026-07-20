@@ -2,7 +2,7 @@
   "sidebar": {
     "overview": "అవలోకనం",
     "dashboard": "డాష్‌బోర్డ్",
-    "people": "ప్రజలు",
+    "people": "వ్యక్తులు",
     "users": "వినియోగదారులు",
     "instructors": "బోధకులు",
     "messages": "సందేశాలు",
@@ -34,7 +34,7 @@
   "dashboard": {
     "title": "డాష్‌బోర్డ్",
     "subtitle": "ప్లాట్‌ఫారమ్ అవలోకనం — మీ వృద్ధి మరియు కార్యాచరణను ఒక చూపులో ట్రాక్ చేయండి.",
-    "pendingCourses": "{count} పెండింగ్ కోర్సులు",
+    "pendingCourses": "{count} వేచి ఉన్న కోర్సులు",
     "pendingCoursesDesc": "మీ సమీక్ష అవసరం",
     "pendingApps": "{count} దరఖాస్తులు",
     "pendingAppsDesc": "ఆమోదం కోసం వేచి ఉన్నాయి",
@@ -125,7 +125,7 @@
     "sidebar": {
       "overview": "అవలోకనం",
       "dashboard": "డాష్‌బోర్డ్",
-      "people": "ప్రజలు",
+      "people": "వ్యక్తులు",
       "users": "వినియోగదారులు",
       "instructors": "బోధకులు",
       "messages": "సందేశాలు",
