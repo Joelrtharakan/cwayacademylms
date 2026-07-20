@@ -4,3 +4,5 @@
 2026-07-20 10:56:46 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::1"}
 2026-07-20 11:00:15 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::1"}
 2026-07-20 11:46:06 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::1"}
+2026-07-20 12:24:51 [warn]: Failed login attempt for joelrtharakan@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-20 12:24:57 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}

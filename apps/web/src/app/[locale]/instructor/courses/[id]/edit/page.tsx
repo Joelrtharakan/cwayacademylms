@@ -59,9 +59,11 @@ export default function EditCoursePage() {
       moduleNumber: "", weeksDuration: "", totalLectures: "", scriptureRef: "", price: "", currency: "INR"
     }
   });
+  const hasLoaded = React.useRef(false);
 
   useEffect(() => {
-    if (course) {
+    if (course && !hasLoaded.current) {
+      hasLoaded.current = true;
       form.reset({
         title: course.title || "",
         subtitle: course.subtitle || "",
@@ -82,9 +84,9 @@ export default function EditCoursePage() {
 
   const updateMut = useMutation({
     mutationFn: (data: any) => updateCourse(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedCourse) => {
       toast.success("Course updated successfully");
-      qc.invalidateQueries({ queryKey: ["course", id] });
+      qc.setQueryData(["course", id], updatedCourse);
       qc.invalidateQueries({ queryKey: ["instructor-courses"] });
     },
     onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update course"),

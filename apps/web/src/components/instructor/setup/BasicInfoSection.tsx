@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 
 export default function BasicInfoSection({ course, onSave }: { course: any, onSave: () => void }) {
+  const qc = useQueryClient();
   const [formData, setFormData] = useState({
     title: course.title || "",
     courseCode: course.courseCode || "",
@@ -28,8 +29,9 @@ export default function BasicInfoSection({ course, onSave }: { course: any, onSa
 
   const updateMut = useMutation({
     mutationFn: (data: any) => api.put(`/courses/${course.id}`, data).then((r) => r.data.data),
-    onSuccess: () => {
+    onSuccess: (updatedCourse) => {
       toast.success("Basic Info saved");
+      qc.setQueryData(["course", course.id], updatedCourse);
       onSave();
     },
     onError: (e: any) => toast.error(e?.response?.data?.message || "Update failed"),
