@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: 'Type DEPLOY to deploy to Production'
+        description: "Type DEPLOY to deploy to Production"
         required: true
-        default: ''
+        default: ""
 
 jobs:
   deploy:
@@ -15,11 +15,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check connectivity to VPS
+        run: |
+          echo "Checking connectivity to ${{ secrets.VPS_HOST }} on port 22..."
+
+          if nc -zvw10 ${{ secrets.VPS_HOST }} 22; then
+            echo "✅ VPS is reachable on port 22"
+          else
+            echo "❌ Cannot reach VPS on port 22"
+            exit 1
+          fi
+
       - name: Deploy to Production VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 10m
+          script_stop: true
+          debug: true
           script: |
+            echo "Connected to VPS"
+            hostname
+            pwd
+
             /opt/cway-academy/scripts/deploy.sh
+
+            echo "Deployment completed successfully!"
