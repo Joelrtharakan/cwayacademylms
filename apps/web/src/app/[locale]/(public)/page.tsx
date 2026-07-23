@@ -312,13 +312,15 @@ export default function LandingPage() {
             color: var(--text-main) !important;
             padding-top: 80px !important; 
             overflow-x: hidden !important;
+            max-width: 100vw !important;
             line-height: 1.7 !important;
             -webkit-font-smoothing: antialiased !important;
             -moz-osx-font-smoothing: grayscale !important;
         }
+        html { max-width: 100vw; overflow-x: hidden; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-        .section { padding-top: 7rem; padding-bottom: 7rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2rem); }
+        .section { padding-top: clamp(4rem, 8vw, 7rem); padding-bottom: clamp(4rem, 8vw, 7rem); }
         .text-center { text-align: center; }
 
         /* Typography */
@@ -352,17 +354,19 @@ export default function LandingPage() {
             background: rgba(250, 250, 247, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(220, 224, 213, 0.6); z-index: 1000;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 5%; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 clamp(1rem, 5%, 2.5rem); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
         }
-        .nav-brand { display: flex; align-items: center; gap: 1rem;}
+        .nav-brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex-shrink: 1; }
         .nav-logo-text { 
             font-family: var(--font-cinzel), 'Cinzel', Georgia, serif !important;
-            font-size: 21px;
+            font-size: clamp(16px, 4vw, 21px);
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: clamp(1.5px, 0.5vw, 3px);
             color: var(--text-main);
             text-transform: uppercase;
             line-height: 1;
+            white-space: nowrap;
         }
         .nav-logo-text .logo-cway {
             color: var(--text-main);
@@ -370,7 +374,7 @@ export default function LandingPage() {
         .nav-logo-text .logo-academy {
             color: var(--accent-gold);
             font-weight: 400;
-            letter-spacing: 4px;
+            letter-spacing: clamp(2px, 0.7vw, 4px);
         }
         
         .nav-links { display: flex; gap: 2.5rem; align-items: center; }
@@ -387,20 +391,20 @@ export default function LandingPage() {
         .nav-links a:hover::after, .nav-links a.nav-active::after { width: 100%; }
         .nav-links a.nav-active { color: var(--accent-green); }
         
-        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 6px; }
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 6px; flex-shrink: 0; }
         .hamburger span { width: 24px; height: 2px; background: var(--text-main); transition: 0.3s; border-radius: 2px; }
-        .nav-actions { display: flex; gap: 1rem; align-items: center; }
+        .nav-actions { display: flex; gap: 1rem; align-items: center; flex-shrink: 0; }
 
         .mobile-overlay {
-            background: var(--bg-main); position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--bg-main); position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100svh;
             z-index: 999; transform: translateY(-100%); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            gap: 2.5rem;
+            gap: min(3vh, 1.5rem); overflow: hidden; padding: 5rem 1.5rem 2rem;
         }
         .mobile-overlay.open { transform: translateY(0); }
-        .mobile-overlay-close { position: absolute; top: 30px; right: 5%; font-size: 32px; color: var(--text-main); cursor: pointer; }
+        .mobile-overlay-close { position: absolute; top: 24px; right: clamp(1rem, 5%, 2rem); font-size: 32px; color: var(--text-main); cursor: pointer; }
         .mobile-overlay a {
-            font-family: var(--font-dm-serif), serif; font-size: 30px; font-weight: 400; color: var(--text-main);
+            font-family: var(--font-dm-serif), serif; font-size: clamp(18px, 4.5vh, 26px); font-weight: 400; color: var(--text-main);
             text-align: center; transition: all 0.3s ease;
         }
         .mobile-overlay a:hover { color: var(--accent-green); }
@@ -429,12 +433,16 @@ export default function LandingPage() {
             align-items: center; 
             justify-content: center; 
             text-align: center; 
-            background: linear-gradient(160deg, rgba(44, 74, 59, 0.7), rgba(26, 38, 29, 0.88)), url('https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=60') center/cover no-repeat;
-            background-attachment: fixed;
             overflow: hidden; 
-            padding: 4rem 2rem; 
+            padding: 5rem 1.5rem 3rem; 
         }
-        .hero-content { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(160deg, rgba(44, 74, 59, 0.7), rgba(26, 38, 29, 0.92));
+            z-index: 1;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 860px; margin: 0 auto; padding: 0 0.5rem; width: 100%; }
         .hero-btn-group { display: flex; gap: 1.5rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; }
 
         .hero-content .body-text { color: rgba(255,255,255,0.85); font-size: 18px; }
@@ -495,7 +503,7 @@ export default function LandingPage() {
         .stat-label { font-family: var(--font-plus-jakarta), sans-serif !important; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
 
         /* Page Headers */
-        .page-header { background: var(--bg-alt); padding-top: 6rem; padding-bottom: 4rem; text-align: center; border-bottom: 1px solid var(--border); }
+        .page-header { background: var(--bg-alt); padding-top: clamp(3.5rem, 6vw, 6rem); padding-bottom: clamp(2.5rem, 4vw, 4rem); text-align: center; border-bottom: 1px solid var(--border); }
         .page-header p { max-width: 700px; margin: 0 auto; }
 
         /* About challenge box & quotes */
@@ -543,6 +551,24 @@ export default function LandingPage() {
         .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4rem; }
         .footer-bottom { border-top: 1px solid var(--border); text-align: center; padding-top: 2rem; margin-top: 4rem; color: var(--text-muted); font-size: 13px; }
 
+        /* What We Offer Grid - Responsive Grid */
+        .what-we-offer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .offer-card-item {
+            background: #fff;
+            border-radius: 20px;
+            padding: 44px 36px;
+            border: 1px solid #DCE0D5;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s, box-shadow 0.4s, border-color 0.4s;
+            cursor: default;
+        }
+
         /* Vision/Mission Cards special */
         .vm-card { text-align: center; }
         .vm-card-number { 
@@ -563,7 +589,7 @@ export default function LandingPage() {
         .about-header-wrapper {
             background: linear-gradient(135deg, #1A261D 0%, #2C4A3B 100%);
             color: #FFFFFF;
-            padding-top: 8rem; padding-bottom: 6rem;
+            padding-top: clamp(5rem, 10vw, 8rem); padding-bottom: clamp(3rem, 6vw, 6rem);
             position: relative;
             overflow: hidden;
         }
@@ -600,7 +626,7 @@ export default function LandingPage() {
         }
         
         .challenge-section {
-            padding-top: 8rem; padding-bottom: 8rem;
+            padding-top: clamp(4rem, 8vw, 8rem); padding-bottom: clamp(4rem, 8vw, 8rem);
             background: var(--bg-main);
         }
         .challenge-new-grid {
@@ -694,7 +720,7 @@ export default function LandingPage() {
         }
 
         .vm-section {
-            padding-top: 8rem; padding-bottom: 8rem;
+            padding-top: clamp(4rem, 8vw, 8rem); padding-bottom: clamp(4rem, 8vw, 8rem);
             background: var(--bg-alt);
             position: relative;
             overflow: hidden;
@@ -761,7 +787,7 @@ export default function LandingPage() {
         }
 
         .team-section {
-            padding-top: 8rem; padding-bottom: 8rem;
+            padding-top: clamp(4rem, 8vw, 8rem); padding-bottom: clamp(4rem, 8vw, 8rem);
             background: var(--bg-main);
         }
         .team-list-container {
@@ -781,7 +807,7 @@ export default function LandingPage() {
             box-shadow: var(--shadow-sm);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: grid;
-            grid-template-columns: 220px 1fr;
+            grid-template-columns: min(220px, 100%) 1fr;
             gap: 2.5rem;
             align-items: center;
             text-align: left;
@@ -1033,75 +1059,93 @@ export default function LandingPage() {
             .what-we-offer-grid { grid-template-columns: repeat(2, 1fr) !important; }
             .hero-section { background-attachment: scroll !important; }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
             .nav-links { display: none; }
             .nav-actions { display: none; }
             .hamburger { display: flex; }
-            .hero-btn-group { flex-direction: column; align-items: stretch; }
+        }
+        @media (max-width: 768px) {
+            .hero-btn-group { flex-direction: column !important; align-items: stretch !important; gap: 0.85rem !important; }
+            .hero-btn-group a, .hero-btn-group button { width: 100% !important; text-align: center !important; justify-content: center !important; }
             .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr; text-align: center; }
             .stats-section .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
             .section { padding-top: 4rem; padding-bottom: 4rem; }
             .page-header { padding-top: 3rem; padding-bottom: 2rem; }
-            .headline-page { font-size: clamp(32px, 9vw, 52px); }
+            .headline-page { font-size: clamp(28px, 8vw, 44px); }
+            .headline-hero { font-size: clamp(30px, 8vw, 46px); }
             .offer-right-grid { grid-template-columns: 1fr !important; gap: 1.25rem; }
             .what-we-offer-grid { grid-template-columns: 1fr !important; }
+            .what-we-offer-grid > div { padding: 2rem 1.5rem !important; }
+            .offer-card-item { padding: 2rem 1.5rem !important; }
             /* Team row card */
-            .modern-team-row-card { grid-template-columns: 1fr; gap: 1.25rem; }
-            .team-row-right { padding-left: 0 !important; text-align: left; }
+            .modern-team-row-card { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.5rem 1.25rem; }
+            .team-row-left { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 1.5rem; align-items: center; text-align: center; }
+            .team-row-right { padding-left: 0 !important; text-align: left; align-items: flex-start; }
+            .team-avatar-container { margin: 0 auto 1rem auto; }
             /* About challenge grid */
             .challenge-new-grid { grid-template-columns: 1fr; }
+            .challenge-left-content { position: relative; top: 0; }
+            .challenge-quote-card { padding: 1.75rem 1.25rem; margin-top: 1.5rem; }
+            /* VM section */
+            .vm-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .vm-card-green, .vm-card-gold { padding: 2.5rem 2rem; }
             /* Nav logo reduce */
             .nav-logo-text { font-size: 17px !important; letter-spacing: 2px !important; }
             /* Stat bar on blog/courses pages */
             .stats-bar-4col { grid-template-columns: repeat(2, 1fr) !important; }
             /* Hero section padding */
-            .hero-section { padding: 3rem 1.25rem 2rem; }
+            .hero-section { padding: 4rem 1.25rem 3rem !important; min-height: 100svh !important; }
             /* Blog reader modal — full screen */
             .blog-modal-panel { max-width: 100vw !important; max-height: 100vh !important; border-radius: 0 !important; margin: 0 !important; }
             .blog-modal-overlay { padding: 0 !important; }
             /* Blog cards */
             .blog-cards-2col { grid-template-columns: 1fr !important; }
+            /* Bank card */
+            .bank-card { padding: 2rem 1.25rem; }
+            /* Partner list */
+            .partner-list li { padding-left: 3rem; }
+            /* Section padding */
+            .section { padding-top: 3.5rem !important; padding-bottom: 3.5rem !important; }
+            /* About page dark section */
+            .dark-gradient-section { padding-left: 1.25rem; padding-right: 1.25rem; }
+            /* Challenge section */
+            .challenge-section { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+            /* Team section */
+            .team-section { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+            .team-list-container { gap: 1.5rem !important; margin-top: 2rem !important; }
         }
         @media (max-width: 640px) {
             .offer-right-grid { grid-template-columns: 1fr; gap: 1.25rem; }
             .what-we-offer-grid { grid-template-columns: 1fr !important; }
             .hero-stat-row { flex-direction: column; gap: 1rem; }
             .container { padding: 0 1rem; }
+            nav { padding: 0 1rem !important; }
         }
         @media (max-width: 480px) {
             .nav-logo-text { font-size: 15px !important; letter-spacing: 1.5px !important; }
-            .headline-hero { font-size: clamp(32px, 9vw, 48px); }
-            .headline-page { font-size: clamp(28px, 8vw, 40px); }
-            .section { padding-top: 3rem; padding-bottom: 3rem; }
-            .page-header { padding: 2.5rem 0 1.5rem; }
+            .headline-hero { font-size: clamp(28px, 8.5vw, 38px) !important; }
+            .headline-page { font-size: clamp(24px, 7.5vw, 34px) !important; }
+            .heading-section { font-size: clamp(22px, 6.5vw, 30px) !important; }
+            .section { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+            .page-header { padding: 2.5rem 0 1.5rem !important; }
             .blog-modal-panel { border-radius: 0 !important; }
+            .challenge-list-number { font-size: 2.2rem !important; }
+            .challenge-list-item { gap: 1.25rem !important; padding: 1.5rem 0.75rem !important; }
+            .what-we-offer-grid > div { padding: 1.5rem 1.25rem !important; }
+            .card { padding: 1.5rem 1.25rem !important; }
+            .blog-content { padding: 1.5rem 1.25rem !important; }
+            .modern-team-row-card { padding: 1.25rem 1rem !important; }
+            .vm-card-green, .vm-card-gold { padding: 2rem 1.5rem !important; }
+            .hero-section { padding: 3.5rem 1rem 2.5rem !important; }
         }
         @media (max-width: 380px) {
             .nav-logo-text { font-size: 14px !important; letter-spacing: 1px !important; }
-            .container { padding: 0 0.75rem; }
-        }
-        @media (max-width: 1024px) {
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-            .about-header-grid { grid-template-columns: 1fr; gap: 3rem; }
-            .challenge-new-grid { grid-template-columns: 1fr; gap: 3rem; }
-            .challenge-left-content { position: relative; top: 0; }
-            .vm-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .offer-section-grid { grid-template-columns: 1fr; gap: 3rem; }
-            .offer-left-column { position: relative; top: 0; }
-        }
-        
-        @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 1.5rem; }
-            .nav-links, .nav-actions { display: none; }
-            .hamburger { display: flex; }
-            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .modern-team-row-card { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 1.5rem; }
-            .team-avatar-container { margin: 0 auto 1rem auto; }
-            .hero-btn-group { flex-direction: column; }
-            .offer-right-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-            .headline-hero { font-size: clamp(32px, 8vw, 42px); }
-            .section { padding-top: 4rem; padding-bottom: 4rem; }
+            .container { padding: 0 0.75rem !important; }
+            .headline-hero { font-size: clamp(26px, 8vw, 34px) !important; }
+            nav { padding: 0 0.75rem !important; }
+            .stat-num { font-size: 2rem !important; }
+            .blog-content { padding: 1.25rem 1rem !important; }
         }
       ` }} />
 
@@ -1131,7 +1175,7 @@ export default function LandingPage() {
             <a href="#contact" className={activeTab === "contact" ? "nav-active" : ""}>{t("nav.contact")}</a>
           </div>
           
-          <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="nav-actions">
             <LanguageSwitcher />
             <Link href="/login" className="btn-primary" style={{ padding: "10px 24px", fontSize: "11px" }}>{t("nav.login")}</Link>
           </div>
@@ -1152,8 +1196,8 @@ export default function LandingPage() {
         <a href="#blog" className={activeTab === "blog" ? "nav-active" : ""} onClick={() => setMobileMenuOpen(false)}>{t("nav.blog")}</a>
         <a href="#contact" className={activeTab === "contact" ? "nav-active" : ""} onClick={() => setMobileMenuOpen(false)}>{t("nav.contact")}</a>
         <div style={{ width: "40px", height: "1px", background: "var(--accent-gold)", opacity: 0.3 }}></div>
-        <div style={{ marginTop: "1rem" }}>
-          <LanguageSwitcher />
+        <div>
+          <LanguageSwitcher upward={true} />
         </div>
         <Link href="/login" className="btn-primary" style={{ padding: "14px 32px", fontSize: "13px" }}>{t("nav.login")}</Link>
       </div>
@@ -1161,6 +1205,15 @@ export default function LandingPage() {
       {/* ─── HOME PAGE ─── */}
       <section id="home" className="page" style={getPageStyle("home")}>
         <div className="hero-section">
+          <Image 
+            src="/hero-bg.png" 
+            alt="CWAY Academy" 
+            fill 
+            style={{ objectFit: "cover", zIndex: 0 }} 
+            priority 
+            quality={90} 
+          />
+          <div className="hero-overlay"></div>
           <div className="hero-content reveal-hero">
             <span className="label" style={{ justifyContent: "center", marginBottom: "1.5rem", color: "var(--accent-gold-light)" }}>Cway Missions Presents</span>
             <h1 className="headline-hero">{t("hero.title_1")}<br /><span style={{ color: "var(--accent-gold-light)" }}>{t("hero.title_2")}</span></h1>
@@ -1186,7 +1239,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature Cards — 2×2 grid */}
-            <div className="what-we-offer-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px", marginBottom: "40px" }}>
+            <div className="what-we-offer-grid">
               {[
                 { num: "01", title: t("offer.feature_1_title"), desc: t("offer.feature_1_desc") },
                 { num: "02", title: t("offer.feature_2_title"), desc: t("offer.feature_2_desc") },
@@ -1195,17 +1248,7 @@ export default function LandingPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className={`reveal ${i > 0 ? `stagger-${Math.min(i, 3)}` : ""}`}
-                  style={{
-                    background: "#fff",
-                    borderRadius: "20px",
-                    padding: "44px 36px",
-                    border: "1px solid #DCE0D5",
-                    position: "relative",
-                    overflow: "hidden",
-                    transition: "transform 0.4s, box-shadow 0.4s, border-color 0.4s",
-                    cursor: "default",
-                  }}
+                  className={`reveal offer-card-item ${i > 0 ? `stagger-${Math.min(i, 3)}` : ""}`}
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(44,74,59,0.12)"; e.currentTarget.style.borderColor = "var(--accent-gold-light)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "#DCE0D5"; }}
                 >
@@ -1470,7 +1513,7 @@ export default function LandingPage() {
                           <h3 style={{ fontSize: "32px", color: "white", marginBottom: "1rem", fontFamily: "var(--font-dm-serif), serif", position: "relative", zIndex: 1 }}>{prog.title}</h3>
                           {prog.description && <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", maxWidth: "800px", lineHeight: "1.6", position: "relative", zIndex: 1, marginBottom: "2rem" }}>{prog.description}</p>}
                           
-                          <div style={{ display: "flex", gap: "1rem", alignItems: "center", position: "relative", zIndex: 1 }}>
+                          <div style={{ display: "flex", gap: "1rem", alignItems: "center", position: "relative", zIndex: 1, flexWrap: "wrap" }} className="program-btn-group">
                             {prog.applicationsClosed ? (
                               <button disabled className="btn-primary" style={{ background: "rgba(255,255,255,0.5)", color: "rgba(44,74,59,0.7)", border: "1px solid rgba(255,255,255,0.5)", cursor: "not-allowed" }}>
                                 {t("courses.applications_closed")}

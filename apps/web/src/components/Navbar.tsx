@@ -158,8 +158,8 @@ export function Navbar() {
 
           {/* Desktop Nav Links */}
           <div
-            style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-            className="hidden-mobile"
+            style={{ alignItems: "center", gap: "1rem" }}
+            className="hidden-mobile desktop-flex"
           >
             {navLinks.map((link) => {
               const hash = link.href.substring(2);
@@ -202,7 +202,7 @@ export function Navbar() {
           </div>
 
           {/* CTA Buttons & Language Switcher */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }} className="hidden-mobile">
+          <div style={{ alignItems: "center", gap: "0.85rem" }} className="hidden-mobile desktop-flex">
             <LanguageSwitcher />
             <Link 
               href="/login"
@@ -399,6 +399,8 @@ export function Navbar() {
           background: #C9973A;
           color: #1C2B1E;
         }
+
+        .desktop-flex { display: flex; }
 
         @media (max-width: 900px) {
           .hidden-mobile { display: none !important; }

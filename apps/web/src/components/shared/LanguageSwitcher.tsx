@@ -19,7 +19,11 @@ function setLocaleCookie(locale: string) {
   document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=31536000;SameSite=Lax`;
 }
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  upward?: boolean;
+}
+
+export function LanguageSwitcher({ upward = false }: LanguageSwitcherProps = {}) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -76,7 +80,8 @@ export function LanguageSwitcher() {
         <div
           style={{
             position: "absolute",
-            top: "calc(100% + 6px)",
+            top: upward ? "auto" : "calc(100% + 6px)",
+            bottom: upward ? "calc(100% + 6px)" : "auto",
             left: "0",
             background: "#fff",
             borderRadius: "12px",

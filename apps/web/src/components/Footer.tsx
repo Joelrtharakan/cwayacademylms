@@ -41,7 +41,7 @@ export function Footer() {
   return (
     <footer className="footer" role="contentinfo">
       {/* Main Footer */}
-      <div className="container" style={{ padding: "5rem 1.5rem 3rem" }}>
+      <div className="container" style={{ padding: "clamp(3rem, 6vw, 5rem) clamp(1rem, 4vw, 1.5rem) 3rem" }}>
         <div
           style={{
             display: "grid",
@@ -199,6 +199,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div
+          className="footer-bottom-row"
           style={{
             borderTop: "1px solid rgba(255,255,255,0.08)",
             paddingTop: "2rem",
@@ -212,7 +213,7 @@ export function Footer() {
           <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", margin: 0 }}>
             {t("rights")}
           </p>
-          <div style={{ display: "flex", gap: "1.5rem" }}>
+          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>
             <NextLink href="/privacy" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.privacy")}</NextLink>
             <NextLink href="/terms" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.terms")}</NextLink>
             <NextLink href="/sitemap.xml" className="footer-link" style={{ fontSize: "0.8rem" }}>{t("links.sitemap")}</NextLink>
@@ -230,6 +231,26 @@ export function Footer() {
         @media (max-width: 600px) {
           .footer-grid {
             grid-template-columns: 1fr !important;
+          }
+          .footer-grid > div {
+            text-align: center !important;
+          }
+          .footer-grid > div ul {
+            align-items: center !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .footer-bottom-row {
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            gap: 1rem !important;
+          }
+          .footer-bottom-row > div {
+            justify-content: center !important;
+          }
+          .footer-scripture {
+            padding: 1.25rem 1.25rem !important;
           }
         }
       `}</style>

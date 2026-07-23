@@ -148,7 +148,7 @@ export default function AboutPage() {
       <div className="absolute top-[80%] right-[-200px] floating-orb orb-green opacity-40 pointer-events-none" />
 
       {/* STAGE 1: The Editorial Hero */}
-      <section className="relative py-32 md:py-40 px-6 bg-gradient-to-b from-[#1A261D] to-[#2C4A3B] text-white">
+      <section className="relative py-20 sm:py-28 md:py-32 lg:py-40 px-4 sm:px-6 bg-gradient-to-b from-[#1A261D] to-[#2C4A3B] text-white">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[var(--gold-primary)] opacity-20 blur-[100px]" />
           <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#4A7A62] opacity-30 blur-[120px]" />
@@ -211,7 +211,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 2: Immersive Darkness (The Challenges) */}
-      <section className="py-28 px-6 dark-gradient-section relative border-b border-[#1A261D]/30 overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 dark-gradient-section relative border-b border-[#1A261D]/30 overflow-hidden">
         {/* Glow Spheres */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full bg-[var(--gold-primary)] opacity-[0.04] blur-[120px]" />
@@ -299,7 +299,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 3: The Beacon of Hope & Interactive 3D Objective Slider */}
-      <section className="py-28 px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
         <div className="container relative z-10 mx-auto max-w-7xl">
           <div className="offer-section-grid">
             {/* Left Sticky Column */}
@@ -412,7 +412,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 4: Overlapping Scroll Parallax (Vision & Mission) */}
-      <section ref={parallaxSectionRef} className="py-28 px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
+      <section ref={parallaxSectionRef} className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
         <div className="container relative z-10 mx-auto max-w-7xl">
           <div className="parallax-split-container">
             {/* Left Sticky Column */}
@@ -500,7 +500,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 5: The Accordion Parameters System */}
-      <section className="py-28 px-6 bg-[#F3F4F0] border-b border-[#DCE0D5] relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-[#F3F4F0] border-b border-[#DCE0D5] relative overflow-hidden">
         <div className="container relative z-10 mx-auto max-w-7xl">
           <motion.div
             className="text-center max-w-2xl mx-auto mb-16"
@@ -571,7 +571,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 6: Context Block Callout */}
-      <section className="py-24 px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
+      <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-[#FAFAF7] border-b border-[#DCE0D5] relative overflow-hidden">
         <div className="container max-w-4xl mx-auto text-center relative z-10">
           <div className="quote-text text-lg md:text-2xl font-light italic leading-relaxed text-[var(--navy-mid)] border-l-4 border-[var(--gold-primary)] pl-6 md:pl-10 text-justify max-w-3xl mx-auto">
             {t("context")}
@@ -580,7 +580,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 7: Leadership Team */}
-      <section className="py-28 px-6 bg-white relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-white relative overflow-hidden">
         <div className="container relative z-10 mx-auto max-w-7xl">
           <motion.div
             className="text-center max-w-2xl mx-auto mb-20"
@@ -705,7 +705,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 8: Core Values */}
-      <section className="py-28 px-6 bg-[#F3F4F0] border-t border-[#DCE0D5] relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-[#F3F4F0] border-t border-[#DCE0D5] relative overflow-hidden">
         <div className="container relative z-10 mx-auto max-w-7xl">
           <motion.div
             className="text-center max-w-2xl mx-auto mb-20"
@@ -757,7 +757,7 @@ export default function AboutPage() {
       </section>
 
       {/* STAGE 9: Parent Trust Callout Banner */}
-      <section className="bg-gradient-to-r from-[#1A261D] to-[#2C4A3B] py-24 px-6 text-white relative overflow-hidden">
+      <section className="bg-gradient-to-r from-[#1A261D] to-[#2C4A3B] py-16 sm:py-20 md:py-24 px-4 sm:px-6 text-white relative overflow-hidden">
         {/* Glow Element */}
         <div className="absolute bottom-[-150px] right-[-150px] w-96 h-96 rounded-full bg-[var(--gold-primary)] opacity-10 blur-[80px] pointer-events-none" />
 
