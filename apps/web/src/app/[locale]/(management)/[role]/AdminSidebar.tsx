@@ -30,6 +30,7 @@ import {
   Layers,
   LayoutTemplate,
   Activity,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -144,17 +145,22 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
       }
       return hasChanges ? next : prev;
     });
+
+    if (mobileOpen) {
+      onClose();
+    }
   }, [pathname, NAV]);
 
   const toggleSection = (title: string) => {
-    if (collapsed) return; // Don't toggle when collapsed
+    if (isCollapsed) return; // Don't toggle when collapsed
     setExpandedSections((prev) => ({
       ...prev,
       [title]: !prev[title],
     }));
   };
 
-  const W = collapsed ? COLLAPSED_W : EXPANDED_W;
+  const isCollapsed = collapsed && !mobileOpen;
+  const W = isCollapsed ? COLLAPSED_W : EXPANDED_W;
 
   const handleSignOut = async () => {
     await logout();
@@ -229,12 +235,12 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
+            justifyContent: isCollapsed ? "center" : "space-between",
             zIndex: 2,
             background: "transparent", 
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", borderRadius: "50%", flexShrink: 0 }}>
                <Image 
                 src="/logo.png" 
@@ -246,7 +252,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
               />
             </div>
             
-            {!collapsed && (
+            {!isCollapsed && (
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div style={{ 
                   fontFamily: "var(--font-cinzel), 'Cinzel', Georgia, serif", 
@@ -272,6 +278,26 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
               </div>
             )}
           </div>
+
+          {/* Close on mobile / Collapse on desktop */}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <button
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 transition-colors"
+              onClick={onClose}
+              title="Close sidebar"
+            >
+              <X size={16} />
+            </button>
+            {!isCollapsed && (
+              <button
+                className="hidden md:flex items-center justify-center p-1.5 rounded-lg bg-white/10 border border-white/15 text-white/60 hover:text-white"
+                onClick={onToggleCollapse}
+                title="Minimize sidebar"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Scrollable Navigation Area (Absolutely positioned middle) ── */}
@@ -294,12 +320,12 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             {NAV.map((section, si) => {
-              const isSectionExpanded = collapsed || expandedSections[section.title];
+              const isSectionExpanded = isCollapsed || expandedSections[section.title];
 
               return (
                 <div key={si} style={{ marginBottom: "12px" }}>
                   {/* Section header as a clickable accordion toggle */}
-                  {!collapsed && (
+                  {!isCollapsed && (
                     <button
                       onClick={() => toggleSection(section.title)}
                       style={{
@@ -339,7 +365,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                       />
                     </button>
                   )}
-                  {collapsed && si > 0 && (
+                  {isCollapsed && si > 0 && (
                     <div style={{ height: "1px", background: "rgba(255,255,255,0.08)", margin: "12px 4px" }} />
                   )}
 
@@ -352,7 +378,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                       opacity: isSectionExpanded ? 1 : 0,
                     }}
                   >
-                    <div style={{ padding: collapsed ? "0" : "4px 0" }}>
+                    <div style={{ padding: isCollapsed ? "0" : "4px 0" }}>
                       {section.items.map((item) => {
                         const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                         const Icon = item.icon;
@@ -360,17 +386,20 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                         return (
                           <button
                             key={item.href}
-                            onClick={() => router.push(item.href)}
-                            title={collapsed ? item.name : undefined}
+                            onClick={() => {
+                              router.push(item.href);
+                              onClose();
+                            }}
+                            title={isCollapsed ? item.name : undefined}
                             style={{
                               width: "100%",
                               border: "none",
                               cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
-                              gap: collapsed ? 0 : "14px",
-                              justifyContent: collapsed ? "center" : "flex-start",
-                              padding: collapsed ? "14px 0" : "12px 14px",
+                              gap: isCollapsed ? 0 : "14px",
+                              justifyContent: isCollapsed ? "center" : "flex-start",
+                              padding: isCollapsed ? "14px 0" : "12px 14px",
                               borderRadius: "10px",
                               marginBottom: "4px",
                               textDecoration: "none",
@@ -386,7 +415,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                             }}
                           >
                             {/* Active indicator */}
-                            {isActive && !collapsed && (
+                            {isActive && !isCollapsed && (
                               <div
                                 style={{
                                   position: "absolute",
@@ -407,7 +436,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                               style={{ color: isActive ? "#D4A35B" : "rgba(255,255,255,0.7)", flexShrink: 0, position: "relative", zIndex: 1 }}
                             />
 
-                            {!collapsed && (
+                            {!isCollapsed && (
                               <span
                                 style={{
                                   fontFamily: "var(--font-plus-jakarta), sans-serif",
@@ -450,9 +479,9 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
           }}
         >
           {/* User Section */}
-          <div style={{ padding: collapsed ? "16px 8px" : "16px 20px", flex: 1 }}>
+          <div style={{ padding: isCollapsed ? "16px 8px" : "16px 20px", flex: 1 }}>
             {/* User card */}
-            {!collapsed && (
+            {!isCollapsed && (
               <div
                 style={{
                   display: "flex",
@@ -502,9 +531,9 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
-                gap: collapsed ? 0 : "12px",
-                padding: collapsed ? "12px 0" : "12px 14px",
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                gap: isCollapsed ? 0 : "12px",
+                padding: isCollapsed ? "12px 0" : "12px 14px",
                 borderRadius: "10px",
                 background: "transparent",
                 border: "none",
@@ -525,7 +554,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
               }}
             >
               <LogOut size={18} style={{ flexShrink: 0 }} />
-              {!collapsed && <span>{t("sidebar.signOut")}</span>}
+              {!isCollapsed && <span>{t("sidebar.signOut")}</span>}
             </button>
           </div>
 
@@ -533,46 +562,23 @@ export default function AdminSidebar({ mobileOpen = false, onClose = () => {}, c
           <div
             style={{
               display: "flex",
-              justifyContent: collapsed ? "center" : "flex-end",
-              padding: collapsed ? "0 0 16px" : "0 20px 16px",
+              justifyContent: isCollapsed ? "center" : "flex-end",
+              padding: isCollapsed ? "0 0 16px" : "0 20px 16px",
             }}
           >
             <button
-              className="hidden md:flex"
+              className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/15 text-white/50 hover:text-white/80"
               onClick={() => onToggleCollapse()}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "rgba(255,255,255,0.5)",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(184,134,69,0.2)";
-                e.currentTarget.style.color = "#B88645";
-                e.currentTarget.style.borderColor = "rgba(184,134,69,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
-              }}
-              title={collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
+              title={isCollapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
             >
-              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Spacer to push content right — same width as sidebar */}
-      <div className="print:hidden" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
+      <div className="hidden md:block print:hidden" style={{ width: `${W}px`, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
     </>
   );
 }

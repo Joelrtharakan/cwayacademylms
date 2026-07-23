@@ -186,7 +186,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           </div>
 
           {/* Right side */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative" }}>
+          <div className="flex items-center gap-2 sm:gap-3 relative">
             <LanguageSwitcher />
 
             {/* Notification bell */}
@@ -371,8 +371,8 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                   user?.name?.slice(0, 2) || "IN"
                 )}
               </div>
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
+              <div className="hidden sm:block">
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>
                   {user?.name || (user?.role === "ADMIN" ? t("roleAdmin") : t("roleInstructor"))}
                 </div>
                 <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>

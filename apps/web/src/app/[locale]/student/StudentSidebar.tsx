@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -107,17 +108,23 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
       }
       return hasChanges ? next : prev;
     });
+
+    // Auto-close sidebar on navigation (mobile)
+    if (mobileOpen) {
+      onClose();
+    }
   }, [pathname]);
 
   const toggleSection = (title: string) => {
-    if (collapsed) return; // Don't toggle when collapsed
+    if (isCollapsed) return; // Don't toggle when collapsed
     setExpandedSections((prev) => ({
       ...prev,
       [title]: !prev[title],
     }));
   };
 
-  const W = collapsed ? COLLAPSED_W : EXPANDED_W;
+  const isCollapsed = collapsed && !mobileOpen;
+  const W = isCollapsed ? COLLAPSED_W : EXPANDED_W;
 
   const handleSignOut = async () => {
     await logout();
@@ -192,12 +199,12 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
+            justifyContent: isCollapsed ? "center" : "space-between",
             zIndex: 2,
             background: "transparent", 
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", borderRadius: "50%", flexShrink: 0 }}>
                <Image 
                 src="/logo.png" 
@@ -209,7 +216,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
               />
             </div>
             
-            {!collapsed && (
+            {!isCollapsed && (
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div style={{ 
                   fontFamily: "var(--font-cinzel), 'Cinzel', Georgia, serif", 
@@ -235,6 +242,26 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
               </div>
             )}
           </div>
+
+          {/* Close on mobile / Collapse on desktop */}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <button
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 transition-colors"
+              onClick={onClose}
+              title="Close sidebar"
+            >
+              <X size={16} />
+            </button>
+            {!isCollapsed && (
+              <button
+                className="hidden md:flex items-center justify-center p-1.5 rounded-lg bg-white/10 border border-white/15 text-white/60 hover:text-white"
+                onClick={onToggleCollapse}
+                title="Minimize sidebar"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Scrollable Navigation Area (Absolutely positioned middle) ── */}
@@ -248,7 +275,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
             left: 0,
             right: 0,
             overflowY: "auto",
-            padding: collapsed ? "16px 8px" : "20px 16px",
+            padding: isCollapsed ? "16px 8px" : "20px 16px",
             zIndex: 2,
             transform: "translateZ(0)", // Fixes Mac WebKit wheel scroll dropping
             WebkitOverflowScrolling: "touch", // Restores proper momentum scroll
@@ -257,12 +284,12 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             {NAV_KEYS.map((section, si) => {
-              const isSectionExpanded = collapsed || expandedSections[section.titleKey];
+              const isSectionExpanded = isCollapsed || expandedSections[section.titleKey];
 
               return (
                 <div key={si} style={{ marginBottom: "12px" }}>
                   {/* Section header as a clickable accordion toggle */}
-                  {!collapsed && (
+                  {!isCollapsed && (
                     <button
                       onClick={() => toggleSection(section.titleKey)}
                       style={{
@@ -302,7 +329,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                       />
                     </button>
                   )}
-                  {collapsed && si > 0 && (
+                  {isCollapsed && si > 0 && (
                     <div style={{ height: "1px", background: "rgba(255,255,255,0.08)", margin: "12px 4px" }} />
                   )}
 
@@ -315,7 +342,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                       opacity: isSectionExpanded ? 1 : 0,
                     }}
                   >
-                    <div style={{ padding: collapsed ? "0" : "4px 0" }}>
+                    <div style={{ padding: isCollapsed ? "0" : "4px 0" }}>
                       {section.items.map((item) => {
                         const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                         const Icon = item.icon;
@@ -325,13 +352,14 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                             key={item.href}
                             href={item.href}
                             prefetch={true}
-                            title={collapsed ? t(item.nameKey as any) : undefined}
+                            onClick={onClose}
+                            title={isCollapsed ? t(item.nameKey as any) : undefined}
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: collapsed ? 0 : "14px",
-                              justifyContent: collapsed ? "center" : "flex-start",
-                              padding: collapsed ? "14px 0" : "12px 14px",
+                              gap: isCollapsed ? 0 : "14px",
+                              justifyContent: isCollapsed ? "center" : "flex-start",
+                              padding: isCollapsed ? "14px 0" : "12px 14px",
                               borderRadius: "10px",
                               marginBottom: "4px",
                               textDecoration: "none",
@@ -347,7 +375,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                             }}
                           >
                             {/* Active indicator */}
-                            {isActive && !collapsed && (
+                            {isActive && !isCollapsed && (
                               <div
                                 style={{
                                   position: "absolute",
@@ -368,7 +396,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                               style={{ color: isActive ? "#D4A35B" : "rgba(255,255,255,0.7)", flexShrink: 0, position: "relative", zIndex: 1 }}
                             />
 
-                            {!collapsed && (
+                            {!isCollapsed && (
                               <span
                                 style={{
                                   fontFamily: "var(--font-plus-jakarta), sans-serif",
@@ -411,9 +439,9 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
           }}
         >
           {/* User Section */}
-          <div style={{ padding: collapsed ? "16px 8px" : "16px 20px", flex: 1 }}>
+          <div style={{ padding: isCollapsed ? "16px 8px" : "16px 20px", flex: 1 }}>
             {/* User card */}
-            {!collapsed && (
+            {!isCollapsed && (
               <div
                 style={{
                   display: "flex",
@@ -463,9 +491,9 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
-                gap: collapsed ? 0 : "12px",
-                padding: collapsed ? "12px 0" : "12px 14px",
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                gap: isCollapsed ? 0 : "12px",
+                padding: isCollapsed ? "12px 0" : "12px 14px",
                 borderRadius: "10px",
                 background: "transparent",
                 border: "none",
@@ -486,7 +514,7 @@ export default function StudentSidebar({ mobileOpen = false, onClose = () => {},
               }}
             >
               <LogOut size={18} style={{ flexShrink: 0 }} />
-              {!collapsed && <span>{t("signOut")}</span>}
+              {!isCollapsed && <span>{t("signOut")}</span>}
             </button>
           </div>
 

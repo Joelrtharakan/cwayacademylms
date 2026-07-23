@@ -149,7 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Right side */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
 
             {/* Notification bell */}
@@ -214,12 +214,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     fontWeight: 700,
                     color: "#B88645",
                     textTransform: "uppercase" as const,
+                    flexShrink: 0
                   }}
                 >
                   {user?.name?.slice(0, 2) || "AD"}
                 </div>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2 }}>
+                <div className="hidden sm:block">
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>
                     {user?.name || (expectedRole === "REGISTRAR" ? "Registrar" : "Admin")}
                   </div>
                   <div style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#9AAE9B", marginTop: "2px" }}>

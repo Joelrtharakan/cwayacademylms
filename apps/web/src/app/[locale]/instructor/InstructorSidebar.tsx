@@ -22,6 +22,7 @@ import {
   ChevronRight,
   ChevronDown,
   Mail,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -115,17 +116,22 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
       }
       return hasChanges ? next : prev;
     });
+
+    if (mobileOpen) {
+      onClose();
+    }
   }, [pathname]);
 
   const toggleSection = (title: string) => {
-    if (collapsed) return; // Don't toggle when collapsed
+    if (isCollapsed) return; // Don't toggle when collapsed
     setExpandedSections((prev) => ({
       ...prev,
       [title]: !prev[title],
     }));
   };
 
-  const W = collapsed ? COLLAPSED_W : EXPANDED_W;
+  const isCollapsed = collapsed && !mobileOpen;
+  const W = isCollapsed ? COLLAPSED_W : EXPANDED_W;
 
   const handleSignOut = async () => {
     await logout();
@@ -200,12 +206,12 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
+            justifyContent: isCollapsed ? "center" : "space-between",
             zIndex: 2,
             background: "transparent", 
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", borderRadius: "50%", flexShrink: 0 }}>
                <Image 
                 src="/logo.png" 
@@ -221,8 +227,8 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                opacity: collapsed ? 0 : 1,
-                visibility: collapsed ? "hidden" : "visible",
+                opacity: isCollapsed ? 0 : 1,
+                visibility: isCollapsed ? "hidden" : "visible",
                 transition: "opacity 0.2s, visibility 0.2s",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -236,6 +242,26 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                 {user?.role === "ADMIN" ? t("adminView") : user?.role === "REGISTRAR" ? t("registrarView") : t("instructorPanel")}
               </div>
             </div>
+          </div>
+
+          {/* Close on mobile / Collapse on desktop */}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <button
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 transition-colors"
+              onClick={onClose}
+              title="Close sidebar"
+            >
+              <X size={16} />
+            </button>
+            {!isCollapsed && (
+              <button
+                className="hidden md:flex items-center justify-center p-1.5 rounded-lg bg-white/10 border border-white/15 text-white/60 hover:text-white"
+                onClick={onToggleCollapse}
+                title="Minimize sidebar"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -341,7 +367,10 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                       return (
                         <button
                           key={item.name}
-                          onClick={() => router.push(item.href)}
+                          onClick={() => {
+                            router.push(item.href);
+                            onClose();
+                          }}
                           style={{
                             width: "100%",
                             cursor: "pointer",
@@ -532,20 +561,17 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
 
       {/* Floating Edge Toggle (Visible in both states) */}
       <button
-        className="hidden md:flex"
+        className="hidden md:flex items-center justify-center"
         onClick={() => onToggleCollapse()}
         style={{
           position: "fixed",
           top: "32px",
-          left: collapsed ? "68px" : "268px",
+          left: isCollapsed ? "68px" : "268px",
           width: "24px",
           height: "24px",
           borderRadius: "50%",
           background: "#1e293b",
           border: "1px solid rgba(255,255,255,0.1)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           cursor: "pointer",
           color: "rgba(255,255,255,0.7)",
           zIndex: 50,
@@ -560,9 +586,9 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
           e.currentTarget.style.background = "#1e293b";
           e.currentTarget.style.color = "rgba(255,255,255,0.7)";
         }}
-        title={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+        title={isCollapsed ? t("expandSidebar") : t("collapseSidebar")}
       >
-        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
       {/* Spacer to push main content right */}

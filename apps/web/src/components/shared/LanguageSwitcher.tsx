@@ -70,7 +70,7 @@ export function LanguageSwitcher({ upward = false }: LanguageSwitcherProps = {})
         }}
       >
         <Globe size={16} />
-        <span>{current.name}</span>
+        <span className="hidden sm:inline" style={{ whiteSpace: "nowrap" }}>{current.name}</span>
         <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
           <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
