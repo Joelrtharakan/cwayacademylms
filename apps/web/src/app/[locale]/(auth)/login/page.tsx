@@ -27,7 +27,14 @@ function LoginContent() {
     if (searchParams.get("reason") === "expired") {
       toast.warning(t("session_expired"));
     }
-  }, [searchParams, t]);
+    
+    // Aggressively prefetch the dashboard routes so the JavaScript bundles
+    // download in the background while the user types their credentials.
+    // This makes the router.push() navigation virtually instant on mobile.
+    router.prefetch("/student/dashboard");
+    router.prefetch("/admin/dashboard");
+    router.prefetch("/instructor/dashboard");
+  }, [searchParams, t, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

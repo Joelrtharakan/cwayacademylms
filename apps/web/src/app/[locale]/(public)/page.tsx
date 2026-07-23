@@ -1071,13 +1071,16 @@ export default function LandingPage() {
             .footer-grid { grid-template-columns: 1fr; text-align: center; }
             .stats-section .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
             .section { padding-top: 4rem; padding-bottom: 4rem; }
-            .page-header { padding-top: 3rem; padding-bottom: 2rem; }
+            .page-header { padding-top: 7rem; padding-bottom: 2rem; }
             .headline-page { font-size: clamp(28px, 8vw, 44px); }
             .headline-hero { font-size: clamp(30px, 8vw, 46px); }
             .offer-right-grid { grid-template-columns: 1fr !important; gap: 1.25rem; }
             .what-we-offer-grid { grid-template-columns: 1fr !important; }
             .what-we-offer-grid > div { padding: 2rem 1.5rem !important; }
             .offer-card-item { padding: 2rem 1.5rem !important; }
+            .program-card-header { padding: 2rem 1.25rem !important; }
+            .program-btn-group { flex-direction: column !important; align-items: stretch !important; gap: 0.85rem !important; }
+            .program-btn-group a, .program-btn-group button { width: 100% !important; text-align: center !important; justify-content: center !important; }
             /* Team row card */
             .modern-team-row-card { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.5rem 1.25rem; }
             .team-row-left { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 1.5rem; align-items: center; text-align: center; }
@@ -1489,26 +1492,27 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="section container">
-          {isLoadingCourses || isLoadingPrograms ? (
-            <div style={{ textAlign: "center", padding: "4rem 0" }}>
-              <p className="body-text">{t("courses.loading")}</p>
-            </div>
-          ) : !standaloneCourses?.length && !programsList?.length ? (
-            <div style={{ textAlign: "center", padding: "4rem 0", background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: "20px", marginBottom: "1rem", color: "var(--text-main)" }}>{t("courses.empty_title")}</h3>
-              <p className="body-text">{t("courses.empty_desc")}</p>
-            </div>
-          ) : (
-            <>
-              {programsList.length > 0 && (
-                <div style={{ marginBottom: "5rem" }}>
-                  <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>{t("courses.featured_programs")}</h2>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4rem" }}>
+        <div className="section">
+          <div className="container">
+            {isLoadingCourses || isLoadingPrograms ? (
+              <div style={{ textAlign: "center", padding: "4rem 0" }}>
+                <p className="body-text">{t("courses.loading")}</p>
+              </div>
+            ) : !standaloneCourses?.length && !programsList?.length ? (
+              <div style={{ textAlign: "center", padding: "4rem 0", background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: "20px", marginBottom: "1rem", color: "var(--text-main)" }}>{t("courses.empty_title")}</h3>
+                <p className="body-text">{t("courses.empty_desc")}</p>
+              </div>
+            ) : (
+              <>
+                {programsList.length > 0 && (
+                  <div style={{ marginBottom: "5rem" }}>
+                    <h2 className="heading-section text-center" style={{ marginBottom: "3rem" }}>{t("courses.featured_programs")}</h2>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4rem" }}>
                     {programsList.map((prog: any, pIdx: number) => (
                       <div key={prog.id} className="reveal" style={{ background: "#FFFFFF", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-                        <div style={{ background: "linear-gradient(135deg, var(--accent-green) 0%, #1A261D 100%)", padding: "3rem", color: "white", position: "relative" }}>
-                          <div style={{ position: "absolute", top: "0", right: "0", bottom: "0", width: "40%", background: "radial-gradient(circle at top right, rgba(184, 134, 69, 0.2), transparent 70%)" }} />
+                        <div className="program-card-header" style={{ background: "linear-gradient(135deg, var(--accent-green) 0%, #1A261D 100%)", padding: "3rem", color: "white", position: "relative" }}>
+                          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", background: "radial-gradient(circle at top right, rgba(184, 134, 69, 0.15) 0%, rgba(184, 134, 69, 0) 60%)", pointerEvents: "none" }} />
                           <span className="badge" style={{ background: "rgba(255,255,255,0.15)", color: "white", marginBottom: "1rem", display: "inline-block" }}>{t("courses.program_badge")}</span>
                           <h3 style={{ fontSize: "32px", color: "white", marginBottom: "1rem", fontFamily: "var(--font-dm-serif), serif", position: "relative", zIndex: 1 }}>{prog.title}</h3>
                           {prog.description && <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", maxWidth: "800px", lineHeight: "1.6", position: "relative", zIndex: 1, marginBottom: "2rem" }}>{prog.description}</p>}
@@ -1649,6 +1653,7 @@ export default function LandingPage() {
               <h3 style={{ fontSize: "22px", marginBottom: "1rem", color: "var(--accent-green)" }}>{t("courses.graduation_title")}</h3>
               <p className="body-text" style={{ maxWidth: "600px", margin: "0 auto", fontSize: "14.5px" }}>{t("courses.graduation_desc")}</p>
             </div>
+          </div>
           </div>
         </div>
       </section>

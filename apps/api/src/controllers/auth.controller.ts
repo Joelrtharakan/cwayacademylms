@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
+import { logger } from "../utils/logger";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -22,7 +23,6 @@ export class AuthController {
     try {
       const { accessToken, refreshToken, user } = await AuthService.login(req.body);
 
-      const { logger } = await import("../utils/logger");
       logger.info(`Successful login: ${user.email}`, { userId: user.id, ip: req.ip });
 
       // Activity log — login success
@@ -54,7 +54,6 @@ export class AuthController {
         user,
       });
     } catch (error: any) {
-      const { logger } = await import("../utils/logger");
       logger.warn(`Failed login attempt for ${req.body?.email || "unknown"}`, { ip: req.ip, error: error.message });
 
       // Activity log — login failure

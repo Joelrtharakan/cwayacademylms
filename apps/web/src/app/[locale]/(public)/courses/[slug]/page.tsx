@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { Clock, Users, Award, BookOpen, ChevronRight, Play, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -147,9 +147,10 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
 
       {/* Breadcrumb */}
       <div style={{ background: "var(--cream-mid)", padding: "1rem 0", borderBottom: "1px solid var(--border-light)" }}>
-        <div className="container" style={{ display: "flex", gap: "0.5rem", alignItems: "center", fontSize: "0.82rem" }}>
-          <Link href="/#courses" style={{ color: "var(--gold-dark)", textDecoration: "none", fontWeight: 600 }}>Courses</Link>
-          <ChevronRight size={12} /><span style={{ color: "var(--text-muted)" }}>{course.title}</span>
+        <div className="container" style={{ display: "flex", gap: "0.5rem", alignItems: "center", fontSize: "0.82rem", overflow: "hidden" }}>
+          <Link href="/#courses" style={{ color: "var(--gold-dark)", textDecoration: "none", fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap" }}>Courses</Link>
+          <ChevronRight size={12} style={{ flexShrink: 0 }} />
+          <span style={{ color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{course.title}</span>
         </div>
       </div>
 
@@ -161,7 +162,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
           </div>
         )}
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "grid", gridTemplateColumns: course.programId ? "1fr" : "1fr 340px", gap: "3rem", alignItems: "start" }}>
+          <div className={course.programId ? "grid grid-cols-1 gap-12 items-start" : "grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 items-start"}>
             <div style={{ maxWidth: course.programId ? "850px" : "100%" }}>
               <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 <span className="badge badge-gold">{course.level || "BEGINNER"}</span>
@@ -172,7 +173,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                   </span>
                 )}
               </div>
-              <h1 style={{ color: "white", marginBottom: "0.75rem", fontSize: course.programId ? "3.5rem" : "2.5rem", lineHeight: 1.1 }}>{course.title}</h1>
+              <h1 className={course.programId ? "text-4xl md:text-5xl lg:text-6xl text-white font-bold mb-3 leading-tight" : "text-3xl md:text-4xl lg:text-[2.5rem] text-white font-bold mb-3 leading-tight"}>{course.title}</h1>
               <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.1rem", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "750px" }}>{course.subtitle || displayDescription.slice(0, 100) + "..."}</p>
               <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
                 {(() => {
@@ -299,11 +300,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
               background: "#FFFFFF", 
               border: "1px solid var(--border-light)", 
               borderRadius: "20px", 
-              padding: "2.5rem 3rem",
+              padding: "clamp(1.5rem, 5vw, 3rem)",
               boxShadow: "0 12px 48px rgba(0,0,0,0.03)"
             }}>
-              <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "1.75rem", fontWeight: 700 }}>What You'll Learn</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", columnGap: "3rem", rowGap: "1.5rem" }}>
+              <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "clamp(1.5rem, 5vw, 1.75rem)", fontWeight: 700 }}>What You'll Learn</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", columnGap: "3rem", rowGap: "1.5rem" }}>
                 {outcomes.map((o: string, i: number) => (
                   <div key={i} style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
                     <div style={{ 
@@ -332,21 +333,23 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             background: "#FFFFFF", 
             border: "1px solid var(--border-light)", 
             borderRadius: "20px", 
-            padding: "2.5rem 3rem",
+            padding: "clamp(1.5rem, 5vw, 3rem)",
             boxShadow: "0 12px 48px rgba(0,0,0,0.03)"
           }}>
-            <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "1.75rem", fontWeight: 700 }}>Course Curriculum</h2>
+            <h2 style={{ marginBottom: "2rem", fontFamily: "Georgia, serif", color: "var(--navy-deep)", fontSize: "clamp(1.5rem, 5vw, 1.75rem)", fontWeight: 700 }}>Course Curriculum</h2>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {course.sections && course.sections.length > 0 ? course.sections.map((sec: any, i: number) => (
                 <div key={sec.id} style={{ 
                   display: "flex", 
+                  flexWrap: "wrap",
                   justifyContent: "space-between", 
                   alignItems: "center", 
+                  gap: "1rem",
                   padding: "1.5rem 0", 
                   borderBottom: i === course.sections.length - 1 ? "none" : "1px solid var(--border-light)",
                   transition: "all 0.2s"
                 }}>
-                  <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: "1.25rem", alignItems: "center", flex: "1 1 min-content" }}>
                     <div style={{ 
                       width: "36px", 
                       height: "36px", 
@@ -362,15 +365,15 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                     }}>
                       {String(i + 1).padStart(2, '0')}
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: "1.05rem", color: "var(--navy-deep)", letterSpacing: "-0.01em" }}>{sec.title}</span>
+                    <span style={{ fontWeight: 600, fontSize: "1.05rem", color: "var(--navy-deep)", letterSpacing: "-0.01em", minWidth: "150px" }}>{sec.title}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", flexShrink: 0 }}>
                     <BookOpen size={16} strokeWidth={2} />
                     <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>{sec.lessons?.length || 0} lessons</span>
                   </div>
                 </div>
               )) : (
-                <div style={{ padding: "3rem", background: "var(--cream-mid)", borderRadius: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 500 }}>
+                <div style={{ padding: "clamp(2rem, 5vw, 3rem)", background: "var(--cream-mid)", borderRadius: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 500 }}>
                   Curriculum details are being finalized. Check back soon.
                 </div>
               )}
