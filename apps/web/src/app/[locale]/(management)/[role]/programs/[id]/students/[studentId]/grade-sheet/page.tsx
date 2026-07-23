@@ -44,97 +44,129 @@ export default function AdminGradeSheetPage() {
   const finalProgramGrade = getLetterGrade(averagePercentage);
 
   return (
-    <div className="print-wrapper" style={{ minHeight: "100vh", background: "#f4f4f5", padding: "40px 20px", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "Inter, sans-serif" }}>
+    <div className="print-wrapper w-full min-h-screen bg-[#f4f4f5] flex flex-col items-center font-sans box-border" style={{ padding: "24px 20px" }}>
       
       {/* Action Bar (Hidden when printing) */}
-      <div className="print-hidden" style={{ width: "100%", maxWidth: "800px", display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>
+      <div className="print-hidden w-full max-w-[800px]" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "32px" }}>
         <button 
+          className="gs-action-btn"
           onClick={() => router.back()}
-          style={{ display: "flex", alignItems: "center", gap: "8px", background: "white", color: THEME.HERO, padding: "8px 16px", borderRadius: "8px", border: "1px solid #e4e4e7", cursor: "pointer", fontWeight: 500 }}
+          style={{ backgroundColor: "white", color: "#1A261D", border: "1px solid #d4d4d8", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
         >
-          <ArrowLeft size={16} /> Back to Student Details
+          <ArrowLeft size={16} /> Back
         </button>
         <button 
+          className="gs-action-btn"
           onClick={() => window.print()}
-          style={{ display: "flex", alignItems: "center", gap: "8px", background: THEME.GOLD, color: "white", padding: "8px 16px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: 600 }}
+          style={{ backgroundColor: "#B88645", color: "white", border: "1px solid #B88645", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
         >
-          <Printer size={16} /> Print Official Grade Sheet
+          <Printer size={16} /> Print Grade Sheet
         </button>
       </div>
 
       {/* Grade Sheet Document */}
       <div 
         id="grade-sheet-container"
-        style={{ 
-          background: "white", 
-          width: "100%", 
-          maxWidth: "800px", 
-          padding: "60px", 
-          boxShadow: "0 10px 25px rgba(0,0,0,0.05)", 
-          borderRadius: "4px",
-          position: "relative",
-          overflow: "hidden"
-        }}
+        className="w-full max-w-[800px] bg-white rounded-2xl shadow-md relative overflow-hidden box-border"
+        style={{ padding: "clamp(24px, 5vw, 56px)", background: "white" }}
       >
         {/* Decorative Top Border */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "8px", background: `linear-gradient(90deg, ${THEME.HERO}, ${THEME.GOLD})` }} />
 
         {/* Header */}
-        <div className="gs-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "48px", borderBottom: "2px solid #e4e4e7", paddingBottom: "24px" }}>
+        <div className="gs-header flex flex-col lg:flex-row justify-between items-start gap-4 mb-2">
           <div>
             <Image src="/logo.png" alt="CWAY Academy" width={160} height={40} style={{ objectFit: "contain", marginBottom: "16px" }} />
-            <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", color: THEME.HERO, margin: 0, fontWeight: 700 }}>Official Grade Sheet</h1>
+            <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", color: THEME.HERO, margin: 0, fontWeight: 700 }}>Grade Sheet</h1>
             <p style={{ color: THEME.MUTED, margin: "4px 0 0 0", fontSize: "14px" }}>CWAY Academy Theological Studies</p>
           </div>
-          <div style={{ textAlign: "right", marginTop: "16px" }}>
+          <div className="text-left lg:text-right mt-1 lg:mt-4">
             <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "1px" }}>Date Issued</p>
             <p style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: THEME.HERO }}>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
         </div>
 
+        {/* Divider Line */}
+        <div style={{ height: "1px", background: "#e4e4e7", marginTop: "24px", marginBottom: "32px", width: "100%" }} />
+
         {/* Student Information */}
-        <div className="gs-student" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", marginBottom: "48px", background: "#fafafa", padding: "24px", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
+        <div 
+          className="gs-student grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-8 lg:mb-12 bg-zinc-50 rounded-xl border border-zinc-200/80"
+          style={{ padding: "clamp(18px, 3vw, 26px)" }}
+        >
           <div>
             <p style={{ margin: "0 0 4px 0", fontSize: "11px", color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "1px" }}>Student Name</p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO }}>{student?.name || "Student"}</p>
-            <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: THEME.MUTED }}>{student?.email}</p>
+            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO, wordBreak: "break-word" }}>{student?.name || "Student"}</p>
+            <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: THEME.MUTED, wordBreak: "break-all" }}>{student?.email}</p>
           </div>
           <div>
             <p style={{ margin: "0 0 4px 0", fontSize: "11px", color: THEME.MUTED, textTransform: "uppercase", letterSpacing: "1px" }}>Program Enrolled</p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO }}>{program.title}</p>
+            <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: THEME.HERO, wordBreak: "break-word" }}>{program.title}</p>
           </div>
         </div>
 
         {/* Grades Table */}
-        <div className="gs-table" style={{ marginBottom: "48px" }}>
-          <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "24px", color: THEME.HERO, marginBottom: "16px" }}>Academic Record</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: "2px solid #000" }}>
-                <th style={{ textAlign: "left", padding: "12px 0", color: THEME.HERO, fontSize: "13px", textTransform: "uppercase", letterSpacing: "1px", width: "140px" }}>Course Code</th>
-                <th style={{ textAlign: "left", padding: "12px 0", color: THEME.HERO, fontSize: "13px", textTransform: "uppercase", letterSpacing: "1px" }}>Course Title</th>
-                <th style={{ textAlign: "center", padding: "12px 0", color: THEME.HERO, fontSize: "13px", textTransform: "uppercase", letterSpacing: "1px", width: "120px" }}>Score (%)</th>
-                <th style={{ textAlign: "center", padding: "12px 0", color: THEME.HERO, fontSize: "13px", textTransform: "uppercase", letterSpacing: "1px", width: "120px" }}>Letter Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coursesWithGrades.map((course: any, idx: number) => (
-                <tr key={course.id} style={{ borderBottom: "1px solid #e4e4e7" }}>
-                  <td style={{ padding: "16px 0", color: "#27272a", fontWeight: 600 }}>{course.courseCode || "N/A"}</td>
-                  <td style={{ padding: "16px 0", fontWeight: 600, color: "#27272a" }}>{course.title}</td>
-                  <td style={{ textAlign: "center", padding: "16px 0", color: "#52525b", fontWeight: 500 }}>{course.finalGrade.toFixed(1)}%</td>
-                  <td style={{ textAlign: "center", padding: "16px 0", fontWeight: 700, color: THEME.GOLD }}>{getLetterGrade(course.finalGrade)}</td>
+        <div className="gs-table" style={{ marginTop: "40px", marginBottom: "40px" }}>
+          <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", color: THEME.HERO, marginBottom: "20px" }}>Academic Record</h2>
+          
+          {/* Mobile & Tablet Card List View (< 1024px - Always fits 100% width with generous 20px padding) */}
+          <div className="flex flex-col gap-3.5 lg:hidden mb-6">
+            {coursesWithGrades.map((course: any) => (
+              <div 
+                key={course.id} 
+                className="bg-zinc-50 border border-zinc-200/80 rounded-2xl flex flex-col gap-2"
+                style={{ padding: "16px 20px" }}
+              >
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <span className="text-xs font-bold text-[#8A9E8C] uppercase tracking-wider">{course.courseCode || "N/A"}</span>
+                  <span className="text-xs font-bold text-[#B88645] bg-[#FBF6EC] px-3 py-1 rounded-md border border-[#F4E8D3] whitespace-nowrap">
+                    {getLetterGrade(course.finalGrade)} ({course.finalGrade.toFixed(1)}%)
+                  </span>
+                </div>
+                <div className="text-sm sm:text-base font-semibold text-[#1A261D] leading-snug">{course.title}</div>
+              </div>
+            ))}
+            
+            <div 
+              className="bg-[#1A261D] text-white rounded-2xl flex items-center justify-between gap-3 flex-wrap mt-2"
+              style={{ padding: "16px 20px" }}
+            >
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">Program Final Average</span>
+              <span className="text-sm sm:text-base font-extrabold text-[#D4A35B] whitespace-nowrap">{averagePercentage.toFixed(1)}% ({finalProgramGrade})</span>
+            </div>
+          </div>
+
+          {/* Desktop Table View (>= 1024px - Fits 100% width with zero horizontal scrolling) */}
+          <div className="hidden lg:block w-full">
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #000" }}>
+                  <th style={{ textAlign: "left", padding: "12px 10px", color: THEME.HERO, fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>Course Code</th>
+                  <th style={{ textAlign: "left", padding: "12px 10px", color: THEME.HERO, fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px" }}>Course Title</th>
+                  <th style={{ textAlign: "center", padding: "12px 10px", color: THEME.HERO, fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>Score (%)</th>
+                  <th style={{ textAlign: "center", padding: "12px 10px", color: THEME.HERO, fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>Letter Grade</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ borderTop: "2px solid #000" }}>
-                <td colSpan={2} style={{ padding: "24px 0 0 0", fontWeight: 700, color: THEME.HERO, fontSize: "16px" }}>Program Final Average</td>
-                <td style={{ textAlign: "center", padding: "24px 0 0 0", fontWeight: 700, color: THEME.HERO, fontSize: "16px" }}>{averagePercentage.toFixed(1)}%</td>
-                <td style={{ textAlign: "center", padding: "24px 0 0 0", fontWeight: 800, color: THEME.GOLD, fontSize: "20px" }}>{finalProgramGrade}</td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {coursesWithGrades.map((course: any, idx: number) => (
+                  <tr key={course.id} style={{ borderBottom: "1px solid #e4e4e7" }}>
+                    <td style={{ padding: "14px 10px", color: "#27272a", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap" }}>{course.courseCode || "N/A"}</td>
+                    <td style={{ padding: "14px 10px", fontWeight: 600, color: "#27272a", fontSize: "14px" }}>{course.title}</td>
+                    <td style={{ textAlign: "center", padding: "14px 10px", color: "#52525b", fontWeight: 500, fontSize: "14px", whiteSpace: "nowrap" }}>{course.finalGrade.toFixed(1)}%</td>
+                    <td style={{ textAlign: "center", padding: "14px 10px", fontWeight: 700, color: THEME.GOLD, fontSize: "15px", whiteSpace: "nowrap" }}>{getLetterGrade(course.finalGrade)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid #000" }}>
+                  <td style={{ padding: "18px 10px 0 10px", fontWeight: 700, color: THEME.HERO, fontSize: "14px", whiteSpace: "nowrap" }}>Program Final Average</td>
+                  <td style={{ padding: "18px 10px 0 10px" }}></td>
+                  <td style={{ textAlign: "center", padding: "18px 10px 0 10px", fontWeight: 700, color: THEME.HERO, fontSize: "14px", whiteSpace: "nowrap" }}>{averagePercentage.toFixed(1)}%</td>
+                  <td style={{ textAlign: "center", padding: "18px 10px 0 10px", fontWeight: 800, color: THEME.GOLD, fontSize: "17px", whiteSpace: "nowrap" }}>{finalProgramGrade}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
 
         {/* Grading Scale Legend */}
@@ -157,15 +189,11 @@ export default function AdminGradeSheetPage() {
           </div>
         </div>
 
-        {/* Signature Area */}
-        <div className="gs-signature" style={{ marginTop: "80px", display: "flex", justifyContent: "flex-end" }}>
-          <div style={{ textAlign: "center", width: "240px" }}>
-            <div style={{ borderBottom: "1px solid #000", height: "40px", marginBottom: "8px" }}></div>
-            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: THEME.HERO }}>CWAY Academy Registrar</p>
-            <p style={{ margin: 0, fontSize: "12px", color: THEME.MUTED }}>Official Signature</p>
-          </div>
+        {/* Document Footer */}
+        <div style={{ marginTop: "48px", paddingTop: "16px", borderTop: "1px solid #e4e4e7", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: THEME.MUTED }}>
+          <span style={{ fontWeight: 600, color: THEME.HERO }}>cwayacademy.com</span>
+          <span>Grade Sheet</span>
         </div>
-
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `

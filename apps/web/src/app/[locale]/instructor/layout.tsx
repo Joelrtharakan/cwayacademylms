@@ -150,7 +150,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           </button>
           
           {/* Search */}
-          <div className="hidden sm:block" style={{ position: "relative", width: "240px" }}>
+          <div className="hidden md:block w-36 lg:w-60 transition-all duration-200" style={{ position: "relative" }}>
             <Search
               size={14}
               style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9AAE9B" }}
@@ -371,7 +371,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
                   user?.name?.slice(0, 2) || "IN"
                 )}
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden lg:block">
                 <div style={{ fontSize: "13px", fontWeight: 600, color: "#1A261D", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "120px" }}>
                   {user?.name || (user?.role === "ADMIN" ? t("roleAdmin") : t("roleInstructor"))}
                 </div>

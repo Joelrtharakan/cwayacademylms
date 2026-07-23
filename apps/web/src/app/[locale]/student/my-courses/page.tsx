@@ -139,27 +139,31 @@ export default function MyCoursesPage() {
 
         return (
           <div key={pe.id} style={{ marginBottom: 56 }}>
-            <div style={{ marginBottom: 24, borderBottom: `2px solid ${THEME.GOLD}`, paddingBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: THEME.GOLD, textTransform: "uppercase", letterSpacing: "1px" }}>{t("enrolledProgram")}</span>
                 <h2 style={{ fontSize: 24, fontWeight: 700, color: THEME.HERO, marginTop: 4 }}>
                   {pe.program.title}
                 </h2>
               </div>
-              <div style={{ display: "flex", gap: "12px" }}>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {isProgramCompleted && (
                   <>
-                    <Link href={`/student/programs/${pe.program.id}/grade-sheet`} style={{ background: "white", color: THEME.HERO, border: `1px solid ${THEME.HERO}`, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Link href={`/student/programs/${pe.program.id}/grade-sheet`} style={{ background: "white", color: THEME.HERO, border: `1px solid ${THEME.HERO}`, textDecoration: "none", fontSize: 13, fontWeight: 500, padding: "8px 14px", borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
                       <FileText size={16} /> {t("gradeSheet")}
                     </Link>
-                    <Link href="/student/certificates" style={{ background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Link href="/student/certificates" style={{ background: THEME.HERO, color: THEME.LIGHT, textDecoration: "none", fontSize: 13, fontWeight: 500, padding: "8px 14px", borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
                       <Award size={16} /> {t("programCertificate")}
                     </Link>
                   </>
                 )}
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
+
+            {/* Separate Gold Divider Line */}
+            <div style={{ height: "2px", background: THEME.GOLD, marginTop: "16px", marginBottom: "28px", width: "100%" }} />
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 24 }}>
               {pe.program.courses.map((course: any) => {
                 const enrollment = enrollments.find((e: any) => e.courseId === course.id);
                 return renderCourseCard(course, enrollment, true);
@@ -174,7 +178,7 @@ export default function MyCoursesPage() {
           <h2 style={{ fontSize: 20, fontWeight: 600, color: THEME.HERO, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
             <BookOpen size={20} color={THEME.GOLD} /> {t("standaloneInProgress")}
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 24 }}>
             {standaloneInProgress.map((enrollment: any) => renderCourseCard(enrollment.course, enrollment))}
           </div>
         </div>
@@ -185,7 +189,7 @@ export default function MyCoursesPage() {
           <h2 style={{ fontSize: 20, fontWeight: 600, color: THEME.HERO, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
             <CheckCircle size={20} color={"#8A9E8C"} /> {t("standaloneCompleted")}
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 24 }}>
             {standaloneCompleted.map((enrollment: any) => renderCourseCard(enrollment.course, enrollment))}
           </div>
         </div>

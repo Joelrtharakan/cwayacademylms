@@ -193,8 +193,8 @@
   "gradeSheet": {
     "error": "Failed to load grade sheet.",
     "back": "Back",
-    "printBtn": "Print Official Grade Sheet",
-    "title": "Official Grade Sheet",
+    "printBtn": "Print Grade Sheet",
+    "title": "Grade Sheet",
     "subtitle": "CWAY Academy Theological Studies",
     "dateIssued": "Date Issued",
     "studentName": "Student Name",

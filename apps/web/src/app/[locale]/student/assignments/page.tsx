@@ -51,94 +51,176 @@ export default function AssignmentsPage() {
           </p>
         </div>
       ) : (
-        <div style={{ background: "white", borderRadius: 24, border: "1px solid #E4E8E0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", minWidth: 900 }}>
-              <thead>
-                <tr style={{ background: "#FAFAF7", borderBottom: "1px solid #E4E8E0" }}>
-                  <th style={{ padding: "20px 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 20, fontWeight: 700, color: "#1A261D", width: "30%" }}>{t("table.course")}</th>
-                  <th style={{ padding: "20px 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 20, fontWeight: 700, color: "#1A261D", width: "35%" }}>{t("table.assignment")}</th>
-                  <th style={{ padding: "20px 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 20, fontWeight: 700, color: "#1A261D", width: "15%" }}>{t("table.status")}</th>
-                  <th style={{ padding: "20px 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 20, fontWeight: 700, color: "#1A261D", width: "10%", textAlign: "center" }}>{t("table.score")}</th>
-                  <th style={{ padding: "20px 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 20, fontWeight: 700, color: "#1A261D", width: "10%", textAlign: "right" }}>{t("table.action")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignments.map((assignment, index) => {
-                  const isPending = !assignment.submission;
-                  const isAwaitingGrade = assignment.submission && !assignment.submission.isGraded;
-                  const isGraded = assignment.submission && assignment.submission.isGraded;
-                  const isLast = index === assignments.length - 1;
+        <>
+          {/* Mobile & Tablet Card View (< 1024px) */}
+          <div className="flex flex-col gap-4 lg:hidden">
+            {assignments.map((assignment) => {
+              const isPending = !assignment.submission;
+              const isAwaitingGrade = assignment.submission && !assignment.submission.isGraded;
+              const isGraded = assignment.submission && assignment.submission.isGraded;
 
-                  return (
-                    <tr key={assignment.id} style={{ borderBottom: isLast ? "none" : "1px solid #E4E8E0", transition: "background 0.2s" }} className="hover:bg-[#FCFCFA] group">
-                      <td style={{ padding: "24px 32px", verticalAlign: "middle" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#FBF6EC", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0, border: "1px solid #F4E8D3" }}>
-                            <BookOpen size={20} />
-                          </div>
-                          <span style={{ fontWeight: 700, color: "#526658", fontSize: 15, lineHeight: 1.3 }}>
-                            {assignment.courseName}
-                          </span>
+              return (
+                <div 
+                  key={assignment.id} 
+                  style={{
+                    background: "white",
+                    borderRadius: "16px",
+                    border: "1px solid #E4E8E0",
+                    padding: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "14px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+                  }}
+                >
+                  {/* Course info */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "#FBF6EC", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0, border: "1px solid #F4E8D3" }}>
+                      <BookOpen size={16} />
+                    </div>
+                    <span style={{ fontWeight: 700, color: "#526658", fontSize: 13 }}>
+                      {assignment.courseName}
+                    </span>
+                  </div>
+
+                  {/* Assignment Title */}
+                  <div style={{ fontWeight: 700, fontSize: 16, color: isPending ? "#1A261D" : "#8A9E8C", textDecoration: isPending ? "none" : "line-through", textDecorationColor: "#E4E8E0", lineHeight: 1.4 }}>
+                    {assignment.title}
+                  </div>
+
+                  {/* Footer: Status, Grade & Action Button */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, paddingTop: 14, borderTop: "1px solid #F4F6F2" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      {isPending && (
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "#FDF0EE", color: "#B03A2E", fontSize: 12, fontWeight: 700, borderRadius: 999, border: "1px solid #FADBD8" }}>
+                          <Clock size={14} /> {t("status.pending")}
                         </div>
-                      </td>
-                      <td style={{ padding: "24px 32px", verticalAlign: "middle" }}>
-                        <span style={{ fontWeight: 700, fontSize: 16, color: isPending ? "#1A261D" : "#8A9E8C", textDecoration: isPending ? "none" : "line-through", textDecorationColor: "#E4E8E0", textDecorationThickness: 2 }}>
-                          {assignment.title}
-                        </span>
-                      </td>
-                      <td style={{ padding: "24px 32px", verticalAlign: "middle" }}>
-                        {isPending && (
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#FDF0EE", color: "#B03A2E", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #FADBD8" }}>
-                            <Clock size={16} /> {t("status.pending")}
-                          </div>
-                        )}
-                        {isAwaitingGrade && (
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#FBF6EC", color: "#B88645", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #F4E8D3" }}>
-                            <AlertCircle size={16} /> {t("status.awaitingGrade")}
-                          </div>
-                        )}
-                        {isGraded && (
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#F2F7F4", color: "#3A7B5E", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #D5E8DD" }}>
-                            <CheckCircle size={16} /> {t("status.graded")}
-                          </div>
-                        )}
-                      </td>
-                      <td style={{ padding: "24px 32px", verticalAlign: "middle", textAlign: "center" }}>
-                        {isGraded ? (
-                          <div style={{ display: "inline-flex", alignItems: "baseline", justifyContent: "center", gap: 6, padding: "4px 8px" }}>
-                            <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 24, fontWeight: 700, color: "#1A261D" }}>{assignment.submission.grade}</span>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: "#8A9E8C" }}>/ {assignment.totalPoints}</span>
-                          </div>
-                        ) : (
-                          <div style={{ display: "inline-flex", alignItems: "baseline", justifyContent: "center", gap: 6, padding: "4px 8px" }}>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: "#8A9E8C", opacity: 0.7 }}>— / {assignment.totalPoints}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td style={{ padding: "24px 32px", verticalAlign: "middle", textAlign: "right" }}>
-                        <Link 
-                          href={`/student/courses/${assignment.courseId}/learn/${assignment.lessonId}`}
-                          style={{ 
-                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, 
-                            padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 700, 
-                            textDecoration: "none", transition: "all 0.2s",
-                            background: isPending ? "#1A261D" : "white", 
-                            color: isPending ? "white" : "#526658",
-                            border: isPending ? "none" : "1px solid #E4E8E0",
-                            boxShadow: isPending ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
-                          }}
-                        >
-                          {isPending ? t("action.submit") : t("action.view")} <ArrowRight size={16} />
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      )}
+                      {isAwaitingGrade && (
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "#FBF6EC", color: "#B88645", fontSize: 12, fontWeight: 700, borderRadius: 999, border: "1px solid #F4E8D3" }}>
+                          <AlertCircle size={14} /> {t("status.awaitingGrade")}
+                        </div>
+                      )}
+                      {isGraded && (
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "#F2F7F4", color: "#3A7B5E", fontSize: 12, fontWeight: 700, borderRadius: 999, border: "1px solid #D5E8DD" }}>
+                          <CheckCircle size={14} /> {t("status.graded")}
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#8A9E8C" }}>
+                        {isGraded ? `${assignment.submission.grade} / ${assignment.totalPoints}` : `— / ${assignment.totalPoints}`}
+                      </div>
+                    </div>
+
+                    <Link 
+                      href={`/student/courses/${assignment.courseId}/learn/${assignment.lessonId}`}
+                      style={{ 
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, 
+                        padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700, 
+                        textDecoration: "none",
+                        background: isPending ? "#1A261D" : "white", 
+                        color: isPending ? "white" : "#526658",
+                        border: isPending ? "none" : "1px solid #E4E8E0",
+                      }}
+                    >
+                      {isPending ? t("action.submit") : t("action.view")} <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
+
+          {/* Desktop Table View (>= 1024px) */}
+          <div className="hidden lg:block" style={{ background: "white", borderRadius: 24, border: "1px solid #E4E8E0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", minWidth: 750 }}>
+                <thead>
+                  <tr style={{ background: "#FAFAF7", borderBottom: "1px solid #E4E8E0" }}>
+                    <th style={{ padding: "18px 24px", fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 700, color: "#1A261D", width: "30%" }}>{t("table.course")}</th>
+                    <th style={{ padding: "18px 24px", fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 700, color: "#1A261D", width: "35%" }}>{t("table.assignment")}</th>
+                    <th style={{ padding: "18px 24px", fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 700, color: "#1A261D", width: "15%" }}>{t("table.status")}</th>
+                    <th style={{ padding: "18px 24px", fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 700, color: "#1A261D", width: "10%", textAlign: "center" }}>{t("table.score")}</th>
+                    <th style={{ padding: "18px 24px", fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 700, color: "#1A261D", width: "10%", textAlign: "right" }}>{t("table.action")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignments.map((assignment, index) => {
+                    const isPending = !assignment.submission;
+                    const isAwaitingGrade = assignment.submission && !assignment.submission.isGraded;
+                    const isGraded = assignment.submission && assignment.submission.isGraded;
+                    const isLast = index === assignments.length - 1;
+
+                    return (
+                      <tr key={assignment.id} style={{ borderBottom: isLast ? "none" : "1px solid #E4E8E0", transition: "background 0.2s" }} className="hover:bg-[#FCFCFA] group">
+                        <td style={{ padding: "18px 24px", verticalAlign: "middle" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: "#FBF6EC", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0, border: "1px solid #F4E8D3" }}>
+                              <BookOpen size={18} />
+                            </div>
+                            <span style={{ fontWeight: 700, color: "#526658", fontSize: 14, lineHeight: 1.3 }}>
+                              {assignment.courseName}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "18px 24px", verticalAlign: "middle" }}>
+                          <span style={{ fontWeight: 700, fontSize: 15, color: isPending ? "#1A261D" : "#8A9E8C", textDecoration: isPending ? "none" : "line-through", textDecorationColor: "#E4E8E0", textDecorationThickness: 2 }}>
+                            {assignment.title}
+                          </span>
+                        </td>
+                        <td style={{ padding: "18px 24px", verticalAlign: "middle" }}>
+                          {isPending && (
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#FDF0EE", color: "#B03A2E", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #FADBD8" }}>
+                              <Clock size={16} /> {t("status.pending")}
+                            </div>
+                          )}
+                          {isAwaitingGrade && (
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#FBF6EC", color: "#B88645", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #F4E8D3" }}>
+                              <AlertCircle size={16} /> {t("status.awaitingGrade")}
+                            </div>
+                          )}
+                          {isGraded && (
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#F2F7F4", color: "#3A7B5E", fontSize: 13, fontWeight: 700, borderRadius: 999, border: "1px solid #D5E8DD" }}>
+                              <CheckCircle size={16} /> {t("status.graded")}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: "18px 24px", verticalAlign: "middle", textAlign: "center" }}>
+                          {isGraded ? (
+                            <div style={{ display: "inline-flex", alignItems: "baseline", justifyContent: "center", gap: 6, padding: "4px 8px" }}>
+                              <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 24, fontWeight: 700, color: "#1A261D" }}>{assignment.submission.grade}</span>
+                              <span style={{ fontSize: 14, fontWeight: 600, color: "#8A9E8C" }}>/ {assignment.totalPoints}</span>
+                            </div>
+                          ) : (
+                            <div style={{ display: "inline-flex", alignItems: "baseline", justifyContent: "center", gap: 6, padding: "4px 8px" }}>
+                              <span style={{ fontSize: 14, fontWeight: 600, color: "#8A9E8C", opacity: 0.7 }}>— / {assignment.totalPoints}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: "18px 24px", verticalAlign: "middle", textAlign: "right" }}>
+                          <Link 
+                            href={`/student/courses/${assignment.courseId}/learn/${assignment.lessonId}`}
+                            style={{ 
+                              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, 
+                              padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 700, 
+                              textDecoration: "none", transition: "all 0.2s",
+                              background: isPending ? "#1A261D" : "white", 
+                              color: isPending ? "white" : "#526658",
+                              border: isPending ? "none" : "1px solid #E4E8E0",
+                              boxShadow: isPending ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+                            }}
+                          >
+                            {isPending ? t("action.submit") : t("action.view")} <ArrowRight size={16} />
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

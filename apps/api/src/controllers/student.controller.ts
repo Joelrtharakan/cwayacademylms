@@ -1069,15 +1069,19 @@ export const downloadCertificate = asyncHandler(async (req: Request, res: Respon
   const { id } = req.params;
   const certificate = await prisma.certificate.findUnique({
     where: { id },
-    include: { course: true }
+    include: { course: true, program: true }
   });
 
   if (!certificate || certificate.studentId !== req.user!.id) throw new AppError("Unauthorized", 403);
 
   const pdfBuffer = await CertificateService.generateCertificatePDF(id);
 
+  const filename = certificate.type === "PROGRAM"
+    ? `${(String(certificate.program?.title || '')).replace(/[^a-zA-Z0-9]/g, '-') || 'program'}-certificate.pdf`
+    : `${certificate.course?.slug || 'course'}-certificate.pdf`;
+
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${certificate.course.slug}-certificate.pdf"`);
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   res.send(pdfBuffer);
 });
 

@@ -231,7 +231,7 @@ export default function ProgramStudentDetailsPage() {
             Detailed Progress
           </h2>
           <Link href={`${basePath}/programs/${id}/students/${studentId}/grade-sheet`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, background: "#C9973A", color: "#FFFFFF", textDecoration: "none", fontSize: 13, fontWeight: 600, transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "#E8B85A"} onMouseLeave={(e) => e.currentTarget.style.background = "#C9973A"}>
-            View Official Grade Sheet
+            View Grade Sheet
           </Link>
         </div>
         {courses.length === 0 ? (
