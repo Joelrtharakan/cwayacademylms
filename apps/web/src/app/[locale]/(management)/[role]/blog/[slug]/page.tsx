@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState } from "react";
 import { useManagementPath } from "@/hooks/useManagementPath";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { api } from "@/store/auth.store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
-export default function EditBlogPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function EditBlogPage() {
   const basePath = useManagementPath();
   const router = useRouter();
-  const { slug } = use(params);
+  const { slug } = useParams<{ slug: string }>();
   const isNew = slug === "new";
 
   const [title, setTitle] = useState("");
@@ -297,21 +298,37 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
             <button
               type="button"
               onClick={() => {
-                // 1. Normalize Windows line endings to standard line endings
-                let text = content.replace(/\r\n/g, '\n');
-                
-                // 2. Smart Paragraph Detection:
-                // If a line ends with punctuation (. ? ! " ” ') and the next line starts with a Capital letter,
-                // it's almost certainly a new paragraph in a PDF. Convert to a double newline.
-                text = text.replace(/([.?!]["”']?)\n([A-Z“"'])/g, '$1\n\n$2');
-                
-                // 3. Replace all remaining single line breaks with spaces (fixing ragged sentences)
-                text = text.replace(/([^\n])\n([^\n])/g, '$1 $2');
-                
-                // 4. Clean up any accidental triple newlines
-                text = text.replace(/\n{3,}/g, '\n\n');
-                
-                setContent(text);
+                let text = content;
+
+                // 1. Normalize all line endings (Windows/Mac) and Word/PDF
+                //    unicode line & paragraph separators to a plain "\n".
+                text = text.replace(/\r\n?/g, "\n").replace(/[\u2028\u2029]/g, "\n");
+
+                // 2. Rejoin words hyphenated across a line break in PDFs
+                //    e.g. "exam-\nple" -> "example".
+                text = text.replace(/(\w)-\n(\w)/g, "$1$2");
+
+                // 3. Smart paragraph detection: a line ending in sentence
+                //    punctuation followed by a capitalised line is almost
+                //    certainly a new paragraph — insert a blank line.
+                text = text.replace(/([.?!]["”')\]]?)\n(?=[A-Z“"'(])/g, "$1\n\n");
+
+                // 4. Unwrap remaining single line breaks into spaces (fixes
+                //    ragged sentences copied from PDFs).
+                text = text.replace(/([^\n])\n([^\n])/g, "$1 $2");
+
+                // 5. Collapse runs of spaces/tabs and strip trailing spaces.
+                text = text.replace(/[ \t]{2,}/g, " ").replace(/[ \t]+$/gm, "");
+
+                // 6. Collapse 3+ newlines to a single paragraph break, then trim.
+                text = text.replace(/\n{3,}/g, "\n\n").trim();
+
+                if (text === content) {
+                  toast.info("Content already looks clean — nothing to fix.");
+                } else {
+                  setContent(text);
+                  toast.success("Cleaned up pasted formatting.");
+                }
               }}
               style={{
                 fontSize: "11px",

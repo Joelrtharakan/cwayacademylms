@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Post {
   slug: string;
@@ -19,6 +20,7 @@ interface Post {
 
 export default function SingleBlogPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const t = useTranslations("public.blog");
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,18 +37,18 @@ export default function SingleBlogPage({ params }: { params: Promise<{ slug: str
       });
   }, [slug]);
 
-  if (loading) return <div className="text-center py-24">Loading...</div>;
-  if (!post) return <div className="text-center py-24">Post not found</div>;
+  if (loading) return <div className="text-center py-24">{t("loading")}</div>;
+  if (!post) return <div className="text-center py-24">{t("not_found")}</div>;
 
   return (
     <div className="min-h-screen bg-[var(--cream-base)] py-12">
       <div className="container max-w-3xl">
         <Link href="/blog">
           <button className="flex items-center mb-6 hover:bg-transparent pl-0 text-[var(--navy-mid)]">
-            <ArrowLeft size={16} className="mr-2" /> Back to Blog
+            <ArrowLeft size={16} className="mr-2" /> {t("back")}
           </button>
         </Link>
-        <span className="badge badge-gold mb-4 inline-block">{post.category || "General"}</span>
+        <span className="badge badge-gold mb-4 inline-block">{post.category || t("category_default")}</span>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-[var(--navy-deep)] leading-tight mb-6">
           {post.title}
         </h1>
@@ -55,7 +57,7 @@ export default function SingleBlogPage({ params }: { params: Promise<{ slug: str
           <span>•</span>
           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
           <span>•</span>
-          <span>{post.readingTime || 5} min read</span>
+          <span>{t("min_read", { minutes: post.readingTime || 5 })}</span>
         </div>
         
         {post.coverImage && (

@@ -4,7 +4,7 @@
     "title": "About CWAY Academy",
     "desc": "CWAY ACADEMY is a Bible-based leadership training project of the religious trust “CWAY MISSIONS,” registered in Bangalore, India. God laid a great vision in our hearts to equip members and pastors of rural churches in India as frontline leaders.",
     "quote": "“God laid a great vision in our hearts to equip members and pastors of rural churches in India as frontline leaders.”",
-    "cwayMissions": "Cway Missions",
+    "cwayMissions": "CWAY Missions",
     "bangalore": "Bangalore, India",
     "theCall": "The Call",
     "challenge": {
@@ -190,5 +190,23 @@
       "quote_ref": "— 2 Corinthians 9:10 (NKJV)",
       "btn": "Contact Admissions"
     }
+  },
+  "blog": {
+    "section_label": "Academy Journal",
+    "title_start": "Insights &",
+    "title_highlight": "Reflections",
+    "subtitle": "Exploring the history, narratives, and spiritual legacies of pioneer leaders who shaped indigenous Christian ministry across South India.",
+    "category_default": "General",
+    "read_full": "Read Full Story",
+    "share": "Share Link",
+    "min_read": "{minutes} min read",
+    "close_reader": "Close reader",
+    "close_article": "Close Article",
+    "cta_title": "Support Our Frontline Leaders",
+    "cta_desc": "Our historical posts reflect the sacrifice of early missionaries. Today, local leaders need training to protect remote rural churches. Become a part of their story.",
+    "cta_btn": "Partner With Us",
+    "back": "Back to Blog",
+    "loading": "Loading...",
+    "not_found": "Post not found"
   }
 }

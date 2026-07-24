@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, User, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 // Animation Variants
 const staggerContainer = {
@@ -33,6 +34,7 @@ interface Post {
 }
 
 export default function BlogPage() {
+  const t = useTranslations("public.blog");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
 
@@ -118,13 +120,13 @@ export default function BlogPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="section-label">Academy Journal</div>
+            <div className="section-label">{t("section_label")}</div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-serif mb-6 leading-tight max-w-4xl">
-              Insights & <span className="gradient-text-gold">Reflections</span>
+              {t("title_start")} <span className="gradient-text-gold">{t("title_highlight")}</span>
             </h1>
             <div className="gold-divider gold-divider-left" />
             <p className="max-w-2xl text-lg md:text-xl text-[var(--text-secondary)] font-light leading-relaxed mt-6">
-              Exploring the history, narratives, and spiritual legacies of pioneer leaders who shaped indigenous Christian ministry across South India.
+              {t("subtitle")}
             </p>
           </motion.div>
         </div>
@@ -162,7 +164,7 @@ export default function BlogPage() {
               >
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-                    <span className="badge badge-gold">{post.category || "General"}</span>
+                    <span className="badge badge-gold">{post.category || t("category_default")}</span>
                     <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>{new Date(post.createdAt).toLocaleDateString()}</span>
                   </div>
 
@@ -202,7 +204,7 @@ export default function BlogPage() {
                     <div>
                       <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--navy-deep)" }}>{post.author.name}</div>
                     </div>
-                    <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "var(--text-muted)" }}>{post.readingTime || 5} min read</span>
+                    <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "var(--text-muted)" }}>{t("min_read", { minutes: post.readingTime || 5 })}</span>
                   </div>
 
                   <div style={{ display: "flex", gap: "1rem" }}>
@@ -226,7 +228,7 @@ export default function BlogPage() {
                       }}
                       className="hover:bg-[var(--gold-primary)]"
                     >
-                      Read Full Story <ArrowRight size={15} />
+                      {t("read_full")} <ArrowRight size={15} />
                     </button>
 
                     <Link
@@ -247,7 +249,7 @@ export default function BlogPage() {
                       }}
                       className="hover:bg-[var(--cream-mid)]"
                     >
-                      Share Link
+                      {t("share")}
                     </Link>
                   </div>
                 </div>
@@ -288,7 +290,7 @@ export default function BlogPage() {
                 }}
               >
                 <div>
-                  <span className="badge badge-gold" style={{ marginBottom: "0.5rem", display: "inline-block" }}>{selectedPost.category || "General"}</span>
+                  <span className="badge badge-gold" style={{ marginBottom: "0.5rem", display: "inline-block" }}>{selectedPost.category || t("category_default")}</span>
                   <h2
                     style={{
                       fontSize: "clamp(1.25rem, 3vw, 1.85rem)",
@@ -305,7 +307,7 @@ export default function BlogPage() {
                     <span>•</span>
                     <span>{new Date(selectedPost.createdAt).toLocaleDateString()}</span>
                     <span>•</span>
-                    <span>{selectedPost.readingTime || 5} min read</span>
+                    <span>{t("min_read", { minutes: selectedPost.readingTime || 5 })}</span>
                   </div>
                 </div>
                 <button
@@ -321,7 +323,7 @@ export default function BlogPage() {
                     flexShrink: 0
                   }}
                   className="hover:bg-[var(--cream-mid)] hover:text-[var(--navy-deep)]"
-                  aria-label="Close reader"
+                  aria-label={t("close_reader")}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -432,7 +434,7 @@ export default function BlogPage() {
                   }}
                   className="hover:bg-[var(--cream-mid)] hover:text-[var(--navy-deep)]"
                 >
-                  Close Article
+                  {t("close_article")}
                 </button>
               </div>
             </motion.div>
@@ -444,13 +446,12 @@ export default function BlogPage() {
       <section className="bg-[var(--navy-deep)] py-24 px-6 text-white text-center">
         <div className="container max-w-2xl mx-auto">
           <div className="gold-divider" />
-          <h2 className="text-3xl font-bold font-serif mb-4">Support Our Frontline Leaders</h2>
+          <h2 className="text-3xl font-bold font-serif mb-4">{t("cta_title")}</h2>
           <p className="text-white/80 font-light leading-relaxed mb-8">
-            Our historical posts reflect the sacrifice of early missionaries. Today, local leaders
-            need training to protect remote rural churches. Become a part of their story.
+            {t("cta_desc")}
           </p>
           <Link href="/get-involved" className="px-8 py-4 bg-[var(--gold-primary)] hover:bg-[var(--gold-dark)] text-white font-semibold rounded-full transition-all text-decoration-none">
-            Partner With Us
+            {t("cta_btn")}
           </Link>
         </div>
       </section>
