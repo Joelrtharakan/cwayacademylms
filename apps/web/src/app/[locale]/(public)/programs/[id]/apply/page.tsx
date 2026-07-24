@@ -322,6 +322,31 @@ export default function ProgramApplicationPage() {
         }
         .btn-primary:hover { background: transparent; color: var(--color-cway-forest); box-shadow: none; transform: translateY(-3px); }
         .nav-actions { display: flex; gap: 1rem; align-items: center; }
+
+        /* Responsive Styles */
+        .page-container { padding: 8rem 2rem 5rem; }
+        .header-section { padding: 4rem 3rem; }
+        .header-title { font-size: 40px; }
+        .form-container { padding: 4rem; }
+        .form-row { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-row-mb2 { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
+        .form-row-radio { display: flex; gap: 2rem; margin-top: 1rem; }
+        .declaration-box { padding: 2.5rem; margin-bottom: 3rem; }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 1rem; }
+            .nav-brand img { width: 36px !important; height: 36px !important; }
+            .nav-logo-text { font-size: 16px !important; }
+            .nav-links { display: none; }
+            
+            .page-container { padding: 6rem 1rem 3rem !important; }
+            .header-section { padding: 2.5rem 1.5rem !important; }
+            .header-title { font-size: 26px !important; line-height: 1.2 !important; word-break: break-word; }
+            .form-container { padding: 2rem 1.25rem !important; }
+            
+            .form-row, .form-row-mb2, .form-row-radio { flex-direction: column !important; gap: 1rem !important; }
+            .declaration-box { padding: 1.5rem !important; }
+        }
       ` }} />
 
       {/* Header Navigation */}
@@ -334,7 +359,7 @@ export default function ProgramApplicationPage() {
           />
           <div className="nav-logo-text"><span className="logo-cway">CWAY</span><span className="logo-academy"> ACADEMY</span></div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <div className="nav-links">
             <Link href="/#home" className="nav-active">Home</Link>
             <Link href="/#about">About</Link>
@@ -350,22 +375,22 @@ export default function ProgramApplicationPage() {
         </div>
       </nav>
 
-      <div style={{ padding: "8rem 2rem 5rem" }}>
+      <div className="page-container">
         <div style={{ maxWidth: "900px", margin: "0 auto", background: "white", borderRadius: "24px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.06)" }}>
         
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg, var(--navy-deep), var(--navy-mid))", padding: "4rem 3rem", color: "white", textAlign: "center" }}>
+        <div className="header-section" style={{ background: "linear-gradient(135deg, var(--navy-deep), var(--navy-mid))", color: "white", textAlign: "center" }}>
           <img src="/logo.png?v=3" alt="CWAY Academy" style={{ width: "72px", height: "72px", objectFit: "contain", margin: "0 auto 1.5rem", display: "block" }} />
-          <h1 style={{ fontSize: "40px", fontFamily: "var(--font-dm-serif)", marginBottom: "1rem", letterSpacing: "1px", color: "#FFFFFF" }}>PROGRAM APPLICATION</h1>
+          <h1 className="header-title" style={{ fontFamily: "var(--font-dm-serif)", marginBottom: "1rem", letterSpacing: "1px", color: "#FFFFFF" }}>PROGRAM APPLICATION</h1>
           <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "17px", maxWidth: "600px", margin: "0 auto", lineHeight: 1.6 }}>Step into your calling with Christ-centered theological training designed for life and ministry.</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: "4rem" }}>
+        <form onSubmit={handleSubmit} className="form-container">
           
           {/* Section 1: Program details */}
           <div style={{ marginBottom: "3.5rem" }}>
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>Program Information</h3>
-            <div style={{ display: "flex", gap: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Select Program *</label>
                 <input type="text" value={program?.title || ""} disabled style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.6)", background: "var(--cream-light)", color: "var(--text-muted)", fontSize: "15px", outline: "none" }} />
@@ -386,13 +411,13 @@ export default function ProgramApplicationPage() {
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>Personal Details</h3>
             
             <label style={labelStyle}>Full Name *</label>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <InputField label="" placeholder="First Name" name="firstName" required  value={(formData as any)["firstName"]} onChange={handleChange} />
               <InputField label="" placeholder="Middle Name" name="middleName"  value={(formData as any)["middleName"]} onChange={handleChange} />
               <InputField label="" placeholder="Last Name" name="lastName" required  value={(formData as any)["lastName"]} onChange={handleChange} />
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <InputField label="Date of Birth" name="dob" type="date" required  value={(formData as any)["dob"]} onChange={handleChange} />
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <label style={labelStyle}>Gender *</label>
@@ -404,7 +429,7 @@ export default function ProgramApplicationPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <label style={labelStyle}>Marital Status *</label>
                 <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required style={selectStyle}>
@@ -416,7 +441,7 @@ export default function ProgramApplicationPage() {
               <InputField label="Nationality" name="nationality" required  value={(formData as any)["nationality"]} onChange={handleChange} />
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div className="form-row-mb2">
               <InputField label="Aadhaar Number (optional)" name="aadhaarNumber"  value={(formData as any)["aadhaarNumber"]} onChange={handleChange} />
             </div>
 
@@ -441,11 +466,11 @@ export default function ProgramApplicationPage() {
           <div style={{ marginBottom: "3.5rem" }}>
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>Contact Details</h3>
             
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <InputField label="Email Address" name="email" type="email" required  value={(formData as any)["email"]} onChange={handleChange} />
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Mobile Number *</label>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -466,11 +491,11 @@ export default function ProgramApplicationPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2.5rem" }}>
               <InputField label="" placeholder="Address Line 1" name="permanentAddressLine1" required  value={(formData as any)["permanentAddressLine1"]} onChange={handleChange} />
               <InputField label="" placeholder="Address Line 2" name="permanentAddressLine2"  value={(formData as any)["permanentAddressLine2"]} onChange={handleChange} />
-              <div style={{ display: "flex", gap: "1.5rem" }}>
+              <div className="form-row" style={{ marginBottom: 0 }}>
                 <InputField label="" placeholder="City" name="permanentCity" required  value={(formData as any)["permanentCity"]} onChange={handleChange} />
                 <InputField label="" placeholder="State / Province" name="permanentState" required  value={(formData as any)["permanentState"]} onChange={handleChange} />
               </div>
-              <div style={{ display: "flex", gap: "1.5rem" }}>
+              <div className="form-row" style={{ marginBottom: 0 }}>
                 <InputField label="" placeholder="Postal Code" name="permanentPostalCode" required  value={(formData as any)["permanentPostalCode"]} onChange={handleChange} />
                 <InputField label="" placeholder="Country" name="permanentCountry" required  value={(formData as any)["permanentCountry"]} onChange={handleChange} />
               </div>
@@ -480,11 +505,11 @@ export default function ProgramApplicationPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
               <InputField label="" placeholder="Address Line 1" name="currentAddressLine1" required  value={(formData as any)["currentAddressLine1"]} onChange={handleChange} />
               <InputField label="" placeholder="Address Line 2" name="currentAddressLine2"  value={(formData as any)["currentAddressLine2"]} onChange={handleChange} />
-              <div style={{ display: "flex", gap: "1.5rem" }}>
+              <div className="form-row" style={{ marginBottom: 0 }}>
                 <InputField label="" placeholder="City" name="currentCity" required  value={(formData as any)["currentCity"]} onChange={handleChange} />
                 <InputField label="" placeholder="State / Province" name="currentState" required  value={(formData as any)["currentState"]} onChange={handleChange} />
               </div>
-              <div style={{ display: "flex", gap: "1.5rem" }}>
+              <div className="form-row" style={{ marginBottom: 0 }}>
                 <InputField label="" placeholder="Postal Code" name="currentPostalCode" required  value={(formData as any)["currentPostalCode"]} onChange={handleChange} />
                 <InputField label="" placeholder="Country" name="currentCountry" required  value={(formData as any)["currentCountry"]} onChange={handleChange} />
               </div>
@@ -495,7 +520,7 @@ export default function ProgramApplicationPage() {
           <div style={{ marginBottom: "3.5rem" }}>
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>Educational Background</h3>
             
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <label style={labelStyle}>Highest Qualification *</label>
                 <select name="highestQualification" value={formData.highestQualification} onChange={handleChange} required style={selectStyle}>
@@ -510,7 +535,7 @@ export default function ProgramApplicationPage() {
               <InputField label="Previous Institution Name" name="previousInstitution" required  value={(formData as any)["previousInstitution"]} onChange={handleChange} />
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div className="form-row-mb2">
               <InputField label="Year of Completion" name="yearOfCompletion" type="number" required  value={(formData as any)["yearOfCompletion"]} onChange={handleChange} />
               <InputField label="Marks / Grade (Percentage / CGPA)" name="marksOrGrade" required  value={(formData as any)["marksOrGrade"]} onChange={handleChange} />
             </div>
@@ -548,7 +573,7 @@ export default function ProgramApplicationPage() {
             
             <div style={{ marginBottom: "1.5rem" }}>
               <label style={labelStyle}>Are you a born-again believer? *</label>
-              <div style={{ display: "flex", gap: "2rem", marginTop: "1rem" }}>
+              <div className="form-row-radio">
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 600, color: "var(--navy-deep)" }}><input type="radio" name="isBornAgain" value="yes" checked={formData.isBornAgain === "yes"} onChange={handleChange} style={{ width: "20px", height: "20px", accentColor: "var(--gold-dark)" }} /> Yes</label>
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 600, color: "var(--navy-deep)" }}><input type="radio" name="isBornAgain" value="no" checked={formData.isBornAgain === "no"} onChange={handleChange} style={{ width: "20px", height: "20px", accentColor: "var(--gold-dark)" }} /> No</label>
               </div>
@@ -561,18 +586,18 @@ export default function ProgramApplicationPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <InputField label="" placeholder="Address Line 1" name="churchAddressLine1" required  value={(formData as any)["churchAddressLine1"]} onChange={handleChange} />
                 <InputField label="" placeholder="Address Line 2" name="churchAddressLine2"  value={(formData as any)["churchAddressLine2"]} onChange={handleChange} />
-                <div style={{ display: "flex", gap: "1.5rem" }}>
+                <div className="form-row" style={{ marginBottom: 0 }}>
                   <InputField label="" placeholder="City" name="churchCity" required  value={(formData as any)["churchCity"]} onChange={handleChange} />
                   <InputField label="" placeholder="State / Province" name="churchState" required  value={(formData as any)["churchState"]} onChange={handleChange} />
                 </div>
-                <div style={{ display: "flex", gap: "1.5rem" }}>
+                <div className="form-row" style={{ marginBottom: 0 }}>
                   <InputField label="" placeholder="Postal Code" name="churchPostalCode" required  value={(formData as any)["churchPostalCode"]} onChange={handleChange} />
                   <InputField label="" placeholder="Country" name="churchCountry" required  value={(formData as any)["churchCountry"]} onChange={handleChange} />
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <InputField label="Pastor's Name" name="pastorName" required  value={(formData as any)["pastorName"]} onChange={handleChange} />
               <InputField label="Ministry Experience (if any)" name="ministryExperience"  value={(formData as any)["ministryExperience"]} onChange={handleChange} />
             </div>
@@ -588,7 +613,7 @@ export default function ProgramApplicationPage() {
             <h3 style={{ fontSize: "24px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", borderBottom: "1px solid rgba(220, 224, 213, 0.6)", paddingBottom: "1rem", marginBottom: "2rem" }}>References</h3>
             
             <h4 style={{ fontSize: "16px", marginBottom: "1rem", color: "var(--navy-deep)" }}>Reference 1</h4>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Reference Type *</label>
                 <select name="reference1Type" value={formData.reference1Type} onChange={handleChange} required style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", appearance: "none" }}>
@@ -598,14 +623,14 @@ export default function ProgramApplicationPage() {
               </div>
               <InputField label="Relation" placeholder="e.g. Pastor, Mentor, Friend" name="reference1Relation" required  value={(formData as any)["reference1Relation"]} onChange={handleChange} />
             </div>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div className="form-row-mb2">
               <InputField label="Full Name" placeholder="Full Name" name="reference1Name" required  value={(formData as any)["reference1Name"]} onChange={handleChange} />
               <InputField label="Email Address" placeholder="Email Address" name="reference1Email"  value={(formData as any)["reference1Email"]} onChange={handleChange} />
               <InputField label="Phone Number" placeholder="Phone Number" name="reference1Phone" required  value={(formData as any)["reference1Phone"]} onChange={handleChange} />
             </div>
 
             <h4 style={{ fontSize: "16px", marginBottom: "1rem", color: "var(--navy-deep)" }}>Reference 2</h4>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Reference Type *</label>
                 <select name="reference2Type" value={formData.reference2Type} onChange={handleChange} required style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(220, 224, 213, 0.8)", background: "#FFFFFF", fontSize: "15px", outline: "none", transition: "all 0.2s", appearance: "none" }}>
@@ -615,7 +640,7 @@ export default function ProgramApplicationPage() {
               </div>
               <InputField label="Relation" placeholder="Relation" name="reference2Relation" required  value={(formData as any)["reference2Relation"]} onChange={handleChange} />
             </div>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="form-row">
               <InputField label="Full Name" placeholder="Full Name" name="reference2Name" required  value={(formData as any)["reference2Name"]} onChange={handleChange} />
               <InputField label="Email Address" placeholder="Email Address" name="reference2Email"  value={(formData as any)["reference2Email"]} onChange={handleChange} />
               <InputField label="Phone Number" placeholder="Phone Number" name="reference2Phone" required  value={(formData as any)["reference2Phone"]} onChange={handleChange} />
@@ -623,12 +648,12 @@ export default function ProgramApplicationPage() {
           </div>
 
           {/* Section 7: Declaration */}
-          <div style={{ marginBottom: "3rem", padding: "2.5rem", background: "rgba(184,134,69,0.05)", borderLeft: "4px solid var(--gold-dark)", borderRadius: "0 16px 16px 0" }}>
+          <div className="declaration-box" style={{ background: "rgba(184,134,69,0.05)", borderLeft: "4px solid var(--gold-dark)", borderRadius: "0 16px 16px 0" }}>
             <h3 style={{ fontSize: "22px", fontFamily: "var(--font-dm-serif), serif", color: "var(--navy-deep)", marginBottom: "1.5rem" }}>Declaration *</h3>
             <p style={{ fontSize: "15px", lineHeight: 1.7, color: "var(--text-muted)", marginBottom: "2rem" }}>
               I hereby declare that the information provided in this application is true and accurate to the best of my knowledge. I agree to abide by the rules, regulations, and academic requirements of the Academy.
             </p>
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div className="form-row-mb2">
               <InputField label="" placeholder="First Name (Signature)" name="declarationNameFirst" required  value={(formData as any)["declarationNameFirst"]} onChange={handleChange} />
               <InputField label="" placeholder="Last Name (Signature)" name="declarationNameLast" required  value={(formData as any)["declarationNameLast"]} onChange={handleChange} />
             </div>
