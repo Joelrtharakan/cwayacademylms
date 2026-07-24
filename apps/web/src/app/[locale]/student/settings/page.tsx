@@ -114,11 +114,12 @@ function SaveButton({ isPending, label }: { isPending: boolean, label: string })
     <button 
       type="submit" 
       disabled={isPending} 
+      className="w-full sm:w-auto"
       style={{ 
         background: GOLD_GRADIENT, 
         color: "#FFFFFF", 
-        borderRadius: 10, 
-        padding: "14px 32px", 
+        borderRadius: 12, 
+        padding: "14px 28px", 
         fontWeight: 700, 
         fontSize: 15, 
         border: "none", 
@@ -126,7 +127,8 @@ function SaveButton({ isPending, label }: { isPending: boolean, label: string })
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         boxShadow: isHovered ? "0 8px 20px rgba(184,134,69,0.3)" : "0 4px 10px rgba(184,134,69,0.15)",
         transform: isActive ? "scale(0.97)" : isHovered ? "translateY(-2px)" : "none",
-        opacity: isPending ? 0.7 : 1
+        opacity: isPending ? 0.7 : 1,
+        boxSizing: "border-box"
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setIsActive(false); }}
@@ -134,7 +136,7 @@ function SaveButton({ isPending, label }: { isPending: boolean, label: string })
       onMouseUp={() => setIsActive(false)}
     >
       {isPending ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <div className="spinner-border" style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
           {label === "saving" ? "Saving..." : label}
         </div>
@@ -163,8 +165,6 @@ export default function StudentSettingsPage() {
       location: user?.location || "", phone: user?.phone || ""
     }
   });
-
-
 
   const passwordForm = useForm({ defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" } });
 
@@ -199,123 +199,123 @@ export default function StudentSettingsPage() {
   };
 
   return (
-    <div style={{ 
-      display: "flex", 
-      flexDirection: "column", 
-      gap: 24,
-      maxWidth: 1000,
-      margin: "0 auto",
-      width: "100%"
-    }}>
+    <div className="w-full flex flex-col gap-5 max-w-[1000px] mx-auto font-sans px-0 sm:px-4 lg:px-6 py-2 sm:py-6" style={{ boxSizing: "border-box" }}>
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .tab-content { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .tab-content { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .avatar-hover-overlay { opacity: 0; transition: all 0.3s ease; }
         .avatar-container:hover .avatar-hover-overlay { opacity: 1; backdrop-filter: blur(4px); }
         .avatar-container:hover img { transform: scale(1.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .toggle-switch:checked { background-color: #B88645 !important; border-color: #B88645 !important; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background-color: #FFFFFF; border-radius: 50%; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .toggle-switch:checked::after { transform: translateX(20px); }
       `}</style>
 
       {/* Hero Header Area */}
-      <div style={{ position: "relative", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #B88645 0%, #8A6433 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 16px rgba(184,134,69,0.25)" }}>
-            <User size={24} color="#FFFFFF" strokeWidth={2} />
+      <div>
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#B88645] to-[#8A6433] flex items-center justify-center shadow-md shrink-0">
+            <User size={22} color="#FFFFFF" strokeWidth={2} />
           </div>
           <div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: 28, color: DARK, margin: 0, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1 }}>{t("title")}</h1>
-            <p style={{ color: MUTED, fontSize: 14, margin: "4px 0 0 0", fontWeight: 500 }}>{t("subtitle")}</p>
+            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#1A261D] tracking-tight leading-tight m-0">{t("title")}</h1>
+            <p className="text-xs sm:text-sm text-[#8F9E93] mt-1 font-medium m-0">{t("subtitle")}</p>
           </div>
         </div>
       </div>
 
-      <div style={{ 
-        display: "flex", 
-        background: SURFACE, 
-        border: `1px solid ${BORDER}`, 
-        borderRadius: 24, 
-        overflow: "hidden", 
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-        minHeight: 500
-      }}>
-        {/* Unified Sidebar */}
-        <div style={{ 
-          width: 260, 
-          flexShrink: 0, 
-          display: "flex", 
-          flexDirection: "column", 
-          gap: 6,
-          background: "#FAFAFA",
-          borderRight: `1px solid ${BORDER}`,
-          padding: "32px 20px"
-        }}>
-          <h3 style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 16px 16px" }}>{t("menuTitle")}</h3>
-          {TABS.map(t => {
-            const active = activeTab === t.id;
-            const Icon = t.icon;
+      {/* Mobile & Tablet Tab Pills (< 1024px) - Grid 3 columns */}
+      <div className="grid lg:hidden grid-cols-3 gap-2 w-full">
+        {TABS.map(tab => {
+          const active = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                padding: "10px 6px",
+                borderRadius: "12px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                backgroundColor: active ? "#B88645" : "#FFFFFF",
+                color: active ? "#FFFFFF" : "#8F9E93",
+                border: active ? "1px solid #B88645" : "1px solid #E4E8E0",
+                boxShadow: active ? "0 4px 12px rgba(184,134,69,0.25)" : "0 1px 3px rgba(0,0,0,0.04)",
+                width: "100%",
+                boxSizing: "border-box"
+              }}
+            >
+              <Icon size={16} style={{ flexShrink: 0 }} />
+              <span className="truncate">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Settings Card */}
+      <div className="w-full flex flex-col lg:flex-row bg-white border border-[#E4E8E0] rounded-2xl lg:rounded-3xl overflow-hidden shadow-sm min-h-[400px]" style={{ background: "#FFFFFF" }}>
+        {/* Desktop Sidebar (>= 1024px) */}
+        <div className="hidden lg:flex w-[260px] shrink-0 flex-col gap-1.5 bg-[#FAFAFA] border-r border-[#E4E8E0] p-6 lg:p-8">
+          <h3 className="text-[11px] font-bold text-[#8F9E93] uppercase tracking-wider mb-3 px-3">{t("menuTitle")}</h3>
+          {TABS.map(tab => {
+            const active = activeTab === tab.id;
+            const Icon = tab.icon;
             return (
-              <button key={t.id} onClick={() => setActiveTab(t.id)}
-                style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 14, 
-                  padding: "14px 16px", 
-                  borderRadius: 10, 
-                  background: active ? SURFACE : "transparent", 
-                  border: "none", 
-                  cursor: "pointer", 
-                  color: active ? DARK : MUTED, 
-                  fontWeight: active ? 700 : 500, 
-                  fontSize: 15, 
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
-                  textAlign: "left",
-                  boxShadow: active ? "0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)" : "none",
-                }}
-                onMouseEnter={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "rgba(0,0,0,0.03)";
-                    e.currentTarget.style.color = DARK;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = MUTED;
-                  }
-                }}
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left cursor-pointer border-none ${
+                  active
+                    ? "bg-white text-[#1A261D] shadow-sm"
+                    : "bg-transparent text-[#8F9E93] hover:bg-black/5 hover:text-[#1A261D]"
+                }`}
               >
-                <Icon size={18} color={active ? GOLD : MUTED} strokeWidth={active ? 2.5 : 2} style={{ transition: "all 0.2s" }} />
-                {t.label}
+                <Icon size={18} className={active ? "text-[#B88645]" : "text-[#8F9E93]"} strokeWidth={active ? 2.5 : 2} />
+                {tab.label}
               </button>
             );
           })}
         </div>
 
-        {/* Content Pane */}
-        <div className="tab-content" key={activeTab} style={{ flex: 1, padding: 32, background: SURFACE }}>
+        {/* Content Pane - Optimized responsive padding */}
+        <div 
+          className="tab-content flex-1 bg-white min-w-0" 
+          key={activeTab}
+          style={{ padding: "clamp(18px, 4vw, 36px)", background: "#FFFFFF", boxSizing: "border-box" }}
+        >
           {activeTab === "profile" && (
             <div>
-              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
-                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>{t("profile.title")}</h2>
-                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>{t("profile.subtitle")}</p>
+              <div className="mb-6 sm:mb-8 pb-4 sm:pb-5 border-b border-[#E4E8E0]">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1A261D] m-0 mb-1">{t("profile.title")}</h2>
+                <p className="text-xs sm:text-sm text-[#8F9E93] m-0 leading-relaxed">{t("profile.subtitle")}</p>
               </div>
               
-              <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 48 }}>
-                <div className="avatar-container" style={{ position: "relative", width: 120, height: 120, borderRadius: "50%", background: user?.avatar ? "transparent" : BG_ALT, border: user?.avatar ? `2px solid ${SURFACE}` : `2px dashed ${BORDER}`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(0,0,0,0.08)", cursor: "pointer" }}>
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
+                <div className="avatar-container relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#F7F8F5] border-2 border-dashed border-[#E4E8E0] overflow-hidden flex items-center justify-center shadow-md cursor-pointer shrink-0">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }} />
+                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover transition-transform duration-500" />
                   ) : (
-                    <User size={48} color={MUTED} strokeWidth={1.5} />
+                    <User size={36} className="text-[#8F9E93]" strokeWidth={1.5} />
                   )}
-                  <label className="avatar-hover-overlay" style={{ position: "absolute", inset: 0, background: "rgba(26, 38, 29, 0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#FFF", cursor: "pointer", gap: 6 }}>
-                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
-                    <Camera size={24} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{t("profile.change")}</span>
+                  <label className="avatar-hover-overlay absolute inset-0 bg-[#1A261D]/70 flex flex-col items-center justify-center text-white cursor-pointer gap-1">
+                    <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
+                    <Camera size={20} />
+                    <span className="text-[11px] font-semibold">{t("profile.change")}</span>
                   </label>
                 </div>
-                <div>
-                  <h3 style={{ margin: "0 0 4px 0", fontSize: 18, fontWeight: 700, color: DARK }}>{t("profile.pictureTitle")}</h3>
-                  <p style={{ fontSize: 14, color: MUTED, margin: 0, maxWidth: 300, lineHeight: 1.5 }}>{t("profile.pictureDesc")}</p>
+                <div className="flex flex-col justify-center">
+                  <h3 className="m-0 mb-1 text-base sm:text-lg font-bold text-[#1A261D]">{t("profile.pictureTitle")}</h3>
+                  <p className="text-xs sm:text-sm text-[#8F9E93] m-0 max-w-xs leading-relaxed">{t("profile.pictureDesc")}</p>
                 </div>
               </div>
 
@@ -323,26 +323,24 @@ export default function StudentSettingsPage() {
                 <Input label={t("profile.fullName")} {...profileForm.register("name", { required: t("profile.nameRequired") })} error={profileForm.formState.errors.name?.message} />
                 <Textarea label={t("profile.biography")} {...profileForm.register("bio")} placeholder={t("profile.bioPlaceholder")} />
                 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 8 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-2">
                   <Input label={t("profile.church")} {...profileForm.register("church")} />
                   <Input label={t("profile.location")} {...profileForm.register("location")} />
                 </div>
                 <Input label={t("profile.phone")} {...profileForm.register("phone")} />
                 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid #E4E8E0", display: "flex", justifyContent: "flex-end", width: "100%" }}>
                   <SaveButton isPending={profileMut.isPending} label={t("profile.saveBtn")} />
                 </div>
               </form>
             </div>
           )}
 
-
-
           {activeTab === "password" && (
             <div>
-              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
-                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>{t("password.title")}</h2>
-                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>{t("password.subtitle")}</p>
+              <div className="mb-6 sm:mb-8 pb-4 sm:pb-5 border-b border-[#E4E8E0]">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1A261D] m-0 mb-1">{t("password.title")}</h2>
+                <p className="text-xs sm:text-sm text-[#8F9E93] m-0 leading-relaxed">{t("password.subtitle")}</p>
               </div>
 
               <form onSubmit={passwordForm.handleSubmit(d => {
@@ -350,12 +348,12 @@ export default function StudentSettingsPage() {
                 passwordMut.mutate(d);
               })}>
                 <Input type="password" label={t("password.current")} {...passwordForm.register("currentPassword", { required: t("password.required") })} error={passwordForm.formState.errors.currentPassword?.message} />
-                <div style={{ marginTop: 8 }}>
+                <div className="mt-2">
                   <Input type="password" label={t("password.new")} {...passwordForm.register("newPassword", { required: t("password.required"), minLength: { value: 8, message: t("password.minChars") } })} error={passwordForm.formState.errors.newPassword?.message} />
                   <Input type="password" label={t("password.confirm")} {...passwordForm.register("confirmPassword", { required: t("password.required") })} error={passwordForm.formState.errors.confirmPassword?.message} />
                 </div>
                 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+                <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid #E4E8E0", display: "flex", justifyContent: "flex-end", width: "100%" }}>
                   <SaveButton isPending={passwordMut.isPending} label={t("password.updateBtn")} />
                 </div>
               </form>
@@ -364,85 +362,62 @@ export default function StudentSettingsPage() {
 
           {activeTab === "notifications" && (
             <div>
-              <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: `1px solid ${BORDER}` }}>
-                <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, color: DARK, margin: "0 0 8px 0", fontWeight: 700 }}>{t("notifications.title")}</h2>
-                <p style={{ color: MUTED, fontSize: 14, margin: 0 }}>{t("notifications.subtitle")}</p>
+              <div className="mb-6 sm:mb-8 pb-4 sm:pb-5 border-b border-[#E4E8E0]">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1A261D] m-0 mb-1">{t("notifications.title")}</h2>
+                <p className="text-xs sm:text-sm text-[#8F9E93] m-0 leading-relaxed">{t("notifications.subtitle")}</p>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div className="flex flex-col gap-3">
                 {[
                   { id: "email_announcements", label: t("notifications.announcements"), desc: t("notifications.announcementsDesc") },
                   { id: "email_grades", label: t("notifications.grades"), desc: t("notifications.gradesDesc") },
                   { id: "email_certificates", label: t("notifications.certificates"), desc: t("notifications.certificatesDesc") },
                   { id: "email_message", label: t("notifications.messages"), desc: t("notifications.messagesDesc") },
                 ].map(n => (
-                  <label key={n.id} style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    justifyContent: "space-between", 
-                    padding: "20px 24px", 
-                    background: SURFACE, 
-                    border: `1px solid ${BORDER}`, 
-                    borderRadius: 12, 
-                    cursor: "pointer", 
-                    transition: "all 0.2s",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.01)"
-                  }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.04)";
-                      e.currentTarget.style.borderColor = "rgba(184,134,69,0.3)";
+                  <label 
+                    key={n.id} 
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "14px 18px",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #E4E8E0",
+                      borderRadius: "10px",
+                      gap: "12px",
+                      cursor: "pointer",
+                      width: "100%",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.2s"
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.01)";
-                      e.currentTarget.style.borderColor = BORDER;
-                    }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: DARK }}>{n.label}</div>
-                      <div style={{ fontSize: 14, color: MUTED, marginTop: 6 }}>{n.desc}</div>
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1A261D", lineHeight: 1.3 }}>{n.label}</div>
+                      <div style={{ fontSize: "12px", color: "#8F9E93", marginTop: "2px", lineHeight: 1.4 }}>{n.desc}</div>
                     </div>
-                    {/* Modern Toggle Switch Style */}
-                    <div style={{ position: "relative" }}>
-                      <input type="checkbox" defaultChecked style={{ 
-                        appearance: "none", 
-                        width: 44, 
-                        height: 24, 
-                        background: BG_ALT, 
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: 12,
-                        cursor: "pointer",
-                        transition: "all 0.3s",
-                        position: "relative"
-                      }}
-                      className="premium-toggle"
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <input 
+                        type="checkbox" 
+                        defaultChecked 
+                        className="toggle-switch"
+                        style={{ 
+                          appearance: "none", 
+                          width: 44, 
+                          height: 24, 
+                          backgroundColor: "#F7F8F5", 
+                          border: "1px solid #E4E8E0",
+                          borderRadius: 12,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          position: "relative",
+                          outline: "none"
+                        }} 
                       />
-                      <style>{`
-                        .premium-toggle:checked {
-                          background: ${GOLD} !important;
-                          border-color: ${GOLD} !important;
-                        }
-                        .premium-toggle::after {
-                          content: '';
-                          position: absolute;
-                          top: 2px;
-                          left: 2px;
-                          width: 18px;
-                          height: 18px;
-                          background: white;
-                          border-radius: 50%;
-                          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        }
-                        .premium-toggle:checked::after {
-                          transform: translateX(20px);
-                        }
-                      `}</style>
                     </div>
                   </label>
                 ))}
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 32, paddingTop: 24, borderTop: `1px solid ${BORDER}` }}>
+              <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid #E4E8E0", display: "flex", justifyContent: "flex-end", width: "100%" }}>
                 <SaveButton isPending={false} label={t("notifications.saveBtn")} />
               </div>
             </div>
