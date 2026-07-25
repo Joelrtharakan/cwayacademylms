@@ -1,0 +1,12 @@
+2026-07-25 15:19:31 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::ffff:127.0.0.1"}
+2026-07-25 15:27:15 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::ffff:127.0.0.1"}
+2026-07-25 15:28:20 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::ffff:127.0.0.1"}
+2026-07-25 15:28:21 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::ffff:127.0.0.1"}
+2026-07-25 15:29:20 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::ffff:127.0.0.1"}
+2026-07-25 15:31:30 [warn]: Failed login attempt for joelrtharakan@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-25 15:31:31 [warn]: Failed login attempt for joelrtharakan@gmail.com {"ip":"::1","error":"Invalid email or password"}
+2026-07-25 15:31:45 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}
+2026-07-25 16:18:23 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::ffff:127.0.0.1"}
+2026-07-25 19:41:22 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::ffff:127.0.0.1"}
+2026-07-25 22:08:14 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::ffff:127.0.0.1"}
+2026-07-25 22:21:53 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::ffff:127.0.0.1"}

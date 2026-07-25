@@ -1,0 +1,75 @@
+name: cway_academy
+description: CWAY Academy — official mobile client for the CWAY Academy LMS.
+publish_to: "none"
+version: 0.1.0+1
+
+# NOTE: Flutter is not installed in the analysis environment. After cloning:
+#   cd apps/mobile
+#   flutter pub get
+#   dart run build_runner build --delete-conflicting-outputs   # once codegen modules land
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.6.2
+
+  # Networking
+  dio: ^5.7.0
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+  connectivity_plus: ^6.1.0
+
+  # Auth / security
+  local_auth: ^2.3.0
+  crypto: ^3.0.6 # certificate-pinning fingerprint hashing
+
+  # Secure + local persistence
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+
+  # Models / serialization
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+  intl: ^0.20.2
+  package_info_plus: ^8.1.1
+
+  # Video (YouTube IFrame player — mirrors the website's YouTube embeds)
+  youtube_player_iframe: ^5.2.0
+
+  # Files (assignment submissions + opening attachments)
+  file_picker: ^8.1.4
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.2 # share/save downloaded certificate PDFs
+  flutter_animate: ^4.5.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/images/

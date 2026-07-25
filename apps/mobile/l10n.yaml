@@ -1,0 +1,8 @@
+# Flutter gen_l10n configuration. Runs automatically on `flutter pub get`
+# (pubspec has `generate: true`). Generates lib/l10n/app_localizations.dart.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/l10n
+nullable-getter: false

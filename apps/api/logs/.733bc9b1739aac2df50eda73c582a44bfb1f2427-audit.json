@@ -34,6 +34,11 @@
             "date": 1784836133275,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-24.log",
             "hash": "2d9ba54423dad6be2b588030c22fdeedc81ed0b75bb5c5263f1dacd6633a0253"
+        },
+        {
+            "date": 1784972258062,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-25.log",
+            "hash": "b28f64f692319350c497058bf66850a393fc322f5487a7916fc70c621b728ed1"
         }
     ],
     "hashType": "sha256"

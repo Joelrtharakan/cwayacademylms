@@ -32,6 +32,7 @@ import studentRoutes from "./routes/student.routes";
 import blogRoutes from "./routes/blog.routes";
 import programsRoutes from "./routes/programs.routes";
 import referencesRoutes from "./routes/references.routes";
+import sseRoutes from "./routes/sse.routes";
 import { AppError } from "./utils/errors";
 
 const app = express();
@@ -122,6 +123,7 @@ app.use("/api/v1/student", studentRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/programs", programsRoutes);
 app.use("/api/v1/references", referencesRoutes);
+app.use("/api/v1/stream", sseRoutes); // SSE: near-real-time notifications (additive)
 
 // Catch-all unhandled routes
 app.all("*", (req: Request, res: Response, next: NextFunction) => {
