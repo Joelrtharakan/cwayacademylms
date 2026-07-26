@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
-/// 100% In-App YouTube lesson player.
-///
-/// Starts automatically from 0:00 directly on screen inside the 16:9 container box.
+/// 100% In-App YouTube lesson player with instant sub-second load performance.
 class YouTubeLessonPlayer extends StatefulWidget {
   const YouTubeLessonPlayer({
     super.key,
@@ -25,7 +23,7 @@ class YouTubeLessonPlayer extends StatefulWidget {
 
 class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
   late final WebViewController _controller;
-  bool _isLoadingPage = true;
+  bool _isPlaying = false;
 
   @override
   void initState() {
@@ -34,9 +32,6 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
   }
 
   void _initPlayer() {
-    final embedUrl =
-        'https://www.youtube-nocookie.com/embed/${widget.videoId}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&start=0';
-
     final htmlContent = '''
 <!DOCTYPE html>
 <html>
@@ -45,15 +40,52 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; background: #0F172A; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    iframe { width: 100%; height: 100%; border: 0; outline: none; }
+    #player { width: 100%; height: 100%; border: 0; outline: none; opacity: 0; transition: opacity 0.4s ease-in-out; }
+    #player.playing { opacity: 1 !important; }
   </style>
 </head>
 <body>
-  <iframe 
-    src="$embedUrl" 
-    allow="autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope" 
-    allowfullscreen>
-  </iframe>
+  <div id="player"></div>
+  <script>
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId: '${widget.videoId}',
+        playerVars: {
+          'autoplay': 1,
+          'mute': 1,
+          'controls': 1,
+          'playsinline': 1,
+          'rel': 0,
+          'enablejsapi': 1,
+          'start': 0,
+          'origin': 'https://www.youtube-nocookie.com'
+        },
+        events: {
+          'onReady': function(e) {
+            e.target.mute();
+            e.target.playVideo();
+          },
+          'onStateChange': function(e) {
+            if (e.data === 1 || e.data === YT.PlayerState.PLAYING) {
+              document.getElementById('player').classList.add('playing');
+              if (window.FlutterPlayerChannel) {
+                window.FlutterPlayerChannel.postMessage('PLAYING');
+              }
+              setTimeout(function() { e.target.unMute(); }, 200);
+            }
+          }
+        }
+      });
+    }
+  </script>
 </body>
 </html>
 ''';
@@ -72,20 +104,19 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
     ));
     unawaited(webController.setBackgroundColor(const Color(0xFF0F172A)));
 
-    unawaited(webController.setNavigationDelegate(
-      NavigationDelegate(
-        onPageFinished: (_) {
-          Future.delayed(const Duration(milliseconds: 600), () {
-            if (mounted) setState(() => _isLoadingPage = false);
-          });
-        },
-      ),
-    ));
-
     if (webController.platform is AndroidWebViewController) {
       unawaited((webController.platform as AndroidWebViewController)
           .setMediaPlaybackRequiresUserGesture(false));
     }
+
+    unawaited(webController.addJavaScriptChannel(
+      'FlutterPlayerChannel',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (message.message == 'PLAYING' && mounted) {
+          setState(() => _isPlaying = true);
+        }
+      },
+    ));
 
     unawaited(webController.loadHtmlString(
       htmlContent,
@@ -120,10 +151,10 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
           children: [
             playerWidget,
             IgnorePointer(
-              ignoring: !_isLoadingPage,
+              ignoring: _isPlaying,
               child: AnimatedOpacity(
-                opacity: _isLoadingPage ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
+                opacity: _isPlaying ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
