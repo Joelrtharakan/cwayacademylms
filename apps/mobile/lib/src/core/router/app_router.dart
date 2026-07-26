@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -177,14 +178,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.courseDetail,
-        builder: (context, state) =>
-            CourseDetailScreen(courseId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: CourseDetailScreen(courseId: state.pathParameters['id']!),
+        ),
       ),
       GoRoute(
         path: AppRoutes.courseLearn,
-        builder: (context, state) => LessonPlayerScreen(
-          courseId: state.pathParameters['id']!,
-          initialLessonId: state.uri.queryParameters['lessonId'],
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: LessonPlayerScreen(
+            courseId: state.pathParameters['id']!,
+            initialLessonId: state.uri.queryParameters['lessonId'],
+          ),
         ),
       ),
       GoRoute(

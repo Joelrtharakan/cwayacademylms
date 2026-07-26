@@ -51,8 +51,15 @@ dependencies:
   intl: ^0.20.2
   package_info_plus: ^8.1.1
 
-  # Video (YouTube IFrame player — mirrors the website's YouTube embeds)
+  # Video — native inline playback of YouTube lessons. youtube_explode_dart
+  # resolves a direct stream URL, played by video_player (ExoPlayer/AVPlayer)
+  # with chewie for the controls UI. Far more stable than a WebView embed.
+  video_player: ^2.9.2
+  chewie: ^1.8.5
+  youtube_explode_dart: ^2.3.4
   youtube_player_iframe: ^5.2.0
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.13.0
 
   # Files (assignment submissions + opening attachments)
   file_picker: ^8.1.4

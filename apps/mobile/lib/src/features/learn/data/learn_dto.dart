@@ -65,7 +65,6 @@ class LearnLessonDto with _$LearnLessonDto {
     @Default(false) bool isFree,
     @Default(false) bool isPreview,
     String? videoUrl,
-    String? bunnyVideoId,
     Object? content,
     LearnQuizRef? quiz,
     LearnAssignmentRef? assignment,

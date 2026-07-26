@@ -249,6 +249,7 @@ class _PlayerBody extends StatelessWidget {
 
     return SafeArea(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Top bar over the media area.
           Row(
@@ -283,8 +284,9 @@ class _PlayerBody extends StatelessWidget {
           else
             _NonVideoPanel(lesson: lesson),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+            child: RepaintBoundary(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
                 Row(
                   children: [
@@ -356,6 +358,7 @@ class _PlayerBody extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           ),
         ],
       ),

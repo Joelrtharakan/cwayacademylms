@@ -27,20 +27,22 @@ class CurriculumList extends StatelessWidget {
     return Column(
       children: [
         for (var i = 0; i < sections.length; i++)
-          Container(
-            margin: const EdgeInsets.only(bottom: AppSpacing.md),
-            decoration: BoxDecoration(
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Material(
               color: colors.surface,
-              borderRadius: AppRadii.rLg,
-              border: Border.all(color: colors.border),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: _SectionTile(
-              index: i + 1,
-              section: sections[i],
-              isEnrolled: isEnrolled,
-              onLessonTap: onLessonTap,
-              initiallyExpanded: i == 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: AppRadii.rLg,
+                side: BorderSide(color: colors.border),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _SectionTile(
+                index: i + 1,
+                section: sections[i],
+                isEnrolled: isEnrolled,
+                onLessonTap: onLessonTap,
+                initiallyExpanded: i == 0,
+              ),
             ),
           ),
       ],
