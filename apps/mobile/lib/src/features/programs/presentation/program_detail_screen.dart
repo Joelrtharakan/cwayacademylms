@@ -52,7 +52,7 @@ class ProgramDetailScreen extends ConsumerWidget {
                       child: const Text(
                         'ACADEMIC PROGRAM',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,

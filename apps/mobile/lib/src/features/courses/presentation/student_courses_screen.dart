@@ -302,7 +302,14 @@ class _CourseItemCard extends StatelessWidget {
                 width: 64,
                 height: 64,
                 child: course.thumbnail != null && course.thumbnail!.startsWith('http')
-                    ? Image.network(course.thumbnail!, fit: BoxFit.cover)
+                    ? Image.network(
+                        course.thumbnail!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: colors.forestMid,
+                          child: const Icon(Icons.menu_book_rounded, color: Colors.white70),
+                        ),
+                      )
                     : Container(
                         color: colors.forestMid,
                         child: const Icon(Icons.menu_book_rounded, color: Colors.white70),

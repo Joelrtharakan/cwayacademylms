@@ -174,20 +174,22 @@ class _Logo extends StatelessWidget {
     return Container(
       width: 80,
       height: 80,
-      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: colors.goldPrimary.withValues(alpha: 0.4),
-            blurRadius: 24,
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 20,
             spreadRadius: 2,
           ),
         ],
       ),
       child: ClipOval(
-        child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+        child: Container(
+          color: Colors.white,
+          child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+        ),
       ),
     );
   }

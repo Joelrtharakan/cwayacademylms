@@ -118,8 +118,10 @@ class _LessonRow extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final title = lesson.title.resolveFor(context);
 
-    return ListTile(
-      dense: true,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        dense: true,
       enabled: !locked,
       onTap: locked ? null : onTap,
       contentPadding:
@@ -145,6 +147,7 @@ class _LessonRow extends StatelessWidget {
               ? Text('Preview',
                   style: text.labelSmall?.copyWith(color: colors.goldDark),)
               : null),
+      ),
     );
   }
 }

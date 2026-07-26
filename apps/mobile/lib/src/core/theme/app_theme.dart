@@ -17,8 +17,8 @@ class AppTheme {
     final colorScheme = ColorScheme(
       brightness: brightness,
       primary: c.goldPrimary,
-      onPrimary: brightness == Brightness.light ? Colors.white : c.forestDeep,
-      secondary: c.forestMid,
+      onPrimary: Colors.white,
+      secondary: c.goldLight,
       onSecondary: Colors.white,
       surface: c.surface,
       onSurface: c.textPrimary,

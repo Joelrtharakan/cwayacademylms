@@ -189,6 +189,63 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],),
           const SizedBox(height: AppSpacing.lg),
+          _Section(
+            title: 'Support',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.headphones_outlined, color: colors.goldPrimary),
+                title: const Text('Help & Support'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showSupportModal(
+                  context,
+                  title: 'Help & Support',
+                  content: 'For academic assistance, course inquiries, or technical support, please contact our support team at support@cwayacademy.org or reach out to your instructor directly through course messaging.',
+                  icon: Icons.headset_mic_rounded,
+                ),
+              ),
+              Divider(height: 1, color: colors.border),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.shield_outlined, color: colors.goldPrimary),
+                title: const Text('Privacy Policy'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showSupportModal(
+                  context,
+                  title: 'Privacy Policy',
+                  content: 'CWAY Academy respects your privacy. Your personal information, course progress, and academic records are securely encrypted and protected in accordance with international data privacy standards.',
+                  icon: Icons.verified_user_rounded,
+                ),
+              ),
+              Divider(height: 1, color: colors.border),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.description_outlined, color: colors.goldPrimary),
+                title: const Text('Terms of Service'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showSupportModal(
+                  context,
+                  title: 'Terms of Service',
+                  content: 'By accessing CWAY Academy courses and materials, you agree to adhere to our academic honor code, respect copyright terms, and maintain integrity in all coursework and discussions.',
+                  icon: Icons.article_rounded,
+                ),
+              ),
+              Divider(height: 1, color: colors.border),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.info_outline_rounded, color: colors.goldPrimary),
+                title: const Text('About CWAY Academy'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showSupportModal(
+                  context,
+                  title: 'About CWAY Academy',
+                  content: 'CWAY Academy is dedicated to equipping leaders, ministers, and believers with high-quality, biblical theology and practical leadership training worldwide.',
+                  icon: Icons.school_rounded,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
           Material(
             color: colors.surfaceElevated,
             borderRadius: AppRadii.rLg,
@@ -198,14 +255,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.download_outlined, color: colors.forestLight),
+                  leading: Icon(Icons.download_outlined, color: colors.goldPrimary),
                   title: const Text('Downloads'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.push(AppRoutes.downloads),
                 ),
                 Divider(height: 1, color: colors.border),
                 ListTile(
-                  leading: Icon(Icons.settings_outlined, color: colors.forestLight),
+                  leading: Icon(Icons.settings_outlined, color: colors.goldPrimary),
                   title: const Text('Settings'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.push(AppRoutes.settings),
@@ -221,6 +278,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, duration: 300.ms, curve: Curves.easeOutQuad),
+      ),
+    );
+  }
+
+  void _showSupportModal(
+    BuildContext context, {
+    required String title,
+    required String content,
+    required IconData icon,
+  }) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.sm,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: colors.goldPrimary.withValues(alpha: 0.15),
+                  child: Icon(icon, color: colors.goldDark, size: 20),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Text(
+                  title,
+                  style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              content,
+              style: text.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -300,19 +419,23 @@ class _Section extends StatelessWidget {
             style: text.labelSmall
                 ?.copyWith(color: colors.textMuted, letterSpacing: 1),),
         const SizedBox(height: AppSpacing.sm),
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: colors.surfaceElevated,
-            borderRadius: AppRadii.rLg,
-            boxShadow: AppShadows.card(colors.forestDeep),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? colors.border.withValues(alpha: 0.5)
-                  : colors.border,
+        Material(
+          color: colors.surfaceElevated,
+          borderRadius: AppRadii.rLg,
+          elevation: 2,
+          shadowColor: colors.forestDeep.withValues(alpha: 0.08),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              borderRadius: AppRadii.rLg,
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? colors.border.withValues(alpha: 0.5)
+                    : colors.border,
+              ),
             ),
+            child: Column(children: children),
           ),
-          child: Column(children: children),
         ),
       ],
     );
@@ -334,7 +457,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: colors.forestLight),
+          Icon(icon, size: 18, color: colors.goldPrimary),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(

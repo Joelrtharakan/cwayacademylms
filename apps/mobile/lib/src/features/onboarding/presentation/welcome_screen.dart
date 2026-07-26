@@ -71,20 +71,25 @@ class _Brand extends StatelessWidget {
         Container(
           width: 96,
           height: 96,
-          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: colors.goldPrimary.withValues(alpha: 0.35),
-                blurRadius: 30,
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
                 spreadRadius: 2,
               ),
             ],
           ),
           child: ClipOval(
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+            child: Container(
+              color: Colors.white,
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),

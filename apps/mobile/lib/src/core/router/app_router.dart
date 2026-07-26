@@ -114,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authControllerProvider);
       final loc = state.matchedLocation;
 
-      // Session still resolving → hold on the splash screen.
+      // Session resolving → hold seamlessly on matching dark background
       if (auth.isLoading || !auth.hasValue) {
         return loc == AppRoutes.splash ? null : AppRoutes.splash;
       }
@@ -136,8 +136,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Unauthenticated → the public Welcome landing, but let prospective
-      // students browse programs, apply, and sign in freely.
+      // Unauthenticated → if on splash, go directly to WelcomeScreen
+      if (loc == AppRoutes.splash) {
+        return AppRoutes.welcome;
+      }
+
+      // Allow prospective students to browse programs, apply, sign in
       if (AppRoutes.isPublic(loc)) return null;
       return AppRoutes.welcome;
     },
