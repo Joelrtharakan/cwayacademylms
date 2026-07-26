@@ -205,7 +205,16 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
     const enrollment = await prisma.enrollment.findUnique({
       where: { studentId_courseId: { studentId: req.user.id, courseId: course.id } },
     });
-    isEnrolled = !!enrollment;
+    if (enrollment) {
+      isEnrolled = true;
+    } else if (course.programId) {
+      const progEnrollment = await prisma.programEnrollment.findFirst({
+        where: { studentId: req.user.id, programId: course.programId },
+      });
+      if (progEnrollment && progEnrollment.status !== "REJECTED" && progEnrollment.status !== "WITHDRAWN") {
+        isEnrolled = true;
+      }
+    }
   }
 
   const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN" || req.user?.role === "REGISTRAR";

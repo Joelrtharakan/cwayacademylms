@@ -136,6 +136,12 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
   });
 
   try {
+    await redis.del(`cway:course:${courseId}`);
+  } catch (e) {
+    console.error("Redis del error:", e);
+  }
+
+  try {
     await sendEnrollmentConfirmationEmail(
       { name: (user as any).name || "Student", email: user.email },
       {
@@ -153,6 +159,25 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
   }
 
   res.status(201).json({ status: "success", data: enrollment });
+});
+
+export const unenrollFromCourse = asyncHandler(async (req: Request, res: Response) => {
+  const { courseId } = req.params;
+  const studentId = req.user!.id;
+
+  const existing = await prisma.enrollment.findUnique({
+    where: { studentId_courseId: { studentId, courseId } }
+  });
+
+  if (!existing) {
+    throw new AppError("Enrollment not found", 404);
+  }
+
+  await prisma.enrollment.delete({
+    where: { id: existing.id }
+  });
+
+  res.json({ status: "success", message: "Unenrolled successfully" });
 });
 
 export const getCourseEnrollment = asyncHandler(async (req: Request, res: Response) => {

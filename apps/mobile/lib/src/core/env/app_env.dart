@@ -55,6 +55,19 @@ class AppEnv {
     return isProd ? 'https://www.cwayacademy.com' : 'http://$_devHost:3000';
   }
 
+  /// Public website page where prospective students apply to programs. The
+  /// application itself lives entirely on the website; the app only opens it.
+  /// Override with --dart-define=APPLY_URL=...
+  static String get applicationUrl {
+    const override = String.fromEnvironment('APPLY_URL');
+    if (override.isNotEmpty) return override;
+    return '$webBaseUrl/programs';
+  }
+
+  /// The website page for a specific program (used by the in-app apply WebView).
+  static String programApplyUrl(String programId) =>
+      '$webBaseUrl/programs/$programId';
+
   static const Duration connectTimeout = Duration(seconds: 20);
   static const Duration receiveTimeout = Duration(seconds: 30);
 

@@ -4,16 +4,21 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/error_banner.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../courses/data/courses_repository.dart';
+import '../../dashboard/application/dashboard_controller.dart';
 import '../application/auth_controller.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_text_field.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, this.pendingCourseId});
+
+  final String? pendingCourseId;
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -55,6 +60,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             church: _church.text,
             location: _location.text,
           );
+
+      if (widget.pendingCourseId != null && widget.pendingCourseId!.isNotEmpty) {
+        try {
+          await ref.read(coursesRepositoryProvider).enroll(widget.pendingCourseId!);
+        } catch (_) {}
+        ref.invalidate(courseDetailProvider(widget.pendingCourseId!));
+        ref.invalidate(dashboardControllerProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account created & enrolled in course!')),
+          );
+          context.go(AppRoutes.courseDetailPath(widget.pendingCourseId!));
+          return;
+        }
+      }
+
       if (mounted) {
         context.pushReplacement(
           AppRoutes.verifyEmail,
@@ -72,6 +93,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AuthScaffold(
       title: 'Create your account',
       subtitle: 'Join CWAY Academy and start learning today.',
@@ -148,6 +170,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 variant: ButtonVariant.gold,
                 isLoading: _submitting,
                 onPressed: _submitting ? null : _submit,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Already have an account? ',
+                style: TextStyle(color: colors.textSecondary),
+              ),
+              GestureDetector(
+                onTap: _submitting
+                    ? null
+                    : () => context.push(
+                          widget.pendingCourseId != null &&
+                                  widget.pendingCourseId!.isNotEmpty
+                              ? '${AppRoutes.login}?pendingCourseId=${widget.pendingCourseId}'
+                              : AppRoutes.login,
+                        ),
+                child: Text(
+                  'Sign in',
+                  style: TextStyle(
+                    color: colors.goldDark,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),

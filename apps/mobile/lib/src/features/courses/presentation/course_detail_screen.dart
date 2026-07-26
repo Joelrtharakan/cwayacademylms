@@ -11,6 +11,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets/error_banner.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../auth/application/auth_controller.dart';
 import '../../dashboard/application/dashboard_controller.dart';
 import '../../downloads/application/downloads_controller.dart';
 import '../../downloads/data/download_item.dart';
@@ -31,12 +32,103 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
   bool _enrolling = false;
 
   Future<void> _enroll(CourseDetailDto course) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      final colors = context.colors;
+      await showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: colors.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (ctx) => Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Sign in to Enroll',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Please sign in or create an account to enroll in "${course.title.resolveFor(context)}".',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              PrimaryButton(
+                label: 'Sign in to existing account',
+                variant: ButtonVariant.gold,
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.push('${AppRoutes.login}?pendingCourseId=${course.id}');
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              PrimaryButton(
+                label: 'Create a new account',
+                variant: ButtonVariant.outline,
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.push('${AppRoutes.register}?pendingCourseId=${course.id}');
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() => _enrolling = true);
     try {
       await ref.read(coursesRepositoryProvider).enroll(course.id);
       ref.invalidate(courseDetailProvider(widget.courseId));
       ref.invalidate(dashboardControllerProvider);
       _snack('You are enrolled. Happy learning!');
+    } on ApiException catch (e) {
+      _snack(e.message);
+    } finally {
+      if (mounted) setState(() => _enrolling = false);
+    }
+  }
+
+  Future<void> _unenroll(CourseDetailDto course) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Unenroll from Course?'),
+        content: Text(
+          'Are you sure you want to unenroll from "${course.title.resolveFor(context)}"? Your progress will be removed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Unenroll'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _enrolling = true);
+    try {
+      await ref.read(coursesRepositoryProvider).unenroll(course.id);
+      ref.invalidate(courseDetailProvider(widget.courseId));
+      ref.invalidate(dashboardControllerProvider);
+      _snack('You have unenrolled from this course.');
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -104,6 +196,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
           course: course,
           busy: _enrolling,
           onEnroll: () => _enroll(course),
+          onUnenroll: () => _unenroll(course),
           onContinue: _openPlayer,
         ),
         orElse: () => null,
@@ -137,14 +230,42 @@ class _DetailContent extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 240,
           pinned: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actionsIconTheme: const IconThemeData(color: Colors.white),
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                tooltip: 'Back',
+                onPressed: () => context.pop(),
+              ),
+            ),
+          ),
           actions: [
             if (course.isEnrolled)
-              IconButton(
-                tooltip: saved ? 'Remove download' : 'Save for offline',
-                icon: Icon(saved
-                    ? Icons.download_done_rounded
-                    : Icons.download_outlined,),
-                onPressed: onToggleSave,
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    tooltip: saved ? 'Remove download' : 'Save for offline',
+                    icon: Icon(
+                      saved
+                          ? Icons.download_done_rounded
+                          : Icons.download_outlined,
+                      color: Colors.white,
+                    ),
+                    onPressed: onToggleSave,
+                  ),
+                ),
               ),
           ],
           flexibleSpace: FlexibleSpaceBar(
@@ -331,18 +452,21 @@ class _CtaBar extends StatelessWidget {
     required this.course,
     required this.busy,
     required this.onEnroll,
+    required this.onUnenroll,
     required this.onContinue,
   });
 
   final CourseDetailDto course;
   final bool busy;
   final VoidCallback onEnroll;
+  final VoidCallback onUnenroll;
   final VoidCallback onContinue;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final text = Theme.of(context).textTheme;
+    final isProgramCourse = course.programId != null && course.programId!.isNotEmpty;
 
     return SafeArea(
       child: Container(
@@ -353,7 +477,7 @@ class _CtaBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            if (!course.isEnrolled) ...[
+            if (!course.isEnrolled && !isProgramCourse) ...[
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -373,16 +497,47 @@ class _CtaBar extends StatelessWidget {
               const SizedBox(width: AppSpacing.lg),
             ],
             Expanded(
-              child: PrimaryButton(
-                label: course.isEnrolled ? 'Continue learning' : 'Enroll now',
-                variant: ButtonVariant.gold,
-                icon: course.isEnrolled
-                    ? Icons.play_arrow_rounded
-                    : Icons.school_rounded,
-                isLoading: busy,
-                onPressed: busy ? null : (course.isEnrolled ? onContinue : onEnroll),
-              ),
+              child: isProgramCourse && !course.isEnrolled
+                  ? PrimaryButton(
+                      label: 'Apply for Program',
+                      variant: ButtonVariant.gold,
+                      icon: Icons.edit_note_rounded,
+                      onPressed: () => context.push('/programs/${course.programId}/apply'),
+                    )
+                  : PrimaryButton(
+                      label: course.isEnrolled ? 'Continue learning' : 'Enroll now',
+                      variant: ButtonVariant.gold,
+                      icon: course.isEnrolled
+                          ? Icons.play_arrow_rounded
+                          : Icons.school_rounded,
+                      isLoading: busy,
+                      onPressed: busy ? null : (course.isEnrolled ? onContinue : onEnroll),
+                    ),
             ),
+            if (course.isEnrolled) ...[
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: busy ? null : onUnenroll,
+                icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.red),
+                label: const Text(
+                  'Unenroll',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  minimumSize: const Size(0, 48),
+                  maximumSize: const Size(130, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

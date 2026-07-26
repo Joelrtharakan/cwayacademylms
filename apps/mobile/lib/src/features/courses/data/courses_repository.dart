@@ -21,6 +21,9 @@ abstract interface class CoursesRepository {
   /// Enrolls the current student. Throws [ApiException]; a 400 typically means
   /// "already enrolled".
   Future<void> enroll(String courseId);
+
+  /// Unenrolls the current student from a course.
+  Future<void> unenroll(String courseId);
 }
 
 class CoursesRepositoryImpl implements CoursesRepository {
@@ -98,6 +101,17 @@ class CoursesRepositoryImpl implements CoursesRepository {
       await _dio.post<Map<String, dynamic>>(
         '/student/enrollments',
         data: {'courseId': courseId},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> unenroll(String courseId) async {
+    try {
+      await _dio.delete<Map<String, dynamic>>(
+        '/student/courses/$courseId/unenroll',
       );
     } on DioException catch (e) {
       throw ApiException.fromDio(e);

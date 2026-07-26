@@ -189,17 +189,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],),
           const SizedBox(height: AppSpacing.lg),
-          Container(
-            decoration: BoxDecoration(
-              color: colors.surfaceElevated,
-              borderRadius: AppRadii.rLg,
-              boxShadow: AppShadows.card(colors.forestDeep),
-              border: Border.all(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? colors.border.withValues(alpha: 0.5)
-                    : colors.border,
-              ),
-            ),
+          Material(
+            color: colors.surfaceElevated,
+            borderRadius: AppRadii.rLg,
+            elevation: 2,
+            shadowColor: colors.forestDeep.withValues(alpha: 0.1),
+            clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
                 ListTile(

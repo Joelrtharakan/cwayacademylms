@@ -77,20 +77,19 @@ export const applyForProgram = asyncHandler(async (req: Request, res: Response) 
   const program = await prisma.program.findUnique({ where: { id } });
   if (!program) throw new AppError("Program not found", 404);
 
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+  let photoUrl = "https://cway-academy.r2.cloudflarestorage.com/defaults/passport-photo.png";
   
-  if (!files || !files["photo"] || files["photo"].length === 0) {
-    throw new AppError("Passport photo is required", 400);
+  if (files && files["photo"] && files["photo"].length > 0) {
+    const photoFile = files["photo"][0];
+    const photoKey = generateKey("applications/photos", `${Date.now()}-${photoFile.originalname}`);
+    const { url } = await uploadToR2(photoFile.buffer, photoKey, photoFile.mimetype);
+    photoUrl = url;
   }
   
-  // Upload photo
-  const photoFile = files["photo"][0];
-  const photoKey = generateKey("applications/photos", `${Date.now()}-${photoFile.originalname}`);
-  const { url: photoUrl } = await uploadToR2(photoFile.buffer, photoKey, photoFile.mimetype);
-
   // Upload certificates
   const certificatesUrls: string[] = [];
-  if (files["certificates"] && files["certificates"].length > 0) {
+  if (files && files["certificates"] && files["certificates"].length > 0) {
     for (const certFile of files["certificates"]) {
       const certKey = generateKey("applications/certificates", `${Date.now()}-${certFile.originalname}`);
       const { url } = await uploadToR2(certFile.buffer, certKey, certFile.mimetype);

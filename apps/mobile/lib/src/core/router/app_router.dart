@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,13 +16,18 @@ import '../../features/certificates/data/certificate_dto.dart';
 import '../../features/certificates/presentation/certificate_detail_screen.dart';
 import '../../features/certificates/presentation/certificates_screen.dart';
 import '../../features/courses/presentation/course_detail_screen.dart';
+import '../../features/courses/presentation/courses_browse_screen.dart';
 import '../../features/downloads/presentation/downloads_screen.dart';
 import '../../features/instructor/presentation/grading_queue_screen.dart';
 import '../../features/instructor/presentation/instructor_course_screen.dart';
 import '../../features/learn/presentation/lesson_player_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/onboarding/presentation/apply_webview_screen.dart';
+import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/profile/presentation/profile_edit_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/programs/presentation/program_detail_screen.dart';
+import '../../features/programs/presentation/programs_browse_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/quiz_args.dart';
 import '../../features/settings/presentation/change_password_screen.dart';
@@ -31,6 +35,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/shell/presentation/home_shell.dart';
 import '../../features/shell/presentation/role_home.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../env/app_env.dart';
 
 /// Route path constants — referenced everywhere instead of raw strings.
 class AppRoutes {
@@ -69,9 +74,29 @@ class AppRoutes {
   static const certificateDetail = '/certificate/:id';
   static String certificatePath(String id) => '/certificate/$id';
 
+  // ── Public onboarding (no authentication required) ──────────────────────────
+  static const welcome = '/welcome';
+  static const programsBrowse = '/programs';
+  static const programDetail = '/programs/:id';
+  static String programDetailPath(String id) => '/programs/$id';
+  static const programApply = '/programs/:id/apply';
+  static String programApplyPath(String id) => '/programs/$id/apply';
+  static const apply = '/apply';
+  static const coursesBrowse = '/courses-browse';
+
   static const _authRoutes = {login, register, forgotPassword, verifyEmail};
   static bool isAuthRoute(String location) =>
       _authRoutes.any(location.startsWith);
+
+  /// Routes a prospective (unauthenticated) student may visit without signing in.
+  static bool isPublic(String location) =>
+      location == welcome ||
+      location == apply ||
+      location == coursesBrowse ||
+      location.startsWith('/programs') ||
+      location.startsWith('/courses') ||
+      location.startsWith('/course/') ||
+      isAuthRoute(location);
 }
 
 /// App router. Redirect is driven by [authControllerProvider]; a lightweight
@@ -102,15 +127,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (status.isAuthenticated) {
-        if (loc == AppRoutes.splash || loc == AppRoutes.lock || onAuthRoute) {
+        if (loc == AppRoutes.splash ||
+            loc == AppRoutes.lock ||
+            loc == AppRoutes.welcome ||
+            onAuthRoute) {
           return AppRoutes.home;
         }
         return null;
       }
 
-      // Unauthenticated.
-      if (onAuthRoute) return null;
-      return AppRoutes.login;
+      // Unauthenticated → the public Welcome landing, but let prospective
+      // students browse programs, apply, and sign in freely.
+      if (AppRoutes.isPublic(loc)) return null;
+      return AppRoutes.welcome;
     },
     routes: [
       GoRoute(
@@ -118,12 +147,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: AppRoutes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => LoginScreen(
+          pendingCourseId: state.uri.queryParameters['pendingCourseId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.register,
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => RegisterScreen(
+          pendingCourseId: state.uri.queryParameters['pendingCourseId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
@@ -154,7 +191,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.courses,
-                builder: (context, state) => const RoleCoursesTab(),
+                builder: (context, state) {
+                  final tabStr = state.uri.queryParameters['tab'];
+                  final initialTab = tabStr == '1' ? 1 : 0;
+                  return RoleCoursesTab(initialTabIndex: initialTab);
+                },
               ),
             ],
           ),
@@ -248,6 +289,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.changePassword,
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.programsBrowse,
+        builder: (context, state) => const ProgramsBrowseScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.coursesBrowse,
+        builder: (context, state) => const CoursesBrowseScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.programDetail,
+        builder: (context, state) => ProgramDetailScreen(
+          programId: state.pathParameters['id']!,
+        ),
+      ),
+      // Applying stays on the website — opened in an in-app WebView.
+      GoRoute(
+        path: AppRoutes.programApply,
+        builder: (context, state) => ApplyWebViewScreen(
+          url: AppEnv.programApplyUrl(state.pathParameters['id']!),
+          title: 'Apply',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.apply,
+        builder: (context, state) => ApplyWebViewScreen(
+          url: AppEnv.applicationUrl,
+          title: 'Apply',
+        ),
       ),
       GoRoute(
         path: AppRoutes.downloads,

@@ -101,12 +101,12 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
     unawaited(webController.setJavaScriptMode(JavaScriptMode.unrestricted));
     unawaited(webController.setUserAgent(
       'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-    ));
+    ),);
     unawaited(webController.setBackgroundColor(const Color(0xFF0F172A)));
 
     if (webController.platform is AndroidWebViewController) {
       unawaited((webController.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false));
+          .setMediaPlaybackRequiresUserGesture(false),);
     }
 
     unawaited(webController.addJavaScriptChannel(
@@ -116,12 +116,12 @@ class _YouTubeLessonPlayerState extends State<YouTubeLessonPlayer> {
           setState(() => _isPlaying = true);
         }
       },
-    ));
+    ),);
 
     unawaited(webController.loadHtmlString(
       htmlContent,
       baseUrl: 'https://www.youtube-nocookie.com',
-    ));
+    ),);
 
     _controller = webController;
   }

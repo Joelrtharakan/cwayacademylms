@@ -9,12 +9,16 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/error_banner.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../courses/data/courses_repository.dart';
+import '../../dashboard/application/dashboard_controller.dart';
 import '../application/auth_controller.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.pendingCourseId});
+
+  final String? pendingCourseId;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -48,11 +52,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             email: _email.text,
             password: _password.text,
           );
-      // On success the router redirect moves us to the dashboard automatically.
+
+      if (widget.pendingCourseId != null && widget.pendingCourseId!.isNotEmpty) {
+        try {
+          await ref.read(coursesRepositoryProvider).enroll(widget.pendingCourseId!);
+        } catch (_) {}
+        ref.invalidate(courseDetailProvider(widget.pendingCourseId!));
+        ref.invalidate(dashboardControllerProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Enrolled in course! Happy learning!')),
+          );
+          context.go(AppRoutes.courseDetailPath(widget.pendingCourseId!));
+          return;
+        }
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (e, st) {
-      debugPrint('Login error caught: $e\\n$st');
+      debugPrint('Login error caught: $e\n$st');
       if (mounted) setState(() => _error = 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -64,6 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final colors = context.colors;
 
     return AuthScaffold(
+      badgeText: 'Student Portal',
       title: 'Welcome back',
       subtitle: 'Sign in to continue your learning journey.',
       children: [
@@ -126,7 +145,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text('New to CWAY Academy? ',
                   style: TextStyle(color: colors.textSecondary),),
               GestureDetector(
-                onTap: _submitting ? null : () => context.push(AppRoutes.register),
+                onTap: _submitting
+                    ? null
+                    : () => context.push(
+                          widget.pendingCourseId != null &&
+                                  widget.pendingCourseId!.isNotEmpty
+                              ? '${AppRoutes.register}?pendingCourseId=${widget.pendingCourseId}'
+                              : AppRoutes.register,
+                        ),
                 child: Text(
                   'Create account',
                   style: TextStyle(

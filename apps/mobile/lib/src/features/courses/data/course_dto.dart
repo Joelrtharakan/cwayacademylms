@@ -134,6 +134,7 @@ class CourseDetailDto with _$CourseDetailDto {
     int? weeksDuration,
     int? totalLectures,
     @Default(false) bool isFree,
+    String? programId,
     String? scriptureRef,
     CourseInstructorDto? instructor,
     @Default(<SectionDto>[]) List<SectionDto> sections,

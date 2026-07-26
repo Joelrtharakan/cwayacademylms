@@ -11,23 +11,21 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../shared/widgets/app_shimmer.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_banner.dart';
-import '../../programs/application/programs_controller.dart';
-import '../../programs/presentation/widgets/program_card.dart';
 import '../application/course_catalog_controller.dart';
 import '../application/course_query.dart';
 import '../data/courses_repository.dart';
 import 'widgets/course_card.dart';
 
-class CatalogScreen extends ConsumerStatefulWidget {
-  const CatalogScreen({super.key, this.initialTabIndex = 0});
-
-  final int initialTabIndex;
+/// Dedicated screen displaying standalone courses (courses not attached to an academic program).
+class CoursesBrowseScreen extends ConsumerStatefulWidget {
+  const CoursesBrowseScreen({super.key});
 
   @override
-  ConsumerState<CatalogScreen> createState() => _CatalogScreenState();
+  ConsumerState<CoursesBrowseScreen> createState() =>
+      _CoursesBrowseScreenState();
 }
 
-class _CatalogScreenState extends ConsumerState<CatalogScreen> {
+class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
   final _scroll = ScrollController();
   final _searchCtrl = TextEditingController();
   Timer? _debounce;
@@ -66,116 +64,49 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final async = ref.watch(courseCatalogControllerProvider);
-    final programsAsync = ref.watch(publicProgramsProvider);
     final query = async.valueOrNull?.query ?? const CourseQuery();
 
-    return DefaultTabController(
-      length: 2,
-      initialIndex: widget.initialTabIndex,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: colors.forestDeep,
-          foregroundColor: Colors.white,
-          flexibleSpace: DecoratedBox(
-            decoration: BoxDecoration(gradient: colors.forestGradient),
-          ),
-          title: Text(
-            'Explore',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.copyWith(color: Colors.white),
-          ),
-          bottom: const TabBar(
-            indicatorColor: Color(0xFFE8B85A),
-            labelColor: Color(0xFFE8B85A),
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(text: 'Programs'),
-              Tab(text: 'Courses'),
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        backgroundColor: colors.forestDeep,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: DecoratedBox(
+          decoration: BoxDecoration(gradient: colors.forestGradient),
+        ),
+        title: Text(
+          'Standalone Courses',
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          PopupMenuButton<CourseSort>(
+            icon: const Icon(Icons.sort_rounded),
+            tooltip: 'Sort',
+            initialValue: query.sort,
+            onSelected: (s) => _ctrl.applyQuery(query.copyWith(sort: s)),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: CourseSort.newest, child: Text('Newest')),
+              PopupMenuItem(value: CourseSort.popular, child: Text('Most popular')),
+              PopupMenuItem(
+                value: CourseSort.moduleOrder, child: Text('Module order'),),
             ],
           ),
-          actions: [
-            PopupMenuButton<CourseSort>(
-              icon: const Icon(Icons.sort_rounded),
-              tooltip: 'Sort',
-              initialValue: query.sort,
-              onSelected: (s) => _ctrl.applyQuery(query.copyWith(sort: s)),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: CourseSort.newest, child: Text('Newest')),
-                PopupMenuItem(value: CourseSort.popular, child: Text('Most popular')),
-                PopupMenuItem(
-                  value: CourseSort.moduleOrder, child: Text('Module order'),),
-              ],
-            ),
-          ],
-        ),
-        body: TabBarView(
-          children: [
-            // Programs Tab
-            RefreshIndicator(
-              color: colors.goldPrimary,
-              onRefresh: () async => ref.refresh(publicProgramsProvider.future),
-              child: programsAsync.when(
-                data: (programs) {
-                  if (programs.isEmpty) {
-                    return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 100),
-                        EmptyState(
-                          icon: Icons.school_rounded,
-                          title: 'No Programs Available',
-                          message: 'Check back soon for upcoming academic programs.',
-                        ),
-                      ],
-                    );
-                  }
-                  return ListView.builder(
-                    physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics(),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                    itemCount: programs.length,
-                    itemBuilder: (_, i) => RepaintBoundary(
-                      child: ProgramCard(program: programs[i]),
-                    ),
-                  );
-                },
-                loading: () => ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  children: List.generate(
-                      3, (_) => const AppShimmer(height: 180, borderRadius: AppRadii.rXl),),
-                ),
-                error: (e, __) => ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ErrorBanner(
-                        message: "Couldn't load programs. Pull to retry.",
-                        onRetry: () => ref.invalidate(publicProgramsProvider),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Courses Tab (Standalone Courses Only)
-            RefreshIndicator(
-              color: colors.goldPrimary,
-              onRefresh: () => _ctrl.refresh(),
-              child: CustomScrollView(
-                controller: _scroll,
-                slivers: [
-                  SliverToBoxAdapter(child: _searchField(colors)),
-                  SliverToBoxAdapter(child: _filterChips(query)),
-                  ..._results(async),
-                ],
-              ),
-            ),
+        ],
+      ),
+      body: RefreshIndicator(
+        color: colors.goldPrimary,
+        onRefresh: () => _ctrl.refresh(),
+        child: CustomScrollView(
+          controller: _scroll,
+          slivers: [
+            SliverToBoxAdapter(child: _searchField(colors)),
+            SliverToBoxAdapter(child: _filterChips(query)),
+            ..._results(async),
           ],
         ),
       ),
@@ -184,13 +115,14 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
 
   Widget _searchField(AppColors colors) => Padding(
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm,),
+          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm,
+        ),
         child: TextField(
           controller: _searchCtrl,
           textInputAction: TextInputAction.search,
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'Search courses…',
+            hintText: 'Search standalone courses…',
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: _searchCtrl.text.isEmpty
                 ? null
@@ -225,7 +157,8 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
               label: 'Free',
               selected: query.isFree == true,
               onSelected: () => _ctrl.applyQuery(
-                  query.copyWith(isFree: () => query.isFree == true ? null : true),),
+                query.copyWith(isFree: () => query.isFree == true ? null : true),
+              ),
             ),
             for (final c in categories)
               _chip(
@@ -273,7 +206,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
           ),
         ],
         data: (state) {
-          // Filter standalone courses (courses that do not belong to a program)
+          // Filter standalone courses ONLY (courses with no program association)
           final standaloneItems = state.items
               .where((c) => c.programId == null || c.programId!.isEmpty)
               .toList();
@@ -284,7 +217,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                 hasScrollBody: false,
                 child: EmptyState(
                   icon: Icons.search_off_rounded,
-                  title: 'No courses found',
+                  title: 'No Standalone Courses Found',
                   message: 'Try a different search or clear your filters.',
                 ),
               ),
@@ -299,8 +232,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                 bottom: 120,
               ),
               sliver: SliverGrid(
-                gridDelegate:
-                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 240,
                   crossAxisSpacing: AppSpacing.md,
                   mainAxisSpacing: AppSpacing.md,
@@ -312,8 +244,9 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                     return RepaintBoundary(
                       child: CourseCard(
                         course: course,
-                        onTap: () =>
-                            context.push(AppRoutes.courseDetailPath(course.id)),
+                        onTap: () => context.push(
+                          AppRoutes.courseDetailPath(course.id),
+                        ),
                       ),
                     );
                   },
@@ -321,13 +254,6 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                 ),
               ),
             ),
-            if (state.loadingMore)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 120),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ),
           ];
         },
       ),
@@ -350,7 +276,10 @@ class _CatalogSkeletonSliver extends StatelessWidget {
           mainAxisExtent: 252,
         ),
         delegate: SliverChildBuilderDelegate(
-          (_, __) => const AppShimmer(height: 252, borderRadius: AppRadii.rXl),
+          (_, __) => const AppShimmer(
+            height: 252,
+            borderRadius: AppRadii.rLg,
+          ),
           childCount: 6,
         ),
       ),

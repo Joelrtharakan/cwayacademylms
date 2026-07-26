@@ -14,14 +14,16 @@ class SplashScreen extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: DecoratedBox(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(gradient: colors.forestGradient),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.8, end: 1),
+                tween: Tween(begin: 0.8, end: 1.0),
                 duration: AppMotion.slow,
                 curve: Curves.easeOutBack,
                 builder: (context, scale, child) =>
@@ -46,14 +48,17 @@ class SplashScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xl),
               Text(
                 'CWAY Academy',
-                style: text.headlineMedium?.copyWith(color: Colors.white),
+                style: text.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: AppSpacing.xxl),
               SizedBox(
-                width: 22,
-                height: 22,
+                width: 24,
+                height: 24,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation(colors.goldLight),
                 ),
               ),
