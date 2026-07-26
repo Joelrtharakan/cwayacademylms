@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -160,33 +161,33 @@ class _Actions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Welcome',
+          context.tr('mobile.welcome.title'),
           textAlign: TextAlign.center,
           style: text.displaySmall,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Explore our academic programs and courses to begin your learning journey.',
+          context.tr('mobile.welcome.subtitle'),
           textAlign: TextAlign.center,
           style: text.bodyLarge?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl),
         PrimaryButton(
-          label: 'Browse Programs',
+          label: context.tr('mobile.welcome.browsePrograms'),
           icon: Icons.explore_rounded,
           variant: ButtonVariant.gold,
           onPressed: onBrowsePrograms,
         ),
         const SizedBox(height: AppSpacing.md),
         PrimaryButton(
-          label: 'Browse Courses',
+          label: context.tr('mobile.welcome.browseCourses'),
           icon: Icons.menu_book_rounded,
           variant: ButtonVariant.outline,
           onPressed: onBrowseCourses,
         ),
         const SizedBox(height: AppSpacing.md),
         PrimaryButton(
-          label: 'Apply for Admission',
+          label: context.tr('mobile.welcome.apply'),
           icon: Icons.assignment_rounded,
           variant: ButtonVariant.outline,
           onPressed: onApply,
@@ -196,12 +197,12 @@ class _Actions extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Already a student?',
+              context.tr('mobile.welcome.alreadyStudent'),
               style: text.bodyMedium?.copyWith(color: colors.textSecondary),
             ),
             TextButton(
               onPressed: onSignIn,
-              child: const Text('Sign in'),
+              child: Text(context.tr('auth.login.sign_in')),
             ),
           ],
         ),

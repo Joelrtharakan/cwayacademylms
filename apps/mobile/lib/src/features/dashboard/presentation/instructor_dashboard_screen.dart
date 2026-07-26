@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -29,7 +30,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final user = ref.watch(currentUserProvider);
     final async = ref.watch(myCoursesProvider);
-    final firstName = (user?.name.trim().split(' ').first) ?? 'there';
+    final firstName = (user?.name.trim().split(' ').first) ?? context.tr('mobile.dashboard.friend');
 
     return Scaffold(
       body: RefreshIndicator(
@@ -59,7 +60,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Instructor',
+                    Text(context.tr('mobile.instructor.roleLabel'),
                         style: text.labelSmall?.copyWith(color: colors.goldLight, letterSpacing: 1),),
                     Text(firstName,
                         style: text.titleLarge?.copyWith(color: Colors.white),),
@@ -108,7 +109,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.all(AppSpacing.xl),
                         child: ErrorBanner(
-                          message: "Couldn't load your teaching overview. Pull to retry.",
+                          message: context.tr('mobile.instructor.overviewLoadError'),
                           onRetry: () => ref.invalidate(myCoursesProvider),
                         ),
                       ),
@@ -144,7 +145,7 @@ class _BodySliver extends StatelessWidget {
               child: StatTile(
                 icon: Icons.menu_book_rounded,
                 value: '${courses.length}',
-                label: 'My courses',
+                label: context.tr('instructor.courses.title'),
                 accent: true,
               ),
             ),
@@ -153,7 +154,7 @@ class _BodySliver extends StatelessWidget {
               child: StatTile(
                 icon: Icons.verified_rounded,
                 value: '$published',
-                label: 'Published',
+                label: context.tr('mobile.instructor.metricPublished'),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -161,7 +162,7 @@ class _BodySliver extends StatelessWidget {
               child: StatTile(
                 icon: Icons.people_alt_rounded,
                 value: Formatters.compact(students),
-                label: 'Students',
+                label: context.tr('mobile.instructor.metricStudents'),
               ),
             ),
           ],
@@ -172,11 +173,11 @@ class _BodySliver extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Your courses', style: text.titleLarge),
+            Text(context.tr('mobile.instructor.yourCourses'), style: text.titleLarge),
             if (courses.isNotEmpty)
               TextButton(
                 onPressed: () => context.go(AppRoutes.courses),
-                child: const Text('Manage all'),
+                child: Text(context.tr('mobile.instructor.manageAll')),
               ),
           ],
         ),
@@ -244,7 +245,12 @@ class _CoursePreview extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,),
                   const SizedBox(height: 2),
                   Text(
-                    '${course.isPublished ? 'Published' : 'Draft'} · ${Formatters.compact(course.enrollmentCount)} students',
+                    context.tr('mobile.instructor.coursePreviewMeta', {
+                      'status': course.isPublished
+                          ? context.tr('mobile.instructor.published')
+                          : context.tr('mobile.instructor.draft'),
+                      'count': Formatters.compact(course.enrollmentCount),
+                    }),
                     style: text.labelSmall?.copyWith(color: colors.textMuted),
                   ),
                 ],
@@ -298,13 +304,13 @@ class _GradingCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Grading queue', style: text.titleSmall),
+                  Text(context.tr('mobile.instructor.gradingQueue'), style: text.titleSmall),
                   Text(
                     pending == null
-                        ? 'Review student submissions'
+                        ? context.tr('mobile.instructor.reviewSubmissions')
                         : pending == 0
-                            ? 'All caught up — nothing to grade'
-                            : '$pending awaiting a grade',
+                            ? context.tr('mobile.instructor.gradingCaughtUp')
+                            : context.tr('mobile.instructor.awaitingGrade', {'count': pending}),
                     style: text.bodySmall?.copyWith(color: colors.textMuted),
                   ),
                 ],
@@ -348,10 +354,10 @@ class _EmptyTeaching extends StatelessWidget {
         children: [
           Icon(Icons.school_rounded, size: 40, color: colors.forestLight),
           const SizedBox(height: AppSpacing.md),
-          Text('No courses assigned yet', style: text.titleMedium),
+          Text(context.tr('mobile.instructor.noCoursesAssigned'), style: text.titleMedium),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Courses you create or that are assigned to you will appear here.',
+            context.tr('mobile.instructor.noCoursesOwn'),
             textAlign: TextAlign.center,
             style: text.bodySmall?.copyWith(color: colors.textSecondary),
           ),

@@ -1,0 +1,255 @@
+{
+  "sidebar": {
+    "overview": "Overview",
+    "dashboard": "Dashboard",
+    "myCourses": "My Courses",
+    "allCourses": "All Courses",
+    "invitations": "Invitations",
+    "studentsAndGrading": "Students & Grading",
+    "assignments": "Assignments",
+    "messages": "Messages",
+    "forums": "Forums",
+    "account": "Account",
+    "profileAndSettings": "Profile & Settings",
+    "signedOut": "Signed out successfully",
+    "adminView": "Admin (Instructor View)",
+    "registrarView": "Registrar (Instructor View)",
+    "instructorPanel": "Instructor Panel",
+    "returnToAdmin": "Return to Admin Panel",
+    "returnToRegistrar": "Return to Registrar Panel",
+    "signOut": "Sign out",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
+  },
+  "dashboard": {
+    "enrollmentsCount": "{count} enrollments",
+    "welcome": "Welcome back, {name}",
+    "welcomeDesc": "Here's what's happening in your courses today.",
+    "stats": {
+      "totalStudents": "Total Students",
+      "activeCourses": "Active Courses",
+      "avgRating": "Avg Rating",
+      "completions": "Completions",
+      "completionRate": "Completion Rate",
+      "pendingGrading": "Pending Grading"
+    },
+    "pending": {
+      "title": "{count} assignment(s) awaiting grading",
+      "desc": "Review and grade student submissions",
+      "gradeNow": "Grade Now"
+    },
+    "chart": {
+      "title": "Enrollments Over Time",
+      "fallback": "Course analytics",
+      "recentTrend": "Recent Trend",
+      "noData": "No enrollment data yet"
+    },
+    "recentCourses": {
+      "title": "Recent Courses",
+      "desc": "Manage your content",
+      "viewAll": "View all",
+      "noCourses": "No courses yet",
+      "studentsCount": "{count} students"
+    },
+    "recentEnrollments": {
+      "title": "Recent Enrollments",
+      "desc": "Latest students to join",
+      "noEnrollments": "No recent enrollments",
+      "unknownStudent": "Unknown Student",
+      "enrolledIn": "Enrolled in {courseTitle}"
+    }
+  },
+  "assignments": {
+    "title": "Assignments & Grading",
+    "hideFile": "Hide File",
+    "viewFile": "View File",
+    "download": "Download",
+    "score": "Score:",
+    "feedbackPlaceholder": "Write your feedback for the student...",
+    "saveGrade": "Save Grade",
+    "toastGraded": "Grade saved! Student notified.",
+    "toastGradeFail": "Failed to grade",
+    "tabs": {
+      "ungraded": "ungraded",
+      "graded": "graded",
+      "all": "all"
+    },
+    "caughtUp": "All caught up! No {tab} submissions."
+  },
+  "courses": {
+    "title": "My Courses",
+    "desc": "Manage and monitor your course catalog.",
+    "moduleNumber": "Module {num}",
+    "modulesCount": "{count} module(s)",
+    "studentsCount": "{count} student(s)",
+    "edit": "Edit",
+    "manageStudents": "Manage Students",
+    "archiveCourse": "Archive Course",
+    "deleteCourse": "Delete Course",
+    "toastDeleted": "Course deleted",
+    "toastDeleteFail": "Failed to delete",
+    "toastArchived": "Course archived",
+    "toastArchiveFail": "Failed to archive",
+    "confirmDelete": "Delete this course?",
+    "confirmArchive": "Archive this course? It will no longer be visible to new students.",
+    "noCourses": "No courses yet",
+    "verseQuote": "\"Whatever you do, work at it with all your heart\"",
+    "verseRef": "— Colossians 3:23",
+    "filters": {
+      "ALL": "ALL",
+      "PUBLISHED": "PUBLISHED",
+      "DRAFT": "DRAFT",
+      "PENDING": "PENDING",
+      "REJECTED": "REJECTED",
+      "ARCHIVED": "ARCHIVED"
+    }
+  },
+  "forums": {
+    "title": "Discussion Forums",
+    "desc": "Moderate and grade student discussion posts across your courses.",
+    "errorTitle": "Failed to load discussions",
+    "errorDesc": "An error occurred while fetching discussions. Please try again later.",
+    "emptyTitle": "No Discussions Found",
+    "emptyDesc": "There are currently no student discussion posts to review.",
+    "graded": "Graded: {score}/100",
+    "needsGrading": "Needs Grading",
+    "studentPost": "Student's Post",
+    "replies": "Replies ({count})",
+    "updateGrade": "Update Grade",
+    "gradeSubmission": "Grade Submission",
+    "scoreLabel": "Score (0-100)",
+    "scorePlaceholder": "e.g. 95",
+    "feedbackLabel": "Feedback (Optional)",
+    "feedbackPlaceholder": "Great insights! Keep it up...",
+    "saving": "Saving...",
+    "saveGrade": "Save Grade",
+    "toastSuccess": "Grade saved successfully",
+    "toastError": "Failed to save grade",
+    "toastInvalidScore": "Please enter a valid score (0-100)"
+  },
+  "invitations": {
+    "title": "Course Invitations",
+    "desc": "When an admin assigns you to a course, you'll receive an invitation here. Accept to add it to your dashboard.",
+    "filters": {
+      "ALL": "All",
+      "PENDING": "Pending",
+      "ACCEPTED": "Accepted",
+      "DECLINED": "Declined"
+    },
+    "emptyTitleAll": "No invitations yet",
+    "emptyTitleFilter": "No {filter} invitations",
+    "emptyDescAll": "When admins assign courses to you, they'll appear here.",
+    "emptyDescFilter": "You have no {filter} invitations.",
+    "card": {
+      "toastAccepted": "Invitation accepted! The course is now in your dashboard.",
+      "toastAcceptFail": "Failed to accept",
+      "toastDeclined": "Invitation declined.",
+      "toastDeclineFail": "Failed to decline",
+      "statusPending": "Awaiting Response",
+      "statusAccepted": "Accepted",
+      "statusDeclined": "Declined",
+      "statusUnknown": "Unknown",
+      "weeks": "{count} weeks",
+      "noteFromAdmin": "Note from Admin",
+      "btnDecline": "Decline",
+      "btnAccept": "Accept & Add to My Courses"
+    }
+  },
+  "messages": {
+    "loading": "Loading...",
+    "toastSendFail": "Failed to send",
+    "title": "Messages",
+    "searchPlaceholder": "Search...",
+    "emptyList": "No conversations yet",
+    "typePlaceholder": "Type a message... (Cmd+Enter to send)",
+    "selectPrompt": "Select a conversation to start messaging"
+  },
+  "settings": {
+    "title": "Account Settings",
+    "desc": "Manage your personal information, credentials, and preferences.",
+    "settingsMenu": "Settings Menu",
+    "saving": "Saving...",
+    "toastProfileSuccess": "Profile updated",
+    "toastProfileFail": "Failed to update profile",
+    "toastPasswordSuccess": "Password updated",
+    "toastPasswordFail": "Failed to update password",
+    "toastPasswordMismatch": "Passwords don't match",
+    "toastAvatarSuccess": "Avatar updated",
+    "toastAvatarFail": "Failed to upload avatar",
+    "tabs": {
+      "profile": "Profile",
+      "credentials": "Credentials",
+      "password": "Password",
+      "notifications": "Notifications"
+    },
+    "profileTab": {
+      "title": "Public Profile",
+      "desc": "This information will be displayed publicly so be careful what you share.",
+      "changeAvatar": "Change",
+      "pictureTitle": "Profile Picture",
+      "pictureDesc": "We recommend a square image, at least 400x400px. JPG, PNG or WebP formats up to 2MB.",
+      "nameLabel": "Full Name *",
+      "nameReq": "Name is required",
+      "bioLabel": "Biography",
+      "bioPlaceholder": "Write a brief professional summary about yourself...",
+      "churchLabel": "Church Affiliation",
+      "locationLabel": "Location",
+      "phoneLabel": "Phone Number",
+      "saveBtn": "Save Profile Updates"
+    },
+    "credentialsTab": {
+      "title": "Academic Credentials",
+      "desc": "Establish your authority by displaying your academic background to students.",
+      "infoText": "These credentials will be prominently displayed next to your name on your courses and blog posts (e.g.",
+      "infoBold": "Dr. John Doe, M.Th., Ph.D.",
+      "prefixLabel": "Title Prefix",
+      "prefixPlaceholder": "e.g. Rev., Dr., Pr.",
+      "degreeLabel": "Degree / Credentials",
+      "degreePlaceholder": "e.g. M.Th., Ph.D.",
+      "yearsLabel": "Years of Experience",
+      "saveBtn": "Save Credentials"
+    },
+    "passwordTab": {
+      "title": "Change Password",
+      "desc": "Ensure your account is using a long, random password to stay secure.",
+      "currentLabel": "Current Password *",
+      "newLabel": "New Password *",
+      "confirmLabel": "Confirm New Password *",
+      "reqMsg": "Required",
+      "minMsg": "Min 8 chars",
+      "saveBtn": "Update Password"
+    },
+    "notificationsTab": {
+      "title": "Notification Preferences",
+      "desc": "Choose what we email you about. You'll always receive critical account updates.",
+      "items": {
+        "enrollmentTitle": "New student enrollment",
+        "enrollmentDesc": "Get an email when someone buys your course",
+        "reviewTitle": "New course review",
+        "reviewDesc": "Get notified when a student leaves a review",
+        "assignmentTitle": "Assignment submitted",
+        "assignmentDesc": "Get notified when a student submits an assignment",
+        "messageTitle": "Direct messages",
+        "messageDesc": "Get notified when a student messages you"
+      },
+      "saveBtn": "Save Preferences"
+    }
+  },
+  "layout": {
+    "loading": "Loading...",
+    "searchPlaceholder": "Quick search...",
+    "notifications": "Notifications",
+    "newCount": "{count} New",
+    "unread": "Unread",
+    "previous": "Previous",
+    "invitationTitle": "Course Invitation",
+    "invitationDesc": "You have been assigned to teach \"{title}\".",
+    "noNotifications": "No notifications",
+    "viewAll": "View all invitations",
+    "roleAdmin": "Administrator",
+    "roleInstructor": "Instructor",
+    "toastTitle": "New Invitations",
+    "toastDesc": "You have {count} pending course invitation(s) waiting for you.",
+    "toastView": "View"
+  }
+}

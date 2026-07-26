@@ -1,8 +1,8 @@
-import 'package:cway_academy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/i18n/app_translations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/application/locale_controller.dart';
@@ -28,14 +28,17 @@ class CwayApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       locale: locale,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: kSupportedLocales.map(Locale.new),
       localizationsDelegates: const [
-        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) {
+        // Keep the context-free translation locale in sync with the resolved
+        // app locale (this builder runs beneath MaterialApp's Localizations).
+        AppTranslations.currentLocale = Localizations.localeOf(context).languageCode;
+
         // Clamp system text scaling to keep premium layouts intact while still
         // honoring Dynamic Type up to a sensible ceiling (accessibility).
         final mq = MediaQuery.of(context);

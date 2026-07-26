@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -95,15 +96,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         final proceed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Submit quiz?'),
-            content: Text('$unanswered question(s) are unanswered. Submit anyway?'),
+            title: Text(context.tr('mobile.quiz.submitTitle')),
+            content: Text(context.tr('mobile.quiz.unansweredPrompt', {'count': unanswered})),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Keep going'),),
+                  child: Text(context.tr('mobile.quiz.keepGoing')),),
               FilledButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Submit'),),
+                  child: Text(context.tr('mobile.quiz.submit')),),
             ],
           ),
         );
@@ -150,7 +151,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_attempt?.quiz.title.resolveFor(context) ?? 'Quiz'),
+        title: Text(_attempt?.quiz.title.resolveFor(context) ?? context.tr('mobile.quiz.title')),
         actions: [
           if (_phase == _Phase.taking && _timer != null)
             Padding(
@@ -233,7 +234,7 @@ class _IntroView extends ConsumerWidget {
         const SizedBox(height: AppSpacing.xl),
         Icon(Icons.quiz_rounded, size: 56, color: colors.goldPrimary),
         const SizedBox(height: AppSpacing.md),
-        Text('Ready to test your knowledge?',
+        Text(context.tr('mobile.quiz.readyTitle'),
             style: text.headlineSmall, textAlign: TextAlign.center,),
         const SizedBox(height: AppSpacing.xxl),
         if (error != null) ...[
@@ -249,7 +250,7 @@ class _IntroView extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         PrimaryButton(
-          label: 'Start attempt',
+          label: context.tr('mobile.quiz.startAttempt'),
           icon: Icons.play_arrow_rounded,
           variant: ButtonVariant.gold,
           onPressed: onStart,
@@ -270,7 +271,7 @@ class _PastAttempts extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Previous attempts',
+        Text(context.tr('mobile.quiz.previousAttempts'),
             style: text.labelMedium?.copyWith(color: colors.textMuted),),
         const SizedBox(height: AppSpacing.sm),
         for (final a in attempts.where((a) => a.completedAt != null))
@@ -286,7 +287,7 @@ class _PastAttempts extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text('${a.score.round()}%', style: text.bodyMedium),
                 const Spacer(),
-                Text(a.passed ? 'Passed' : 'Failed',
+                Text(a.passed ? context.tr('mobile.quiz.passed') : context.tr('mobile.quiz.failed'),
                     style: text.labelSmall?.copyWith(
                         color: a.passed ? colors.success : colors.danger,),),
               ],
@@ -317,10 +318,10 @@ class _TakingView extends StatelessWidget {
     final answered = quiz.questions.where((q) => answers[q.id] != null).length;
 
     if (quiz.questions.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.help_outline_rounded,
-        title: 'No questions',
-        message: 'This quiz has no questions yet.',
+        title: context.tr('mobile.quiz.noQuestionsTitle'),
+        message: context.tr('mobile.quiz.noQuestionsMessage'),
       );
     }
 
@@ -347,11 +348,11 @@ class _TakingView extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text('$answered / ${quiz.questions.length} answered',
+                Text(context.tr('mobile.quiz.answeredCount', {'answered': answered, 'total': quiz.questions.length}),
                     style: text.bodySmall?.copyWith(color: colors.textMuted),),
                 const Spacer(),
                 PrimaryButton(
-                  label: 'Submit',
+                  label: context.tr('mobile.quiz.submit'),
                   variant: ButtonVariant.gold,
                   expand: false,
                   onPressed: onSubmit,
@@ -396,9 +397,9 @@ class _QuestionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Question $index', style: text.labelMedium?.copyWith(color: colors.textMuted)),
+              Text(context.tr('mobile.quiz.question', {'index': index}), style: text.labelMedium?.copyWith(color: colors.textMuted)),
               const Spacer(),
-              Text('${question.points} pt${question.points == 1 ? '' : 's'}',
+              Text(context.tr('mobile.quiz.points', {'count': question.points}),
                   style: text.labelSmall?.copyWith(color: colors.goldDark),),
             ],
           ),
@@ -416,7 +417,7 @@ class _QuestionCard extends StatelessWidget {
               initialValue: value is String ? value! as String : null,
               minLines: 2,
               maxLines: 5,
-              decoration: const InputDecoration(hintText: 'Type your answer…'),
+              decoration: InputDecoration(hintText: context.tr('mobile.quiz.answerHint')),
               onChanged: onSelect,
             )
           else

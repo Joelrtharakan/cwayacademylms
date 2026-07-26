@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -58,11 +60,11 @@ class _AssignmentDetailScreenState
 
   Future<void> _submit(DateTime? dueDate) async {
     if (Formatters.isOverdue(dueDate)) {
-      _snack('The due date has passed.');
+      _snack(context.tr('mobile.assignments.dueDatePassed'));
       return;
     }
     if (_content.text.trim().isEmpty && _filePath == null) {
-      setState(() => _error = 'Add a response or attach a file.');
+      setState(() => _error = context.tr('mobile.assignments.addResponse'));
       return;
     }
     setState(() {
@@ -83,7 +85,7 @@ class _AssignmentDetailScreenState
         _filePath = null;
         _fileName = null;
       });
-      _snack('Assignment submitted.');
+      _snack(AppTranslations.tg('mobile.assignments.submittedToast'));
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {
@@ -96,7 +98,7 @@ class _AssignmentDetailScreenState
     try {
       await _repo.unsubmit(widget.assignmentId);
       _refresh();
-      _snack('Submission removed.');
+      _snack(AppTranslations.tg('mobile.assignments.submissionRemoved'));
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -143,14 +145,14 @@ class _AssignmentDetailScreenState
     final async = ref.watch(mySubmissionProvider(widget.assignmentId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Assignment')),
+      appBar: AppBar(title: Text(context.tr('mobile.assignments.detailTitle'))),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Center(
             child: ErrorBanner(
-              message: "We couldn't load this assignment.",
+              message: context.tr('mobile.assignments.detailLoadError'),
               onRetry: () =>
                   ref.invalidate(mySubmissionProvider(widget.assignmentId)),
             ),
@@ -178,7 +180,7 @@ class _AssignmentDetailScreenState
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        Text(title.isEmpty ? 'Assignment' : title, style: text.headlineSmall),
+        Text(title.isEmpty ? context.tr('mobile.assignments.detailTitle') : title, style: text.headlineSmall),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
@@ -191,7 +193,7 @@ class _AssignmentDetailScreenState
                   color: overdue ? colors.danger : colors.textSecondary,),
             ),
             const Spacer(),
-            Text('$maxScore pts',
+            Text(context.tr('mobile.assignments.points', {'count': maxScore}),
                 style: text.labelMedium?.copyWith(color: colors.goldDark),),
           ],
         ),
@@ -200,12 +202,12 @@ class _AssignmentDetailScreenState
           OutlinedButton.icon(
             onPressed: () => _open(attachmentUrl),
             icon: const Icon(Icons.attach_file_rounded, size: 18),
-            label: const Text('Open attachment'),
+            label: Text(context.tr('mobile.assignments.openAttachment')),
           ),
         ],
         if (description.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xl),
-          Text('Instructions', style: text.titleMedium),
+          Text(context.tr('mobile.assignments.instructions'), style: text.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           Text(description,
               style: text.bodyMedium?.copyWith(color: colors.textSecondary, height: 1.6),),
@@ -243,13 +245,13 @@ class _AssignmentDetailScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Graded', style: text.labelMedium?.copyWith(color: colors.success)),
+                Text(context.tr('student.assignments.status.graded'), style: text.labelMedium?.copyWith(color: colors.success)),
                 const SizedBox(height: AppSpacing.xs),
                 Text('${s.grade?.round() ?? 0} / $maxScore',
                     style: text.headlineMedium?.copyWith(color: colors.success),),
                 if (s.feedback != null && s.feedback!.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),
-                  Text('Feedback', style: text.titleSmall),
+                  Text(context.tr('mobile.assignments.feedback'), style: text.titleSmall),
                   const SizedBox(height: AppSpacing.xs),
                   Text(s.feedback!, style: text.bodyMedium),
                 ],
@@ -271,8 +273,8 @@ class _AssignmentDetailScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Submitted', style: text.titleSmall),
-                      Text('Awaiting grading · ${Formatters.dateTime(s.submittedAt)}',
+                      Text(context.tr('mobile.assignments.submitted'), style: text.titleSmall),
+                      Text(context.tr('mobile.assignments.awaitingGradingAt', {'date': Formatters.dateTime(s.submittedAt)}),
                           style: text.bodySmall?.copyWith(color: colors.textMuted),),
                     ],
                   ),
@@ -282,7 +284,7 @@ class _AssignmentDetailScreenState
           ),
         if (s.content != null && s.content!.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('Your response', style: text.titleSmall),
+          Text(context.tr('mobile.assignments.yourResponse'), style: text.titleSmall),
           const SizedBox(height: AppSpacing.xs),
           Text(s.content!, style: text.bodyMedium),
         ],
@@ -291,13 +293,13 @@ class _AssignmentDetailScreenState
           OutlinedButton.icon(
             onPressed: () => _open(s.fileUrl!),
             icon: const Icon(Icons.description_rounded, size: 18),
-            label: const Text('View submitted file'),
+            label: Text(context.tr('mobile.assignments.viewFile')),
           ),
         ],
         if (!s.isGraded) ...[
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            label: 'Replace submission',
+            label: context.tr('mobile.assignments.replace'),
             icon: Icons.edit_rounded,
             variant: ButtonVariant.gold,
             onPressed: () => setState(() => _showForm = true),
@@ -306,7 +308,7 @@ class _AssignmentDetailScreenState
           OutlinedButton.icon(
             onPressed: _busy ? null : _unsubmit,
             icon: const Icon(Icons.undo_rounded, size: 18),
-            label: const Text('Unsubmit'),
+            label: Text(context.tr('mobile.assignments.unsubmit')),
           ),
         ],
       ],
@@ -330,7 +332,7 @@ class _AssignmentDetailScreenState
             Icon(Icons.lock_clock_rounded, color: colors.danger),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: Text('Submissions are closed — the due date has passed.',
+              child: Text(context.tr('mobile.assignments.closed'),
                   style: text.bodyMedium?.copyWith(color: colors.danger),),
             ),
           ],
@@ -341,25 +343,25 @@ class _AssignmentDetailScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Your submission', style: text.titleMedium),
+        Text(context.tr('mobile.assignments.yourSubmission'), style: text.titleMedium),
         const SizedBox(height: AppSpacing.sm),
         TextField(
           controller: _content,
           minLines: 3,
           maxLines: 8,
-          decoration: const InputDecoration(
-            hintText: 'Write your response (optional if attaching a file)…',
+          decoration: InputDecoration(
+            hintText: context.tr('mobile.assignments.responseHint'),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         OutlinedButton.icon(
           onPressed: _pickFile,
           icon: const Icon(Icons.upload_file_rounded, size: 18),
-          label: Text(_fileName ?? 'Attach a file'),
+          label: Text(_fileName ?? context.tr('mobile.assignments.attachFile')),
         ),
         const SizedBox(height: AppSpacing.lg),
         PrimaryButton(
-          label: 'Submit assignment',
+          label: context.tr('mobile.assignments.submitAssignment'),
           icon: Icons.send_rounded,
           variant: ButtonVariant.gold,
           isLoading: _busy,
@@ -369,7 +371,7 @@ class _AssignmentDetailScreenState
           const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: () => setState(() => _showForm = false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('mobile.common.cancel')),
           ),
         ],
       ],

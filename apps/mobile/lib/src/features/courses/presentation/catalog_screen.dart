@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -80,32 +81,32 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
             decoration: BoxDecoration(gradient: colors.forestGradient),
           ),
           title: Text(
-            'Explore',
+            context.tr('mobile.browse.explore'),
             style: Theme.of(context)
                 .textTheme
                 .titleLarge
                 ?.copyWith(color: Colors.white),
           ),
-          bottom: const TabBar(
-            indicatorColor: Color(0xFFE8B85A),
-            labelColor: Color(0xFFE8B85A),
+          bottom: TabBar(
+            indicatorColor: const Color(0xFFE8B85A),
+            labelColor: const Color(0xFFE8B85A),
             unselectedLabelColor: Colors.white70,
             tabs: [
-              Tab(text: 'Programs'),
-              Tab(text: 'Courses'),
+              Tab(text: context.tr('mobile.browse.tabPrograms')),
+              Tab(text: context.tr('mobile.nav.courses')),
             ],
           ),
           actions: [
             PopupMenuButton<CourseSort>(
               icon: const Icon(Icons.sort_rounded),
-              tooltip: 'Sort',
+              tooltip: context.tr('mobile.browse.sort'),
               initialValue: query.sort,
               onSelected: (s) => _ctrl.applyQuery(query.copyWith(sort: s)),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: CourseSort.newest, child: Text('Newest')),
-                PopupMenuItem(value: CourseSort.popular, child: Text('Most popular')),
+              itemBuilder: (context) => [
+                PopupMenuItem(value: CourseSort.newest, child: Text(context.tr('mobile.browse.sortNewest'))),
+                PopupMenuItem(value: CourseSort.popular, child: Text(context.tr('mobile.browse.sortPopular'))),
                 PopupMenuItem(
-                  value: CourseSort.moduleOrder, child: Text('Module order'),),
+                  value: CourseSort.moduleOrder, child: Text(context.tr('mobile.browse.sortModuleOrder')),),
               ],
             ),
           ],
@@ -121,12 +122,12 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                   if (programs.isEmpty) {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 100),
+                      children: [
+                        const SizedBox(height: 100),
                         EmptyState(
                           icon: Icons.school_rounded,
-                          title: 'No Programs Available',
-                          message: 'Check back soon for upcoming academic programs.',
+                          title: context.tr('mobile.browse.programsEmptyTitle'),
+                          message: context.tr('mobile.browse.programsEmptyMessage'),
                         ),
                       ],
                     );
@@ -154,7 +155,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: ErrorBanner(
-                        message: "Couldn't load programs. Pull to retry.",
+                        message: context.tr('mobile.browse.programsLoadError'),
                         onRetry: () => ref.invalidate(publicProgramsProvider),
                       ),
                     ),
@@ -190,7 +191,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
           textInputAction: TextInputAction.search,
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'Search courses…',
+            hintText: context.tr('mobile.browse.searchCoursesHint'),
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: _searchCtrl.text.isEmpty
                 ? null
@@ -216,13 +217,13 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           children: [
             _chip(
-              label: 'All',
+              label: context.tr('mobile.browse.filterAll'),
               selected: query.categoryId == null,
               onSelected: () =>
                   _ctrl.applyQuery(query.copyWith(categoryId: () => null)),
             ),
             _chip(
-              label: 'Free',
+              label: context.tr('mobile.browse.filterFree'),
               selected: query.isFree == true,
               onSelected: () => _ctrl.applyQuery(
                   query.copyWith(isFree: () => query.isFree == true ? null : true),),
@@ -266,7 +267,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
             padding: const EdgeInsets.all(AppSpacing.xl),
             sliver: SliverToBoxAdapter(
               child: ErrorBanner(
-                message: "Couldn't load courses. Pull to retry.",
+                message: context.tr('mobile.browse.loadError'),
                 onRetry: () => ref.invalidate(courseCatalogControllerProvider),
               ),
             ),
@@ -280,12 +281,12 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
 
           if (standaloneItems.isEmpty) {
             return [
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: EmptyState(
                   icon: Icons.search_off_rounded,
-                  title: 'No courses found',
-                  message: 'Try a different search or clear your filters.',
+                  title: context.tr('mobile.browse.coursesEmptyTitle'),
+                  message: context.tr('mobile.browse.emptyMessage'),
                 ),
               ),
             ];

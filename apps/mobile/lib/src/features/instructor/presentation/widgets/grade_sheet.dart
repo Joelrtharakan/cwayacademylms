@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -55,7 +56,7 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
     final max = widget.submission.maxScore;
     final value = double.tryParse(_grade.text.trim());
     if (value == null || value < 0 || value > max) {
-      setState(() => _error = 'Enter a score between 0 and $max.');
+      setState(() => _error = context.tr('mobile.grade.scoreRange', {'max': max}));
       return;
     }
     setState(() {
@@ -133,7 +134,7 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
               ),
               const SizedBox(height: AppSpacing.lg),
               if (s.content != null && s.content!.trim().isNotEmpty) ...[
-                Text('Submission', style: text.labelLarge),
+                Text(context.tr('mobile.grade.submission'), style: text.labelLarge),
                 const SizedBox(height: AppSpacing.xs),
                 Container(
                   width: double.infinity,
@@ -150,11 +151,11 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
                 OutlinedButton.icon(
                   onPressed: _openAttachment,
                   icon: const Icon(Icons.attach_file_rounded),
-                  label: const Text('Open attachment'),
+                  label: Text(context.tr('mobile.assignments.openAttachment')),
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
-              Text('Score (out of ${s.maxScore})', style: text.labelLarge),
+              Text(context.tr('mobile.grade.scoreLabel', {'max': s.maxScore}), style: text.labelLarge),
               const SizedBox(height: AppSpacing.xs),
               TextField(
                 controller: _grade,
@@ -163,20 +164,20 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                 ],
                 decoration: InputDecoration(
-                  hintText: '0 – ${s.maxScore}',
+                  hintText: context.tr('mobile.grade.scoreHint', {'max': s.maxScore}),
                   prefixIcon: const Icon(Icons.grade_rounded),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Feedback (optional)', style: text.labelLarge),
+              Text(context.tr('mobile.grade.feedbackLabel'), style: text.labelLarge),
               const SizedBox(height: AppSpacing.xs),
               TextField(
                 controller: _feedback,
                 minLines: 2,
                 maxLines: 5,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText: 'Add feedback for the student…',
+                decoration: InputDecoration(
+                  hintText: context.tr('mobile.grade.feedbackHint'),
                 ),
               ),
               if (_error != null) ...[
@@ -197,7 +198,7 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
                               strokeWidth: 2, color: Colors.white,),
                         )
                       : const Icon(Icons.check_rounded),
-                  label: Text(s.isGraded ? 'Update grade' : 'Submit grade'),
+                  label: Text(s.isGraded ? context.tr('mobile.grade.update') : context.tr('mobile.grade.submit')),
                 ),
               ),
             ],

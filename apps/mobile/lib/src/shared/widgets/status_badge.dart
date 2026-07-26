@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/i18n_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 
@@ -16,6 +17,7 @@ class StatusBadge extends StatelessWidget {
     this.tone = BadgeTone.neutral,
     this.icon,
     this.dense = false,
+    this.labelKey,
   });
 
   final String label;
@@ -23,31 +25,41 @@ class StatusBadge extends StatelessWidget {
   final IconData? icon;
   final bool dense;
 
+  /// When set, the label is resolved from this translation key at build time so
+  /// factory-produced badges (course status, roles) localize reactively.
+  final String? labelKey;
+
   /// Maps a backend course status string to a labelled, toned badge.
   factory StatusBadge.courseStatus(String status, {bool dense = false}) {
     return switch (status) {
-      'PUBLISHED' =>
-        StatusBadge(label: 'Published', tone: BadgeTone.success, dense: dense),
-      'DRAFT' => StatusBadge(label: 'Draft', dense: dense),
-      'PENDING' || 'PENDING_REVIEW' =>
-        StatusBadge(label: 'In review', tone: BadgeTone.warning, dense: dense),
-      'ARCHIVED' =>
-        StatusBadge(label: 'Archived', tone: BadgeTone.danger, dense: dense),
+      'PUBLISHED' => StatusBadge(
+          label: 'Published', labelKey: 'mobile.status.published', tone: BadgeTone.success, dense: dense,),
+      'DRAFT' => StatusBadge(label: 'Draft', labelKey: 'mobile.status.draft', dense: dense),
+      'PENDING' || 'PENDING_REVIEW' => StatusBadge(
+          label: 'In review', labelKey: 'mobile.status.inReview', tone: BadgeTone.warning, dense: dense,),
+      'ARCHIVED' => StatusBadge(
+          label: 'Archived', labelKey: 'mobile.status.archived', tone: BadgeTone.danger, dense: dense,),
       _ => StatusBadge(label: status, dense: dense),
     };
   }
 
   /// Maps a user role to a toned badge.
   factory StatusBadge.role(String role, {bool dense = true}) {
-    final label = role.isEmpty
-        ? role
-        : role[0].toUpperCase() + role.substring(1).toLowerCase();
+    final labelKey = switch (role.toUpperCase()) {
+      'ADMIN' => 'admin.users.roleAdmin',
+      'INSTRUCTOR' => 'admin.users.roleInstructor',
+      'STUDENT' => 'admin.users.roleStudent',
+      _ => null,
+    };
     final tone = switch (role) {
       'ADMIN' => BadgeTone.gold,
       'INSTRUCTOR' => BadgeTone.forest,
       _ => BadgeTone.neutral,
     };
-    return StatusBadge(label: label, tone: tone, dense: dense);
+    final fallback = role.isEmpty
+        ? role
+        : role[0].toUpperCase() + role.substring(1).toLowerCase();
+    return StatusBadge(label: fallback, labelKey: labelKey, tone: tone, dense: dense);
   }
 
   (Color, Color) _colors(AppColors c) => switch (tone) {
@@ -63,6 +75,7 @@ class StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg) = _colors(context.colors);
+    final resolved = labelKey != null ? context.tr(labelKey!) : label;
     final fontSize = dense ? 10.0 : 11.0;
     return Container(
       padding: EdgeInsets.symmetric(
@@ -78,7 +91,7 @@ class StatusBadge extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           Text(
-            label,
+            resolved,
             style: TextStyle(
               color: fg,
               fontSize: fontSize,

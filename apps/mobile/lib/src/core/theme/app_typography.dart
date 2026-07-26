@@ -7,9 +7,22 @@ import 'app_colors.dart';
 class AppTypography {
   const AppTypography._();
 
-  static TextStyle serif(TextStyle? base) =>
-      GoogleFonts.plusJakartaSans(textStyle: base);
-  static TextStyle sans(TextStyle? base) => GoogleFonts.plusJakartaSans(textStyle: base);
+  /// Noto script families used as glyph fallbacks after Plus Jakarta Sans, which
+  /// covers only Latin. Without these, Hindi/Tamil/Telugu/Kannada/Malayalam text
+  /// renders as tofu boxes. Calling each GoogleFonts method once registers its
+  /// loader so the engine can resolve the family by name at paint time.
+  static final List<String> indicFallback = <String>[
+    GoogleFonts.notoSansDevanagari().fontFamily!, // hi
+    GoogleFonts.notoSansTamil().fontFamily!, // ta
+    GoogleFonts.notoSansTelugu().fontFamily!, // te
+    GoogleFonts.notoSansKannada().fontFamily!, // kn
+    GoogleFonts.notoSansMalayalam().fontFamily!, // ml
+  ];
+
+  static TextStyle serif(TextStyle? base) => GoogleFonts.plusJakartaSans(textStyle: base)
+      .copyWith(fontFamilyFallback: indicFallback);
+  static TextStyle sans(TextStyle? base) => GoogleFonts.plusJakartaSans(textStyle: base)
+      .copyWith(fontFamilyFallback: indicFallback);
 
   static TextTheme textTheme(AppColors colors) {
     TextStyle display(double size, {double height = 1.15, FontWeight weight = FontWeight.w700}) =>
@@ -19,7 +32,7 @@ class AppTypography {
           height: height,
           color: colors.textPrimary,
           letterSpacing: -0.3,
-        );
+        ).copyWith(fontFamilyFallback: indicFallback);
 
     TextStyle body(double size,
             {FontWeight weight = FontWeight.w400,
@@ -30,7 +43,7 @@ class AppTypography {
           fontWeight: weight,
           height: height,
           color: color ?? colors.textPrimary,
-        );
+        ).copyWith(fontFamilyFallback: indicFallback);
 
     return TextTheme(
       displayLarge: display(44, height: 1.1, weight: FontWeight.w800),

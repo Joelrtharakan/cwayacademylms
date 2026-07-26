@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -18,11 +19,13 @@ class VerifyEmailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final text = Theme.of(context).textTheme;
-    final target = (email == null || email!.isEmpty) ? 'your inbox' : email!;
+    final target = (email == null || email!.isEmpty)
+        ? context.tr('mobile.verifyEmail.yourInbox')
+        : email!;
 
     return AuthScaffold(
-      title: 'Verify your email',
-      subtitle: 'One quick step before you sign in.',
+      title: context.tr('mobile.verifyEmail.title'),
+      subtitle: context.tr('mobile.verifyEmail.subtitle'),
       children: [
         Center(
           child: Container(
@@ -41,20 +44,19 @@ class VerifyEmailScreen extends StatelessWidget {
           TextSpan(
             style: text.bodyLarge?.copyWith(color: colors.textSecondary),
             children: [
-              const TextSpan(text: 'We sent a verification link to '),
+              TextSpan(text: '${context.tr('mobile.verifyEmail.descBefore')} '),
               TextSpan(
                 text: target,
                 style: TextStyle(
                     color: colors.textPrimary, fontWeight: FontWeight.w700,),
               ),
-              const TextSpan(
-                  text: '. Open it to activate your account, then sign in.',),
+              TextSpan(text: context.tr('mobile.verifyEmail.descAfter')),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.xxl),
         PrimaryButton(
-          label: 'Back to sign in',
+          label: context.tr('auth.forgot_password.back_button'),
           variant: ButtonVariant.gold,
           onPressed: () => context.go(AppRoutes.login),
         ),

@@ -1,9 +1,9 @@
 
-import 'package:cway_academy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/offline/connectivity.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -31,19 +31,18 @@ class HomeShell extends ConsumerWidget {
     final colors = context.colors;
     final unread = ref.watch(unreadCountProvider);
     final online = ref.watch(isOnlineProvider);
-    final l = AppLocalizations.of(context);
     final user = ref.watch(currentUserProvider);
     final manages = (user?.isAdmin ?? false) || (user?.isInstructor ?? false);
 
     // Tab 0 (Home) and tab 1 (Courses) adapt to role. Students browse the
     // catalog and see their enrolled courses on Home; instructors/admins get a
     // teaching/management overview on Home and manage owned courses on tab 1.
-    final homeLabel = manages ? 'Home' : l.navLearn;
+    final homeLabel = manages ? context.tr('mobile.nav.home') : context.tr('mobile.nav.learn');
     final coursesLabel = (user?.isAdmin ?? false)
-        ? 'Courses'
+        ? context.tr('mobile.nav.courses')
         : (user?.isInstructor ?? false)
-            ? 'My Courses'
-            : l.navCourses;
+            ? context.tr('mobile.nav.myCourses')
+            : context.tr('mobile.nav.courses');
     final coursesIcon =
         manages ? Icons.library_books_outlined : Icons.explore_outlined;
     final coursesSelectedIcon =
@@ -131,7 +130,7 @@ class HomeShell extends ConsumerWidget {
                                   _NavItem(
                                     icon: Icons.notifications_none_rounded,
                                     activeIcon: Icons.notifications_rounded,
-                                    label: l.navAlerts,
+                                    label: context.tr('mobile.nav.alerts'),
                                     badge: unread,
                                     isActive: navigationShell.currentIndex == 2,
                                     onTap: () => _onTap(2),
@@ -139,7 +138,7 @@ class HomeShell extends ConsumerWidget {
                                   _NavItem(
                                     icon: Icons.person_outline_rounded,
                                     activeIcon: Icons.person_rounded,
-                                    label: l.navProfile,
+                                    label: context.tr('mobile.nav.profile'),
                                     isActive: navigationShell.currentIndex == 3,
                                     onTap: () => _onTap(3),
                                   ),
@@ -253,7 +252,7 @@ class _OfflineBanner extends StatelessWidget {
               Icon(Icons.cloud_off_rounded, size: 16, color: colors.goldLight),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                "You're offline — showing saved content",
+                context.tr('mobile.offline.banner'),
                 style: Theme.of(context)
                     .textTheme
                     .labelMedium

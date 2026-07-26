@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -46,11 +47,15 @@ class QuizResultView extends StatelessWidget {
                     style: text.headlineMedium?.copyWith(color: passColor),),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(result.passed ? 'Passed 🎉' : 'Not passed',
+              Text(result.passed ? context.tr('mobile.quiz.passedEmoji') : context.tr('mobile.quiz.notPassed'),
                   style: text.headlineSmall?.copyWith(color: passColor),),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'You scored ${result.earnedPoints}/${result.totalPoints} · pass mark ${result.passingScore}%',
+                context.tr('mobile.quiz.scoreSummary', {
+                  'earned': result.earnedPoints,
+                  'total': result.totalPoints,
+                  'pass': result.passingScore,
+                }),
                 style: text.bodySmall?.copyWith(color: colors.textMuted),
                 textAlign: TextAlign.center,
               ),
@@ -58,14 +63,14 @@ class QuizResultView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        Text('Review', style: text.titleLarge),
+        Text(context.tr('mobile.quiz.review'), style: text.titleLarge),
         const SizedBox(height: AppSpacing.md),
         for (var i = 0; i < result.results.length; i++)
           _ReviewCard(index: i + 1, item: result.results[i]),
         const SizedBox(height: AppSpacing.xl),
         if (onRetake != null) ...[
           PrimaryButton(
-            label: 'Retake quiz',
+            label: context.tr('mobile.quiz.retake'),
             icon: Icons.refresh_rounded,
             variant: ButtonVariant.gold,
             onPressed: onRetake,
@@ -73,7 +78,7 @@ class QuizResultView extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
         ],
         PrimaryButton(
-          label: 'Done',
+          label: context.tr('mobile.common.done'),
           variant: ButtonVariant.outline,
           onPressed: onDone,
         ),
@@ -125,9 +130,9 @@ class _ReviewCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           if (your.isNotEmpty)
-            _Line(label: 'Your answer', value: your, color: tint),
+            _Line(label: context.tr('mobile.quiz.yourAnswer'), value: your, color: tint),
           if (!item.isCorrect && correct.isNotEmpty)
-            _Line(label: 'Correct answer', value: correct, color: colors.success),
+            _Line(label: context.tr('mobile.quiz.correctAnswer'), value: correct, color: colors.success),
         ],
       ),
     );

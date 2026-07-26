@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 
@@ -68,11 +69,11 @@ class _ApplyWebViewScreenState extends State<ApplyWebViewScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          tooltip: 'Close',
+          tooltip: context.tr('mobile.common.close'),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          widget.title ?? 'Apply',
+          widget.title ?? context.tr('mobile.welcome.applyTitle'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -81,7 +82,7 @@ class _ApplyWebViewScreenState extends State<ApplyWebViewScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.open_in_new_rounded),
-            tooltip: 'Open in browser',
+            tooltip: context.tr('mobile.welcome.openInBrowser'),
             onPressed: _openInBrowser,
           ),
         ],
@@ -115,11 +116,11 @@ class _FailedState extends StatelessWidget {
           children: [
             Icon(Icons.public_off_rounded, size: 44, color: colors.textMuted),
             const SizedBox(height: AppSpacing.md),
-            Text('Couldn’t open the application page',
+            Text(context.tr('mobile.welcome.applyFailedTitle'),
                 style: text.titleMedium, textAlign: TextAlign.center,),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Please try again, or continue in your browser.',
+              context.tr('mobile.welcome.applyFailedMessage'),
               style: text.bodyMedium?.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -127,7 +128,7 @@ class _FailedState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onOpenBrowser,
               icon: const Icon(Icons.open_in_new_rounded),
-              label: const Text('Open in browser'),
+              label: Text(context.tr('mobile.welcome.openInBrowser')),
             ),
           ],
         ),

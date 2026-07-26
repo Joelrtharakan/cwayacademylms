@@ -2,6 +2,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/auth_session.dart';
 import '../../../core/network/dio_client.dart';
@@ -40,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Login returns a slim user; fetch the full profile as the source of truth.
       final me = await currentUser();
       if (me == null) {
-        throw const ApiException(message: 'Could not load your profile.');
+        throw ApiException(message: AppTranslations.tg('mobile.errors.loadProfile'));
       }
       return me;
     } on DioException catch (e) {
@@ -85,7 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final data = res.data?['data'];
       if (data is Map && data['message'] is String) return data['message'] as String;
-      return 'Account created successfully';
+      return AppTranslations.tg('mobile.errors.accountCreated');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -100,7 +101,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final data = res.data?['data'];
       if (data is Map && data['message'] is String) return data['message'] as String;
-      return 'If that email exists, a reset link was sent.';
+      return AppTranslations.tg('mobile.errors.resetSent');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

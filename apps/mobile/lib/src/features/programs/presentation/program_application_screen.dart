@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/error_banner.dart';
@@ -186,7 +187,7 @@ class _ProgramApplicationScreenState
     if (!_formKey.currentState!.validate()) return;
     if (!_agreeToRules) {
       setState(() => _errorMessage =
-          'Please accept the declaration & rules before submitting.',);
+          context.tr('mobile.application.acceptDeclaration'),);
       return;
     }
 
@@ -292,7 +293,7 @@ class _ProgramApplicationScreenState
     if (_isSubmitted) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Application Submitted', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: Text(context.tr('mobile.application.submittedTitle'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           backgroundColor: const Color(0xFF142417),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
@@ -309,7 +310,7 @@ class _ProgramApplicationScreenState
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Application Submitted!',
+                  context.tr('mobile.application.submittedHeading'),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colors.forestDeep,
@@ -317,7 +318,7 @@ class _ProgramApplicationScreenState
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Thank you for applying to CWAY Academy. Our admissions team will review your application and send an update to your email.',
+                  context.tr('mobile.application.submittedMessage'),
                   textAlign: TextAlign.center,
                   style: TextStyle(color: colors.textSecondary, height: 1.5),
                 ),
@@ -333,9 +334,9 @@ class _ProgramApplicationScreenState
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Return to Explore',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  child: Text(
+                    context.tr('mobile.application.returnExplore'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -351,9 +352,9 @@ class _ProgramApplicationScreenState
         backgroundColor: const Color(0xFF142417),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Program Application',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          context.tr('mobile.application.title'),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
@@ -388,7 +389,7 @@ class _ProgramApplicationScreenState
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'APPLYING FOR PROGRAM',
+                          context.tr('mobile.application.applyingFor'),
                           style: TextStyle(
                             color: colors.goldLight,
                             fontSize: 10,
@@ -422,36 +423,36 @@ class _ProgramApplicationScreenState
 
               // Card Section: 1. Personal Details
               _buildCardSection(
-                title: '1. Personal Details',
+                title: context.tr('mobile.application.section1'),
                 icon: Icons.person_rounded,
                 colors: colors,
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: _mediumOfStudy,
-                    decoration: _inputDeco(labelText: 'Medium of Study *', prefixIcon: Icons.language_rounded),
-                    items: const [
-                      DropdownMenuItem(value: 'English', child: Text('English')),
-                      DropdownMenuItem(value: 'Hindi', child: Text('Hindi')),
-                      DropdownMenuItem(value: 'Tamil', child: Text('Tamil')),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.mediumOfStudy'), prefixIcon: Icons.language_rounded),
+                    items: [
+                      DropdownMenuItem(value: 'English', child: Text(context.tr('mobile.languages.en'))),
+                      DropdownMenuItem(value: 'Hindi', child: Text(context.tr('mobile.languages.hi'))),
+                      DropdownMenuItem(value: 'Tamil', child: Text(context.tr('mobile.languages.ta'))),
                     ],
                     onChanged: (v) => setState(() => _mediumOfStudy = v ?? 'English'),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _firstNameCtrl,
-                    decoration: _inputDeco(labelText: 'First Name *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.firstName')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _middleNameCtrl,
-                    decoration: _inputDeco(labelText: 'Middle Name'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.middleName')),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _lastNameCtrl,
-                    decoration: _inputDeco(labelText: 'Last Name *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.lastName')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -459,18 +460,18 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _dobCtrl,
-                          decoration: _inputDeco(labelText: 'DOB (YYYY-MM-DD) *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.dob')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           initialValue: _gender,
-                          decoration: _inputDeco(labelText: 'Gender *'),
-                          items: const [
-                            DropdownMenuItem(value: 'Male', child: Text('Male')),
-                            DropdownMenuItem(value: 'Female', child: Text('Female')),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.gender')),
+                          items: [
+                            DropdownMenuItem(value: 'Male', child: Text(context.tr('mobile.application.male'))),
+                            DropdownMenuItem(value: 'Female', child: Text(context.tr('mobile.application.female'))),
                           ],
                           onChanged: (v) => setState(() => _gender = v ?? 'Male'),
                         ),
@@ -483,10 +484,10 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           initialValue: _maritalStatus,
-                          decoration: _inputDeco(labelText: 'Marital Status *'),
-                          items: const [
-                            DropdownMenuItem(value: 'Single', child: Text('Single')),
-                            DropdownMenuItem(value: 'Married', child: Text('Married')),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.maritalStatus')),
+                          items: [
+                            DropdownMenuItem(value: 'Single', child: Text(context.tr('mobile.application.single'))),
+                            DropdownMenuItem(value: 'Married', child: Text(context.tr('mobile.application.married'))),
                           ],
                           onChanged: (v) => setState(() => _maritalStatus = v ?? 'Single'),
                         ),
@@ -495,8 +496,8 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _nationalityCtrl,
-                          decoration: _inputDeco(labelText: 'Nationality *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.nationality')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -504,7 +505,7 @@ class _ProgramApplicationScreenState
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _aadhaarCtrl,
-                    decoration: _inputDeco(labelText: 'Aadhaar / National ID Number'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.aadhaar')),
                   ),
                 ],
               ),
@@ -512,15 +513,15 @@ class _ProgramApplicationScreenState
 
               // Card Section: Contact Information
               _buildCardSection(
-                title: 'Contact Information',
+                title: context.tr('mobile.application.sectionContact'),
                 icon: Icons.alternate_email_rounded,
                 colors: colors,
                 children: [
                   TextFormField(
                     controller: _emailCtrl,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: _inputDeco(labelText: 'Email Address *', prefixIcon: Icons.email_outlined),
-                    validator: (v) => v == null || !v.contains('@') ? 'Valid email required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.emailAddress'), prefixIcon: Icons.email_outlined),
+                    validator: (v) => v == null || !v.contains('@') ? context.tr('mobile.application.validEmail') : null,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -531,7 +532,7 @@ class _ProgramApplicationScreenState
                         child: DropdownButtonFormField<String>(
                           initialValue: _mobileCode,
                           isExpanded: true,
-                          decoration: _inputDeco(labelText: 'Code'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.code')),
                           items: const [
                             DropdownMenuItem(value: '+91', child: Text('+91')),
                             DropdownMenuItem(value: '+971', child: Text('+971')),
@@ -544,8 +545,8 @@ class _ProgramApplicationScreenState
                         child: TextFormField(
                           controller: _mobileCtrl,
                           keyboardType: TextInputType.phone,
-                          decoration: _inputDeco(labelText: 'Mobile Phone *', prefixIcon: Icons.phone_android_rounded),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.mobilePhone'), prefixIcon: Icons.phone_android_rounded),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -559,7 +560,7 @@ class _ProgramApplicationScreenState
                         child: DropdownButtonFormField<String>(
                           initialValue: _whatsappCode,
                           isExpanded: true,
-                          decoration: _inputDeco(labelText: 'Code'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.code')),
                           items: const [
                             DropdownMenuItem(value: '+91', child: Text('+91')),
                             DropdownMenuItem(value: '+971', child: Text('+971')),
@@ -572,7 +573,7 @@ class _ProgramApplicationScreenState
                         child: TextFormField(
                           controller: _whatsappCtrl,
                           keyboardType: TextInputType.phone,
-                          decoration: _inputDeco(labelText: 'WhatsApp Number', prefixIcon: Icons.chat_rounded),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.whatsapp'), prefixIcon: Icons.chat_rounded),
                         ),
                       ),
                     ],
@@ -583,19 +584,19 @@ class _ProgramApplicationScreenState
 
               // Card Section: Address Details
               _buildCardSection(
-                title: 'Permanent Address',
+                title: context.tr('mobile.application.sectionPermAddress'),
                 icon: Icons.location_on_rounded,
                 colors: colors,
                 children: [
                   TextFormField(
                     controller: _permAddress1Ctrl,
-                    decoration: _inputDeco(labelText: 'Address Line 1 *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.address1')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _permAddress2Ctrl,
-                    decoration: _inputDeco(labelText: 'Address Line 2'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.address2')),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -603,16 +604,16 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _permCityCtrl,
-                          decoration: _inputDeco(labelText: 'City *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.city')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _permStateCtrl,
-                          decoration: _inputDeco(labelText: 'State *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.state')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -623,16 +624,16 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _permPostalCodeCtrl,
-                          decoration: _inputDeco(labelText: 'Postal Code *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.postalCode')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _permCountryCtrl,
-                          decoration: _inputDeco(labelText: 'Country *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.country')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -647,10 +648,10 @@ class _ProgramApplicationScreenState
                           activeColor: colors.goldDark,
                           onChanged: (v) => setState(() => _sameAsPermanent = v ?? true),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Current Address same as Permanent Address',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+                            context.tr('mobile.application.sameAddress'),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
                           ),
                         ),
                       ],
@@ -662,20 +663,20 @@ class _ProgramApplicationScreenState
 
               // Card Section: 2. Educational Qualifications
               _buildCardSection(
-                title: '2. Educational Qualifications',
+                title: context.tr('mobile.application.section2'),
                 icon: Icons.school_rounded,
                 colors: colors,
                 children: [
                   TextFormField(
                     controller: _highestQualificationCtrl,
-                    decoration: _inputDeco(labelText: 'Highest Qualification (e.g. Bachelor) *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.highestQual')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _previousInstitutionCtrl,
-                    decoration: _inputDeco(labelText: 'Previous School / University *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.prevInstitution')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -683,14 +684,14 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _yearOfCompletionCtrl,
-                          decoration: _inputDeco(labelText: 'Year of Completion'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.yearCompletion')),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _marksOrGradeCtrl,
-                          decoration: _inputDeco(labelText: 'Marks / Grade'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.marksGrade')),
                         ),
                       ),
                     ],
@@ -701,24 +702,24 @@ class _ProgramApplicationScreenState
 
               // Card Section: 3. Church & Spiritual Info
               _buildCardSection(
-                title: '3. Church & Spiritual Details',
+                title: context.tr('mobile.application.section3'),
                 icon: Icons.church_rounded,
                 colors: colors,
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: _isBornAgain,
-                    decoration: _inputDeco(labelText: 'Are you a Born Again Christian? *'),
-                    items: const [
-                      DropdownMenuItem(value: 'yes', child: Text('Yes')),
-                      DropdownMenuItem(value: 'no', child: Text('No')),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.bornAgain')),
+                    items: [
+                      DropdownMenuItem(value: 'yes', child: Text(context.tr('mobile.application.yes'))),
+                      DropdownMenuItem(value: 'no', child: Text(context.tr('mobile.application.no'))),
                     ],
                     onChanged: (v) => setState(() => _isBornAgain = v ?? 'yes'),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _churchNameCtrl,
-                    decoration: _inputDeco(labelText: 'Current Church Name *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.churchName')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -726,15 +727,15 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _churchCityCtrl,
-                          decoration: _inputDeco(labelText: 'Church City'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.churchCity')),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _pastorNameCtrl,
-                          decoration: _inputDeco(labelText: "Pastor's Name *"),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.pastorName')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -742,14 +743,14 @@ class _ProgramApplicationScreenState
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _ministryExperienceCtrl,
-                    decoration: _inputDeco(labelText: 'Ministry Experience (Years / Role)'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.ministryExp')),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _callingStatementCtrl,
                     maxLines: 3,
-                    decoration: _inputDeco(labelText: 'Ministry Calling Statement / Purpose *'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.callingStatement')),
+                    validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                   ),
                 ],
               ),
@@ -757,18 +758,18 @@ class _ProgramApplicationScreenState
 
               // Card Section: 4. References
               _buildCardSection(
-                title: '4. References',
+                title: context.tr('mobile.application.section4'),
                 icon: Icons.group_rounded,
                 colors: colors,
                 children: [
                   Text(
-                    'Reference 1 (Pastor / Minister)',
+                    context.tr('mobile.application.ref1'),
                     style: TextStyle(fontWeight: FontWeight.bold, color: colors.goldDark, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _ref1NameCtrl,
-                    decoration: _inputDeco(labelText: 'Full Name'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.fullName')),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -776,27 +777,27 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _ref1EmailCtrl,
-                          decoration: _inputDeco(labelText: 'Email'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.email')),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _ref1PhoneCtrl,
-                          decoration: _inputDeco(labelText: 'Phone'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.phone')),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'Reference 2 (General / Teacher)',
+                    context.tr('mobile.application.ref2'),
                     style: TextStyle(fontWeight: FontWeight.bold, color: colors.goldDark, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _ref2NameCtrl,
-                    decoration: _inputDeco(labelText: 'Full Name'),
+                    decoration: _inputDeco(labelText: context.tr('mobile.application.fullName')),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -804,14 +805,14 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _ref2EmailCtrl,
-                          decoration: _inputDeco(labelText: 'Email'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.email')),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _ref2PhoneCtrl,
-                          decoration: _inputDeco(labelText: 'Phone'),
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.phone')),
                         ),
                       ),
                     ],
@@ -822,7 +823,7 @@ class _ProgramApplicationScreenState
 
               // Card Section: 5. Declaration & Rules
               _buildCardSection(
-                title: '5. Declaration & Rules',
+                title: context.tr('mobile.application.section5'),
                 icon: Icons.verified_user_rounded,
                 colors: colors,
                 children: [
@@ -831,16 +832,16 @@ class _ProgramApplicationScreenState
                       Expanded(
                         child: TextFormField(
                           controller: _declFirstCtrl,
-                          decoration: _inputDeco(labelText: 'First Name *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.firstName')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
                           controller: _declLastCtrl,
-                          decoration: _inputDeco(labelText: 'Last Name *'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                          decoration: _inputDeco(labelText: context.tr('mobile.application.lastName')),
+                          validator: (v) => v == null || v.isEmpty ? context.tr('mobile.application.required') : null,
                         ),
                       ),
                     ],
@@ -856,12 +857,12 @@ class _ProgramApplicationScreenState
                           activeColor: colors.goldDark,
                           onChanged: (v) => setState(() => _agreeToRules = v ?? false),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Padding(
-                            padding: EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.only(top: 10),
                             child: Text(
-                              'I declare that all information provided is accurate and I agree to abide by the rules of CWAY Academy.',
-                              style: TextStyle(fontSize: 13, height: 1.4, color: Color(0xFF334155)),
+                              context.tr('mobile.application.declaration'),
+                              style: const TextStyle(fontSize: 13, height: 1.4, color: Color(0xFF334155)),
                             ),
                           ),
                         ),
@@ -883,7 +884,7 @@ class _ProgramApplicationScreenState
                       )
                     : const Icon(Icons.send_rounded, size: 20),
                 label: Text(
-                  _isSubmitting ? 'Submitting...' : 'Submit Application',
+                  _isSubmitting ? context.tr('mobile.application.submitting') : context.tr('mobile.application.submit'),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(

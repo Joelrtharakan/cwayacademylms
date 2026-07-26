@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -50,18 +51,21 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                 Icon(Icons.fingerprint_rounded, size: 72, color: colors.goldLight),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
-                  user == null ? 'Welcome back' : 'Welcome back, ${user.name.split(' ').first}',
+                  user == null
+                      ? context.tr('auth.login.title')
+                      : context.tr('mobile.lock.welcomeName',
+                          {'name': user.name.split(' ').first},),
                   style: text.headlineMedium?.copyWith(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Unlock to continue',
+                  context.tr('mobile.lock.subtitle'),
                   style: text.bodyLarge?.copyWith(color: Colors.white70),
                 ),
                 const SizedBox(height: AppSpacing.xxxl),
                 PrimaryButton(
-                  label: 'Unlock',
+                  label: context.tr('mobile.lock.unlock'),
                   icon: Icons.lock_open_rounded,
                   variant: ButtonVariant.gold,
                   isLoading: _busy,
@@ -72,8 +76,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   onPressed: _busy
                       ? null
                       : () => ref.read(authControllerProvider.notifier).signOut(),
-                  child: const Text('Sign in with a different account',
-                      style: TextStyle(color: Colors.white70),),
+                  child: Text(context.tr('mobile.lock.differentAccount'),
+                      style: const TextStyle(color: Colors.white70),),
                 ),
               ],
             ),

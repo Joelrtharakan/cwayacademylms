@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -61,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ref.invalidate(dashboardControllerProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Enrolled in course! Happy learning!')),
+            SnackBar(content: Text(context.tr('auth.login.enroll_success'))),
           );
           context.go(AppRoutes.courseDetailPath(widget.pendingCourseId!));
           return;
@@ -71,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) setState(() => _error = e.message);
     } catch (e, st) {
       debugPrint('Login error caught: $e\n$st');
-      if (mounted) setState(() => _error = 'Something went wrong. Please try again.');
+      if (mounted) setState(() => _error = context.tr('auth.register.error_generic'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -82,9 +83,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final colors = context.colors;
 
     return AuthScaffold(
-      badgeText: 'Student Portal',
-      title: 'Welcome back',
-      subtitle: 'Sign in to continue your learning journey.',
+      badgeText: context.tr('student.sidebar.portal'),
+      title: context.tr('auth.login.title'),
+      subtitle: context.tr('auth.login.subtitle'),
       children: [
         Form(
           key: _formKey,
@@ -96,8 +97,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
               AuthTextField(
                 controller: _email,
-                label: 'Email',
-                hint: 'you@example.com',
+                label: context.tr('auth.login.email'),
+                hint: context.tr('mobile.auth.emailHint'),
                 prefixIcon: Icons.mail_outline_rounded,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -107,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               AuthTextField(
                 controller: _password,
-                label: 'Password',
+                label: context.tr('auth.login.password'),
                 hint: '••••••••',
                 prefixIcon: Icons.lock_outline_rounded,
                 obscure: true,
@@ -123,12 +124,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: _submitting
                       ? null
                       : () => context.push(AppRoutes.forgotPassword),
-                  child: const Text('Forgot password?'),
+                  child: Text(context.tr('auth.login.forgot_password')),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
               PrimaryButton(
-                label: 'Sign in',
+                label: context.tr('auth.login.sign_in'),
                 variant: ButtonVariant.gold,
                 isLoading: _submitting,
                 onPressed: _submitting ? null : _submit,
@@ -142,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text('New to CWAY Academy? ',
+              Text('${context.tr('mobile.auth.newToAcademy')} ',
                   style: TextStyle(color: colors.textSecondary),),
               GestureDetector(
                 onTap: _submitting
@@ -154,7 +155,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : AppRoutes.register,
                         ),
                 child: Text(
-                  'Create account',
+                  context.tr('auth.register.create'),
                   style: TextStyle(
                     color: colors.goldDark,
                     fontWeight: FontWeight.w700,

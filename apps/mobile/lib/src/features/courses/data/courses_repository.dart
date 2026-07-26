@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/offline/json_cache.dart';
@@ -67,7 +68,7 @@ class CoursesRepositoryImpl implements CoursesRepository {
         await _cache.put('course:$idOrSlug', data);
         return CourseDetailDto.fromJson(data);
       }
-      throw const ApiException(message: 'Course not found.', statusCode: 404);
+      throw ApiException(message: AppTranslations.tg('mobile.errors.courseNotFound'), statusCode: 404);
     } on DioException catch (e) {
       final api = ApiException.fromDio(e);
       if (api.isNetwork || api.kind == ApiErrorKind.timeout) {

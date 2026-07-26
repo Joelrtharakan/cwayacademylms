@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_translations.dart';
 import '../../core/theme/app_colors.dart';
 
 /// Friendly replacement for the default red error screen in release builds.
@@ -26,7 +27,7 @@ class AppErrorWidget extends StatelessWidget {
                 size: 56, color: bg.textMuted,),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              AppTranslations.tg('mobile.common.somethingWrong'),
               style: TextStyle(
                 color: bg.textPrimary,
                 fontSize: 18,
@@ -35,7 +36,7 @@ class AppErrorWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Please restart the app. If this keeps happening, contact support.',
+              AppTranslations.tg('mobile.errors.restartApp'),
               textAlign: TextAlign.center,
               style: TextStyle(color: bg.textSecondary, fontSize: 14),
             ),

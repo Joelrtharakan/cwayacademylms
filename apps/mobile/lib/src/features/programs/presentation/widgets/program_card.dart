@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/program_dto.dart';
@@ -57,9 +58,9 @@ class _ProgramCardState extends State<ProgramCard> {
                         color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Text(
-                        'ACADEMIC PROGRAM',
-                        style: TextStyle(
+                      child: Text(
+                        context.tr('mobile.programs.badge'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -78,7 +79,7 @@ class _ProgramCardState extends State<ProgramCard> {
                               color: colors.goldPrimary.withValues(alpha: 0.5),),
                         ),
                         child: Text(
-                          '${program.courses.length} Courses Included',
+                          context.tr('mobile.programs.coursesIncluded', {'count': program.courses.length}),
                           style: TextStyle(
                             color: colors.goldLight,
                             fontSize: 11,
@@ -124,8 +125,8 @@ class _ProgramCardState extends State<ProgramCard> {
                       icon: const Icon(Icons.edit_note_rounded, size: 18),
                       label: Text(
                         program.applicationsClosed
-                            ? 'Applications Closed'
-                            : 'Apply Now',
+                            ? context.tr('mobile.programs.applicationsClosed')
+                            : context.tr('mobile.programs.applyNow'),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -153,7 +154,7 @@ class _ProgramCardState extends State<ProgramCard> {
                           size: 20,
                         ),
                         label: Text(
-                          _isExpanded ? 'Hide Courses' : 'View Courses',
+                          _isExpanded ? context.tr('mobile.programs.hideCourses') : context.tr('mobile.programs.viewCourses'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -186,7 +187,7 @@ class _ProgramCardState extends State<ProgramCard> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12, left: 4),
                     child: Text(
-                      'COURSES IN THIS PROGRAM',
+                      context.tr('mobile.programs.coursesInProgram'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,

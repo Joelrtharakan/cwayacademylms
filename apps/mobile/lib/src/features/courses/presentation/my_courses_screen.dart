@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -39,7 +41,7 @@ class MyCoursesScreen extends ConsumerWidget {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          isAdmin ? 'All courses' : 'My courses',
+          isAdmin ? context.tr('mobile.instructor.allCourses') : context.tr('instructor.courses.title'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -58,7 +60,7 @@ class MyCoursesScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "Couldn't load your courses. Pull to retry.",
+                  message: context.tr('mobile.instructor.loadError'),
                   onRetry: () => ref.invalidate(myCoursesProvider),
                 ),
               ),
@@ -72,10 +74,10 @@ class MyCoursesScreen extends ConsumerWidget {
                   SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
                   EmptyState(
                     icon: Icons.menu_book_rounded,
-                    title: isAdmin ? 'No courses yet' : 'No courses yet',
+                    title: context.tr('instructor.courses.noCourses'),
                     message: isAdmin
-                        ? 'No courses have been created on the platform yet.'
-                        : 'Courses you create or that are assigned to you will appear here.',
+                        ? context.tr('mobile.instructor.noCoursesAdmin')
+                        : context.tr('mobile.instructor.noCoursesOwn'),
                   ),
                 ],
               );
@@ -125,13 +127,13 @@ class _Summary extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Expanded(child: _Metric(label: 'Courses', value: '${courses.length}')),
+          Expanded(child: _Metric(label: context.tr('mobile.instructor.metricCourses'), value: '${courses.length}')),
           const SizedBox(width: AppSpacing.md),
-          Expanded(child: _Metric(label: 'Published', value: '$published')),
+          Expanded(child: _Metric(label: context.tr('mobile.instructor.metricPublished'), value: '$published')),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _Metric(
-              label: 'Students',
+              label: context.tr('mobile.instructor.metricStudents'),
               value: Formatters.compact(students),
             ),
           ),
@@ -206,8 +208,13 @@ class _ManagedCourseRow extends StatelessWidget {
                   width: 72,
                   height: 72,
                   child: hasImage
-                      ? Image.network(course.thumbnail!, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _fallback(colors, title),)
+                      ? CachedNetworkImage(
+                          imageUrl: course.thumbnail!,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 300,
+                          memCacheHeight: 300,
+                          errorWidget: (_, __, ___) => _fallback(colors, title),
+                        )
                       : _fallback(colors, title),
                 ),
               ),
@@ -246,7 +253,7 @@ class _ManagedCourseRow extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
-                      Text('${course.avgProgress.round()}% avg. completion',
+                      Text(context.tr('mobile.instructor.avgCompletion', {'pct': course.avgProgress.round()}),
                           style: text.labelSmall
                               ?.copyWith(color: colors.textMuted),),
                     ],

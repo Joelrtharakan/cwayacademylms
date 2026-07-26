@@ -1,10 +1,10 @@
-import 'package:cway_academy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -13,45 +13,41 @@ import '../application/locale_controller.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  String _languageName(AppLocalizations l, String code) => switch (code) {
-        'hi' => l.languageHindi,
-        'ta' => l.languageTamil,
-        'te' => l.languageTelugu,
-        'kn' => l.languageKannada,
-        'ml' => l.languageMalayalam,
-        _ => l.languageEnglish,
-      };
+  /// Native autonyms for each language, shared across all locales via
+  /// `mobile.languages.{code}` (e.g. always "हिन्दी" for Hindi).
+  String _languageName(BuildContext context, String code) =>
+      context.tr('mobile.languages.$code');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
     final colors = context.colors;
     final locale = ref.watch(localeControllerProvider);
-    final currentLabel =
-        locale == null ? l.systemDefault : _languageName(l, locale.languageCode);
+    final currentLabel = locale == null
+        ? context.tr('mobile.settings.systemDefault')
+        : _languageName(context, locale.languageCode);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.settings)),
+      appBar: AppBar(title: Text(context.tr('mobile.settings.title'))),
       body: ListView(
         children: [
-          _Header(title: l.language),
+          _Header(title: context.tr('mobile.settings.language')),
           ListTile(
             leading: Icon(Icons.translate_rounded, color: colors.forestLight),
-            title: Text(l.language),
+            title: Text(context.tr('mobile.settings.language')),
             subtitle: Text(currentLabel),
             trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => _pickLanguage(context, ref, l),
+            onTap: () => _pickLanguage(context, ref),
           ),
           const Divider(height: 1),
-          _Header(title: l.account),
+          _Header(title: context.tr('mobile.settings.account')),
           ListTile(
             leading: Icon(Icons.lock_outline_rounded, color: colors.forestLight),
-            title: Text(l.changePassword),
+            title: Text(context.tr('mobile.settings.changePassword')),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.push(AppRoutes.changePassword),
           ),
           const Divider(height: 1),
-          _Header(title: l.about),
+          _Header(title: context.tr('mobile.settings.about')),
           FutureBuilder<PackageInfo>(
             future: PackageInfo.fromPlatform(),
             builder: (context, snap) {
@@ -60,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
                   : '—';
               return ListTile(
                 leading: Icon(Icons.info_outline_rounded, color: colors.forestLight),
-                title: Text(l.version),
+                title: Text(context.tr('mobile.settings.version')),
                 subtitle: Text(v),
               );
             },
@@ -70,11 +66,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickLanguage(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l,
-  ) async {
+  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) async {
     final current = ref.read(localeControllerProvider)?.languageCode;
     await showModalBottomSheet<void>(
       context: context,
@@ -91,12 +83,12 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               RadioListTile<String?>(
                 value: null,
-                title: Text(l.systemDefault),
+                title: Text(context.tr('mobile.settings.systemDefault')),
               ),
               for (final code in supportedLanguageCodes)
                 RadioListTile<String?>(
                   value: code,
-                  title: Text(_languageName(l, code)),
+                  title: Text(_languageName(ctx, code)),
                 ),
             ],
           ),

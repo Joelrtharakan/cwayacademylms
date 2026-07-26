@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/validators.dart';
@@ -68,7 +70,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Profile updated.')));
+          ..showSnackBar(SnackBar(content: Text(AppTranslations.tg('student.settings.messages.profileUpdated'))));
         context.pop();
       }
     } on ApiException catch (e) {
@@ -81,7 +83,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit profile')),
+      appBar: AppBar(title: Text(context.tr('mobile.profile.editProfile'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
@@ -94,15 +96,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ],
               AuthTextField(
                 controller: _name,
-                label: 'Full name',
+                label: context.tr('mobile.profile.fullName'),
                 prefixIcon: Icons.person_outline_rounded,
                 textInputAction: TextInputAction.next,
-                validator: (v) => Validators.required(v, field: 'Name'),
+                validator: (v) => Validators.required(v, field: context.tr('mobile.auth.nameField')),
                 enabled: !_saving,
               ),
               AuthTextField(
                 controller: _phone,
-                label: 'Phone (optional)',
+                label: '${context.tr('mobile.profile.phone')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.next,
@@ -110,27 +112,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ),
               AuthTextField(
                 controller: _church,
-                label: 'Church / Ministry (optional)',
+                label: '${context.tr('auth.register.church')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.church_outlined,
                 textInputAction: TextInputAction.next,
                 enabled: !_saving,
               ),
               AuthTextField(
                 controller: _location,
-                label: 'Location (optional)',
+                label: '${context.tr('auth.register.location')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.place_outlined,
                 textInputAction: TextInputAction.next,
                 enabled: !_saving,
               ),
               AuthTextField(
                 controller: _bio,
-                label: 'Bio (optional)',
+                label: '${context.tr('mobile.profile.bio')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.info_outline_rounded,
                 enabled: !_saving,
               ),
               const SizedBox(height: AppSpacing.sm),
               PrimaryButton(
-                label: 'Save changes',
+                label: context.tr('mobile.profile.saveChanges'),
                 variant: ButtonVariant.gold,
                 isLoading: _saving,
                 onPressed: _saving ? null : _save,

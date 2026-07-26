@@ -137,6 +137,7 @@ export const enrollInCourse = asyncHandler(async (req: Request, res: Response) =
 
   try {
     await redis.del(`cway:course:${courseId}`);
+    await redis.del(`student:dashboard:${studentId}`);
   } catch (e) {
     console.error("Redis del error:", e);
   }
@@ -1172,6 +1173,18 @@ export const updateHeartbeat = asyncHandler(async (req: Request, res: Response) 
 
 export const getStudentDashboard = asyncHandler(async (req: Request, res: Response) => {
   const studentId = req.user!.id;
+  const cacheKey = `student:dashboard:${studentId}`;
+
+  // Check Redis cache for instant sub-5ms response
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      res.setHeader("Cache-Control", "private, max-age=60");
+      return res.json(JSON.parse(cached));
+    }
+  } catch (err) {
+    console.error("[getStudentDashboard] Redis cache read error:", err);
+  }
   
   // Run all independent queries in parallel
   const [enrollmentsRaw, programEnrollments, certificatesCount, submissions] = await Promise.all([
@@ -1269,7 +1282,7 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
   // Simplified "Continue Learning"
   const activeEnrollment = enrollments.find(e => e.status === "ACTIVE" && e.progress < 100) || enrollments[0];
 
-  res.json({
+  const payload = {
     status: "success",
     data: {
       enrollments,
@@ -1278,7 +1291,16 @@ export const getStudentDashboard = asyncHandler(async (req: Request, res: Respon
       certificatesCount,
       pendingAssignmentsCount
     }
-  });
+  };
+
+  try {
+    await redis.set(cacheKey, JSON.stringify(payload), "EX", 60);
+  } catch (err) {
+    console.error("[getStudentDashboard] Redis cache set error:", err);
+  }
+
+  res.setHeader("Cache-Control", "private, max-age=60");
+  res.json(payload);
 });
 
 export const getMyAssignments = asyncHandler(async (req: Request, res: Response) => {

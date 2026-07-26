@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -21,7 +22,7 @@ class AssignmentsListScreen extends ConsumerWidget {
     final async = ref.watch(myAssignmentsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Assignments')),
+      appBar: AppBar(title: Text(context.tr('student.assignments.title'))),
       body: RefreshIndicator(
         color: colors.goldPrimary,
         onRefresh: () async => ref.invalidate(myAssignmentsProvider),
@@ -33,7 +34,7 @@ class AssignmentsListScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "We couldn't load your assignments.",
+                  message: context.tr('mobile.assignments.loadError'),
                   onRetry: () => ref.invalidate(myAssignmentsProvider),
                 ),
               ),
@@ -43,12 +44,12 @@ class AssignmentsListScreen extends ConsumerWidget {
             if (items.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 120),
+                children: [
+                  const SizedBox(height: 120),
                   EmptyState(
                     icon: Icons.assignment_outlined,
-                    title: 'No assignments',
-                    message: 'Assignments from your courses will appear here.',
+                    title: context.tr('student.assignments.empty.title'),
+                    message: context.tr('mobile.assignments.emptyMessage'),
                   ),
                 ],
               );
@@ -147,10 +148,13 @@ class _AssignmentTile extends StatelessWidget {
   (String, Color) _status(BuildContext context) {
     final colors = context.colors;
     final s = item.submission;
-    if (s == null) return ('Not submitted', colors.warning);
+    if (s == null) return (context.tr('mobile.assignments.notSubmitted'), colors.warning);
     if (s.isGraded) {
-      return ('Graded · ${s.grade?.round() ?? 0}/${item.totalPoints}', colors.success);
+      return (
+        context.tr('mobile.assignments.gradedScore', {'grade': s.grade?.round() ?? 0, 'total': item.totalPoints}),
+        colors.success,
+      );
     }
-    return ('Submitted', colors.forestLight);
+    return (context.tr('mobile.assignments.submitted'), colors.forestLight);
   }
 }

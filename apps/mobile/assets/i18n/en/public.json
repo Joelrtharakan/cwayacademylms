@@ -1,0 +1,212 @@
+{
+  "about": {
+    "label": "About Us",
+    "title": "About CWAY Academy",
+    "desc": "CWAY ACADEMY is a Bible-based leadership training project of the religious trust “CWAY MISSIONS,” registered in Bangalore, India. God laid a great vision in our hearts to equip members and pastors of rural churches in India as frontline leaders.",
+    "quote": "“God laid a great vision in our hearts to equip members and pastors of rural churches in India as frontline leaders.”",
+    "cwayMissions": "CWAY Missions",
+    "bangalore": "Bangalore, India",
+    "theCall": "The Call",
+    "challenge": {
+      "label": "The Challenge We Face",
+      "title": "A challenge for today’s Indian Church",
+      "desc": "India is home to many ethnic groups and languages, making Christian leadership training the most challenging task for churches and theological institutions.",
+      "quote": "“Thousands of untrained pastors and lay leaders in remote villages in India have never had the opportunity for formal leadership training or theological education, leaving them vulnerable to false teachings.”",
+      "list_heading": "The primary challenges that these pastors are facing in India are:",
+      "item_1_title": "Family Dependency",
+      "item_1_desc": "Most of the pastors in villages in India have families dependent on their work to make a living, which hinders them from going anywhere for an extended period of study.",
+      "item_2_title": "Financial Barriers",
+      "item_2_desc": "The financial status of most of their churches is not strong enough to support theological training. The pastors cannot afford the high costs of theological education in India, and it remains a dream for most of them.",
+      "item_3_title": "The Language Divide",
+      "item_3_desc": "The formal theological training is in English, but most of them speak only their local languages."
+    },
+    "response": {
+      "label": "Our Response",
+      "title": "Responding to the Challenge",
+      "desc": "CWAY ACADEMY is a vision shared by dedicated Bible teachers, pastors, media professionals, and other professionals who are willing and ready to reach and serve the church and missions in India. We envision responding to the crisis of insufficiently trained Christian leadership in remote villages in India by providing biblically based leadership training to pastors and lay leaders in their places of ministry.",
+      "check_1": "Nurture local church leaders for rural missions",
+      "check_2": "Bilingual theological training in local languages",
+      "check_3": "Accredited global certificate upon completion",
+      "sub_desc": "It is a world-class theological education and leadership training program delivered through video lectures, learning materials, lesson evaluations, live sessions, and seminars. Through online platforms, visitations, and workshops, the team is committed to challenging and encouraging local churches and leaders to fulfil the Great Commission of our Lord Jesus Christ.",
+      "objectives": "The core objectives are:",
+      "explore": "Explore Objective"
+    },
+    "horizon": {
+      "label": "Our Horizon",
+      "title": "Vision & Mission",
+      "desc": "Guiding the next generation of Christian frontline leaders in India with a clear purpose and unwavering dedication.",
+      "vision_label": "Our Direction",
+      "vision_title": "Vision",
+      "vision_desc": "Our vision is to equip Christ's disciples as frontline leaders through theological education, leadership training, and ministerial practice to fulfil Christ's Great Commission.",
+      "v_check_1": "Theological Inquiry",
+      "v_check_2": "Leadership Training",
+      "v_check_3": "Ministerial Practice",
+      "mission_label": "Our Objective",
+      "mission_title": "Mission",
+      "mission_desc": "The CWAY ACADEMY provides holistic, hands-on training for indigenous pastors, leaders, and believers in local churches. We offer each individual a hybrid learning experience that is comfortable and globally certified, with Christian leadership training. We develop potential leaders who can contribute to the Christian church and community.",
+      "mission_quote": "Developing potential leaders to contribute to the Christian church and community."
+    },
+    "parameters": {
+      "label": "Program Parameters",
+      "title": "Fees, Courses & Graduation"
+    },
+    "context": "“Every pastor, lay leader, and Christian disciple wants to know God more deeply through theological inquiry and to be an effective partner in God's mission. However, our location, hectic schedules, and activities make it difficult to achieve those objectives. CWAY Academy provides an accessible, comfortable learning environment for anyone interested in theological education and Christian leadership training alongside their professional and ministry commitments. Men and women who desire to become theologically trained pastor-teachers, worship leaders, Sunday school teachers, youth leaders, or counsellors can earn an accredited theological and Christian leadership certificate from the comfort of their own homes or other locations.”",
+    "pillars": {
+      "label": "Foundational Pillars",
+      "title": "Our Core Values"
+    },
+    "team": {
+      "label": "The Pillars of CWAY",
+      "title": "Leadership Team"
+    }
+  },
+  "leadership": {
+    "label": "Our Faculty & Leadership",
+    "title_start": "Guided by",
+    "title_highlight": "Seasoned Servants",
+    "desc": "CWAY Academy is led and taught by men and women of God with decades of combined ministry, teaching, and theological expertise. Our team brings academic excellence rooted in practical kingdom experience.",
+    "cta": {
+      "title": "Are You Called to Teach?",
+      "desc": "CWAY Academy is always seeking qualified theologians, pastors, and ministry practitioners who are passionate about equipping the next generation of Indian Christian leaders.",
+      "btn": "Enquire About Faculty Positions"
+    },
+    "leaders": {
+      "leader_1_bio": "The founder of CWAY MISSIONS Religious Trust carries a prophetic burden for India's unreached communities. With decades of frontline ministry experience across rural India, he established CWAY Academy to ensure that every called servant of God has access to world-class theological training in their own language. His vision: a church equipped in every district of India.",
+      "leader_2_bio": "Our Academic Dean brings 20+ years of theological education experience from leading seminaries across India. He oversees curriculum development, faculty selection, and academic standards, ensuring every CWAY Academy program maintains the highest level of biblical and pedagogical excellence. His passion: making deep theology accessible to the grassroots church.",
+      "leader_3_bio": "A veteran church planter and trainer with experience in 8+ Indian states, he leads our ministry development programs. His hands-on approach to training — combining classroom instruction with field-based mentorship — has shaped hundreds of effective rural pastors and church leaders across India.",
+      "leader_4_bio": "A passionate advocate for women in ministry, she leads CWAY Academy's women's theological training programs. Drawing from her extensive experience in women's leadership across South India, she ensures that our training is contextually sensitive, doctrinally sound, and empowering for women at every level of ministry.",
+      "leader_5_bio": "A gifted Bible teacher with deep expertise in biblical languages and exegesis, he brings academic rigour to our Old and New Testament courses. His teaching style bridges scholarly depth with pastoral warmth, making complex biblical content accessible to students from all educational backgrounds.",
+      "leader_6_bio": "A renowned missions scholar with field experience in cross-cultural ministry across Asia, he brings global missiological perspective to CWAY Academy. His courses on evangelism, church planting, and indigenous ministry methods have equipped hundreds of church planters for effective service in unreached communities."
+    }
+  },
+  "contact": {
+    "label": "Get in Touch",
+    "title_start": "We Would Love to",
+    "title_highlight": "Hear From You",
+    "desc": "Whether you have questions about admissions, course details, church partnerships, or want to coordinate a donation — our administrative team is here to assist you.",
+    "whatsapp": {
+      "label": "WhatsApp Chat",
+      "desc": "Connect instantly with our support team for course details, admission help, and general chat support.",
+      "btn": "Chat Now"
+    },
+    "email": {
+      "label": "Email Inquiries",
+      "desc": "Send us formal inquiries, partnership proposals, and your required documents.",
+      "btn": "Send Email"
+    },
+    "phone": {
+      "label": "Phone Inquiries",
+      "desc": "Call our Bangalore office to talk directly with an admissions coordinator during office hours.",
+      "btn": "Call Office"
+    },
+    "hours": {
+      "title": "Office Working Hours",
+      "desc": "Monday – Friday: 9am – 5pm IST | Saturday: 9am – 1pm IST (Sunday Closed)",
+      "quote": "\"Commit your work to the Lord, and your plans will be established.\""
+    }
+  },
+  "donate": {
+    "label": "Partner with the Ministry",
+    "title_start": "Give to",
+    "title_highlight": "Advance the Kingdom",
+    "desc": "Your generous giving directly funds theological training for rural pastors, women's ministry leaders, and Christian disciples across India who cannot afford education but are deeply called to serve.",
+    "form": {
+      "title": "Make a Donation",
+      "amount_label": "Select Amount (INR) *",
+      "custom_amount_label": "Or enter custom amount",
+      "custom_amount_placeholder": "Enter amount",
+      "purpose_label": "Donation Purpose",
+      "recurring_label": "Make this a monthly recurring gift",
+      "name_label": "Full Name *",
+      "name_placeholder": "Your Name",
+      "email_label": "Email *",
+      "email_placeholder": "you@email.com",
+      "trust_desc": "Donations are processed securely via Razorpay (India) or Stripe (International). Tax receipts are issued under CWAY MISSIONS Religious Trust (India — 80G exemption applicable).",
+      "btn_give": "Give",
+      "btn_give_now": "Give Now",
+      "btn_month": "/month"
+    },
+    "impact": {
+      "title": "Your Gift Makes an Impact",
+      "item_500": "Funds one week of study materials for a rural pastor",
+      "item_1000": "Sponsors a student's access to an entire course module",
+      "item_2000": "Covers one month's scholarship for a rural ministry leader",
+      "item_5000": "Fully sponsors one student for a 12-week certificate course",
+      "item_10000": "Funds course development in a new Indian language",
+      "quote": "\"Each one must give as he has decided in his heart, not reluctantly or under compulsion, for God loves a cheerful giver.\"",
+      "quote_ref": "— 2 Corinthians 9:7"
+    },
+    "success": {
+      "title": "Thank You for Your Generosity!",
+      "desc_1": "Your gift of ₹",
+      "desc_2": " toward ",
+      "desc_3": " has been received. A receipt will be sent to ",
+      "desc_4": ". May God multiply your seed sown!",
+      "quote": "\"Give, and it will be given to you: good measure, pressed down, shaken together, and running over will be put into your bosom.\"",
+      "quote_ref": "— Luke 6:38 (NKJV)",
+      "btn": "Return Home"
+    }
+  },
+  "get-involved": {
+    "label": "Join the Mission",
+    "title_start": "Partner With Us to",
+    "title_highlight": "Equip Leaders",
+    "desc": "We request your partnership to help train Christian leaders for the church in India. Village churches cannot afford training costs without your help.",
+    "ways": {
+      "label": "How You Can Help",
+      "title": "Ways to Get Involved",
+      "w1_title": "Prayer Partner",
+      "w1_desc": "Become a prayer partner. Get in touch with us to choose a prayer option and receive our regular ministry updates.",
+      "w1_cta": "Request Prayer Details",
+      "w2_title": "Sponsor a Candidate",
+      "w2_desc": "Contribute a one-time gift of Rs. 15,000/- to fully sponsor one local church candidate for the entire 15-month training program.",
+      "w2_cta": "Sponsor Today",
+      "w3_title": "Monthly Supporter",
+      "w3_desc": "Partner with this project by pledging a custom monthly amount to support rural leadership operations across India.",
+      "w3_cta": "Setup Partnership",
+      "w4_title": "Share the Vision",
+      "w4_desc": "Share this vision with like-minded people, pastors, and churches in your network who care about training frontline leaders.",
+      "w4_cta": "Contact to Share"
+    },
+    "bank": {
+      "label": "Giving Accountability",
+      "title": "Financial Partnership",
+      "desc": "CWAY Academy processes all sponsorships and gifts through CWAY MISSIONS. Sponsor funds go directly to local pastor candidates for course delivery, graduation services, and course materials.",
+      "f1_title": "Direct Scholarship",
+      "f1_desc": "100% of candidate sponsorships fund student study tools, internet allocations, and printed materials.",
+      "f2_title": "Regular Reporting",
+      "f2_desc": "Receive regular updates on your sponsored candidate's progress and invitations to local graduation services.",
+      "details_title": "Bank Details",
+      "name_label": "Account Name:",
+      "name_val": "CWAY MISSIONS",
+      "bank_label": "Bank:",
+      "bank_val": "Federal Bank",
+      "branch_val": "Banaswadi Branch",
+      "acct_label": "Account No:",
+      "ifsc_label": "IFSC:"
+    },
+    "scripture": {
+      "quote": "\"Now may He who supplies seed to the sower, and bread for food, supply and multiply the seed you have sown and increase the fruits of your righteousness.\"",
+      "quote_ref": "— 2 Corinthians 9:10 (NKJV)",
+      "btn": "Contact Admissions"
+    }
+  },
+  "blog": {
+    "section_label": "Academy Journal",
+    "title_start": "Insights &",
+    "title_highlight": "Reflections",
+    "subtitle": "Exploring the history, narratives, and spiritual legacies of pioneer leaders who shaped indigenous Christian ministry across South India.",
+    "category_default": "General",
+    "read_full": "Read Full Story",
+    "share": "Share Link",
+    "min_read": "{minutes} min read",
+    "close_reader": "Close reader",
+    "close_article": "Close Article",
+    "cta_title": "Support Our Frontline Leaders",
+    "cta_desc": "Our historical posts reflect the sacrifice of early missionaries. Today, local leaders need training to protect remote rural churches. Become a part of their story.",
+    "cta_btn": "Partner With Us",
+    "back": "Back to Blog",
+    "loading": "Loading...",
+    "not_found": "Post not found"
+  }
+}

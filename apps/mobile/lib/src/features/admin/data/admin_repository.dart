@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import 'admin_dto.dart';
@@ -44,7 +45,7 @@ class AdminRepositoryImpl implements AdminRepository {
       final res = await _dio.get<Map<String, dynamic>>('/admin/stats');
       final data = res.data?['data'];
       if (data is Map<String, dynamic>) return AdminStatsDto.fromJson(data);
-      throw const ApiException(message: 'No stats available.', statusCode: 404);
+      throw ApiException(message: AppTranslations.tg('mobile.errors.noStats'), statusCode: 404);
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

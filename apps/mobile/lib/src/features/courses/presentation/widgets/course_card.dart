@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -76,7 +77,7 @@ class CourseCard extends StatelessWidget {
                           Text(
                             course.avgRating > 0
                                 ? course.avgRating.toStringAsFixed(1)
-                                : 'New',
+                                : context.tr('mobile.course.new'),
                             style: text.labelSmall?.copyWith(
                                 fontWeight: FontWeight.w700,),
                           ),
@@ -156,7 +157,7 @@ class _Artwork extends StatelessWidget {
             left: AppSpacing.sm,
             child: _Chip(
               label: course.isFree
-                  ? 'Free'
+                  ? context.tr('mobile.browse.filterFree')
                   : Formatters.price(
                       amount: course.price,
                       currency: course.currency,
@@ -171,7 +172,7 @@ class _Artwork extends StatelessWidget {
               top: AppSpacing.sm,
               right: AppSpacing.sm,
               child: _Chip(
-                label: 'Featured',
+                label: context.tr('mobile.course.featured'),
                 background: colors.forestMid,
                 foreground: colors.goldLight,
               ),

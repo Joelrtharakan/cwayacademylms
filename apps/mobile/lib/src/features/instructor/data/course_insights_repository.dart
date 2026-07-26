@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import 'course_insights_dto.dart';
@@ -43,7 +44,7 @@ class CourseInsightsRepositoryImpl implements CourseInsightsRepository {
       );
       final data = res.data?['data'];
       if (data is Map<String, dynamic>) return CourseAnalyticsDto.fromJson(data);
-      throw const ApiException(message: 'No analytics available.', statusCode: 404);
+      throw ApiException(message: AppTranslations.tg('mobile.errors.noAnalytics'), statusCode: 404);
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

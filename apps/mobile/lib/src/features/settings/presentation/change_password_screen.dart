@@ -1,8 +1,8 @@
-import 'package:cway_academy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/validators.dart';
@@ -52,7 +52,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Password updated.')));
+          ..showSnackBar(
+            SnackBar(
+              content: Text(context.tr('student.settings.messages.passwordUpdated')),
+            ),
+          );
         context.pop();
       }
     } on ApiException catch (e) {
@@ -64,10 +68,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-
     return Scaffold(
-      appBar: AppBar(title: Text(l.changePassword)),
+      appBar: AppBar(title: Text(context.tr('student.settings.password.title'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
@@ -80,7 +82,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ],
               AuthTextField(
                 controller: _current,
-                label: l.currentPassword,
+                label: context.tr('student.settings.password.current'),
                 prefixIcon: Icons.lock_outline_rounded,
                 obscure: true,
                 textInputAction: TextInputAction.next,
@@ -89,7 +91,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               AuthTextField(
                 controller: _next,
-                label: l.newPassword,
+                label: context.tr('student.settings.password.new'),
                 prefixIcon: Icons.lock_reset_rounded,
                 obscure: true,
                 textInputAction: TextInputAction.next,
@@ -98,7 +100,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               AuthTextField(
                 controller: _confirm,
-                label: l.confirmNewPassword,
+                label: context.tr('student.settings.password.confirm'),
                 prefixIcon: Icons.lock_reset_rounded,
                 obscure: true,
                 textInputAction: TextInputAction.done,
@@ -108,7 +110,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               PrimaryButton(
-                label: l.save,
+                label: context.tr('student.settings.password.updateBtn'),
                 variant: ButtonVariant.gold,
                 isLoading: _saving,
                 onPressed: _saving ? null : _save,

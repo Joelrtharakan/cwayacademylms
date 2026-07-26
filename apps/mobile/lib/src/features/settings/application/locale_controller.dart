@@ -1,12 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/storage/preferences.dart';
 import '../../auth/application/auth_controller.dart';
 
-/// The app's languages. Codes match the ARB locales and the backend enum
-/// (via [AppUser.localeCode]).
-const supportedLanguageCodes = ['en', 'hi', 'ta', 'te', 'kn', 'ml'];
+/// The app's languages. Codes match the bundled translation catalogs
+/// ([kSupportedLocales]), the website `messages/{locale}` folders, and the
+/// backend enum (via [AppUser.localeCode]).
+const supportedLanguageCodes = kSupportedLocales;
 
 /// Owns the active [Locale]. Resolution order:
 ///   explicit saved choice → the signed-in user's preferredLanguage → system.

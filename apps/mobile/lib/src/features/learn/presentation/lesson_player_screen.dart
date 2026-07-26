@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -269,7 +270,7 @@ class _PlayerBody extends StatelessWidget {
               _NotesButton(lessonId: lesson.id, onPressed: onOpenNotes),
               IconButton(
                 icon: const Icon(Icons.playlist_play_rounded),
-                tooltip: 'Course content',
+                tooltip: context.tr('mobile.player.courseContent'),
                 onPressed: onOpenList,
               ),
             ],
@@ -302,27 +303,29 @@ class _PlayerBody extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Lesson ${index + 1} of ${lessons.length}',
+                  context.tr('mobile.player.lessonProgress', {'index': index + 1, 'total': lessons.length}),
                   style: text.bodySmall?.copyWith(color: colors.textMuted),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 if (lesson.isAssignment && lesson.assignment != null)
                   PrimaryButton(
-                    label: 'Open assignment',
+                    label: context.tr('mobile.player.openAssignment'),
                     icon: Icons.assignment_rounded,
                     variant: ButtonVariant.gold,
                     onPressed: onOpenAssignment,
                   )
                 else if (lesson.isQuiz && lesson.quiz != null)
                   PrimaryButton(
-                    label: isDone ? 'Review / retake quiz' : 'Start quiz',
+                    label: isDone
+                        ? context.tr('mobile.player.reviewQuiz')
+                        : context.tr('mobile.player.startQuiz'),
                     icon: Icons.quiz_rounded,
                     variant: ButtonVariant.gold,
                     onPressed: onOpenQuiz,
                   )
                 else if (!isDone)
                   PrimaryButton(
-                    label: 'Mark as complete',
+                    label: context.tr('student.player.markComplete'),
                     icon: Icons.check_rounded,
                     variant: ButtonVariant.gold,
                     isLoading: completing,
@@ -331,8 +334,8 @@ class _PlayerBody extends StatelessWidget {
                 else
                   PrimaryButton(
                     label: index < lessons.length - 1
-                        ? 'Next lesson'
-                        : 'Course complete',
+                        ? context.tr('mobile.player.nextLesson')
+                        : context.tr('mobile.player.courseComplete'),
                     icon: Icons.arrow_forward_rounded,
                     onPressed: index < lessons.length - 1 ? onNext : null,
                   ),
@@ -343,7 +346,7 @@ class _PlayerBody extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: index > 0 ? onPrev : null,
                         icon: const Icon(Icons.chevron_left_rounded),
-                        label: const Text('Previous'),
+                        label: Text(context.tr('mobile.player.previous')),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -351,7 +354,7 @@ class _PlayerBody extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: index < lessons.length - 1 ? onNext : null,
                         icon: const Icon(Icons.chevron_right_rounded),
-                        label: const Text('Next'),
+                        label: Text(context.tr('mobile.common.next')),
                       ),
                     ),
                   ],
@@ -384,7 +387,7 @@ class _NotesButton extends ConsumerWidget {
         hasNote ? Icons.sticky_note_2_rounded : Icons.sticky_note_2_outlined,
         color: hasNote ? colors.goldDark : null,
       ),
-      tooltip: hasNote ? 'Edit note' : 'Add note',
+      tooltip: hasNote ? context.tr('mobile.player.editNote') : context.tr('mobile.player.addNote'),
       onPressed: onPressed,
     );
   }
@@ -409,8 +412,8 @@ class _NonVideoPanel extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 lesson.type.toUpperCase() == 'VIDEO'
-                    ? 'Video unavailable'
-                    : '${_label(lesson.type)} lesson',
+                    ? context.tr('mobile.player.videoUnavailable')
+                    : context.tr('mobile.player.typeLesson', {'type': _label(context, lesson.type)}),
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
@@ -423,8 +426,8 @@ class _NonVideoPanel extends StatelessWidget {
     );
   }
 
-  static String _label(String type) =>
-      type.isEmpty ? 'Content' : type[0].toUpperCase() + type.substring(1).toLowerCase();
+  static String _label(BuildContext context, String type) =>
+      type.isEmpty ? context.tr('mobile.player.contentLabel') : type[0].toUpperCase() + type.substring(1).toLowerCase();
 }
 
 class _PlayerLoading extends StatelessWidget {
@@ -452,8 +455,8 @@ class _PlayerError extends StatelessWidget {
         child: Center(
           child: ErrorBanner(
             message: _empty
-                ? 'This course has no lessons yet.'
-                : "We couldn't load this lesson. Please try again.",
+                ? context.tr('mobile.player.emptyLessons')
+                : context.tr('mobile.player.loadError'),
             onRetry: onRetry,
           ),
         ),

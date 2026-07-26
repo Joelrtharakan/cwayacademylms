@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -48,8 +49,8 @@ class CertificateCard extends StatelessWidget {
                 SizedBox(height: compact ? 4 : AppSpacing.sm),
                 Text(
                   certificate.isProgram
-                      ? 'CERTIFICATE OF ACHIEVEMENT'
-                      : 'CERTIFICATE OF COMPLETION',
+                      ? context.tr('mobile.certificates.ofAchievement')
+                      : context.tr('mobile.certificates.ofCompletion'),
                   style: TextStyle(
                     color: colors.goldLight,
                     fontSize: compact ? 9 : 11,
@@ -63,8 +64,8 @@ class CertificateCard extends StatelessWidget {
             Column(
               children: [
                 if (!compact) ...[
-                  const Text('This certifies that',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),),
+                  Text(context.tr('mobile.certificates.certifiesThat'),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),),
                   const SizedBox(height: AppSpacing.xs),
                 ],
                 Text(
@@ -79,8 +80,8 @@ class CertificateCard extends StatelessWidget {
                 ),
                 SizedBox(height: compact ? 2 : AppSpacing.sm),
                 if (!compact)
-                  const Text('has successfully completed',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),),
+                  Text(context.tr('mobile.certificates.hasCompleted'),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),),
                 SizedBox(height: compact ? 2 : AppSpacing.xs),
                 Text(
                   title,
@@ -101,7 +102,7 @@ class CertificateCard extends StatelessWidget {
                 Text(Formatters.date(certificate.issuedAt),
                     style: const TextStyle(color: Colors.white70, fontSize: 11),),
                 if (certificate.certificateNumber != null)
-                  Text('No. ${certificate.certificateNumber}',
+                  Text(context.tr('mobile.certificates.noPrefix', {'number': certificate.certificateNumber}),
                       style: const TextStyle(color: Colors.white70, fontSize: 11),),
               ],
             ),

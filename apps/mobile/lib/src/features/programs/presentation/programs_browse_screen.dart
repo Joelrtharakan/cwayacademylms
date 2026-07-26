@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -32,7 +33,7 @@ class ProgramsBrowseScreen extends ConsumerWidget {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'Programs',
+          context.tr('mobile.browse.tabPrograms'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -59,7 +60,7 @@ class ProgramsBrowseScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "Couldn't load programs. Pull to retry.",
+                  message: context.tr('mobile.browse.programsLoadError'),
                   onRetry: () => ref.invalidate(publicProgramsProvider),
                 ),
               ),
@@ -71,10 +72,10 @@ class ProgramsBrowseScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.school_outlined,
-                    title: 'No programs yet',
-                    message: 'Please check back soon for new programs.',
+                    title: context.tr('mobile.programs.emptyTitle'),
+                    message: context.tr('mobile.programs.emptyMessage'),
                   ),
                 ],
               );

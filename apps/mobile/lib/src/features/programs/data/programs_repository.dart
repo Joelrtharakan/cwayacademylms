@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import 'program_dto.dart';
@@ -48,7 +49,7 @@ class ProgramsRepositoryImpl implements ProgramsRepository {
       if (rawData is Map<String, dynamic>) {
         return ProgramDto.fromJson(rawData);
       }
-      throw const ApiException(message: 'Invalid program data');
+      throw ApiException(message: AppTranslations.tg('mobile.errors.invalidProgram'));
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     } catch (e) {

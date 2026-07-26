@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -59,14 +60,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     if (_sentMessage != null) {
       return AuthScaffold(
-        title: 'Check your email',
+        title: context.tr('auth.forgot_password.success_title'),
         subtitle: _sentMessage!,
         onBack: () => context.pop(),
         children: [
           Icon(Icons.mark_email_read_outlined, size: 64, color: colors.goldPrimary),
           const SizedBox(height: AppSpacing.xxl),
           PrimaryButton(
-            label: 'Back to sign in',
+            label: context.tr('auth.forgot_password.back_button'),
             onPressed: () => context.pop(),
           ),
         ],
@@ -74,8 +75,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
 
     return AuthScaffold(
-      title: 'Reset password',
-      subtitle: "Enter your email and we'll send you a reset link.",
+      title: context.tr('auth.forgot_password.title'),
+      subtitle: context.tr('auth.forgot_password.subtitle'),
       onBack: () => context.pop(),
       children: [
         Form(
@@ -88,8 +89,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               ],
               AuthTextField(
                 controller: _email,
-                label: 'Email',
-                hint: 'you@example.com',
+                label: context.tr('auth.forgot_password.email'),
+                hint: context.tr('mobile.auth.emailHint'),
                 prefixIcon: Icons.mail_outline_rounded,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
@@ -100,7 +101,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               PrimaryButton(
-                label: 'Send reset link',
+                label: context.tr('auth.forgot_password.send'),
                 variant: ButtonVariant.gold,
                 isLoading: _submitting,
                 onPressed: _submitting ? null : _submit,

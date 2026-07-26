@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -18,10 +19,10 @@ class CertificatesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final async = ref.watch(myCertificatesProvider);
-    final name = ref.watch(currentUserProvider)?.name ?? 'Learner';
+    final name = ref.watch(currentUserProvider)?.name ?? context.tr('student.layout.role');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Certificates')),
+      appBar: AppBar(title: Text(context.tr('student.certificates.title'))),
       body: RefreshIndicator(
         color: colors.goldPrimary,
         onRefresh: () async => ref.invalidate(myCertificatesProvider),
@@ -33,7 +34,7 @@ class CertificatesScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "We couldn't load your certificates.",
+                  message: context.tr('mobile.certificates.loadError'),
                   onRetry: () => ref.invalidate(myCertificatesProvider),
                 ),
               ),
@@ -43,12 +44,12 @@ class CertificatesScreen extends ConsumerWidget {
             if (certs.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 100),
+                children: [
+                  const SizedBox(height: 100),
                   EmptyState(
                     icon: Icons.workspace_premium_outlined,
-                    title: 'No certificates yet',
-                    message: 'Complete a course to earn your first certificate.',
+                    title: context.tr('student.certificates.empty.title'),
+                    message: context.tr('student.certificates.empty.description'),
                   ),
                 ],
               );

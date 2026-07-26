@@ -1,0 +1,215 @@
+{
+  "sidebar": {
+    "portal": "Student Portal",
+    "overview": "Overview",
+    "dashboard": "Dashboard",
+    "learning": "Learning",
+    "myCourses": "My Courses",
+    "activities": "Activities",
+    "assignments": "Assignments",
+    "achievements": "Achievements",
+    "certificates": "Certificates",
+    "account": "Account",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "layout": {
+    "loading": "Loading LMS Classroom...",
+    "search": "Quick search...",
+    "role": "Learner",
+    "defaultName": "Student",
+    "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "caughtUp": "You're all caught up!"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {name}",
+    "subtitle": "Platform overview — track your learning progress and activity at a glance.",
+    "kpi": {
+      "enrolled": "Enrolled Courses",
+      "completed": "Completed Courses",
+      "certificates": "Certificates Earned",
+      "pending": "Pending Assignments"
+    },
+    "learning": {
+      "title": "Learning Overview",
+      "subtitle": "Hours studied (Last 12 months)",
+      "monthly": "Monthly"
+    },
+    "active": {
+      "title": "My Active Courses",
+      "subtitle": "Resume your learning journey",
+      "viewAll": "View all",
+      "empty": "You have no active courses right now"
+    },
+    "deadlines": {
+      "title": "Upcoming Deadlines",
+      "subtitle": "Tasks requiring your attention",
+      "empty": "No upcoming deadlines"
+    }
+  },
+  "player": {
+    "loading": "Loading Course Player...",
+    "backToCourses": "Back to Courses",
+    "yourProgress": "Your Progress",
+    "itemsCompleted": "{completed} of {total} items completed",
+    "totalGrade": "Total Grade",
+    "pts": "Pts",
+    "gradeBreakdown": "Grade Breakdown",
+    "items": "{completed}/{total} items",
+    "weekDescription": "Week Description",
+    "markComplete": "Mark complete",
+    "instructor": "Instructor",
+    "emailInstructor": "Email Instructor",
+    "myNotes": "My Notes",
+    "noNotes": "No notes yet for this lesson.",
+    "typeNote": "Type your note here...",
+    "saving": "Saving...",
+    "saveNote": "Save Note",
+    "cannotPreview": "This material cannot be previewed inside the player. You can download it instead.",
+    "openDownload": "Open / Download",
+    "backToLesson": "Back to lesson"
+  },
+  "courses": {
+    "status": {
+      "completed": "COMPLETED",
+      "locked": "LOCKED",
+      "completePct": "{progress}% Complete",
+      "continueBtn": "Continue →",
+      "review": "Review",
+      "certificate": "Certificate",
+      "unlocksAfter": "Unlocks after completing previous course"
+    },
+    "instructor": "Instructor:",
+    "title": "My Courses",
+    "subtitle": "Track your progress and revisit your learning journey.",
+    "enrolledProgram": "Enrolled Program",
+    "gradeSheet": "Grade Sheet",
+    "programCertificate": "Program Certificate",
+    "standaloneInProgress": "Standalone Courses - In Progress",
+    "standaloneCompleted": "Standalone Courses - Completed",
+    "empty": {
+      "title": "You haven't enrolled in any courses yet",
+      "description": "Browse our catalog to find theological courses that will equip you for ministry.",
+      "button": "Explore Catalog"
+    }
+  },
+  "assignments": {
+    "title": "Assignments",
+    "subtitle": "Track your pending and submitted course assignments in one central place.",
+    "loading": "Loading assignments...",
+    "empty": {
+      "title": "No assignments found",
+      "description": "You're all caught up! When you reach an assignment lesson in your courses, it will appear here."
+    },
+    "table": {
+      "course": "Course",
+      "assignment": "Assignment",
+      "status": "Status",
+      "score": "Score",
+      "action": "Action"
+    },
+    "status": {
+      "pending": "Pending",
+      "awaitingGrade": "Awaiting Grade",
+      "graded": "Graded"
+    },
+    "action": {
+      "submit": "Submit",
+      "view": "View"
+    }
+  },
+  "certificates": {
+    "title": "My Certificates",
+    "subtitle": "View and download your earned certificates of completion.",
+    "downloadError": "Failed to download certificate. Please try again later.",
+    "empty": {
+      "title": "No certificates yet",
+      "description": "Complete a course to earn your first certificate!"
+    },
+    "instructor": "Instructor:",
+    "issued": "Issued: {date}",
+    "gradeSheet": "Grade Sheet",
+    "downloadPdf": "Download PDF"
+  },
+  "settings": {
+    "title": "Account Settings",
+    "subtitle": "Manage your personal information and preferences.",
+    "menuTitle": "Settings Menu",
+    "saving": "Saving...",
+    "tabs": {
+      "profile": "Profile",
+      "password": "Password",
+      "notifications": "Notifications"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated",
+      "profileFailed": "Failed to update profile",
+      "passwordUpdated": "Password updated",
+      "passwordFailed": "Failed to update password",
+      "avatarUpdated": "Avatar updated",
+      "avatarFailed": "Failed to upload avatar",
+      "passwordsMismatch": "Passwords don't match"
+    },
+    "profile": {
+      "title": "Public Profile",
+      "subtitle": "This information will be displayed publicly so be careful what you share.",
+      "change": "Change",
+      "pictureTitle": "Profile Picture",
+      "pictureDesc": "We recommend a square image, at least 400x400px. JPG, PNG or WebP formats up to 2MB.",
+      "fullName": "Full Name *",
+      "nameRequired": "Name is required",
+      "biography": "Biography",
+      "bioPlaceholder": "Write a brief professional summary about yourself...",
+      "church": "Church Affiliation",
+      "location": "Location",
+      "phone": "Phone Number",
+      "saveBtn": "Save Profile Updates"
+    },
+    "password": {
+      "title": "Change Password",
+      "subtitle": "Ensure your account is using a long, random password to stay secure.",
+      "current": "Current Password *",
+      "required": "Required",
+      "new": "New Password *",
+      "minChars": "Min 8 chars",
+      "confirm": "Confirm New Password *",
+      "updateBtn": "Update Password"
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "subtitle": "Choose what we email you about. You'll always receive critical account updates.",
+      "announcements": "Course announcements",
+      "announcementsDesc": "Get notified when an instructor posts an announcement",
+      "grades": "Assignment grades",
+      "gradesDesc": "Get notified when your assignment is graded",
+      "certificates": "New certificates",
+      "certificatesDesc": "Get notified when you earn a new certificate",
+      "messages": "Direct messages",
+      "messagesDesc": "Get notified when an instructor messages you",
+      "saveBtn": "Save Preferences"
+    }
+  },
+  "gradeSheet": {
+    "error": "Failed to load grade sheet.",
+    "back": "Back",
+    "printBtn": "Print Grade Sheet",
+    "title": "Grade Sheet",
+    "subtitle": "CWAY Academy Theological Studies",
+    "dateIssued": "Date Issued",
+    "studentName": "Student Name",
+    "programEnrolled": "Program Enrolled",
+    "academicRecord": "Academic Record",
+    "table": {
+      "courseCode": "Course Code",
+      "courseTitle": "Course Title",
+      "score": "Score (%)",
+      "letterGrade": "Letter Grade",
+      "na": "N/A"
+    },
+    "finalAverage": "Program Final Average",
+    "legendTitle": "Grading Scale Reference",
+    "registrar": "CWAY Academy Registrar",
+    "signature": "Official Signature"
+  }
+}

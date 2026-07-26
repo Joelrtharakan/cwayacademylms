@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_banner.dart';
+import '../application/notification_l10n.dart';
 import '../application/notifications_controller.dart';
 import '../data/notification_dto.dart';
 
@@ -29,7 +31,7 @@ class NotificationsScreen extends ConsumerWidget {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'Notifications',
+          context.tr('student.layout.notifications'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -40,7 +42,7 @@ class NotificationsScreen extends ConsumerWidget {
             TextButton(
               onPressed: controller.markAllRead,
               child: Text(
-                'Mark all read',
+                context.tr('student.layout.markAllRead'),
                 style: TextStyle(color: colors.goldLight, fontWeight: FontWeight.w600),
               ),
             ),
@@ -58,7 +60,7 @@ class NotificationsScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "We couldn't load notifications.",
+                  message: context.tr('mobile.notifications.loadError'),
                   onRetry: () =>
                       ref.invalidate(notificationsControllerProvider),
                 ),
@@ -69,12 +71,12 @@ class NotificationsScreen extends ConsumerWidget {
             if (data.notifications.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 120),
+                children: [
+                  const SizedBox(height: 120),
                   EmptyState(
                     icon: Icons.notifications_none_rounded,
-                    title: 'You are all caught up',
-                    message: 'New notifications will appear here.',
+                    title: context.tr('student.layout.caughtUp'),
+                    message: context.tr('mobile.notifications.emptyMessage'),
                   ),
                 ],
               );
@@ -119,6 +121,9 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final text = Theme.of(context).textTheme;
+    // System notifications are stored in English server-side; re-localize by
+    // type at render time so alerts follow the selected language.
+    final localized = localizeNotification(context, item);
 
     return Material(
       color: item.isRead ? Colors.transparent : colors.goldPrimary.withValues(alpha: 0.05),
@@ -147,7 +152,7 @@ class _NotificationTile extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            item.title,
+                            localized.title,
                             style: text.titleSmall?.copyWith(
                               fontWeight:
                                   item.isRead ? FontWeight.w500 : FontWeight.w700,
@@ -158,9 +163,9 @@ class _NotificationTile extends StatelessWidget {
                             style: text.labelSmall?.copyWith(color: colors.textMuted),),
                       ],
                     ),
-                    if (item.body.isNotEmpty) ...[
+                    if (localized.body.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(item.body,
+                      Text(localized.body,
                           style: text.bodySmall?.copyWith(color: colors.textSecondary),),
                     ],
                   ],

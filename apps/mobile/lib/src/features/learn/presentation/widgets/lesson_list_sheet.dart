@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -54,7 +55,7 @@ class LessonListSheet extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm,),
-            child: Text('Course content', style: text.titleLarge),
+            child: Text(context.tr('mobile.player.courseContent'), style: text.titleLarge),
           ),
         ),
         for (final section in enrollment.course.sections)

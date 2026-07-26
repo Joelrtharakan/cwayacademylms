@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -77,7 +78,7 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'Standalone Courses',
+          context.tr('mobile.courses.standalone'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -86,14 +87,14 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
         actions: [
           PopupMenuButton<CourseSort>(
             icon: const Icon(Icons.sort_rounded),
-            tooltip: 'Sort',
+            tooltip: context.tr('mobile.browse.sort'),
             initialValue: query.sort,
             onSelected: (s) => _ctrl.applyQuery(query.copyWith(sort: s)),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: CourseSort.newest, child: Text('Newest')),
-              PopupMenuItem(value: CourseSort.popular, child: Text('Most popular')),
+            itemBuilder: (context) => [
+              PopupMenuItem(value: CourseSort.newest, child: Text(context.tr('mobile.browse.sortNewest'))),
+              PopupMenuItem(value: CourseSort.popular, child: Text(context.tr('mobile.browse.sortPopular'))),
               PopupMenuItem(
-                value: CourseSort.moduleOrder, child: Text('Module order'),),
+                value: CourseSort.moduleOrder, child: Text(context.tr('mobile.browse.sortModuleOrder')),),
             ],
           ),
         ],
@@ -122,7 +123,7 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
           textInputAction: TextInputAction.search,
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'Search standalone courses…',
+            hintText: context.tr('mobile.browse.searchHint'),
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: _searchCtrl.text.isEmpty
                 ? null
@@ -148,13 +149,13 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           children: [
             _chip(
-              label: 'All',
+              label: context.tr('mobile.browse.filterAll'),
               selected: query.categoryId == null,
               onSelected: () =>
                   _ctrl.applyQuery(query.copyWith(categoryId: () => null)),
             ),
             _chip(
-              label: 'Free',
+              label: context.tr('mobile.browse.filterFree'),
               selected: query.isFree == true,
               onSelected: () => _ctrl.applyQuery(
                 query.copyWith(isFree: () => query.isFree == true ? null : true),
@@ -199,7 +200,7 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
             padding: const EdgeInsets.all(AppSpacing.xl),
             sliver: SliverToBoxAdapter(
               child: ErrorBanner(
-                message: "Couldn't load courses. Pull to retry.",
+                message: context.tr('mobile.browse.loadError'),
                 onRetry: () => ref.invalidate(courseCatalogControllerProvider),
               ),
             ),
@@ -213,12 +214,12 @@ class _CoursesBrowseScreenState extends ConsumerState<CoursesBrowseScreen> {
 
           if (standaloneItems.isEmpty) {
             return [
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: EmptyState(
                   icon: Icons.search_off_rounded,
-                  title: 'No Standalone Courses Found',
-                  message: 'Try a different search or clear your filters.',
+                  title: context.tr('mobile.browse.emptyTitle'),
+                  message: context.tr('mobile.browse.emptyMessage'),
                 ),
               ),
             ];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
 
@@ -81,7 +82,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
                             : Icons.visibility_rounded,
                         size: 20,
                       ),
-                      tooltip: _obscured ? 'Show password' : 'Hide password',
+                      tooltip: _obscured
+                          ? context.tr('mobile.a11y.showPassword')
+                          : context.tr('mobile.a11y.hidePassword'),
                       onPressed: () => setState(() => _obscured = !_obscured),
                     )
                   : null,

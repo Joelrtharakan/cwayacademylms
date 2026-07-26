@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -84,9 +85,9 @@ class _SectionTile extends StatelessWidget {
           child: Text('$index',
               style: text.labelMedium?.copyWith(color: colors.textSecondary),),
         ),
-        title: Text(title.isEmpty ? 'Section $index' : title,
+        title: Text(title.isEmpty ? context.tr('mobile.curriculum.section', {'index': index}) : title,
             style: text.titleSmall,),
-        subtitle: Text('$lessonCount ${lessonCount == 1 ? 'lesson' : 'lessons'}',
+        subtitle: Text(context.tr('mobile.curriculum.lessonsCount', {'count': lessonCount}),
             style: text.bodySmall?.copyWith(color: colors.textMuted),),
         children: [
           for (final lesson in section.lessons)
@@ -132,7 +133,7 @@ class _LessonRow extends StatelessWidget {
         color: locked ? colors.textMuted : colors.forestLight,
       ),
       title: Text(
-        title.isEmpty ? 'Lesson' : title,
+        title.isEmpty ? context.tr('mobile.curriculum.lesson') : title,
         style: text.bodyMedium,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -144,7 +145,7 @@ class _LessonRow extends StatelessWidget {
       trailing: locked
           ? Icon(Icons.lock_outline_rounded, size: 16, color: colors.textMuted)
           : (lesson.isAccessiblePreview
-              ? Text('Preview',
+              ? Text(context.tr('mobile.curriculum.preview'),
                   style: text.labelSmall?.copyWith(color: colors.goldDark),)
               : null),
       ),

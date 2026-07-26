@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/security/biometric_service.dart';
@@ -39,7 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             fileName: file.name,
           );
       await ref.read(authControllerProvider.notifier).refreshUser();
-      _snack('Profile photo updated.');
+      _snack(AppTranslations.tg('mobile.profile.avatarUpdated'));
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -53,10 +55,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       if (value) {
         if (!await service.isAvailable()) {
-          _snack('Biometrics are not available on this device.');
+          _snack(AppTranslations.tg('mobile.profile.biometricUnavailable'));
           return;
         }
-        if (!await service.authenticate(reason: 'Enable biometric unlock')) return;
+        if (!await service.authenticate(reason: AppTranslations.tg('mobile.profile.biometricReason'))) return;
       }
       await service.setEnabled(value);
     } finally {
@@ -91,7 +93,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'Profile',
+          context.tr('mobile.nav.profile'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -99,7 +101,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Edit profile',
+            tooltip: context.tr('mobile.profile.editProfile'),
             icon: const Icon(Icons.edit_rounded, color: Colors.white),
             onPressed: () => context.push(AppRoutes.profileEdit),
           ),
@@ -131,7 +133,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: colors.goldPrimary.withValues(alpha: 0.12),
                     borderRadius: AppRadii.rPill,
                   ),
-                  child: Text(_roleLabel(user.role),
+                  child: Text(_roleLabel(context, user.role),
                       style: text.labelSmall?.copyWith(color: colors.goldDark),),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -141,34 +143,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          _Section(title: 'Personal information', children: [
+          _Section(title: context.tr('mobile.profile.personalInfo'), children: [
             if ((user.church ?? '').isNotEmpty)
-              _InfoRow(icon: Icons.church_outlined, label: 'Church', value: user.church!),
+              _InfoRow(icon: Icons.church_outlined, label: context.tr('auth.register.church'), value: user.church!),
             if ((user.location ?? '').isNotEmpty)
-              _InfoRow(icon: Icons.place_outlined, label: 'Location', value: user.location!),
+              _InfoRow(icon: Icons.place_outlined, label: context.tr('auth.register.location'), value: user.location!),
             if ((user.phone ?? '').isNotEmpty)
-              _InfoRow(icon: Icons.phone_outlined, label: 'Phone', value: user.phone!),
+              _InfoRow(icon: Icons.phone_outlined, label: context.tr('mobile.profile.phone'), value: user.phone!),
             if ((user.bio ?? '').isNotEmpty)
-              _InfoRow(icon: Icons.info_outline_rounded, label: 'Bio', value: user.bio!),
+              _InfoRow(icon: Icons.info_outline_rounded, label: context.tr('mobile.profile.bio'), value: user.bio!),
             if ((user.church ?? '').isEmpty &&
                 (user.location ?? '').isEmpty &&
                 (user.phone ?? '').isEmpty &&
                 (user.bio ?? '').isEmpty)
-              const _InfoRow(
+              _InfoRow(
                 icon: Icons.edit_note_rounded,
-                label: 'Complete your profile',
-                value: 'Tap edit to add details',
+                label: context.tr('mobile.profile.completeTitle'),
+                value: context.tr('mobile.profile.completeValue'),
               ),
           ],),
           const SizedBox(height: AppSpacing.lg),
-          _Section(title: 'Appearance', children: [
+          _Section(title: context.tr('mobile.profile.appearance'), children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
               child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), label: Text('Light')),
-                  ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_rounded), label: Text('Auto')),
-                  ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), label: Text('Dark')),
+                segments: [
+                  ButtonSegment(value: ThemeMode.light, icon: const Icon(Icons.light_mode_rounded), label: Text(context.tr('mobile.profile.themeLight'))),
+                  ButtonSegment(value: ThemeMode.system, icon: const Icon(Icons.brightness_auto_rounded), label: Text(context.tr('mobile.profile.themeAuto'))),
+                  ButtonSegment(value: ThemeMode.dark, icon: const Icon(Icons.dark_mode_rounded), label: Text(context.tr('mobile.profile.themeDark'))),
                 ],
                 selected: {mode},
                 showSelectedIcon: false,
@@ -178,29 +180,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],),
           const SizedBox(height: AppSpacing.lg),
-          _Section(title: 'Security', children: [
+          _Section(title: context.tr('mobile.profile.security'), children: [
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               secondary: Icon(Icons.fingerprint_rounded, color: colors.goldPrimary),
-              title: const Text('Biometric unlock'),
-              subtitle: const Text('Require Face ID / fingerprint on launch'),
+              title: Text(context.tr('mobile.profile.biometricUnlock')),
+              subtitle: Text(context.tr('mobile.profile.biometricDesc')),
               value: biometricEnabled,
               onChanged: _biometricBusy ? null : _toggleBiometric,
             ),
           ],),
           const SizedBox(height: AppSpacing.lg),
           _Section(
-            title: 'Support',
+            title: context.tr('mobile.profile.support'),
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.headphones_outlined, color: colors.goldPrimary),
-                title: const Text('Help & Support'),
+                title: Text(context.tr('mobile.profile.help')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _showSupportModal(
                   context,
-                  title: 'Help & Support',
-                  content: 'For academic assistance, course inquiries, or technical support, please contact our support team at support@cwayacademy.org or reach out to your instructor directly through course messaging.',
+                  title: context.tr('mobile.profile.help'),
+                  content: context.tr('mobile.profile.helpContent'),
                   icon: Icons.headset_mic_rounded,
                 ),
               ),
@@ -208,12 +210,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.shield_outlined, color: colors.goldPrimary),
-                title: const Text('Privacy Policy'),
+                title: Text(context.tr('mobile.profile.privacy')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _showSupportModal(
                   context,
-                  title: 'Privacy Policy',
-                  content: 'CWAY Academy respects your privacy. Your personal information, course progress, and academic records are securely encrypted and protected in accordance with international data privacy standards.',
+                  title: context.tr('mobile.profile.privacy'),
+                  content: context.tr('mobile.profile.privacyContent'),
                   icon: Icons.verified_user_rounded,
                 ),
               ),
@@ -221,12 +223,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.description_outlined, color: colors.goldPrimary),
-                title: const Text('Terms of Service'),
+                title: Text(context.tr('mobile.profile.terms')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _showSupportModal(
                   context,
-                  title: 'Terms of Service',
-                  content: 'By accessing CWAY Academy courses and materials, you agree to adhere to our academic honor code, respect copyright terms, and maintain integrity in all coursework and discussions.',
+                  title: context.tr('mobile.profile.terms'),
+                  content: context.tr('mobile.profile.termsContent'),
                   icon: Icons.article_rounded,
                 ),
               ),
@@ -234,12 +236,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.info_outline_rounded, color: colors.goldPrimary),
-                title: const Text('About CWAY Academy'),
+                title: Text(context.tr('mobile.profile.about')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _showSupportModal(
                   context,
-                  title: 'About CWAY Academy',
-                  content: 'CWAY Academy is dedicated to equipping leaders, ministers, and believers with high-quality, biblical theology and practical leadership training worldwide.',
+                  title: context.tr('mobile.profile.about'),
+                  content: context.tr('mobile.profile.aboutContent'),
                   icon: Icons.school_rounded,
                 ),
               ),
@@ -256,21 +258,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 ListTile(
                   leading: Icon(Icons.download_outlined, color: colors.goldPrimary),
-                  title: const Text('Downloads'),
+                  title: Text(context.tr('mobile.downloads.title')),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.push(AppRoutes.downloads),
                 ),
                 Divider(height: 1, color: colors.border),
                 ListTile(
                   leading: Icon(Icons.settings_outlined, color: colors.goldPrimary),
-                  title: const Text('Settings'),
+                  title: Text(context.tr('mobile.settings.title')),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => context.push(AppRoutes.settings),
                 ),
                 Divider(height: 1, color: colors.border),
                 ListTile(
                   leading: Icon(Icons.logout_rounded, color: colors.danger),
-                  title: Text('Sign out', style: TextStyle(color: colors.danger)),
+                  title: Text(context.tr('student.sidebar.signOut'), style: TextStyle(color: colors.danger)),
                   onTap: () =>
                       ref.read(authControllerProvider.notifier).signOut(),
                 ),
@@ -335,7 +337,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Close'),
+                child: Text(context.tr('mobile.common.close')),
               ),
             ),
           ],
@@ -344,8 +346,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  static String _roleLabel(String role) =>
-      role.isEmpty ? 'Student' : role[0] + role.substring(1).toLowerCase();
+  static String _roleLabel(BuildContext context, String role) => switch (role.toUpperCase()) {
+        'ADMIN' => context.tr('admin.users.roleAdmin'),
+        'INSTRUCTOR' => context.tr('admin.users.roleInstructor'),
+        _ => context.tr('admin.users.roleStudent'),
+      };
 }
 
 class _Avatar extends StatelessWidget {

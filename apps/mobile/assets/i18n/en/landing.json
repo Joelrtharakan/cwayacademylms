@@ -1,0 +1,188 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "courses": "Courses",
+    "involved": "Get Involved",
+    "blog": "Blog",
+    "contact": "Contact",
+    "login": "Login"
+  },
+  "hero": {
+    "title_1": "Coach. Challenge.",
+    "title_2": "Commission.",
+    "subtitle": "Experience the unique blend of coaching, challenging, and commissioning to shape or enhance your leadership potential.",
+    "button": "Know More"
+  },
+  "offer": {
+    "label": "What We Offer",
+    "title": "Train at Your Own Pace and Place",
+    "subtitle": "We provide an accessible, comfortable learning environment for anyone interested in theological education alongside their professional commitments.",
+    "feature_1_title": "Hybrid Learning",
+    "feature_1_desc": "Online and offline environment for your Christian leadership through systematic, biblical, and accredited training programs.",
+    "feature_2_title": "Easy Access",
+    "feature_2_desc": "From the comfort of your own home or location, participate in this training to accomplish God's vision.",
+    "feature_3_title": "Dedicated Coaches",
+    "feature_3_desc": "Courses are designed and taught by qualified educators, missionaries, and pastors with real ministry experience.",
+    "feature_4_title": "Global Commission",
+    "feature_4_desc": "Fulfil God's great commission as a Christian leader, pastor-teacher, worship leader, or counsellor anywhere.",
+    "banner_1": "Flexible hybrid schedule",
+    "banner_2": "Globally recognized credentials",
+    "banner_3": "Fully bilingual programs",
+    "button": "Explore Courses"
+  },
+  "stats": {
+    "label_1": "Courses",
+    "label_2": "Weeks to Complete",
+    "label_3": "Months Max Duration",
+    "label_4": "Global Reach"
+  },
+  "next_step": {
+    "label": "Take the Next Step",
+    "title": "Is it too late for you to be equipped for God's calling?",
+    "subtitle": "“Keep your hope alive. The Lord has already prepared a path for you.”",
+    "button": "Get in Touch"
+  },
+  "about": {
+    "label": "Who We Are",
+    "title": "About CWAY Academy",
+    "desc": "CWAY ACADEMY is a Bible-based leadership training project of the religious trust “CWAY MISSIONS,” registered in Bangalore, India. God laid a great vision in our hearts to equip members and pastors of rural churches in India as frontline leaders.",
+    "quote": "“Equipping frontline leaders for God's Great Commission through accessible, indigenous, and systematic theological training.”"
+  },
+  "challenge": {
+    "label": "The Challenge We Face",
+    "title": "A challenge for today’s Indian Church",
+    "desc": "India is home to many ethnic groups and languages, making Christian leadership training the most challenging task for churches and theological institutions.",
+    "quote": "“Thousands of untrained pastors and lay leaders in remote villages in India have never had the opportunity for formal leadership training or theological education, leaving them vulnerable to false teachings.”",
+    "list_heading": "The primary challenges that these pastors are facing in India are:",
+    "item_1_title": "Family Dependency",
+    "item_1_desc": "Most of the pastors in villages in India have families dependent on their work to make a living, which hinders them from going anywhere for an extended period of study.",
+    "item_2_title": "Financial Barriers",
+    "item_2_desc": "The financial status of most of their churches is not strong enough to support theological training. The pastors cannot afford the high costs of theological education in India, and it remains a dream for most of them.",
+    "item_3_title": "The Language Divide",
+    "item_3_desc": "The formal theological training is in English, but most of them speak only their local languages."
+  },
+  "response": {
+    "label": "Our Response",
+    "title": "Responding to the Challenge",
+    "desc": "CWAY ACADEMY is a vision shared by dedicated Bible teachers, pastors, media professionals, and other professionals who are willing and ready to reach and serve the church and missions in India. We envision responding to the crisis of insufficiently trained Christian leadership in remote villages in India by providing biblically based leadership training to pastors and lay leaders in their places of ministry.",
+    "vision_label": "VISION",
+    "vision_title": "Vision",
+    "vision_desc": "Our vision is to equip Christ's disciples as frontline leaders through theological education, leadership training, and ministerial practice to fulfil Christ's Great Commission.",
+    "mission_label": "MISSION",
+    "mission_title": "Mission",
+    "mission_desc": "The CWAY ACADEMY provides holistic, hands-on training for indigenous pastors, leaders, and believers in local churches. We offer each individual a hybrid learning experience that is comfortable and globally certified, with Christian leadership training. We develop potential leaders who can contribute to the Christian church and community."
+  },
+  "team": {
+    "label": "The People Behind The Vision",
+    "title": "Leadership Team",
+    "reeju_role": "Executive Director",
+    "reeju_cred": "M.Th., Ph.D.",
+    "reeju_name": "Dr. Reeju Tharakan",
+    "reeju_p1": "With a Ph.D. in Christian Studies and a Master of Theology in History of Christianity and 24 years of experience in theological education, Dr. Reeju forged a vision to provide an optimized theological learning opportunity for every Local Church and Leader.",
+    "reeju_p2": "As a theological educator, he served at Southern Asia Bible College, Bangalore, as an Assistant Professor for 13 years, then as an international faculty member at SUM Bible College and Theological Seminary, California, and as Dean of M.Th. studies at Bethel New Life College, Bangalore.",
+    "reeju_p3": "Presently, he is the Lead Pastor of Immanuel AG Church in Dubai and is involved in teaching, training, developing curricula, and launching new theological programs. He is also the President-Trustee of the CWAY Missions Religious Trust, Bangalore.",
+    "robin_role": "Director of Training & Outreach",
+    "robin_cred": "M.Div., Media Specialist",
+    "robin_name": "Pr. Robin Ninan",
+    "robin_p1": "Holding a Master of Divinity and extensive experience in leadership, management, and media, Pr. Robin envisions using his experience to reach and organize learning and training programs for pastors and leaders of the Christian community and local churches.",
+    "robin_p2": "He served as the Broadcasting and Production Manager at a Christian channel for 13 years and initiated leadership training and skill-development programs for youth in rural India.",
+    "robin_p3": "He continued to enrich rural pastors and leaders through the media. He is also the Secretary-Trustee of the CWAY Missions Religious Trust, Bangalore.",
+    "finny_role": "Director of Operations",
+    "finny_cred": "Operations Leader",
+    "finny_name": "Evg. Finny Philip Varghese",
+    "finny_p1": "An ordained minister of the AG Church of Brazil, and has been engaged in Christian missions since 2012. Driven by a deep commitment to sharing the love of God with underserved communities, he has dedicated himself to mission work across various capacities.",
+    "finny_p2": "Over the years, he has played a pivotal role in establishing and supporting several mission-focused charitable organizations and trusts in India. As a founder, trustee, and advisor, he continues to contribute to initiatives that foster community development, spiritual growth, and holistic transformation. In addition to his ministry experience, he brings extensive expertise in information technology and business leadership.",
+    "finny_p3": "Currently, he serves as the Founding Director of ARTNTEQ Group of Businesses, where he has strategically leveraged his skills to establish sustainable ventures that support the vision of equipping, empowering, and emancipating lay leaders for effective service and leadership."
+  },
+  "courses": {
+    "label": "What We Teach",
+    "title": "The Courses Offered",
+    "subtitle": "Biblically grounded. Locally delivered. Globally certified.",
+    "loading": "Loading courses...",
+    "empty_title": "No Courses Available Yet",
+    "empty_desc": "Check back soon for upcoming courses.",
+    "featured_programs": "Featured Programs",
+    "program_badge": "Program",
+    "applications_closed": "Applications Closed",
+    "apply_button": "Apply for Program",
+    "hide_courses": "Hide Courses",
+    "view_courses": "View Courses",
+    "courses_in_program": "Courses in this Program",
+    "view_details": "View Details",
+    "courses_title": "Courses",
+    "graduation_title": "Graduation & Certification",
+    "graduation_desc": "Students who complete all courses and meet the requirements will receive a globally accredited certificate upon graduation. Graduation services will be conducted locally."
+  },
+  "involved": {
+    "label": "An Extraordinary Calling",
+    "title": "Partner With Us",
+    "subtitle": "We request your partnership to help train Christian leaders for the church in India. Village churches cannot afford training costs without your help.",
+    "ways_to_help_label": "Ways to Help",
+    "ways_to_help_title": "How to be part of this mission",
+    "item_1": "Become a prayer partner. Get in touch with us to choose a prayer option.",
+    "item_2": "Contribute a one-time gift of Rs. 15,000/- to sponsor one candidate for 15 months.",
+    "item_3": "Partner with this project by pledging a monthly amount.",
+    "item_4": "Share this vision with like-minded people.",
+    "item_5": "Get in touch with us for other partnering opportunities.",
+    "button": "Get in Touch to Partner",
+    "bank_title": "Bank Details",
+    "bank_name": "Account Name",
+    "bank_bank": "Bank",
+    "bank_acc": "Account No",
+    "bank_ifsc": "IFSC"
+  },
+  "blog": {
+    "label": "Stories from the field",
+    "title": "Insights & Reflections",
+    "subtitle": "Learning from those who went before us in the mission field.",
+    "read_time": "read",
+    "read_story": "Read Full Story",
+    "posts": [
+      {
+        "slug": "arulappan-indigenous-leadership",
+        "title": "Arulappan: A Pioneer of Indigenous Leadership Training in India",
+        "excerpt": "John Christian Arulappan was a Tamil evangelist who led one of the earliest Pentecostal revivals in South India and pioneered local training for indigenous church leaders in the 19th century.",
+        "content": "Pastor Bill Hybels, a pastor of one of the largest evangelical churches in the world, wrote in his book ‘Courageous Leadership’ that \"the local church is the hope of the world, and its future rests primarily in the hands of its leaders.” As we see in the letter of the Apostle Paul to the church at Ephesus, he wrote about “equipping of the saints for the work of ministry, for the edifying of the body of Christ” (Ephesians 4:11-13). He encouraged the church to train local leaders “to the unity of the faith and of the knowledge of the Son of God, to a perfect man, to the measure of the stature of the fullness of Christ.” \n\nWhat do you think? When did the Indian Christian community adopt an indigenous system of leadership training? Do you know that Pentecostal-Charismatic leadership training for local churches and leaders in India was initiated by a local pastor?\n\nI want you to study an episode in the history of Charismatic Christianity in South India that reveals an individual who pioneered local training for indigenous church leaders in the nineteenth century. \n\nJohn Christian Arulappan was a Tamil evangelist who led one of the earliest Pentecostal revivals in South India during 1860-65 and trained local Christians for indigenous churches. Arulappan, a young man from the village of Strivelliputtoor, joined the seminary of the Church Missionary Society in Tirunelveli in 1825 and studied under the German missionary C.T.E. Rhenius. He later worked with Anthony Groves, a British missionary, as a translator and evangelist. During this time, he faced criticism from local people who said, “he was hired for preaching.” However, Arulappan refused any form of remuneration from Groves and lived \"by faith.\" \n\nArulappan’s Spirit-led vision empowered local Christians to share ministerial responsibilities, embrace the apostolic pattern of leadership, engage in faith missions, and adopt a communitarian lifestyle. He established a Christian settlement near his native place and transformed it into a self-supporting agricultural village that included a printing press, a boarding school, a church, and a center for Bible training. Arulappan established churches in the surrounding areas, and those congregations were independent, self-supporting, and locally managed. He was an itinerant trainer who passionately taught about the suffering, death, resurrection, and return of Lord Jesus Christ. Amid people's suffering due to famine, he exhorted them to \"seek first the kingdom of God,\" and God miraculously supplied their needs. \n\nThe Missionary Reporter of 1860 reported on revivals in Britain and America in recent years, and Arulappan had been reading about them. He enthusiastically trained local leaders of his churches to earnestly pray and work for a similar revival in South India. He told them, “look for the Holy Spirit, let us pray for the Holy Spirit; let every one of us do the same.” Between May and August 1860, a revival with \"Pentecostal\" characteristics occurred in Tirunelveli. Arulappan described the events as “the Holy Ghost poured out openly and wonderfully…some prophesied, and some spoke in unknown tongues with their interpretations.\" Many people were baptized after receiving the Holy Spirit, and he continued to teach from the early chapters of Acts to extend the outpouring of the Holy Spirit among the locals. \n\nArulappan was a true pioneer and visionary who believed in local training for Christian leaders. He was a local pastor and Christian leader with the vision to train and produce Christian leaders for the future church in India. The impact of his training and the Tirunelveli revival continues to this day, as we have many Pentecostal-Charismatic Christian leaders and churches in South India.\n",
+        "author": "Dr. Reeju Tharakan",
+        "authorRole": "M.Th., Ph.D.",
+        "date": "March 16, 2026",
+        "readTime": "6 min",
+        "category": "History"
+      },
+      {
+        "slug": "mary-chapmans-resolve",
+        "title": "“They Will Not Go, I Must” — The Legacy of Mary Chapman",
+        "excerpt": "Mary Weems Chapman, a 60-year-old veteran missionary, became the first Assemblies of God missionary to India, pioneering children's homes and local leadership training in Kerala.",
+        "content": "“They will not go, I must” were the words of Mary Weems Chapman, a 60-year-old veteran missionary who, in 1915, became the first Assemblies of God missionary to India. Mary Chapman was a Free Methodist missionary before her association with the Assemblies of God, and she worked in Liberia and India. Between 1890 and 1900, Mary worked in Daund, Pune, Mumbai, and Doddaballapur near Bangalore, and she was heavily involved in the ministry of children’s homes, which provided education and moral support to underprivileged children. After spending some years in India, single and aging, she returned to the United States of America. In 1915, she felt the call of God to return to India as a missionary from the Assemblies of God fellowship. However, her family and friends discouraged her, saying she was too old to go back to India. Nevertheless, she persevered in her resolve and made her decision firm, and she became the first Assemblies of God missionary to India. Before leaving the U.S. for India, she said: \"The Spirit of God will not permit me to remain at home in a life of ease while souls are perishing…if young people are not able to go, old people must go.\"    \n\nMary Chapman arrived in India in October 1915 and had a vision that women and little girls in South India should lead the people of India to the experience of the new birth, Baptism in the Holy Spirit, divine healing, and baptism by immersion. She earnestly prayed for revival in India. From September 1917, Chapman visited Kerala and conducted meetings in Trivandrum. She raised a team of local leaders in Kerala, including Manessah, Mathew, Jaborathanam Daniel, and Jacob; later, they served as leaders of the Assemblies of God mission in South Kerala. She initiated a training center in Kerala for indigenous leaders. It later grew into a full-fledged Bible School. She envisioned the training and development of local church leaders in India. In the twentieth century, this training of local leaders impacted the development of many Pentecostal-Charismatic leaders in India. Training leaders for the local church has been a vision for many Christian institutions and organizations.\n\nJohn Maxwell made the leadership statement, “Everything rises and falls on leadership.” This statement has become especially significant in today’s church context in India, where there appears to be a shortage of trained pastors and local leaders. Because of India’s many ethnic groups and languages, training Christian leaders has become the most challenging task for churches and theological institutions. There are thousands of untrained pastors and lay leaders in remote villages in India who have never had the opportunity for formal leadership training or theological education. The poor financial status of churches and families, along with the lack of training programs in local languages, always hinders local pastors and leaders from enrolling in theological education or Christian leadership programs. What can we do for them?\n",
+        "author": "Dr. Reeju Tharakan",
+        "authorRole": "M.Th., Ph.D.",
+        "date": "April 28, 2026",
+        "readTime": "7 min",
+        "category": "Missions"
+      },
+      {
+        "slug": "obedience-will-of-god-the-garrs",
+        "title": "Obedience to the Will of God — The Garrs",
+        "excerpt": "Alfred and Lillian Garr were model missionaries who obeyed God's will to bring the Pentecostal message to India in 1906, sparking a revival across Calcutta, Pune, and Bombay.",
+        "content": "Growing in the grace and wisdom of God means finding favor with God and obeying His will. The first men and women who experienced baptism in the Holy Spirit at the beginning of the twentieth century were growing in the grace and wisdom of God. Some of them obeyed God's will and became the first Pentecostal missionaries to India.  \n\nAlfred Goodrich Garr of Danville, Kentucky, was passionately seeking a personal encounter with God, which he always told his mother, “I am feeling after God.” In his continued pursuit of God, he traveled to several places, attended many meetings, and later joined Asbury College for ministerial training. Garr married Lillian Anderson, daughter of a Methodist bishop, while at Asbury College. They then moved to California to become pastors of an independent congregation, the Burning Bush Church. Although he was established as a pastor of this church, his desire for a deeper relationship with God continued. During this time, the Azusa Street Revival broke out, and Garr attended every session enthusiastically. On June 14, 1906, Garr received baptism in the Holy Spirit with speaking in tongues. At one meeting, while he was speaking in tongues, a British Indian approached him and said that Garr was speaking his mother tongue, Bengali. Initially, Lillian was skeptical about taking this experience as divine, and Garr asked her to attend one session of the Azusa Street Revival. Mrs. Garr received the power of the Holy Spirit with the gift of tongues, Tibetan and Chinese, in her first meeting at the Azusa mission. One week later, Garr stood up in one of the sessions of the Azusa Revival and said, “Friends, I believe that God wants me to go to India with this message.” \n\nA. G. Garr and Lillian Garr, with their daughter Virginia and their assistant Maria Gardner, arrived in Calcutta in December 1906. For the first three weeks, this missionary couple prayed for an opening to begin their ministry. During this time, Garr realized that he could not use the ‘Bengali’ language he had received as a gift of tongues at the Azusa Street Revival for preaching in Calcutta. However, he was not discouraged; instead, he studied the scriptures and came to understand that speaking in tongues was a source of spiritual empowerment rather than a tool for missionary evangelism. They were then invited to attend a prayer meeting of missionaries at the Woman’s Union Missionary Society mission house on Dhurmutulla Street to share about ‘God’s visitation in America.’ The missionaries who attended this meeting received the baptism of the Spirit. Later, Garr met Pastor Hook of the Bow Bazar Baptist Church – the church William Carey had ministered to 100 years earlier. The Garrs conducted revival meetings at this church with Pastor Hook. Some Protestant missionaries and local Christians experienced the power of the Holy Spirit.  \n\nLillian Garr reported on this revival in the periodical Apostolic Faith of the Azusa Street Mission: “God is spreading Pentecost in Calcutta, … We are among the Bible teachers, and they have the Word so stored away; but now the Spirit is putting life and power into it, which is wonderful to behold.” One night in Calcutta, Sister Lillian Garr had a vision of Jesus, His hands filled with golden crowns ready to place on heads. She realized that God had put a burden on her heart for the hungry souls in India. The Garrs began praying for missionaries in India to receive the outpouring of the Holy Spirit. She initiated revival prayer meetings among the missionary ladies in Calcutta. Miss Susan Easton, head of the American Women’s Board of Missions, and Fanny Simpson, a Methodist missionary and director of a girls’ orphanage, received the Holy Spirit's empowerment in these meetings. At Miss Simpson's orphanage, forty-five native girls prayed and received the Spirit’s baptism. These girls became local ministers and witnessed the power of the gospel in their families and villages. The revival continued to spread in Calcutta, Pune, and Bombay. The Garrs visited and conducted revival meetings at Ramabai’s Mukti Sadan in Pune and at a boys’ home in Dhond. The Garrs family went from Calcutta to Sri Lanka, then to Hong Kong and China. Despite personal tragedy, including the deaths of their two daughters and their assistant Maria, they continued the work of the Lord in China until 1911.\n\nAlfred and Lillian Garr were a model missionary family who had grown in the grace and wisdom of God. They obeyed God's will in their lives and accepted their challenging experiences as God-given for the glory of God. The impact of their lives and ministry will endure forever. \n\n",
+        "author": "Dr. Reeju Tharakan",
+        "authorRole": "M.Th., Ph.D.",
+        "date": "May 15, 2026",
+        "readTime": "8 min",
+        "category": "History"
+      }
+    ]
+  },
+  "contact": {
+    "label": "A Question For You",
+    "title": "“Is it too late for you to be equipped for God's calling?”",
+    "subtitle": "“Keep your hope alive. The Lord has already prepared a path for you.”"
+  },
+  "footer": {
+    "desc": "Equipping Frontline Leaders for God's Great Commission.<br />A CWAY Missions Project · Bangalore, India",
+    "quick_links": "Quick Links",
+    "contact_info": "Contact Info",
+    "phone": "Phone Inquiries:"
+  }
+}

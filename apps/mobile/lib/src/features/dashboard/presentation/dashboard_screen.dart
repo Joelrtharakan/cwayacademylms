@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -56,9 +58,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
   String get _greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return AppTranslations.tg('mobile.dashboard.greetingMorning');
+    if (h < 17) return AppTranslations.tg('mobile.dashboard.greetingAfternoon');
+    return AppTranslations.tg('mobile.dashboard.greetingEvening');
   }
 
   @override
@@ -67,7 +69,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final text = Theme.of(context).textTheme;
     final user = ref.watch(currentUserProvider);
     final async = ref.watch(dashboardControllerProvider);
-    final firstName = (user?.name.trim().split(' ').first) ?? 'there';
+    final firstName = (user?.name.trim().split(' ').first) ?? context.tr('mobile.dashboard.friend');
 
     return Scaffold(
       body: RefreshIndicator(
@@ -124,7 +126,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     onTap: () => context.go(AppRoutes.profile),
                     child: Semantics(
                       button: true,
-                      label: 'Account and settings',
+                      label: context.tr('mobile.a11y.accountSettings'),
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -186,11 +188,10 @@ class _DashboardBodySliver extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
-            const EmptyState(
+            EmptyState(
               icon: Icons.school_outlined,
-              title: 'No courses yet',
-              message:
-                  'Explore the catalog and enroll to start your learning journey.',
+              title: context.tr('mobile.dashboard.emptyTitle'),
+              message: context.tr('mobile.dashboard.emptyMessage'),
             ),
           ],
         ),
@@ -223,7 +224,7 @@ class _DashboardBodySliver extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.xl),
-        const SectionHeader(title: 'My courses'),
+        SectionHeader(title: context.tr('student.courses.title')),
         const SizedBox(height: AppSpacing.md),
         for (final e in data.enrollments) ...[
           RepaintBoundary(
@@ -253,7 +254,7 @@ class _ErrorView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: ErrorBanner(
-            message: 'We couldn\'t load your dashboard. Pull to retry or tap below.',
+            message: context.tr('mobile.dashboard.loadError'),
             onRetry: onRetry,
           ),
         ),
@@ -317,7 +318,7 @@ class _StatsHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              Text('Overall',
+              Text(context.tr('mobile.dashboard.overall'),
                   style: text.labelSmall
                       ?.copyWith(color: Colors.white.withValues(alpha: 0.7)),),
             ],
@@ -328,7 +329,7 @@ class _StatsHero extends StatelessWidget {
               children: [
                 _MetricRow(
                   icon: Icons.menu_book_rounded,
-                  label: 'In progress',
+                  label: context.tr('mobile.dashboard.inProgress'),
                   value: inProgress,
                 ),
                 Divider(
@@ -336,7 +337,7 @@ class _StatsHero extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.12),),
                 _MetricRow(
                   icon: Icons.workspace_premium_rounded,
-                  label: 'Certificates',
+                  label: context.tr('mobile.dashboard.certificates'),
                   value: certificates,
                   onTap: onCertificates,
                 ),
@@ -345,7 +346,7 @@ class _StatsHero extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.12),),
                 _MetricRow(
                   icon: Icons.assignment_late_rounded,
-                  label: 'Pending tasks',
+                  label: context.tr('mobile.dashboard.pendingTasks'),
                   value: pending,
                   onTap: onPending,
                 ),

@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -33,7 +36,7 @@ class StudentCoursesScreen extends ConsumerWidget {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'My Courses',
+          context.tr('student.courses.title'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -51,7 +54,7 @@ class StudentCoursesScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "Couldn't load your enrolled courses. Pull to retry.",
+                  message: context.tr('mobile.courses.loadError'),
                   onRetry: () => ref.invalidate(dashboardControllerProvider),
                 ),
               ),
@@ -81,16 +84,16 @@ class StudentCoursesScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const SizedBox(height: AppSpacing.xxxl),
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.menu_book_rounded,
-                    title: 'No Enrolled Courses Yet',
-                    message: 'Explore our academic programs and courses to begin learning.',
+                    title: context.tr('student.courses.empty.title'),
+                    message: context.tr('student.courses.empty.description'),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                     child: PrimaryButton(
-                      label: 'Browse Catalog',
+                      label: context.tr('student.courses.empty.button'),
                       icon: Icons.explore_rounded,
                       variant: ButtonVariant.gold,
                       onPressed: () => context.push(AppRoutes.coursesBrowse),
@@ -168,7 +171,7 @@ class _ProgramSection extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  programTitle.isNotEmpty ? programTitle : 'Academic Program',
+                  programTitle.isNotEmpty ? programTitle : context.tr('mobile.courses.academicProgram'),
                   style: text.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -189,7 +192,7 @@ class _ProgramSection extends StatelessWidget {
             children: [
               if (courses.isEmpty)
                 Text(
-                  'No active courses listed under this program.',
+                  context.tr('mobile.courses.noProgramCourses'),
                   style: text.bodySmall?.copyWith(color: colors.textMuted),
                 )
               else
@@ -239,7 +242,7 @@ class _StandaloneSection extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Standalone Courses',
+                  context.tr('mobile.courses.standalone'),
                   style: text.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -302,10 +305,18 @@ class _CourseItemCard extends StatelessWidget {
                 width: 64,
                 height: 64,
                 child: course.thumbnail != null && course.thumbnail!.startsWith('http')
-                    ? Image.network(
-                        course.thumbnail!,
+                    ? CachedNetworkImage(
+                        imageUrl: course.thumbnail!,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        memCacheWidth: 300,
+                        memCacheHeight: 300,
+                        fadeInDuration: 150.ms,
+                        placeholder: (context, url) => AppShimmer(
+                          width: 64,
+                          height: 64,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        errorWidget: (context, url, error) => Container(
                           color: colors.forestMid,
                           child: const Icon(Icons.menu_book_rounded, color: Colors.white70),
                         ),

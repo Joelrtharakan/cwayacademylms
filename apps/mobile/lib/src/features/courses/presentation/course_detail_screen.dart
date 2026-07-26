@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
@@ -48,21 +50,21 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Sign in to Enroll',
+                context.tr('mobile.detail.signInToEnroll'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Please sign in or create an account to enroll in "${course.title.resolveFor(context)}".',
+                context.tr('mobile.detail.signInPrompt', {'title': course.title.resolveFor(context)}),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colors.textSecondary,
                     ),
               ),
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
-                label: 'Sign in to existing account',
+                label: context.tr('mobile.detail.signInExisting'),
                 variant: ButtonVariant.gold,
                 onPressed: () {
                   Navigator.of(ctx).pop();
@@ -71,7 +73,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               PrimaryButton(
-                label: 'Create a new account',
+                label: context.tr('mobile.detail.createNew'),
                 variant: ButtonVariant.outline,
                 onPressed: () {
                   Navigator.of(ctx).pop();
@@ -91,7 +93,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
       await ref.read(coursesRepositoryProvider).enroll(course.id);
       ref.invalidate(courseDetailProvider(widget.courseId));
       ref.invalidate(dashboardControllerProvider);
-      _snack('You are enrolled. Happy learning!');
+      _snack(AppTranslations.tg('mobile.detail.enrolled'));
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -103,19 +105,19 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Unenroll from Course?'),
+        title: Text(context.tr('mobile.detail.unenrollTitle')),
         content: Text(
-          'Are you sure you want to unenroll from "${course.title.resolveFor(context)}"? Your progress will be removed.',
+          context.tr('mobile.detail.unenrollPrompt', {'title': course.title.resolveFor(context)}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('mobile.common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Unenroll'),
+            child: Text(context.tr('mobile.detail.unenroll')),
           ),
         ],
       ),
@@ -128,7 +130,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
       await ref.read(coursesRepositoryProvider).unenroll(course.id);
       ref.invalidate(courseDetailProvider(widget.courseId));
       ref.invalidate(dashboardControllerProvider);
-      _snack('You have unenrolled from this course.');
+      _snack(AppTranslations.tg('mobile.detail.unenrolled'));
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -144,7 +146,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
     final ctrl = ref.read(downloadsControllerProvider.notifier);
     if (ctrl.isSaved(course.id)) {
       await ctrl.remove(course.id);
-      _snack('Removed from downloads.');
+      _snack(AppTranslations.tg('mobile.downloads.removed'));
       return;
     }
     try {
@@ -154,9 +156,9 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
         thumbnail: course.thumbnail,
         savedAt: DateTime.now(),
       ),);
-      _snack('Saved for offline.');
+      _snack(AppTranslations.tg('mobile.downloads.saved'));
     } on Object {
-      _snack('Could not save. Check your connection and try again.');
+      _snack(AppTranslations.tg('mobile.downloads.saveFailed'));
     }
   }
 
@@ -241,7 +243,7 @@ class _DetailContent extends StatelessWidget {
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                tooltip: 'Back',
+                tooltip: context.tr('mobile.common.back'),
                 onPressed: () => context.pop(),
               ),
             ),
@@ -256,7 +258,9 @@ class _DetailContent extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    tooltip: saved ? 'Remove download' : 'Save for offline',
+                    tooltip: saved
+                        ? context.tr('mobile.detail.removeDownload')
+                        : context.tr('mobile.detail.saveForOffline'),
                     icon: Icon(
                       saved
                           ? Icons.download_done_rounded
@@ -290,17 +294,21 @@ class _DetailContent extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xl),
               ],
               if (description.isNotEmpty) ...[
-                Text('About this course', style: text.titleLarge),
+                Text(context.tr('mobile.detail.aboutCourse'), style: text.titleLarge),
                 const SizedBox(height: AppSpacing.sm),
                 Text(description,
                     style: text.bodyMedium
                         ?.copyWith(color: colors.textSecondary, height: 1.6),),
                 const SizedBox(height: AppSpacing.xl),
               ],
-              Text('Course content', style: text.titleLarge),
+              Text(context.tr('mobile.detail.courseContent'), style: text.titleLarge),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                '${course.sections.length} sections · ${course.lessonCount} lessons · ${Formatters.duration(course.totalDurationSeconds)}',
+                context.tr('mobile.detail.contentSummary', {
+                  'sections': course.sections.length,
+                  'lessons': course.lessonCount,
+                  'duration': Formatters.duration(course.totalDurationSeconds),
+                }),
                 style: text.bodySmall?.copyWith(color: colors.textMuted),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -370,10 +378,10 @@ class _MetaWrap extends StatelessWidget {
     final chips = <(IconData, String)>[
       if (course.avgRating > 0)
         (Icons.star_rounded, '${course.avgRating.toStringAsFixed(1)} (${course.reviewCount})'),
-      (Icons.people_alt_rounded, '${Formatters.compact(course.enrollmentCount)} enrolled'),
+      (Icons.people_alt_rounded, context.tr('mobile.detail.enrolledCount', {'count': Formatters.compact(course.enrollmentCount)})),
       (Icons.signal_cellular_alt_rounded, _title(course.level)),
       if (course.weeksDuration != null)
-        (Icons.calendar_today_rounded, '${course.weeksDuration} weeks'),
+        (Icons.calendar_today_rounded, context.tr('mobile.detail.weeks', {'count': course.weeksDuration})),
     ];
     return Wrap(
       spacing: AppSpacing.sm,
@@ -433,7 +441,7 @@ class _InstructorCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Instructor',
+              Text(context.tr('student.player.instructor'),
                   style: text.bodySmall?.copyWith(color: colors.textMuted),),
               Text(instructor.name, style: text.titleMedium),
               if (instructor.church != null && instructor.church!.isNotEmpty)
@@ -482,7 +490,7 @@ class _CtaBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Price',
+                  Text(context.tr('mobile.detail.price'),
                       style: text.labelSmall?.copyWith(color: colors.textMuted),),
                   Text(
                     Formatters.price(
@@ -499,13 +507,15 @@ class _CtaBar extends StatelessWidget {
             Expanded(
               child: isProgramCourse && !course.isEnrolled
                   ? PrimaryButton(
-                      label: 'Apply for Program',
+                      label: context.tr('mobile.detail.applyProgram'),
                       variant: ButtonVariant.gold,
                       icon: Icons.edit_note_rounded,
                       onPressed: () => context.push('/programs/${course.programId}/apply'),
                     )
                   : PrimaryButton(
-                      label: course.isEnrolled ? 'Continue learning' : 'Enroll now',
+                      label: course.isEnrolled
+                          ? context.tr('mobile.detail.continueLearning')
+                          : context.tr('mobile.detail.enrollNow'),
                       variant: ButtonVariant.gold,
                       icon: course.isEnrolled
                           ? Icons.play_arrow_rounded
@@ -519,9 +529,9 @@ class _CtaBar extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: busy ? null : onUnenroll,
                 icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.red),
-                label: const Text(
-                  'Unenroll',
-                  style: TextStyle(
+                label: Text(
+                  context.tr('mobile.detail.unenroll'),
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -557,7 +567,7 @@ class _DetailError extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Center(
           child: ErrorBanner(
-            message: "We couldn't load this course. Please try again.",
+            message: context.tr('mobile.detail.loadError'),
             onRetry: onRetry,
           ),
         ),

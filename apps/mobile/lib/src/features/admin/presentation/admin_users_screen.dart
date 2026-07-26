@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -54,8 +56,8 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
       ref.invalidate(adminUsersProvider);
       messenger.showSnackBar(SnackBar(
         content: Text(user.isBanned
-            ? '${user.name} was unbanned'
-            : '${user.name} was banned',),
+            ? AppTranslations.tg('mobile.admin.userUnbanned', {'name': user.name})
+            : AppTranslations.tg('mobile.admin.userBanned', {'name': user.name}),),
       ),);
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
@@ -76,7 +78,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         flexibleSpace: DecoratedBox(
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
-        title: Text('Users',
+        title: Text(context.tr('admin.users.title'),
             style: Theme.of(context)
                 .textTheme
                 .titleLarge
@@ -91,9 +93,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               controller: _searchCtrl,
               textInputAction: TextInputAction.search,
               onChanged: _onSearch,
-              decoration: const InputDecoration(
-                hintText: 'Search by name or email…',
-                prefixIcon: Icon(Icons.search_rounded),
+              decoration: InputDecoration(
+                hintText: context.tr('admin.users.searchPlaceholder'),
+                prefixIcon: const Icon(Icons.search_rounded),
               ),
             ),
           ),
@@ -103,8 +105,8 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               children: [
-                _roleChip('All', null, query.role),
-                for (final r in _roles) _roleChip(_title(r), r, query.role),
+                _roleChip(context.tr('admin.users.allRoles'), null, query.role),
+                for (final r in _roles) _roleChip(_roleName(context, r), r, query.role),
               ],
             ),
           ),
@@ -129,7 +131,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                     Padding(
                       padding: const EdgeInsets.all(AppSpacing.xl),
                       child: ErrorBanner(
-                        message: "Couldn't load users. Pull to retry.",
+                        message: context.tr('mobile.admin.usersLoadError'),
                         onRetry: () => ref.invalidate(adminUsersProvider),
                       ),
                     ),
@@ -142,10 +144,10 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                       children: [
                         SizedBox(
                             height: MediaQuery.sizeOf(context).height * 0.12,),
-                        const EmptyState(
+                        EmptyState(
                           icon: Icons.person_search_rounded,
-                          title: 'No users found',
-                          message: 'Try a different search or filter.',
+                          title: context.tr('mobile.admin.noUsersFound'),
+                          message: context.tr('mobile.admin.noUsersMessage'),
                         ),
                       ],
                     );
@@ -185,8 +187,11 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         ),
       );
 
-  static String _title(String r) =>
-      r[0].toUpperCase() + r.substring(1).toLowerCase();
+  static String _roleName(BuildContext context, String r) => switch (r.toUpperCase()) {
+        'ADMIN' => context.tr('admin.users.roleAdmin'),
+        'INSTRUCTOR' => context.tr('admin.users.roleInstructor'),
+        _ => context.tr('admin.users.roleStudent'),
+      };
 }
 
 class _UserRow extends StatelessWidget {
@@ -239,15 +244,15 @@ class _UserRow extends StatelessWidget {
                     StatusBadge.role(user.role),
                     if (user.isBanned) ...[
                       const SizedBox(width: 4),
-                      const StatusBadge(
-                        label: 'Banned',
+                      StatusBadge(
+                        label: context.tr('admin.users.statusBanned'),
                         tone: BadgeTone.danger,
                         dense: true,
                       ),
                     ] else if (!user.isVerified) ...[
                       const SizedBox(width: 4),
-                      const StatusBadge(
-                        label: 'Unverified',
+                      StatusBadge(
+                        label: context.tr('admin.users.statusUnverified'),
                         tone: BadgeTone.warning,
                         dense: true,
                       ),
@@ -268,7 +273,7 @@ class _UserRow extends StatelessWidget {
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'ban',
-                child: Text(user.isBanned ? 'Unban user' : 'Ban user',
+                child: Text(user.isBanned ? context.tr('mobile.admin.unbanUser') : context.tr('mobile.admin.banUser'),
                     style: TextStyle(
                         color: user.isBanned ? colors.success : colors.danger,),),
               ),

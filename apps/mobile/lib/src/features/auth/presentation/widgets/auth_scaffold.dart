@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
 
@@ -50,7 +51,7 @@ class AuthScaffold extends StatelessWidget {
                           onPressed: onBack,
                           icon: const Icon(Icons.arrow_back_rounded),
                           color: colors.goldLight,
-                          tooltip: 'Back',
+                          tooltip: context.tr('mobile.common.back'),
                         ),
                       ),
                     )

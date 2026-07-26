@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -45,7 +46,7 @@ class ContinueLearningCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'CONTINUE LEARNING',
+                  context.tr('mobile.dashboard.continueLearning'),
                   style: text.labelSmall?.copyWith(
                     color: colors.goldLight,
                     letterSpacing: 1.5,
@@ -111,11 +112,11 @@ class ContinueLearningCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('$percent% complete',
+                    Text(context.tr('mobile.dashboard.percentComplete', {'percent': percent}),
                         style: text.bodySmall?.copyWith(color: Colors.white70),),
                     Row(
                       children: [
-                        Text('Resume',
+                        Text(context.tr('mobile.dashboard.resume'),
                             style: text.labelLarge?.copyWith(color: colors.goldLight),),
                         const SizedBox(width: 4),
                         Icon(Icons.arrow_forward_rounded,

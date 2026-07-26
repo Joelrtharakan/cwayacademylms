@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 
@@ -60,7 +61,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       );
       final url = res.data?['data']?['avatarUrl'];
       if (url is String) return url;
-      throw const ApiException(message: 'Avatar upload failed.');
+      throw ApiException(message: AppTranslations.tg('mobile.errors.avatarUpload'));
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

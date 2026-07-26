@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -69,7 +70,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ref.invalidate(dashboardControllerProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created & enrolled in course!')),
+            SnackBar(content: Text(context.tr('mobile.auth.accountCreatedEnrolled'))),
           );
           context.go(AppRoutes.courseDetailPath(widget.pendingCourseId!));
           return;
@@ -85,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Something went wrong. Please try again.');
+      if (mounted) setState(() => _error = context.tr('auth.register.error_generic'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -95,8 +96,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return AuthScaffold(
-      title: 'Create your account',
-      subtitle: 'Join CWAY Academy and start learning today.',
+      title: context.tr('auth.register.title'),
+      subtitle: context.tr('auth.register.subtitle'),
       onBack: () => context.pop(),
       children: [
         Form(
@@ -109,18 +110,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ],
               AuthTextField(
                 controller: _name,
-                label: 'Full name',
-                hint: 'Jane Doe',
+                label: context.tr('auth.register.name'),
+                hint: context.tr('mobile.auth.nameHint'),
                 prefixIcon: Icons.person_outline_rounded,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
-                validator: (v) => Validators.required(v, field: 'Name'),
+                validator: (v) => Validators.required(v, field: context.tr('mobile.auth.nameField')),
                 enabled: !_submitting,
               ),
               AuthTextField(
                 controller: _email,
-                label: 'Email',
-                hint: 'you@example.com',
+                label: context.tr('auth.register.email'),
+                hint: context.tr('mobile.auth.emailHint'),
                 prefixIcon: Icons.mail_outline_rounded,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -130,8 +131,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               AuthTextField(
                 controller: _password,
-                label: 'Password',
-                hint: 'At least 8 characters',
+                label: context.tr('auth.register.password'),
+                hint: context.tr('mobile.auth.passwordHint'),
                 prefixIcon: Icons.lock_outline_rounded,
                 obscure: true,
                 textInputAction: TextInputAction.next,
@@ -141,8 +142,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               AuthTextField(
                 controller: _confirm,
-                label: 'Confirm password',
-                hint: 'Re-enter your password',
+                label: context.tr('auth.register.confirm_password'),
+                hint: context.tr('mobile.auth.confirmHint'),
                 prefixIcon: Icons.lock_outline_rounded,
                 obscure: true,
                 textInputAction: TextInputAction.next,
@@ -151,14 +152,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               AuthTextField(
                 controller: _church,
-                label: 'Church / Ministry (optional)',
+                label: '${context.tr('auth.register.church')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.church_outlined,
                 textInputAction: TextInputAction.next,
                 enabled: !_submitting,
               ),
               AuthTextField(
                 controller: _location,
-                label: 'Location (optional)',
+                label: '${context.tr('auth.register.location')} ${context.tr('auth.register.optional')}',
                 prefixIcon: Icons.place_outlined,
                 textInputAction: TextInputAction.done,
                 enabled: !_submitting,
@@ -166,7 +167,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               PrimaryButton(
-                label: 'Create account',
+                label: context.tr('auth.register.create'),
                 variant: ButtonVariant.gold,
                 isLoading: _submitting,
                 onPressed: _submitting ? null : _submit,
@@ -181,7 +182,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                'Already have an account? ',
+                '${context.tr('auth.register.has_account')} ',
                 style: TextStyle(color: colors.textSecondary),
               ),
               GestureDetector(
@@ -194,7 +195,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : AppRoutes.login,
                         ),
                 child: Text(
-                  'Sign in',
+                  context.tr('auth.register.sign_in'),
                   style: TextStyle(
                     color: colors.goldDark,
                     fontWeight: FontWeight.w700,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
@@ -139,7 +140,7 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                 Icon(Icons.sticky_note_2_rounded, color: colors.goldDark),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text('My note', style: text.titleLarge),
+                  child: Text(context.tr('student.player.myNotes'), style: text.titleLarge),
                 ),
                 if (_note != null)
                   IconButton(
@@ -151,7 +152,7 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Icon(Icons.delete_outline_rounded, color: colors.danger),
-                    tooltip: 'Delete note',
+                    tooltip: context.tr('mobile.notes.delete'),
                   ),
               ],
             ),
@@ -174,8 +175,8 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                 minLines: 4,
                 maxLines: 8,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText: 'Write your note for this lesson…',
+                decoration: InputDecoration(
+                  hintText: context.tr('student.player.typeNote'),
                   alignLabelWithHint: true,
                 ),
               ),
@@ -187,7 +188,7 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                   avatar: Icon(Icons.schedule_rounded,
                       size: 16,
                       color: _attachTimestamp ? colors.goldDark : colors.textMuted,),
-                  label: Text('Anchor at ${_fmt(widget.currentSeconds!)}'),
+                  label: Text(context.tr('mobile.notes.anchorAt', {'time': _fmt(widget.currentSeconds!)})),
                 ),
               ],
               if (_note?.timestamp != null) ...[
@@ -196,7 +197,7 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                   children: [
                     Icon(Icons.schedule_rounded, size: 14, color: colors.textMuted),
                     const SizedBox(width: 4),
-                    Text('Anchored at ${_fmt(_note!.timestamp!)}',
+                    Text(context.tr('mobile.notes.anchoredAt', {'time': _fmt(_note!.timestamp!)}),
                         style:
                             text.labelSmall?.copyWith(color: colors.textMuted),),
                   ],
@@ -219,7 +220,7 @@ class _NotesSheetState extends ConsumerState<NotesSheet> {
                               strokeWidth: 2, color: Colors.white,),
                         )
                       : const Icon(Icons.check_rounded),
-                  label: Text(_note != null ? 'Update note' : 'Save note'),
+                  label: Text(_note != null ? context.tr('mobile.notes.update') : context.tr('student.player.saveNote')),
                 ),
               ),
             ],

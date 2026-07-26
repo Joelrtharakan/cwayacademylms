@@ -85,6 +85,11 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
-  generate: true
   assets:
     - assets/images/
+    - assets/i18n/en/
+    - assets/i18n/hi/
+    - assets/i18n/ta/
+    - assets/i18n/te/
+    - assets/i18n/ml/
+    - assets/i18n/kn/

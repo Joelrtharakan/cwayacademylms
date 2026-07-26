@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -27,7 +28,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final user = ref.watch(currentUserProvider);
     final async = ref.watch(adminStatsProvider);
-    final firstName = (user?.name.trim().split(' ').first) ?? 'Admin';
+    final firstName = (user?.name.trim().split(' ').first) ?? context.tr('mobile.admin.adminFallback');
 
     return Scaffold(
       body: RefreshIndicator(
@@ -70,7 +71,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Administrator',
+                    Text(context.tr('mobile.admin.roleLabel'),
                         style: text.labelSmall?.copyWith(color: colors.goldLight, letterSpacing: 1),),
                     Text(firstName,
                         style: text.titleLarge?.copyWith(color: Colors.white),),
@@ -112,7 +113,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.all(AppSpacing.xl),
                         child: ErrorBanner(
-                          message: "Couldn't load the platform overview. Pull to retry.",
+                          message: context.tr('mobile.admin.overviewLoadError'),
                           onRetry: () => ref.invalidate(adminStatsProvider),
                         ),
                       ),
@@ -156,7 +157,7 @@ class _BodySliver extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome to',
+                      context.tr('mobile.admin.welcomeTo'),
                       style: text.bodyMedium?.copyWith(
                         color: colors.goldLight.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w500,
@@ -172,7 +173,7 @@ class _BodySliver extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Manage your platform efficiently',
+                      context.tr('mobile.admin.manageEfficiently'),
                       style: text.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
@@ -202,7 +203,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.people_alt_rounded,
                 value: Formatters.compact(stats.totalUsers),
-                label: 'Total Users',
+                label: context.tr('mobile.admin.totalUsers'),
                 delta: '+3',
               ),
             ),
@@ -211,7 +212,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.school_rounded,
                 value: Formatters.compact(stats.totalStudents),
-                label: 'Total Students',
+                label: context.tr('mobile.admin.totalStudents'),
                 delta: '+2',
               ),
             ),
@@ -220,7 +221,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.record_voice_over_rounded,
                 value: Formatters.compact(stats.totalInstructors),
-                label: 'Instructors',
+                label: context.tr('mobile.admin.instructors'),
                 delta: '+1',
               ),
             ),
@@ -235,7 +236,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.library_books_rounded,
                 value: '${stats.totalCourses}',
-                label: 'Total Courses',
+                label: context.tr('mobile.admin.totalCourses'),
                 delta: '+1',
               ),
             ),
@@ -244,7 +245,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.how_to_reg_rounded,
                 value: Formatters.compact(stats.totalEnrollments),
-                label: 'Enrollments',
+                label: context.tr('mobile.admin.enrollments'),
                 delta: '+1',
               ),
             ),
@@ -253,7 +254,7 @@ class _BodySliver extends ConsumerWidget {
               child: StatTile(
                 icon: Icons.workspace_premium_rounded,
                 value: Formatters.compact(stats.certificatesIssued),
-                label: 'Certificates',
+                label: context.tr('mobile.admin.certificates'),
                 delta: '+0',
               ),
             ),
@@ -265,10 +266,10 @@ class _BodySliver extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Manage Platform', style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            Text(context.tr('mobile.admin.managePlatform'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             TextButton(
               onPressed: () => context.push(AppRoutes.adminUsers),
-              child: Text('View All', style: text.labelMedium?.copyWith(color: colors.goldDark, fontWeight: FontWeight.w600)),
+              child: Text(context.tr('mobile.admin.viewAll'), style: text.labelMedium?.copyWith(color: colors.goldDark, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -285,27 +286,27 @@ class _BodySliver extends ConsumerWidget {
           children: [
             _ManageCard(
               icon: Icons.people_outline_rounded,
-              label: 'Users',
-              subLabel: 'Manage all platform users',
+              label: context.tr('mobile.admin.cardUsers'),
+              subLabel: context.tr('mobile.admin.cardUsersSub'),
               onTap: () => context.push(AppRoutes.adminUsers),
             ),
             _ManageCard(
               icon: Icons.library_books_outlined,
-              label: 'Courses',
-              subLabel: 'Create and manage courses',
-              badge: stats.pendingApprovals > 0 ? '${stats.pendingApprovals} pending' : null,
+              label: context.tr('mobile.admin.cardCourses'),
+              subLabel: context.tr('mobile.admin.cardCoursesSub'),
+              badge: stats.pendingApprovals > 0 ? context.tr('mobile.admin.pendingBadge', {'count': stats.pendingApprovals}) : null,
               onTap: () => context.go(AppRoutes.courses),
             ),
             _ManageCard(
               icon: Icons.campaign_outlined,
-              label: 'Announcements',
-              subLabel: 'Send announcements',
+              label: context.tr('mobile.admin.cardAnnouncements'),
+              subLabel: context.tr('mobile.admin.cardAnnouncementsSub'),
               onTap: () => context.go(AppRoutes.notifications),
             ),
             _ManageCard(
               icon: Icons.settings_outlined,
-              label: 'Settings',
-              subLabel: 'Configure platform settings',
+              label: context.tr('mobile.settings.title'),
+              subLabel: context.tr('mobile.admin.cardSettingsSub'),
               onTap: () => context.push(AppRoutes.settings),
             ),
           ],
@@ -316,10 +317,10 @@ class _BodySliver extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Recent Activity', style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            Text(context.tr('mobile.admin.recentActivity'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             TextButton(
               onPressed: () => context.push(AppRoutes.adminUsers),
-              child: Text('View All', style: text.labelMedium?.copyWith(color: colors.goldDark, fontWeight: FontWeight.w600)),
+              child: Text(context.tr('mobile.admin.viewAll'), style: text.labelMedium?.copyWith(color: colors.goldDark, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -341,7 +342,7 @@ class _BodySliver extends ConsumerWidget {
               border: Border.all(color: colors.border),
             ),
             child: Text(
-              'Unable to load recent activity.',
+              context.tr('mobile.admin.activityLoadError'),
               style: text.bodySmall?.copyWith(color: colors.textSecondary),
             ),
           ),
@@ -356,7 +357,7 @@ class _BodySliver extends ConsumerWidget {
                   border: Border.all(color: colors.border),
                 ),
                 child: Text(
-                  'No recent activity found.',
+                  context.tr('mobile.admin.noActivity'),
                   style: text.bodySmall?.copyWith(color: colors.textSecondary),
                 ),
               );
@@ -367,9 +368,11 @@ class _BodySliver extends ConsumerWidget {
                 final initials = u.name.trim().isNotEmpty
                     ? u.name.trim().split(' ').take(2).map((e) => e[0]).join().toUpperCase()
                     : '?';
-                final roleName = u.role.isEmpty
-                    ? 'Student'
-                    : u.role[0] + u.role.substring(1).toLowerCase();
+                final roleName = switch (u.role.toUpperCase()) {
+                  'ADMIN' => context.tr('admin.users.roleAdmin'),
+                  'INSTRUCTOR' => context.tr('admin.users.roleInstructor'),
+                  _ => context.tr('admin.users.roleStudent'),
+                };
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -426,7 +429,7 @@ class _BodySliver extends ConsumerWidget {
                             borderRadius: AppRadii.rPill,
                           ),
                           child: Text(
-                            u.isVerified ? 'Verified' : 'Member',
+                            u.isVerified ? context.tr('mobile.admin.verified') : context.tr('mobile.admin.member'),
                             style: text.labelSmall?.copyWith(
                               color: u.isVerified ? colors.success : colors.forestMid,
                               fontWeight: FontWeight.w700,

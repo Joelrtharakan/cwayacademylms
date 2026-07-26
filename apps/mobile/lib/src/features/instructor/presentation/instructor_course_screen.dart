@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -36,7 +37,7 @@ class InstructorCourseScreen extends StatelessWidget {
             decoration: BoxDecoration(gradient: colors.forestGradient),
           ),
           title: Text(
-            courseTitle ?? 'Course',
+            courseTitle ?? context.tr('mobile.instructorCourse.courseFallback'),
             style: text.titleLarge?.copyWith(color: Colors.white),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -45,9 +46,9 @@ class InstructorCourseScreen extends StatelessWidget {
             indicatorColor: colors.goldLight,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: 'Students'),
-              Tab(text: 'Analytics'),
+            tabs: [
+              Tab(text: context.tr('mobile.instructorCourse.tabStudents')),
+              Tab(text: context.tr('mobile.instructorCourse.tabAnalytics')),
             ],
           ),
         ),
@@ -82,7 +83,7 @@ class _StudentsTab extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: ErrorBanner(
-                message: "Couldn't load students. Pull to retry.",
+                message: context.tr('mobile.instructorCourse.studentsLoadError'),
                 onRetry: () => ref.invalidate(courseStudentsProvider(courseId)),
               ),
             ),
@@ -94,10 +95,10 @@ class _StudentsTab extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
-                const EmptyState(
+                EmptyState(
                   icon: Icons.groups_outlined,
-                  title: 'No students yet',
-                  message: 'Enrolled students will appear here.',
+                  title: context.tr('mobile.instructorCourse.noStudents'),
+                  message: context.tr('mobile.instructorCourse.noStudentsDesc'),
                 ),
               ],
             );
@@ -168,7 +169,7 @@ class _StudentRow extends StatelessWidget {
                 ),
                 if (s.lastCompletedTitle != null) ...[
                   const SizedBox(height: 2),
-                  Text('Last: ${s.lastCompletedTitle}',
+                  Text(context.tr('mobile.instructorCourse.lastCompleted', {'title': s.lastCompletedTitle}),
                       style: text.labelSmall?.copyWith(color: colors.textMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,),
@@ -224,7 +225,7 @@ class _AnalyticsTab extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: ErrorBanner(
-                message: "Couldn't load analytics. Pull to retry.",
+                message: context.tr('mobile.instructorCourse.analyticsLoadError'),
                 onRetry: () => ref.invalidate(courseAnalyticsProvider(courseId)),
               ),
             ),
@@ -234,18 +235,18 @@ class _AnalyticsTab extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            Text('Student progress', style: text.titleLarge),
+            Text(context.tr('mobile.instructorCourse.studentProgress'), style: text.titleLarge),
             const SizedBox(height: AppSpacing.md),
             _ProgressBreakdown(analytics: a),
             const SizedBox(height: AppSpacing.xl),
             if (a.enrollmentsOverTime.isNotEmpty) ...[
-              Text('Enrollments (last 6 months)', style: text.titleLarge),
+              Text(context.tr('mobile.instructorCourse.enrollments6mo'), style: text.titleLarge),
               const SizedBox(height: AppSpacing.md),
               _EnrollmentBars(points: a.enrollmentsOverTime),
               const SizedBox(height: AppSpacing.xl),
             ],
             if (a.lessonCompletion.isNotEmpty) ...[
-              Text('Lesson completion', style: text.titleLarge),
+              Text(context.tr('mobile.instructorCourse.lessonCompletion'), style: text.titleLarge),
               const SizedBox(height: AppSpacing.md),
               for (final l in a.lessonCompletion) ...[
                 _LessonBar(lesson: l),
@@ -269,9 +270,9 @@ class _ProgressBreakdown extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final total = analytics.totalStudents;
     final segments = <(String, int, Color)>[
-      ('Completed', analytics.completed, colors.success),
-      ('In progress', analytics.inProgress, colors.goldPrimary),
-      ('Not started', analytics.notStarted, colors.textMuted),
+      (context.tr('mobile.instructorCourse.completed'), analytics.completed, colors.success),
+      (context.tr('mobile.instructorCourse.inProgress'), analytics.inProgress, colors.goldPrimary),
+      (context.tr('mobile.instructorCourse.notStarted'), analytics.notStarted, colors.textMuted),
     ];
 
     return Container(
@@ -284,7 +285,7 @@ class _ProgressBreakdown extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$total ${total == 1 ? 'student' : 'students'}',
+          Text(context.tr('mobile.instructorCourse.studentCount', {'count': total}),
               style: text.headlineSmall,),
           const SizedBox(height: AppSpacing.md),
           ClipRRect(
@@ -318,7 +319,7 @@ class _ProgressBreakdown extends StatelessWidget {
                           color: color, shape: BoxShape.circle,),
                     ),
                     const SizedBox(width: 6),
-                    Text('$label ($count)',
+                    Text(context.tr('mobile.instructorCourse.segmentLabel', {'label': label, 'count': count}),
                         style: text.labelSmall
                             ?.copyWith(color: colors.textSecondary),),
                   ],

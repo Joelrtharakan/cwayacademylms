@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/offline/json_cache.dart';
@@ -41,7 +42,7 @@ class LearnRepositoryImpl implements LearnRepository {
         await _cache.put(key, data, pinned: pin);
         return EnrollmentLearnDto.fromJson(data);
       }
-      throw const ApiException(message: 'Enrollment not found.', statusCode: 404);
+      throw ApiException(message: AppTranslations.tg('mobile.errors.enrollmentNotFound'), statusCode: 404);
     } on DioException catch (e) {
       final api = ApiException.fromDio(e);
       if (api.isNetwork || api.kind == ApiErrorKind.timeout) {

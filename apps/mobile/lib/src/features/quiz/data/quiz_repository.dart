@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_translations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import 'quiz_dto.dart';
@@ -31,7 +32,7 @@ class QuizRepositoryImpl implements QuizRepository {
       );
       final data = res.data?['data'];
       if (data is Map<String, dynamic>) return AttemptStartDto.fromJson(data);
-      throw const ApiException(message: 'Could not start the quiz.');
+      throw ApiException(message: AppTranslations.tg('mobile.errors.startQuiz'));
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -55,7 +56,7 @@ class QuizRepositoryImpl implements QuizRepository {
       );
       final data = res.data?['data'];
       if (data is Map<String, dynamic>) return QuizResultDto.fromJson(data);
-      throw const ApiException(message: 'Could not submit the quiz.');
+      throw ApiException(message: AppTranslations.tg('mobile.errors.submitQuiz'));
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

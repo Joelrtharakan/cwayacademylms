@@ -147,9 +147,31 @@ introduced with the Notifications/sync module (kept backward-compatible).
 
 ## Localization
 
-`en, hi, ta, te, kn, ml` — declared in `app.dart`. ARB catalogs and per-language
-Noto font fallbacks land in the Multilingual module. Runtime switching + locale
-persistence supported.
+`en, hi, ta, te, kn, ml` — declared in `app.dart` (`kSupportedLocales`). Full runtime
+switching + locale persistence (`LocaleController` → shared_preferences).
+
+**Source of truth = the website.** The web's next-intl catalogs
+(`apps/web/messages/{locale}/*.json`) are mirrored into `assets/i18n/{locale}/` and
+consumed directly — same keys, no duplication. Re-sync after any web translation
+change with:
+
+```bash
+dart run tool/sync_i18n.dart   # copies web namespaces; never touches mobile.json
+```
+
+- **Mobile-only strings** (splash, onboarding, downloads, quiz-taking, program
+  application form, dialogs, etc.) live in a `mobile.json` catalog per locale,
+  authored directly in `assets/i18n/` and hand-translated into all six languages.
+- **Lookup**: `core/i18n/` — `AppTranslations` pre-loads every locale in `bootstrap`
+  (synchronous thereafter); use `context.tr('namespace.key', {'param': v})` in widgets
+  (reacts to locale changes via `Localizations.localeOf`) or `AppTranslations.tg(...)`
+  in context-free code (validators, repositories). Missing keys fall back to English,
+  then to the raw key. `{param}` interpolation matches next-intl.
+- **Fonts**: `AppTypography` chains Noto script families
+  (`notoSans{Devanagari,Tamil,Telugu,Kannada,Malayalam}`) after Plus Jakarta Sans so
+  Indic text renders instead of tofu boxes.
+- **Tests**: `test/localization_test.dart` asserts key parity, interpolation, HTML
+  stripping, and English fallback.
 
 ## Production hardening (Module 15)
 

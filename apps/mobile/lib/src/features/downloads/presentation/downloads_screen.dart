@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -20,21 +21,20 @@ class DownloadsScreen extends ConsumerWidget {
     final async = ref.watch(downloadsControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Downloads')),
+      appBar: AppBar(title: Text(context.tr('mobile.downloads.title'))),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const EmptyState(
+        error: (_, __) => EmptyState(
           icon: Icons.download_rounded,
-          title: 'Downloads unavailable',
-          message: 'Something went wrong reading your saved courses.',
+          title: context.tr('mobile.downloads.errorTitle'),
+          message: context.tr('mobile.downloads.errorMessage'),
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.download_for_offline_outlined,
-              title: 'No downloads yet',
-              message:
-                  'Open an enrolled course and tap the download icon to save it for offline.',
+              title: context.tr('mobile.downloads.emptyTitle'),
+              message: context.tr('mobile.downloads.emptyMessage'),
             );
           }
           return ListView.separated(
@@ -97,7 +97,7 @@ class DownloadsScreen extends ConsumerWidget {
                                         size: 14, color: colors.success,),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'Available offline · ${Formatters.date(item.savedAt)}',
+                                      context.tr('mobile.downloads.availableOffline', {'date': Formatters.date(item.savedAt)}),
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall

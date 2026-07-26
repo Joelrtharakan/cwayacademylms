@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_shimmer.dart';
 import '../../../shared/widgets/error_banner.dart';
@@ -24,7 +25,7 @@ class ProgramDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: colors.forestDeep,
         foregroundColor: Colors.white,
-        title: const Text('Program Details'),
+        title: Text(context.tr('mobile.programs.detailTitle')),
       ),
       body: async.when(
         data: (program) => SingleChildScrollView(
@@ -49,9 +50,9 @@ class ProgramDetailScreen extends ConsumerWidget {
                         color: colors.goldPrimary,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        'ACADEMIC PROGRAM',
-                        style: TextStyle(
+                      child: Text(
+                        context.tr('mobile.programs.badge'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -86,7 +87,7 @@ class ProgramDetailScreen extends ConsumerWidget {
 
               // Program Features
               Text(
-                'Program Features',
+                context.tr('mobile.programs.features'),
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
@@ -95,19 +96,22 @@ class ProgramDetailScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               _buildFeatureTile(
                 icon: Icons.menu_book_rounded,
-                title: 'Structured Curriculum',
-                subtitle:
-                    '${program.courseCount > 0 ? program.courseCount : "Comprehensive"} core & elective courses',
+                title: context.tr('mobile.programs.featureCurriculum'),
+                subtitle: context.tr('mobile.programs.featureCurriculumDesc', {
+                  'count': program.courseCount > 0
+                      ? '${program.courseCount}'
+                      : context.tr('mobile.programs.comprehensive'),
+                }),
               ),
               _buildFeatureTile(
                 icon: Icons.card_membership_rounded,
-                title: 'Certificate & Diploma',
-                subtitle: 'Recognized academic qualifications upon graduation',
+                title: context.tr('mobile.programs.featureCert'),
+                subtitle: context.tr('mobile.programs.featureCertDesc'),
               ),
               _buildFeatureTile(
                 icon: Icons.online_prediction_rounded,
-                title: 'Flexible Online Learning',
-                subtitle: 'Study at your own pace with instructor support',
+                title: context.tr('mobile.programs.featureFlexible'),
+                subtitle: context.tr('mobile.programs.featureFlexibleDesc'),
               ),
 
               const SizedBox(height: 32),
@@ -122,8 +126,8 @@ class ProgramDetailScreen extends ConsumerWidget {
                   icon: const Icon(Icons.edit_note_rounded, size: 24),
                   label: Text(
                     program.applicationsClosed
-                        ? 'Applications Closed'
-                        : 'Apply for Program',
+                        ? context.tr('mobile.programs.applicationsClosed')
+                        : context.tr('mobile.detail.applyProgram'),
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold,),
                   ),

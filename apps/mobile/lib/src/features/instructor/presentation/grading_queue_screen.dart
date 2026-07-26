@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -41,7 +42,7 @@ class GradingQueueScreen extends ConsumerWidget {
           decoration: BoxDecoration(gradient: colors.forestGradient),
         ),
         title: Text(
-          'Grading',
+          context.tr('mobile.instructor.gradingTitle'),
           style: Theme.of(context)
               .textTheme
               .titleLarge
@@ -66,7 +67,7 @@ class GradingQueueScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorBanner(
-                  message: "Couldn't load submissions. Pull to retry.",
+                  message: context.tr('mobile.instructor.submissionsLoadError'),
                   onRetry: () => ref.invalidate(pendingGradingProvider),
                 ),
               ),
@@ -78,10 +79,10 @@ class GradingQueueScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.task_alt_rounded,
-                    title: 'All caught up',
-                    message: 'No submissions are waiting to be graded.',
+                    title: context.tr('mobile.instructor.gradingCaughtUpTitle'),
+                    message: context.tr('mobile.instructor.gradingCaughtUpDesc'),
                   ),
                 ],
               );

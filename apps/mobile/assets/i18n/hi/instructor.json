@@ -1,0 +1,255 @@
+{
+  "sidebar": {
+    "overview": "अवलोकन",
+    "dashboard": "डैशबोर्ड",
+    "myCourses": "मेरे पाठ्यक्रम",
+    "allCourses": "सभी पाठ्यक्रम",
+    "invitations": "निमंत्रण",
+    "studentsAndGrading": "छात्र और ग्रेडिंग",
+    "assignments": "असाइनमेंट",
+    "messages": "संदेश",
+    "forums": "फ़ोरम",
+    "account": "खाता",
+    "profileAndSettings": "प्रोफ़ाइल और सेटिंग्स",
+    "signedOut": "सफलतापूर्वक साइन आउट किया",
+    "adminView": "व्यवस्थापक (प्रशिक्षक दृश्य)",
+    "registrarView": "रजिस्ट्रार (प्रशिक्षक दृश्य)",
+    "instructorPanel": "प्रशिक्षक पैनल",
+    "returnToAdmin": "व्यवस्थापक पैनल पर वापस जाएँ",
+    "returnToRegistrar": "रजिस्ट्रार पैनल पर वापस जाएँ",
+    "signOut": "साइन आउट करें",
+    "expandSidebar": "साइडबार बढ़ाएँ",
+    "collapseSidebar": "साइडबार छोटा करें"
+  },
+  "dashboard": {
+    "enrollmentsCount": "{count} नामांकन",
+    "welcome": "वापसी पर स्वागत है, {name}",
+    "welcomeDesc": "आज आपके पाठ्यक्रमों में क्या हो रहा है, इसका सारांश।",
+    "stats": {
+      "totalStudents": "कुल छात्र",
+      "activeCourses": "सक्रिय पाठ्यक्रम",
+      "avgRating": "औसत रेटिंग",
+      "completions": "पूर्णताएँ",
+      "completionRate": "पूर्णता दर",
+      "pendingGrading": "लंबित ग्रेडिंग"
+    },
+    "pending": {
+      "title": "{count} असाइनमेंट ग्रेडिंग की प्रतीक्षा में",
+      "desc": "छात्र सबमिशन की समीक्षा करें और ग्रेड दें",
+      "gradeNow": "अभी ग्रेड करें"
+    },
+    "chart": {
+      "title": "समय के साथ नामांकन",
+      "fallback": "पाठ्यक्रम विश्लेषण",
+      "recentTrend": "हालिया रुझान",
+      "noData": "अभी तक कोई नामांकन डेटा नहीं"
+    },
+    "recentCourses": {
+      "title": "हाल के पाठ्यक्रम",
+      "desc": "अपनी सामग्री प्रबंधित करें",
+      "viewAll": "सभी देखें",
+      "noCourses": "अभी तक कोई पाठ्यक्रम नहीं",
+      "studentsCount": "{count} छात्र"
+    },
+    "recentEnrollments": {
+      "title": "हाल के नामांकन",
+      "desc": "नवीनतम छात्र जो शामिल हुए",
+      "noEnrollments": "कोई हालिया नामांकन नहीं",
+      "unknownStudent": "अज्ञात छात्र",
+      "enrolledIn": "{courseTitle} में नामांकित"
+    }
+  },
+  "assignments": {
+    "title": "असाइनमेंट और ग्रेडिंग",
+    "hideFile": "फ़ाइल छुपाएँ",
+    "viewFile": "फ़ाइल देखें",
+    "download": "डाउनलोड",
+    "score": "स्कोर:",
+    "feedbackPlaceholder": "छात्र के लिए अपनी प्रतिक्रिया लिखें...",
+    "saveGrade": "ग्रेड सहेजें",
+    "toastGraded": "ग्रेड सहेजा गया! छात्र को सूचित कर दिया गया।",
+    "toastGradeFail": "ग्रेड देने में विफल",
+    "tabs": {
+      "ungraded": "बिना ग्रेड के",
+      "graded": "ग्रेड किए गए",
+      "all": "सभी"
+    },
+    "caughtUp": "सब हो गया! कोई {tab} सबमिशन नहीं।"
+  },
+  "courses": {
+    "title": "मेरे पाठ्यक्रम",
+    "desc": "अपने पाठ्यक्रमों की सूची प्रबंधित और देखरेख करें।",
+    "moduleNumber": "मॉड्यूल {num}",
+    "modulesCount": "{count} मॉड्यूल",
+    "studentsCount": "{count} छात्र",
+    "edit": "संपादित करें",
+    "manageStudents": "छात्र प्रबंधित करें",
+    "archiveCourse": "पाठ्यक्रम संग्रहित करें",
+    "deleteCourse": "पाठ्यक्रम हटाएँ",
+    "toastDeleted": "पाठ्यक्रम हटा दिया गया",
+    "toastDeleteFail": "हटाने में विफल",
+    "toastArchived": "पाठ्यक्रम संग्रहित किया गया",
+    "toastArchiveFail": "संग्रहित करने में विफल",
+    "confirmDelete": "क्या यह पाठ्यक्रम हटा दें?",
+    "confirmArchive": "क्या यह पाठ्यक्रम संग्रहित करें? यह अब नए छात्रों को नहीं दिखेगा।",
+    "noCourses": "अभी तक कोई पाठ्यक्रम नहीं",
+    "verseQuote": "\"तुम जो कुछ भी करो, पूरे मन से करो\"",
+    "verseRef": "— कुलुस्सियों 3:23",
+    "filters": {
+      "ALL": "सभी",
+      "PUBLISHED": "प्रकाशित",
+      "DRAFT": "ड्राफ़्ट",
+      "PENDING": "लंबित",
+      "REJECTED": "अस्वीकृत",
+      "ARCHIVED": "संग्रहित"
+    }
+  },
+  "forums": {
+    "title": "चर्चा मंच",
+    "desc": "अपने पाठ्यक्रमों में छात्रों की चर्चा पोस्ट को मॉडरेट और ग्रेड करें।",
+    "errorTitle": "चर्चा लोड करने में विफल",
+    "errorDesc": "चर्चाएँ प्राप्त करते समय त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।",
+    "emptyTitle": "कोई चर्चा नहीं मिली",
+    "emptyDesc": "फ़िलहाल समीक्षा के लिए कोई छात्र चर्चा पोस्ट नहीं है।",
+    "graded": "ग्रेड किया गया: {score}/100",
+    "needsGrading": "ग्रेडिंग आवश्यक",
+    "studentPost": "छात्र की पोस्ट",
+    "replies": "उत्तर ({count})",
+    "updateGrade": "ग्रेड अपडेट करें",
+    "gradeSubmission": "सबमिशन को ग्रेड करें",
+    "scoreLabel": "स्कोर (0-100)",
+    "scorePlaceholder": "जैसे 95",
+    "feedbackLabel": "प्रतिक्रिया (वैकल्पिक)",
+    "feedbackPlaceholder": "शानदार जानकारी! ऐसे ही जारी रखें...",
+    "saving": "सहेजा जा रहा है...",
+    "saveGrade": "ग्रेड सहेजें",
+    "toastSuccess": "ग्रेड सफलतापूर्वक सहेजा गया",
+    "toastError": "ग्रेड सहेजने में विफल",
+    "toastInvalidScore": "कृपया मान्य स्कोर दर्ज करें (0-100)"
+  },
+  "invitations": {
+    "title": "पाठ्यक्रम निमंत्रण",
+    "desc": "जब कोई व्यवस्थापक आपको किसी पाठ्यक्रम में नियुक्त करे, तो आपको यहाँ निमंत्रण मिलेगा। इसे अपने डैशबोर्ड में जोड़ने के लिए स्वीकार करें।",
+    "filters": {
+      "ALL": "सभी",
+      "PENDING": "लंबित",
+      "ACCEPTED": "स्वीकृत",
+      "DECLINED": "अस्वीकृत"
+    },
+    "emptyTitleAll": "अभी तक कोई निमंत्रण नहीं",
+    "emptyTitleFilter": "कोई {filter} निमंत्रण नहीं",
+    "emptyDescAll": "जब व्यवस्थापक आपको पाठ्यक्रम प्रदान करेंगे, तो वे यहाँ दिखाई देंगे।",
+    "emptyDescFilter": "आपके पास कोई {filter} निमंत्रण नहीं है।",
+    "card": {
+      "toastAccepted": "निमंत्रण स्वीकार! पाठ्यक्रम अब आपके डैशबोर्ड में है।",
+      "toastAcceptFail": "स्वीकार करने में विफल",
+      "toastDeclined": "निमंत्रण अस्वीकार कर दिया गया।",
+      "toastDeclineFail": "अस्वीकार करने में विफल",
+      "statusPending": "प्रतिक्रिया प्रतीक्षित",
+      "statusAccepted": "स्वीकृत",
+      "statusDeclined": "अस्वीकृत",
+      "statusUnknown": "अज्ञात",
+      "weeks": "{count} सप्ताह",
+      "noteFromAdmin": "व्यवस्थापक का नोट",
+      "btnDecline": "अस्वीकार करें",
+      "btnAccept": "स्वीकार करें और मेरे पाठ्यक्रमों में जोड़ें"
+    }
+  },
+  "messages": {
+    "loading": "लोड हो रहा है...",
+    "toastSendFail": "भेजने में विफल",
+    "title": "संदेश",
+    "searchPlaceholder": "खोजें...",
+    "emptyList": "अभी तक कोई बातचीत नहीं",
+    "typePlaceholder": "संदेश लिखें... (Cmd+Enter से भेजें)",
+    "selectPrompt": "संदेश भेजने के लिए कोई बातचीत चुनें"
+  },
+  "settings": {
+    "title": "खाता सेटिंग्स",
+    "desc": "अपनी व्यक्तिगत जानकारी, साख और प्राथमिकताएँ प्रबंधित करें।",
+    "settingsMenu": "सेटिंग्स मेनू",
+    "saving": "सहेजा जा रहा है...",
+    "toastProfileSuccess": "प्रोफ़ाइल अपडेट हो गई",
+    "toastProfileFail": "प्रोफ़ाइल अपडेट करने में विफल",
+    "toastPasswordSuccess": "पासवर्ड अपडेट हो गया",
+    "toastPasswordFail": "पासवर्ड अपडेट करने में विफल",
+    "toastPasswordMismatch": "पासवर्ड मेल नहीं खाते",
+    "toastAvatarSuccess": "अवतार अपडेट हो गया",
+    "toastAvatarFail": "अवतार अपलोड करने में विफल",
+    "tabs": {
+      "profile": "प्रोफ़ाइल",
+      "credentials": "साख",
+      "password": "पासवर्ड",
+      "notifications": "सूचनाएँ"
+    },
+    "profileTab": {
+      "title": "सार्वजनिक प्रोफ़ाइल",
+      "desc": "यह जानकारी सार्वजनिक रूप से दिखाई देगी, इसलिए सावधान रहें कि क्या साझा करते हैं।",
+      "changeAvatar": "बदलें",
+      "pictureTitle": "प्रोफ़ाइल चित्र",
+      "pictureDesc": "हम कम से कम 400x400px की वर्गाकार छवि सुझाते हैं। JPG, PNG या WebP प्रारूप, अधिकतम 2MB।",
+      "nameLabel": "पूरा नाम *",
+      "nameReq": "नाम आवश्यक है",
+      "bioLabel": "जीवनी",
+      "bioPlaceholder": "अपने बारे में संक्षिप्त व्यावसायिक सारांश लिखें...",
+      "churchLabel": "चर्च संबद्धता",
+      "locationLabel": "स्थान",
+      "phoneLabel": "फ़ोन नंबर",
+      "saveBtn": "प्रोफ़ाइल अपडेट सहेजें"
+    },
+    "credentialsTab": {
+      "title": "शैक्षणिक साख",
+      "desc": "छात्रों को अपनी शैक्षणिक पृष्ठभूमि दिखाकर अपना अधिकार स्थापित करें।",
+      "infoText": "ये साख आपके पाठ्यक्रमों और ब्लॉग पोस्ट में आपके नाम के आगे प्रमुखता से दिखाई देंगी (जैसे,",
+      "infoBold": "डॉ. जॉन डो, एम.थ., पीएच.डी.",
+      "prefixLabel": "शीर्षक उपसर्ग",
+      "prefixPlaceholder": "जैसे रेव., डॉ., प्रा.",
+      "degreeLabel": "डिग्री / साख",
+      "degreePlaceholder": "जैसे एम.थ., पीएच.डी.",
+      "yearsLabel": "अनुभव के वर्ष",
+      "saveBtn": "साख सहेजें"
+    },
+    "passwordTab": {
+      "title": "पासवर्ड बदलें",
+      "desc": "सुरक्षा के लिए सुनिश्चित करें कि आपका खाता एक लंबे, यादृच्छिक पासवर्ड का उपयोग कर रहा है।",
+      "currentLabel": "वर्तमान पासवर्ड *",
+      "newLabel": "नया पासवर्ड *",
+      "confirmLabel": "नए पासवर्ड की पुष्टि करें *",
+      "reqMsg": "आवश्यक",
+      "minMsg": "न्यूनतम 8 वर्ण",
+      "saveBtn": "पासवर्ड अपडेट करें"
+    },
+    "notificationsTab": {
+      "title": "सूचना प्राथमिकताएँ",
+      "desc": "चुनें कि हम आपको किस बारे में ईमेल करें। महत्वपूर्ण खाता सूचनाएँ हमेशा भेजी जाएँगी।",
+      "items": {
+        "enrollmentTitle": "नया छात्र नामांकन",
+        "enrollmentDesc": "जब कोई आपका पाठ्यक्रम खरीदे तो ईमेल प्राप्त करें",
+        "reviewTitle": "नई पाठ्यक्रम समीक्षा",
+        "reviewDesc": "जब कोई छात्र समीक्षा दे तो सूचना प्राप्त करें",
+        "assignmentTitle": "असाइनमेंट जमा हुआ",
+        "assignmentDesc": "जब कोई छात्र असाइनमेंट जमा करे तो सूचना प्राप्त करें",
+        "messageTitle": "सीधे संदेश",
+        "messageDesc": "जब कोई छात्र आपको संदेश भेजे तो सूचना प्राप्त करें"
+      },
+      "saveBtn": "प्राथमिकताएँ सहेजें"
+    }
+  },
+  "layout": {
+    "loading": "लोड हो रहा है...",
+    "searchPlaceholder": "त्वरित खोज...",
+    "notifications": "सूचनाएँ",
+    "newCount": "{count} नया",
+    "unread": "अपठित",
+    "previous": "पिछला",
+    "invitationTitle": "पाठ्यक्रम निमंत्रण",
+    "invitationDesc": "आपको \"{title}\" पढ़ाने के लिए नियुक्त किया गया है।",
+    "noNotifications": "कोई सूचना नहीं",
+    "viewAll": "सभी निमंत्रण देखें",
+    "roleAdmin": "व्यवस्थापक",
+    "roleInstructor": "प्रशिक्षक",
+    "toastTitle": "नए निमंत्रण",
+    "toastDesc": "आपके लिए {count} लंबित पाठ्यक्रम निमंत्रण प्रतीक्षा कर रहे हैं।",
+    "toastView": "देखें"
+  }
+}

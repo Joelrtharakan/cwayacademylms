@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/i18n/app_translations.dart';
+import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -52,7 +54,7 @@ class _CertificateDetailScreenState
           );
       await Share.shareXFiles(
         [XFile(path, mimeType: 'application/pdf')],
-        text: 'My CWAY Academy certificate',
+        text: AppTranslations.tg('mobile.certificates.shareText'),
       );
     } on ApiException catch (e) {
       _snack(e.message);
@@ -71,11 +73,11 @@ class _CertificateDetailScreenState
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final name = ref.watch(currentUserProvider)?.name ?? 'Learner';
+    final name = ref.watch(currentUserProvider)?.name ?? context.tr('student.layout.role');
     final cert = _resolve(ref);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Certificate')),
+      appBar: AppBar(title: Text(context.tr('mobile.certificates.detailTitle'))),
       body: cert == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -86,18 +88,18 @@ class _CertificateDetailScreenState
                   child: CertificateCard(certificate: cert, recipientName: name),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                _InfoRow(label: 'Issued', value: Formatters.date(cert.issuedAt)),
+                _InfoRow(label: context.tr('mobile.certificates.issued'), value: Formatters.date(cert.issuedAt)),
                 if (cert.certificateNumber != null)
-                  _InfoRow(label: 'Certificate no.', value: cert.certificateNumber!),
+                  _InfoRow(label: context.tr('mobile.certificates.number'), value: cert.certificateNumber!),
                 if (cert.uniqueCode != null)
-                  _InfoRow(label: 'Verification code', value: cert.uniqueCode!),
+                  _InfoRow(label: context.tr('mobile.certificates.verificationCode'), value: cert.uniqueCode!),
                 if (cert.instructorName != null && cert.instructorName!.isNotEmpty)
-                  _InfoRow(label: 'Instructor', value: cert.instructorName!),
+                  _InfoRow(label: context.tr('student.player.instructor'), value: cert.instructorName!),
                 if (cert.scriptureRef != null && cert.scriptureRef!.isNotEmpty)
-                  _InfoRow(label: 'Scripture', value: cert.scriptureRef!),
+                  _InfoRow(label: context.tr('mobile.certificates.scripture'), value: cert.scriptureRef!),
                 const SizedBox(height: AppSpacing.xl),
                 PrimaryButton(
-                  label: 'Download / Share PDF',
+                  label: context.tr('mobile.certificates.downloadShare'),
                   icon: Icons.ios_share_rounded,
                   variant: ButtonVariant.gold,
                   isLoading: _busy,
@@ -106,7 +108,7 @@ class _CertificateDetailScreenState
                 const SizedBox(height: AppSpacing.sm),
                 Center(
                   child: Text(
-                    'Verify at cwayacademy.com/verify',
+                    context.tr('mobile.certificates.verifyAt'),
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall

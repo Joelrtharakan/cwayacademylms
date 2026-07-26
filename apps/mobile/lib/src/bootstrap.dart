@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/i18n/app_translations.dart';
 import 'core/network/auth_session.dart';
 import 'core/network/dio_client.dart';
 import 'core/offline/json_cache.dart';
@@ -41,6 +42,11 @@ Future<void> _run() async {
   PaintingBinding.instance.imageCache
     ..maximumSizeBytes = 120 << 20
     ..maximumSize = 400;
+
+  // Pre-load every locale's translation catalog so `context.tr(...)` is fully
+  // synchronous for the whole widget tree and the first frame is already
+  // localized (no flash of raw keys).
+  await AppTranslations.loadAll();
 
   final prefs = await SharedPreferences.getInstance();
   final secureStorage = buildSecureStorage();
