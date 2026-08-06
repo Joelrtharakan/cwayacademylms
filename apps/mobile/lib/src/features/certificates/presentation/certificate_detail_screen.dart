@@ -43,19 +43,38 @@ class _CertificateDetailScreenState
     return null;
   }
 
+  String _fileName(CertificateDto cert) {
+    final base = cert.course?.slug ??
+        (cert.isProgram ? 'program' : cert.titleText.resolve('en'));
+    return '$base-certificate.pdf';
+  }
+
   Future<void> _sharePdf(CertificateDto cert) async {
     setState(() => _busy = true);
     try {
-      final base = cert.course?.slug ??
-          (cert.isProgram ? 'program' : cert.titleText.resolve('en'));
       final path = await ref.read(certificatesRepositoryProvider).downloadPdf(
             id: cert.id,
-            filename: '$base-certificate.pdf',
+            filename: _fileName(cert),
           );
       await Share.shareXFiles(
         [XFile(path, mimeType: 'application/pdf')],
         text: AppTranslations.tg('mobile.certificates.shareText'),
       );
+    } on ApiException catch (e) {
+      _snack(e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _downloadPdf(CertificateDto cert) async {
+    setState(() => _busy = true);
+    try {
+      await ref.read(certificatesRepositoryProvider).downloadPdf(
+            id: cert.id,
+            filename: _fileName(cert),
+          );
+      _snack(AppTranslations.tg('mobile.certificates.saved'));
     } on ApiException catch (e) {
       _snack(e.message);
     } finally {
@@ -98,12 +117,28 @@ class _CertificateDetailScreenState
                 if (cert.scriptureRef != null && cert.scriptureRef!.isNotEmpty)
                   _InfoRow(label: context.tr('mobile.certificates.scripture'), value: cert.scriptureRef!),
                 const SizedBox(height: AppSpacing.xl),
-                PrimaryButton(
-                  label: context.tr('mobile.certificates.downloadShare'),
-                  icon: Icons.ios_share_rounded,
-                  variant: ButtonVariant.gold,
-                  isLoading: _busy,
-                  onPressed: _busy ? null : () => _sharePdf(cert),
+                Row(
+                  children: [
+                    Expanded(
+                      child: PrimaryButton(
+                        label: context.tr('mobile.certificates.download'),
+                        icon: Icons.file_download_outlined,
+                        variant: ButtonVariant.outline,
+                        isLoading: _busy,
+                        onPressed: _busy ? null : () => _downloadPdf(cert),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: context.tr('mobile.certificates.share'),
+                        icon: Icons.ios_share_rounded,
+                        variant: ButtonVariant.gold,
+                        isLoading: _busy,
+                        onPressed: _busy ? null : () => _sharePdf(cert),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Center(

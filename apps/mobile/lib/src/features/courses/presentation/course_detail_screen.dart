@@ -287,6 +287,8 @@ class _DetailContent extends StatelessWidget {
                     style: text.bodyLarge?.copyWith(color: colors.textSecondary),),
               ],
               const SizedBox(height: AppSpacing.lg),
+              _StatBoxes(course: course),
+              const SizedBox(height: AppSpacing.lg),
               _MetaWrap(course: course),
               const SizedBox(height: AppSpacing.xl),
               if (course.instructor != null) ...[
@@ -364,6 +366,86 @@ class _HeroImage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The reference course-detail stat row: three boxed metrics
+/// (Lessons / Quizzes / Assignments) derived from the curriculum.
+class _StatBoxes extends StatelessWidget {
+  const _StatBoxes({required this.course});
+  final CourseDetailDto course;
+
+  @override
+  Widget build(BuildContext context) {
+    var quizzes = 0;
+    var assignments = 0;
+    var lessons = 0;
+    for (final s in course.sections) {
+      for (final l in s.lessons) {
+        final t = l.type.toUpperCase();
+        if (t.contains('QUIZ')) {
+          quizzes++;
+        } else if (t.contains('ASSIGN')) {
+          assignments++;
+        } else {
+          lessons++;
+        }
+      }
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: _StatBox(
+            value: '$lessons',
+            label: context.tr('mobile.detail.statLessons'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _StatBox(
+            value: '$quizzes',
+            label: context.tr('mobile.detail.statQuizzes'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _StatBox(
+            value: '$assignments',
+            label: context.tr('mobile.detail.statAssignments'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatBox extends StatelessWidget {
+  const _StatBox({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.surfaceMuted,
+        borderRadius: AppRadii.rLg,
+      ),
+      child: Column(
+        children: [
+          Text(value,
+              style: text.headlineSmall?.copyWith(
+                  color: colors.textPrimary, fontWeight: FontWeight.w700,),),
+          const SizedBox(height: 2),
+          Text(label,
+              style: text.labelSmall?.copyWith(color: colors.textMuted),),
+        ],
+      ),
     );
   }
 }

@@ -67,3 +67,49 @@ class SubmissionDto {
     );
   }
 }
+
+/// A student's forum discussion response as seen by an instructor grading it
+/// (`GET /forums/instructor/discussions`).
+class InstructorDiscussionDto {
+  const InstructorDiscussionDto({
+    required this.id,
+    required this.content,
+    required this.authorName,
+    required this.courseTitle,
+    required this.lessonTitle,
+    required this.maxScore,
+    this.score,
+    this.feedback,
+    this.createdAt,
+  });
+
+  final String id;
+  final String content;
+  final String authorName;
+  final LocalizedText courseTitle;
+  final LocalizedText lessonTitle;
+  final int maxScore;
+  final double? score;
+  final String? feedback;
+  final DateTime? createdAt;
+
+  bool get isGraded => score != null;
+
+  factory InstructorDiscussionDto.fromJson(Map<String, dynamic> json) {
+    final author = json['author'] as Map<String, dynamic>? ?? const {};
+    final course = json['course'] as Map<String, dynamic>? ?? const {};
+    final lesson = json['lesson'] as Map<String, dynamic>? ?? const {};
+
+    return InstructorDiscussionDto(
+      id: json['id'] as String,
+      content: json['content'] as String? ?? '',
+      authorName: author['name'] as String? ?? 'Student',
+      courseTitle: LocalizedText.fromJson(course['title']),
+      lessonTitle: LocalizedText.fromJson(lesson['title']),
+      maxScore: (lesson['forumMarks'] as num?)?.toInt() ?? 100,
+      score: (json['score'] as num?)?.toDouble(),
+      feedback: json['feedback'] as String?,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+    );
+  }
+}

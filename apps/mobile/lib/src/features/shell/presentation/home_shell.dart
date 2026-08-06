@@ -195,37 +195,32 @@ class _NavItem extends StatelessWidget {
       );
     }
 
+    // Reference bottom nav: every tab shows its icon above an always-visible
+    // label; the active tab is gold, inactive tabs muted gray.
+    final color = isActive ? colors.goldPrimary : colors.textMuted;
     return Semantics(
       button: true,
       selected: isActive,
       label: label,
       child: AnimatedPress(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 8),
-          decoration: BoxDecoration(
-            color: isActive ? colors.goldPrimary.withValues(alpha: 0.1) : Colors.transparent,
-            borderRadius: AppRadii.rPill,
-          ),
-          child: AnimatedSize(
-            duration: AppMotion.fast,
-            curve: Curves.easeInOut,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                iconWidget,
-                if (isActive) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    label,
-                    style: text.labelSmall?.copyWith(
-                      color: colors.goldPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              iconWidget,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),

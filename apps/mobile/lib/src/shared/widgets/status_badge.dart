@@ -47,12 +47,14 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.role(String role, {bool dense = true}) {
     final labelKey = switch (role.toUpperCase()) {
       'ADMIN' => 'admin.users.roleAdmin',
+      'REGISTRAR' => 'admin.sidebar.registrar',
       'INSTRUCTOR' => 'admin.users.roleInstructor',
       'STUDENT' => 'admin.users.roleStudent',
       _ => null,
     };
-    final tone = switch (role) {
+    final tone = switch (role.toUpperCase()) {
       'ADMIN' => BadgeTone.gold,
+      'REGISTRAR' => BadgeTone.gold,
       'INSTRUCTOR' => BadgeTone.forest,
       _ => BadgeTone.neutral,
     };

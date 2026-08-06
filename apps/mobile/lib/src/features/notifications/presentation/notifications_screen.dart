@@ -24,30 +24,37 @@ class NotificationsScreen extends ConsumerWidget {
     final unread = async.valueOrNull?.unreadCount ?? 0;
 
     return Scaffold(
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: colors.forestDeep,
-        foregroundColor: Colors.white,
-        flexibleSpace: DecoratedBox(
-          decoration: BoxDecoration(gradient: colors.forestGradient),
-        ),
-        title: Text(
-          context.tr('student.layout.notifications'),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(color: Colors.white),
-        ),
-        actions: [
-          if (unread > 0)
-            TextButton(
-              onPressed: controller.markAllRead,
-              child: Text(
-                context.tr('student.layout.markAllRead'),
-                style: TextStyle(color: colors.goldLight, fontWeight: FontWeight.w600),
-              ),
-            ),
-        ],
+        backgroundColor: colors.background,
+        title: Text(context.tr('student.layout.notifications')),
       ),
+      bottomNavigationBar: unread > 0
+          ? SafeArea(
+              child: Material(
+                color: colors.surface,
+                elevation: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: colors.border)),
+                  ),
+                  child: InkWell(
+                    onTap: controller.markAllRead,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                      child: Center(
+                        child: Text(
+                          context.tr('student.layout.markAllRead'),
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(color: colors.goldDark),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: RefreshIndicator(
         color: colors.goldPrimary,
         onRefresh: controller.refresh,
@@ -137,11 +144,11 @@ class _NotificationTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: colors.surfaceMuted,
+                  color: colors.goldPrimary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(_iconFor(item.type),
-                    size: 18, color: colors.forestLight,),
+                    size: 18, color: colors.goldDark,),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -174,11 +181,11 @@ class _NotificationTile extends StatelessWidget {
               if (!item.isRead) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Container(
-                  width: 8,
-                  height: 8,
+                  width: 9,
+                  height: 9,
                   margin: const EdgeInsets.only(top: 6),
                   decoration: BoxDecoration(
-                      color: colors.goldPrimary, shape: BoxShape.circle,),
+                      color: colors.danger, shape: BoxShape.circle,),
                 ),
               ],
             ],
@@ -195,6 +202,7 @@ class _NotificationTile extends StatelessWidget {
       return Icons.assignment_turned_in_rounded;
     }
     if (t.contains('CERTIFICATE')) return Icons.workspace_premium_rounded;
+    if (t.contains('EXTENSION')) return Icons.more_time_rounded;
     if (t.contains('ENROLL') || t.contains('COURSE')) return Icons.school_rounded;
     if (t.contains('ANNOUNCE')) return Icons.campaign_rounded;
     return Icons.notifications_rounded;

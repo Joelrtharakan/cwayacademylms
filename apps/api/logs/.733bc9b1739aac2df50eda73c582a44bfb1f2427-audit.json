@@ -44,6 +44,16 @@
             "date": 1785034153224,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-26.log",
             "hash": "a3cfe6f736d48d377e5453635bb41f66ca32cb001477c9a8d211a00d68c03be7"
+        },
+        {
+            "date": 1785155204912,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-27.log",
+            "hash": "62075b4317fefbf50c51084f694c7181f4bc7bc0d44f6ed78fe12b351535f207"
+        },
+        {
+            "date": 1785180314028,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/combined-2026-07-28.log",
+            "hash": "d22aafc891c26e00c598640b83dda6e08eb84fb5ef2b34602e290053156bc499"
         }
     ],
     "hashType": "sha256"

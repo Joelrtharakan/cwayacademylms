@@ -26,12 +26,15 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final content = Container(
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: borderRadius,
-        border: Border.all(color: colors.border),
-        boxShadow: AppShadows.sm(colors.forestDeep),
+        // Reference cards are borderless white with a soft shadow. On the dark
+        // theme a hairline keeps navy cards legible against the navy background.
+        border: isLight ? null : Border.all(color: colors.border),
+        boxShadow: AppShadows.card(colors.forestDeep),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -67,10 +67,48 @@ class _PrimaryButtonState extends State<PrimaryButton> {
     Widget buttonWidget;
 
     if (widget.variant == ButtonVariant.outline) {
-      buttonWidget = SizedBox(
-        width: widget.expand ? double.infinity : null,
-        child: OutlinedButton(
-            onPressed: enabled ? widget.onPressed : null, child: child,),
+      // Secondary button per the reference design system: deep-navy fill with a
+      // warm-gold outline and light text.
+      buttonWidget = Semantics(
+        button: true,
+        enabled: enabled,
+        label: widget.label,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.5,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: enabled ? widget.onPressed : null,
+              onHighlightChanged: (pressed) {
+                if (enabled) setState(() => _isPressed = pressed);
+              },
+              borderRadius: AppRadii.rPill,
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: colors.forestDeep,
+                  borderRadius: AppRadii.rPill,
+                  border: Border.all(color: colors.goldPrimary, width: 1.5),
+                ),
+                child: Container(
+                  width: widget.expand ? double.infinity : null,
+                  height: AppSizes.buttonHeight,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  child: DefaultTextStyle.merge(
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelLarge!
+                        .copyWith(color: Colors.white),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: colors.goldPrimary),
+                      child: child,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       );
     } else {
       final gradient = widget.variant == ButtonVariant.gold

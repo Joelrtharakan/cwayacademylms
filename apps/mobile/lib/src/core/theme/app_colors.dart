@@ -71,56 +71,59 @@ class AppColors extends ThemeExtension<AppColors> {
         end: Alignment.bottomRight,
       );
 
-  // ── Blue / slate SaaS palette (Linear / Vercel / GitHub-style) ──────────────
-  // Token names are kept for compatibility across the app: `gold*` now carries
-  // the blue primary ramp, `forest*` the premium navy header ramp, and the
-  // neutrals are a slate scale. All pairings meet WCAG AA contrast.
+  // ── Deep Navy + Warm Gold brand palette ─────────────────────────────────────
+  // Matches the CWAY Academy design reference: deep-navy / midnight-blue premium
+  // surfaces, warm-gold CTAs and accents, white cards, and soft-gray neutrals.
+  // `gold*` = the warm gold ramp, `forest*` = the navy/midnight header ramp.
+  // All foreground/background pairings meet WCAG AA contrast.
+  // Reference design-system tokens (exact): deep navy #0B1D33, midnight blue
+  // #122A4D, white #FFFFFF, warm gold #F5B12D, light gray #E6EBED.
   static const light = AppColors(
-    goldPrimary: Color(0xFF2563EB), // primary (blue-600)
-    goldDark: Color(0xFF1D4ED8), // primary hover (blue-700)
-    goldLight: Color(0xFF3B82F6), // accent on dark surfaces (blue-500)
-    goldPale: Color(0xFFEFF6FF), // subtle primary tint (blue-50)
-    forestDeep: Color(0xFF0B1220), // header gradient (deep navy)
-    forestMid: Color(0xFF1E293B), // header gradient (slate-800)
-    forestLight: Color(0xFF334155), // slate-700
-    background: Color(0xFFFAFAFB),
-    surface: Color(0xFFFFFFFF),
-    surfaceMuted: Color(0xFFF1F5F9), // input / chip fill (slate-100)
+    goldPrimary: Color(0xFFF5B12D), // warm gold — primary CTA / accent
+    goldDark: Color(0xFFD2951C), // pressed / gold text on light (AA)
+    goldLight: Color(0xFFF8C55E), // highlight / accent on dark surfaces
+    goldPale: Color(0xFFFEF4DC), // subtle gold tint fill
+    forestDeep: Color(0xFF0B1D33), // deep navy — header gradient base
+    forestMid: Color(0xFF122A4D), // midnight blue — header gradient
+    forestLight: Color(0xFF1E3A5F), // muted navy
+    background: Color(0xFFF5F7F9), // soft gray app background
+    surface: Color(0xFFFFFFFF), // white cards
+    surfaceMuted: Color(0xFFEDF0F3), // input / chip fill (light gray)
     surfaceElevated: Color(0xFFFFFFFF),
     surfaceGlass: Color(0xCCFFFFFF),
-    textPrimary: Color(0xFF111827), // gray-900
-    textSecondary: Color(0xFF374151), // gray-700
-    textMuted: Color(0xFF6B7280), // gray-500
-    border: Color(0xFFE5E7EB), // gray-200
+    textPrimary: Color(0xFF0B1D33), // deep navy ink
+    textSecondary: Color(0xFF44566E), // slate navy
+    textMuted: Color(0xFF8A97A8), // soft gray
+    border: Color(0xFFE6EBED), // light gray hairline
     success: Color(0xFF16A34A),
     warning: Color(0xFFD97706),
     danger: Color(0xFFDC2626),
-    shimmerBase: Color(0xFFE5E7EB),
-    shimmerHighlight: Color(0xFFF3F4F6),
+    shimmerBase: Color(0xFFE6EBED),
+    shimmerHighlight: Color(0xFFF2F5F8),
   );
 
   static const dark = AppColors(
-    goldPrimary: Color(0xFF3B82F6), // primary (blue-500)
-    goldDark: Color(0xFF2563EB), // pressed (blue-600)
-    goldLight: Color(0xFF60A5FA), // accent / links (blue-400)
-    goldPale: Color(0xFF172033), // subtle primary tint
-    forestDeep: Color(0xFF0B0F14), // header gradient (base)
-    forestMid: Color(0xFF111827), // header gradient (surface)
-    forestLight: Color(0xFF334155), // slate-700
-    background: Color(0xFF0B0F14), // layered, not pure black
-    surface: Color(0xFF1A2233), // cards
-    surfaceMuted: Color(0xFF111827), // input / chip fill
-    surfaceElevated: Color(0xFF222C3D), // elevated cards / sheets
-    surfaceGlass: Color(0xCC111827),
-    textPrimary: Color(0xFFF8FAFC), // slate-50
-    textSecondary: Color(0xFFCBD5E1), // slate-300
-    textMuted: Color(0xFF94A3B8), // slate-400
-    border: Color(0xFF334155), // slate-700
+    goldPrimary: Color(0xFFF5B12D), // warm gold — primary CTA / accent
+    goldDark: Color(0xFFD2951C), // pressed
+    goldLight: Color(0xFFF8C55E), // highlight / links
+    goldPale: Color(0xFF2A2110), // subtle gold tint fill
+    forestDeep: Color(0xFF071426), // deepest navy — header gradient base
+    forestMid: Color(0xFF122A4D), // midnight blue — header gradient
+    forestLight: Color(0xFF1E3A5F), // muted navy
+    background: Color(0xFF0B1D33), // deep navy app background
+    surface: Color(0xFF122A4D), // midnight-blue cards
+    surfaceMuted: Color(0xFF0E2340), // input / chip fill
+    surfaceElevated: Color(0xFF17355C), // elevated cards / sheets
+    surfaceGlass: Color(0xCC0E2340),
+    textPrimary: Color(0xFFF3F6FB), // near-white ink
+    textSecondary: Color(0xFFC0CBDA), // light slate
+    textMuted: Color(0xFF8697AC), // soft gray
+    border: Color(0xFF25405F), // hairline on navy
     success: Color(0xFF22C55E),
     warning: Color(0xFFF59E0B),
     danger: Color(0xFFEF4444),
-    shimmerBase: Color(0xFF1A2233),
-    shimmerHighlight: Color(0xFF222C3D),
+    shimmerBase: Color(0xFF122A4D),
+    shimmerHighlight: Color(0xFF17355C),
   );
 
   @override

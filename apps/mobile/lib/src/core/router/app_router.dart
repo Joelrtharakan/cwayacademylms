@@ -18,6 +18,8 @@ import '../../features/certificates/presentation/certificates_screen.dart';
 import '../../features/courses/presentation/course_detail_screen.dart';
 import '../../features/courses/presentation/courses_browse_screen.dart';
 import '../../features/downloads/presentation/downloads_screen.dart';
+import '../../features/forum/forum_args.dart';
+import '../../features/forum/presentation/forum_screen.dart';
 import '../../features/instructor/presentation/grading_queue_screen.dart';
 import '../../features/instructor/presentation/instructor_course_screen.dart';
 import '../../features/learn/presentation/lesson_player_screen.dart';
@@ -26,6 +28,7 @@ import '../../features/onboarding/presentation/apply_webview_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/profile/presentation/profile_edit_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/programs/presentation/program_application_screen.dart';
 import '../../features/programs/presentation/program_detail_screen.dart';
 import '../../features/programs/presentation/programs_browse_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
@@ -63,6 +66,8 @@ class AppRoutes {
           : '/course/$courseId/learn?lessonId=$lessonId';
   static const quiz = '/quiz/:quizId';
   static String quizPath(String quizId) => '/quiz/$quizId';
+  static const forum = '/forum/:lessonId';
+  static String forumPath(String lessonId) => '/forum/$lessonId';
   static const assignments = '/assignments';
   static const assignmentDetail = '/assignment/:id';
   static String assignmentPath(String id) => '/assignment/$id';
@@ -246,6 +251,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.forum,
+        builder: (context, state) {
+          final args = state.extra is ForumArgs ? state.extra! as ForumArgs : null;
+          return ForumScreen(
+            lessonId: state.pathParameters['lessonId']!,
+            lessonTitle: args?.title,
+            prompt: args?.prompt,
+            courseId: args?.courseId,
+            enrollmentId: args?.enrollmentId,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.assignments,
         builder: (context, state) => const AssignmentsListScreen(),
       ),
@@ -308,13 +326,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           programId: state.pathParameters['id']!,
         ),
       ),
-      // Applying stays on the website — opened in an in-app WebView.
+      // Program application is a native form that posts directly to the API.
       GoRoute(
         path: AppRoutes.programApply,
-        builder: (context, state) => ApplyWebViewScreen(
-          url: AppEnv.programApplyUrl(state.pathParameters['id']!),
-          title: 'Apply',
-        ),
+        builder: (context, state) =>
+            ProgramApplicationScreen(programId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.apply,

@@ -14,7 +14,6 @@ class WelcomeScreen extends StatelessWidget {
 
   void _browsePrograms(BuildContext context) => context.push(AppRoutes.programsBrowse);
   void _browseCourses(BuildContext context) => context.push(AppRoutes.coursesBrowse);
-  void _apply(BuildContext context) => context.push(AppRoutes.apply);
   void _signIn(BuildContext context) => context.push(AppRoutes.login);
 
   @override
@@ -43,7 +42,6 @@ class WelcomeScreen extends StatelessWidget {
                         child: _Actions(
                           onBrowsePrograms: () => _browsePrograms(context),
                           onBrowseCourses: () => _browseCourses(context),
-                          onApply: () => _apply(context),
                           onSignIn: () => _signIn(context),
                         ),
                       ),
@@ -142,13 +140,11 @@ class _Actions extends StatelessWidget {
   const _Actions({
     required this.onBrowsePrograms,
     required this.onBrowseCourses,
-    required this.onApply,
     required this.onSignIn,
   });
 
   final VoidCallback onBrowsePrograms;
   final VoidCallback onBrowseCourses;
-  final VoidCallback onApply;
   final VoidCallback onSignIn;
 
   @override
@@ -184,13 +180,6 @@ class _Actions extends StatelessWidget {
           icon: Icons.menu_book_rounded,
           variant: ButtonVariant.outline,
           onPressed: onBrowseCourses,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        PrimaryButton(
-          label: context.tr('mobile.welcome.apply'),
-          icon: Icons.assignment_rounded,
-          variant: ButtonVariant.outline,
-          onPressed: onApply,
         ),
         const SizedBox(height: AppSpacing.xl),
         Row(

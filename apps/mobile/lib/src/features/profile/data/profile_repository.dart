@@ -16,6 +16,9 @@ abstract interface class ProfileRepository {
 
   /// Uploads a new avatar (multipart `avatar`) and returns its URL.
   Future<String> uploadAvatar({required String filePath, String? fileName});
+
+  /// Removes the current avatar (clears it server-side).
+  Future<void> removeAvatar();
 }
 
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -62,6 +65,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final url = res.data?['data']?['avatarUrl'];
       if (url is String) return url;
       throw ApiException(message: AppTranslations.tg('mobile.errors.avatarUpload'));
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> removeAvatar() async {
+    try {
+      await _dio.put<Map<String, dynamic>>(
+        '/users/me/profile',
+        data: {'avatar': null},
+      );
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

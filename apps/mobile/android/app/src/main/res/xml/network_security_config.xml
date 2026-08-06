@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is permitted only for local development hosts: the Next.js web
+  app and API running on the developer's machine, reached from the Android
+  emulator via 10.0.2.2 (and localhost/127.0.0.1). This lets the in-app WebView
+  open the dev "Apply" page over http://. All other traffic stays HTTPS-only,
+  so production is unaffected.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

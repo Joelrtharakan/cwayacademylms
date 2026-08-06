@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { resolveLocalized } from "../utils/localized";
 import { prisma } from "../utils/prisma";
 import { redis } from "../utils/redis";
 import { asyncHandler, AppError } from "../utils/errors";
@@ -720,7 +721,7 @@ export const gradeSubmission = asyncHandler(async (req: Request, res: Response) 
   await NotificationService.createNotification(
     submission.studentId, "ASSIGNMENT_GRADED",
     "Your assignment has been graded",
-    `You scored ${grade}/${submission.assignment.maxScore} on '${submission.assignment.title}'`,
+    `You scored ${grade}/${submission.assignment.maxScore} on '${resolveLocalized(submission.assignment.title)}'`,
     "/student/assignments"
   );
   
@@ -1090,9 +1091,11 @@ export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => 
 // ─── USER PROFILE UPDATE ──────────────────────────────────────────────────────
 
 export const updateMyProfile = asyncHandler(async (req: Request, res: Response) => {
-  const { name, bio, church, location, phone, socialLinks, title, credentials, yearsExperience, expertise, notificationPrefs } = req.body;
+  const { name, bio, church, location, phone, socialLinks, title, credentials, yearsExperience, expertise, notificationPrefs, avatar } = req.body;
   const data: any = {};
   if (name) data.name = name;
+  // Allow clearing the avatar: an explicit null/empty removes the profile photo.
+  if (avatar !== undefined) data.avatar = avatar === "" ? null : avatar;
   if (bio !== undefined) data.bio = bio;
   if (church !== undefined) data.church = church;
   if (location !== undefined) data.location = location;

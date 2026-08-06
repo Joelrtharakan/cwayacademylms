@@ -34,13 +34,23 @@ class _ApplyWebViewScreenState extends State<ApplyWebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) {
-            if (mounted) setState(() => _loading = true);
+            if (mounted) {
+              setState(() {
+                _loading = true;
+                _failed = false;
+              });
+            }
           },
           onPageFinished: (_) {
             if (mounted) setState(() => _loading = false);
           },
-          onWebResourceError: (_) {
-            if (mounted) setState(() => _failed = true);
+          onWebResourceError: (error) {
+            // Only surface a full failure when the main document itself fails to
+            // load. Sub-resource errors (favicon, third-party scripts) must not
+            // replace an otherwise-working page with the error screen.
+            if (mounted && (error.isForMainFrame ?? true)) {
+              setState(() => _failed = true);
+            }
           },
         ),
       )

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { resolveLocalized } from "../utils/localized";
 import { prisma } from "../utils/prisma";
 import { redis } from "../utils/redis";
 import { AppError, asyncHandler } from "../utils/errors";
@@ -1056,7 +1057,7 @@ export const gradeSubmission = asyncHandler(async (req: Request, res: Response) 
       userId: submission.studentId,
       type: "ASSIGNMENT_GRADED",
       title: "Your assignment has been graded",
-      body: `You scored ${grade}/${submission.assignment.maxScore} on '${submission.assignment.title}'`,
+      body: `You scored ${grade}/${submission.assignment.maxScore} on '${resolveLocalized(submission.assignment.title)}'`,
       link: `/student/assignments/${submission.assignmentId}`
     }
   });

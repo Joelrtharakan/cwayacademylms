@@ -31,9 +31,11 @@ class InstructorCourseScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: colors.forestDeep,
           foregroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.white),
           systemOverlayStyle: SystemUiOverlayStyle.light,
-          flexibleSpace: DecoratedBox(
+          flexibleSpace: Container(
             decoration: BoxDecoration(gradient: colors.forestGradient),
           ),
           title: Text(
@@ -362,17 +364,22 @@ class _EnrollmentBars extends StatelessWidget {
                   Text('${p.count}',
                       style: text.labelSmall?.copyWith(color: colors.textMuted),),
                   const SizedBox(height: 4),
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: p.count / maxCount),
-                    duration: AppMotion.slow,
-                    curve: AppMotion.curve,
-                    builder: (_, v, __) => Container(
-                      height: (100 * v).clamp(2, 100),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        gradient: colors.goldGradient,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(4),),
+                  Expanded(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: p.count / maxCount),
+                      duration: AppMotion.slow,
+                      curve: AppMotion.curve,
+                      builder: (_, v, __) => FractionallySizedBox(
+                        alignment: Alignment.bottomCenter,
+                        heightFactor: v.clamp(0.02, 1.0),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            gradient: colors.goldGradient,
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4),),
+                          ),
+                        ),
                       ),
                     ),
                   ),

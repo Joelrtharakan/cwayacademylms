@@ -88,7 +88,9 @@
     "gradingTitle": "Grading",
     "submissionsLoadError": "Couldn't load submissions. Pull to retry.",
     "gradingCaughtUpTitle": "All caught up",
-    "gradingCaughtUpDesc": "No submissions are waiting to be graded."
+    "gradingCaughtUpDesc": "No submissions are waiting to be graded.",
+    "tabAssignments": "Assignments",
+    "tabDiscussions": "Discussions"
   },
   "instructorCourse": {
     "courseFallback": "Course",
@@ -161,6 +163,9 @@
     "saveForOffline": "Save for offline",
     "aboutCourse": "About this course",
     "courseContent": "Course content",
+    "statLessons": "Lessons",
+    "statQuizzes": "Quizzes",
+    "statAssignments": "Assignments",
     "contentSummary": "{sections} sections · {lessons} lessons · {duration}",
     "enrolledCount": "{count} enrolled",
     "weeks": "{count} weeks",
@@ -214,7 +219,8 @@
     },
     "quizPassed": {
       "title": "You passed '{quiz}'!",
-      "body": "You scored {score}%."
+      "body": "You scored {score}%.",
+      "titleGeneric": "You passed a quiz!"
     },
     "newSubmission": {
       "title": "New assignment submission",
@@ -244,7 +250,14 @@
     "pendingTasks": "Pending tasks",
     "continueLearning": "CONTINUE LEARNING",
     "resume": "Resume",
-    "percentComplete": "{percent}% complete"
+    "percentComplete": "{percent}% complete",
+    "greetingSubtitle": "Keep growing in God's Word",
+    "statCourses": "Courses",
+    "statInProgress": "In Progress",
+    "statCompleted": "Completed",
+    "viewAll": "View All",
+    "verseText": "\"Your word is a lamp to my feet and a light to my path.\"",
+    "verseRef": "Psalm 119:105"
   },
   "admin": {
     "roleLabel": "Administrator",
@@ -285,10 +298,13 @@
     "courseContent": "Course content",
     "lessonProgress": "Lesson {index} of {total}",
     "openAssignment": "Open assignment",
+    "openForum": "Open discussion",
     "reviewQuiz": "Review / retake quiz",
     "startQuiz": "Start quiz",
     "nextLesson": "Next lesson",
     "courseComplete": "Course complete",
+    "markedComplete": "Lesson marked complete.",
+    "markCompleteFailed": "Couldn't mark this lesson complete. Please try again.",
     "previous": "Previous",
     "editNote": "Edit note",
     "addNote": "Add note",
@@ -296,7 +312,10 @@
     "typeLesson": "{type} lesson",
     "contentLabel": "Content",
     "emptyLessons": "This course has no lessons yet.",
-    "loadError": "We couldn't load this lesson. Please try again."
+    "loadError": "We couldn't load this lesson. Please try again.",
+    "courseCompleteTitle": "Course Complete!",
+    "courseCompleteSubtitle": "You've finished every lesson. Well done!",
+    "exitCourse": "Exit course"
   },
   "notes": {
     "delete": "Delete note",
@@ -347,6 +366,16 @@
     "replace": "Replace submission",
     "unsubmit": "Unsubmit",
     "closed": "Submissions are closed — the due date has passed.",
+    "requestExtension": "Request Extension",
+    "requestExtensionTitle": "Request an extension",
+    "extensionReasonHint": "Reason for your request",
+    "extensionPickDate": "Preferred new date (optional)",
+    "extensionSubmit": "Submit request",
+    "extensionRequested": "Extension requested — pending approval.",
+    "extensionGranted": "Extension granted — you can submit now.",
+    "nextLesson": "Continue to next lesson",
+    "lastLesson": "That was the last lesson in this course.",
+    "extensionReasonRequired": "Please add a reason for your request.",
     "yourSubmission": "Your submission",
     "responseHint": "Write your response (optional if attaching a file)…",
     "attachFile": "Attach a file",
@@ -364,13 +393,17 @@
     "verificationCode": "Verification code",
     "scripture": "Scripture",
     "downloadShare": "Download / Share PDF",
+    "download": "Download",
+    "share": "Share",
+    "saved": "Certificate saved to your device",
     "verifyAt": "Verify at cwayacademy.com/verify",
     "shareText": "My CWAY Academy certificate",
     "ofAchievement": "CERTIFICATE OF ACHIEVEMENT",
     "ofCompletion": "CERTIFICATE OF COMPLETION",
     "certifiesThat": "This certifies that",
     "hasCompleted": "has successfully completed",
-    "noPrefix": "No. {number}"
+    "noPrefix": "No. {number}",
+    "title": "Certificates"
   },
   "welcome": {
     "title": "Welcome",
@@ -386,6 +419,11 @@
   },
   "profile": {
     "avatarUpdated": "Profile photo updated.",
+    "avatarRemoved": "Profile photo removed.",
+    "changePhoto": "Change photo",
+    "addPhoto": "Add photo",
+    "removePhoto": "Remove photo",
+    "photoOptions": "Profile photo",
     "biometricUnavailable": "Biometrics are not available on this device.",
     "biometricReason": "Enable biometric unlock",
     "editProfile": "Edit profile",
@@ -535,5 +573,24 @@
     "loading": "Loading...",
     "somethingWrong": "Something went wrong",
     "noConnection": "No internet connection"
+  },
+  "forum": {
+    "title": "Discussion",
+    "startTitle": "Start a discussion",
+    "post": "Post",
+    "postHint": "Share your thoughts…",
+    "posted": "Your response was posted.",
+    "reply": "Reply",
+    "replyHint": "Write a reply…",
+    "emptyTitle": "No responses yet",
+    "emptyMessage": "Be the first to start the conversation.",
+    "loadError": "We couldn't load this discussion.",
+    "prompt": "Discussion prompt",
+    "postedTitle": "Response posted",
+    "completedBody": "Your response was posted and this lesson is now complete.",
+    "stayHere": "Stay here",
+    "nextLesson": "Next lesson",
+    "lastLesson": "That was the last lesson in this course.",
+    "done": "Done"
   }
 }

@@ -60,6 +60,18 @@ class AppTranslations {
     }
   }
 
+  /// Re-reads every catalog from the asset bundle. Used on hot reload (debug) so
+  /// newly-added i18n keys appear without a full restart. Evicts the cached
+  /// asset strings first so `rootBundle` returns the updated content.
+  static Future<void> reload() async {
+    for (final locale in kSupportedLocales) {
+      for (final ns in _namespaces) {
+        rootBundle.evict('assets/i18n/$locale/$ns.json');
+      }
+    }
+    await loadAll();
+  }
+
   static Future<Map<String, dynamic>> _loadLocale(String locale) async {
     final merged = <String, dynamic>{};
     for (final ns in _namespaces) {

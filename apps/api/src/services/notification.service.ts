@@ -1,4 +1,5 @@
 import { prisma } from "../utils/prisma";
+import { redis } from "../utils/redis";
 
 export class NotificationService {
   /**
@@ -11,9 +12,13 @@ export class NotificationService {
     body: string,
     link?: string
   ) {
-    return prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: { userId, type, title, body, link },
     });
+    // Invalidate the recipient's cached notifications so the new one (and the
+    // unread badge) shows immediately instead of after the 60s cache TTL.
+    await redis.del(`notifications:${userId}`).catch(() => {});
+    return notification;
   }
 
   /**
@@ -46,6 +51,11 @@ export class NotificationService {
     await prisma.notification.createMany({
       data: userIds.map((userId) => ({ userId, type: "BROADCAST", title, body, link })),
     });
+
+    // Invalidate cached notifications for every recipient.
+    await Promise.all(
+      userIds.map((userId) => redis.del(`notifications:${userId}`).catch(() => {}))
+    );
 
     return { count: userIds.length };
   }

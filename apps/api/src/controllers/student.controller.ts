@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 import { asyncHandler, AppError } from "../utils/errors";
+import { resolveLocalized } from "../utils/localized";
 import { redis } from "../utils/redis";
 import { CertificateService } from "../services/certificate.service";
 import { resolveTranslation } from "../utils/localization";
@@ -84,7 +85,7 @@ async function checkAndCompleteCourse(enrollmentId: string, studentId: string, o
       {
         userId: studentId,
         type: "COURSE_COMPLETED",
-        title: `🎉 You completed '${enrollment.course.title}'!`,
+        title: `🎉 You completed '${resolveLocalized(enrollment.course.title)}'!`,
         body: shouldIssueCertificate 
           ? (isProgramCertificate ? `You've completed the ${programTitle} program! Your certificate is ready to download.` : "Your certificate is ready to download.")
           : "Keep up the great work!",
@@ -94,7 +95,7 @@ async function checkAndCompleteCourse(enrollmentId: string, studentId: string, o
         userId: enrollment.course.instructorId,
         type: "STUDENT_COMPLETED",
         title: `${student?.name} completed your course`,
-        body: `${student?.name} has just finished '${enrollment.course.title}'.`,
+        body: `${student?.name} has just finished '${resolveLocalized(enrollment.course.title)}'.`,
         link: `/instructor/courses/${enrollment.courseId}/students`
       }
     ]
@@ -662,7 +663,7 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
       data: {
         userId: studentId,
         type: "QUIZ_PASSED",
-        title: `You passed '${quiz.title}'!`,
+        title: `You passed '${resolveLocalized(quiz.title)}'!`,
         body: `You scored ${score.toFixed(1)}%.`,
         link: "#"
       }
@@ -777,7 +778,7 @@ export const submitAssignment = asyncHandler(async (req: Request, res: Response)
       userId: assignment.lesson.section.course.instructorId,
       type: "NEW_SUBMISSION",
       title: "New assignment submission",
-      body: `A student submitted '${assignment.title}'`,
+      body: `A student submitted '${resolveLocalized(assignment.title)}'`,
       link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
     }
   });

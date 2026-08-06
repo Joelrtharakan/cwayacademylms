@@ -88,7 +88,9 @@
     "gradingTitle": "ग्रेडिंग",
     "submissionsLoadError": "प्रस्तुतियाँ लोड नहीं हो सकीं। पुनः प्रयास के लिए खींचें।",
     "gradingCaughtUpTitle": "सब पूरा हो गया",
-    "gradingCaughtUpDesc": "ग्रेड किए जाने के लिए कोई प्रस्तुति प्रतीक्षारत नहीं है।"
+    "gradingCaughtUpDesc": "ग्रेड किए जाने के लिए कोई प्रस्तुति प्रतीक्षारत नहीं है।",
+    "tabAssignments": "असाइनमेंट",
+    "tabDiscussions": "चर्चाएँ"
   },
   "instructorCourse": {
     "courseFallback": "कोर्स",
@@ -168,7 +170,10 @@
     "applyProgram": "कार्यक्रम के लिए आवेदन करें",
     "continueLearning": "सीखना जारी रखें",
     "enrollNow": "अभी नामांकन करें",
-    "loadError": "हम यह कोर्स लोड नहीं कर सके। कृपया पुनः प्रयास करें।"
+    "loadError": "हम यह कोर्स लोड नहीं कर सके। कृपया पुनः प्रयास करें।",
+    "statLessons": "पाठ",
+    "statQuizzes": "क्विज़",
+    "statAssignments": "असाइनमेंट"
   },
   "downloads": {
     "removed": "डाउनलोड से हटा दिया गया।",
@@ -214,7 +219,8 @@
     },
     "quizPassed": {
       "title": "आपने '{quiz}' उत्तीर्ण किया!",
-      "body": "आपने {score}% अंक प्राप्त किए।"
+      "body": "आपने {score}% अंक प्राप्त किए।",
+      "titleGeneric": "आपने क्विज़ उत्तीर्ण किया!"
     },
     "newSubmission": {
       "title": "नई असाइनमेंट प्रस्तुति",
@@ -244,7 +250,14 @@
     "pendingTasks": "लंबित कार्य",
     "continueLearning": "सीखना जारी रखें",
     "resume": "फिर से शुरू करें",
-    "percentComplete": "{percent}% पूर्ण"
+    "percentComplete": "{percent}% पूर्ण",
+    "greetingSubtitle": "परमेश्वर के वचन में बढ़ते रहें",
+    "statCourses": "कोर्स",
+    "statInProgress": "प्रगति में",
+    "statCompleted": "पूर्ण",
+    "viewAll": "सभी देखें",
+    "verseText": "“तेरा वचन मेरे पाँव के लिये दीपक, और मेरे मार्ग के लिये उजियाला है।”",
+    "verseRef": "भजन संहिता 119:105"
   },
   "admin": {
     "roleLabel": "Administrator",
@@ -296,7 +309,13 @@
     "typeLesson": "{type} पाठ",
     "contentLabel": "सामग्री",
     "emptyLessons": "इस कोर्स में अभी तक कोई पाठ नहीं है।",
-    "loadError": "हम यह पाठ लोड नहीं कर सके। कृपया पुनः प्रयास करें।"
+    "loadError": "हम यह पाठ लोड नहीं कर सके। कृपया पुनः प्रयास करें।",
+    "courseCompleteTitle": "कोर्स पूर्ण!",
+    "courseCompleteSubtitle": "आपने हर पाठ पूरा कर लिया। शाबाश!",
+    "exitCourse": "कोर्स से बाहर निकलें",
+    "openForum": "चर्चा खोलें",
+    "markedComplete": "पाठ पूर्ण के रूप में चिह्नित किया गया।",
+    "markCompleteFailed": "इस पाठ को पूर्ण के रूप में चिह्नित नहीं किया जा सका। कृपया पुनः प्रयास करें।"
   },
   "notes": {
     "delete": "नोट हटाएँ",
@@ -354,7 +373,17 @@
     "dueDatePassed": "नियत तिथि बीत चुकी है।",
     "addResponse": "उत्तर जोड़ें या फ़ाइल संलग्न करें।",
     "submittedToast": "असाइनमेंट प्रस्तुत किया गया।",
-    "submissionRemoved": "प्रस्तुति हटा दी गई।"
+    "submissionRemoved": "प्रस्तुति हटा दी गई।",
+    "requestExtension": "विस्तार का अनुरोध करें",
+    "requestExtensionTitle": "विस्तार का अनुरोध करें",
+    "extensionReasonHint": "आपके अनुरोध का कारण",
+    "extensionPickDate": "पसंदीदा नई तिथि (वैकल्पिक)",
+    "extensionSubmit": "अनुरोध सबमिट करें",
+    "extensionRequested": "विस्तार का अनुरोध किया गया — स्वीकृति लंबित।",
+    "extensionGranted": "विस्तार स्वीकृत — अब आप सबमिट कर सकते हैं।",
+    "nextLesson": "अगले पाठ पर जाएँ",
+    "lastLesson": "यह इस कोर्स का अंतिम पाठ था।",
+    "extensionReasonRequired": "कृपया अपने अनुरोध का कारण जोड़ें।"
   },
   "certificates": {
     "loadError": "हम आपके प्रमाणपत्र लोड नहीं कर सके।",
@@ -370,7 +399,11 @@
     "ofCompletion": "पूर्णता प्रमाणपत्र",
     "certifiesThat": "यह प्रमाणित करता है कि",
     "hasCompleted": "ने सफलतापूर्वक पूरा किया",
-    "noPrefix": "सं. {number}"
+    "noPrefix": "सं. {number}",
+    "download": "डाउनलोड",
+    "share": "साझा करें",
+    "saved": "प्रमाणपत्र आपके डिवाइस में सहेजा गया",
+    "title": "प्रमाणपत्र"
   },
   "welcome": {
     "title": "स्वागत है",
@@ -411,7 +444,12 @@
     "about": "CWAY Academy के बारे में",
     "aboutContent": "CWAY Academy विश्व भर में नेताओं, सेवकों और विश्वासियों को उच्च गुणवत्ता वाले, बाइबल आधारित धर्मविज्ञान और व्यावहारिक नेतृत्व प्रशिक्षण से सुसज्जित करने के लिए समर्पित है।",
     "fullName": "पूरा नाम",
-    "saveChanges": "परिवर्तन सहेजें"
+    "saveChanges": "परिवर्तन सहेजें",
+    "avatarRemoved": "प्रोफ़ाइल फ़ोटो हटा दी गई।",
+    "changePhoto": "फ़ोटो बदलें",
+    "addPhoto": "फ़ोटो जोड़ें",
+    "removePhoto": "फ़ोटो हटाएँ",
+    "photoOptions": "प्रोफ़ाइल फ़ोटो"
   },
   "programs": {
     "emptyTitle": "अभी तक कोई कार्यक्रम नहीं",
@@ -535,5 +573,24 @@
     "loading": "लोड हो रहा है...",
     "somethingWrong": "कुछ गड़बड़ हो गई",
     "noConnection": "कोई इंटरनेट कनेक्शन नहीं"
+  },
+  "forum": {
+    "title": "चर्चा",
+    "startTitle": "चर्चा शुरू करें",
+    "post": "पोस्ट करें",
+    "postHint": "अपने विचार साझा करें…",
+    "posted": "आपकी प्रतिक्रिया पोस्ट कर दी गई।",
+    "reply": "उत्तर दें",
+    "replyHint": "उत्तर लिखें…",
+    "emptyTitle": "अभी तक कोई प्रतिक्रिया नहीं",
+    "emptyMessage": "बातचीत शुरू करने वाले पहले व्यक्ति बनें।",
+    "loadError": "हम यह चर्चा लोड नहीं कर सके।",
+    "prompt": "चर्चा प्रश्न",
+    "postedTitle": "प्रतिक्रिया पोस्ट की गई",
+    "completedBody": "आपकी प्रतिक्रिया पोस्ट कर दी गई और यह पाठ अब पूर्ण हो गया है।",
+    "stayHere": "यहीं रहें",
+    "nextLesson": "अगला पाठ",
+    "done": "पूर्ण",
+    "lastLesson": "यह इस कोर्स का अंतिम पाठ था।"
   }
 }

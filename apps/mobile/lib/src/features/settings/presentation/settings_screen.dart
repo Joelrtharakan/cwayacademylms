@@ -66,32 +66,100 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) async {
-    final current = ref.read(localeControllerProvider)?.languageCode;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: RadioGroup<String?>(
-          groupValue: current,
-          onChanged: (value) {
-            ref.read(localeControllerProvider.notifier).setLanguage(value);
-            Navigator.pop(ctx);
-          },
+  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) =>
+      showLanguageSelector(context, ref);
+}
+
+/// The reference "Select Language" modal: a titled sheet listing each language
+/// with a gold check on the active one. Shared so the header/settings open the
+/// same picker. Preserves the existing [localeControllerProvider] logic.
+Future<void> showLanguageSelector(BuildContext context, WidgetRef ref) async {
+  final current = ref.read(localeControllerProvider)?.languageCode;
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: false,
+    isScrollControlled: true,
+    backgroundColor: context.colors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+    ),
+    builder: (ctx) {
+      final text = Theme.of(ctx).textTheme;
+      void select(String? code) {
+        ref.read(localeControllerProvider.notifier).setLanguage(code);
+        Navigator.pop(ctx);
+      }
+
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl, AppSpacing.lg, AppSpacing.sm, AppSpacing.md,),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              RadioListTile<String?>(
-                value: null,
-                title: Text(context.tr('mobile.settings.systemDefault')),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(ctx.tr('mobile.settings.language'),
+                        style: text.titleLarge,),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
               ),
+              const SizedBox(height: AppSpacing.sm),
               for (final code in supportedLanguageCodes)
-                RadioListTile<String?>(
-                  value: code,
-                  title: Text(_languageName(ctx, code)),
+                _LanguageRow(
+                  label: ctx.tr('mobile.languages.$code'),
+                  selected: current == code,
+                  onTap: () => select(code),
                 ),
             ],
           ),
+        ),
+      );
+    },
+  );
+}
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadii.rMd,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm, vertical: AppSpacing.md,),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: text.bodyLarge?.copyWith(
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? colors.textPrimary : colors.textSecondary,
+                ),
+              ),
+            ),
+            if (selected)
+              Icon(Icons.check_circle_rounded, color: colors.goldPrimary, size: 22),
+          ],
         ),
       ),
     );

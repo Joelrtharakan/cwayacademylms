@@ -1,0 +1,31 @@
+2026-07-27 19:35:06 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::ffff:127.0.0.1"}
+2026-07-27 19:44:50 [warn]: Failed login attempt for registrar@cwayacademy.com {"ip":"::ffff:127.0.0.1","error":"Invalid email or password"}
+2026-07-27 19:47:08 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:01:53 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:02:12 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:02:42 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:08:00 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:09:54 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 20:12:29 [warn]: Failed login attempt for registrar@cwayacademy.com {"ip":"::ffff:127.0.0.1","error":"Invalid email or password"}
+2026-07-27 20:12:31 [warn]: Failed login attempt for registrar@cwayacademy.com {"ip":"::ffff:127.0.0.1","error":"Invalid email or password"}
+2026-07-27 20:12:32 [warn]: Failed login attempt for registrar@cwayacademy.com {"ip":"::ffff:127.0.0.1","error":"Invalid email or password"}
+2026-07-27 20:12:36 [warn]: Failed login attempt for registrar@cwayacademy.com {"ip":"::ffff:127.0.0.1","error":"Invalid email or password"}
+2026-07-27 20:12:41 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::ffff:127.0.0.1"}
+2026-07-27 20:26:03 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::ffff:127.0.0.1"}
+2026-07-27 20:50:43 [info]: Successful login: admin@cwayacademy.com {"userId":"cmqku2zbo00003u1qrtqtk0h8","ip":"::ffff:127.0.0.1"}
+2026-07-27 20:52:43 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::ffff:127.0.0.1"}
+2026-07-27 20:59:40 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}
+2026-07-27 21:10:27 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 21:11:07 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 21:13:20 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 21:13:48 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 21:26:41 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 22:54:37 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 23:10:57 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 23:11:20 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 23:18:22 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::1"}
+2026-07-27 23:21:22 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 23:24:49 [info]: Successful login: joelrtharakan880@gmail.com {"userId":"cmqp6pnjo000010tomoljdyc4","ip":"::ffff:127.0.0.1"}
+2026-07-27 23:32:48 [info]: Successful login: registrar@cwayacademy.com {"userId":"cmqz5i7660000tjftgvoo5j5v","ip":"::1"}
+2026-07-27 23:46:32 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}
+2026-07-27 23:47:09 [info]: Successful login: joelrtharakan@gmail.com {"userId":"cmql8quqk0000h58xt3rfj7uo","ip":"::1"}

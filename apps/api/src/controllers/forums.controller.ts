@@ -222,7 +222,7 @@ export const getInstructorDiscussions = asyncHandler(async (req: Request, res: R
       include: {
         author: { select: { id: true, name: true, avatar: true, role: true } },
         course: { select: { id: true, title: true } },
-        lesson: { select: { id: true, title: true } },
+        lesson: { select: { id: true, title: true, forumMarks: true } },
         replies: {
           include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
           orderBy: { createdAt: "asc" }

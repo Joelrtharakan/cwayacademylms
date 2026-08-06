@@ -4,9 +4,10 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import AdminSidebar from "./AdminSidebar";
-import { Bell, Search, Menu, LogOut } from "lucide-react";
+import { Search, Menu, LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { useManagementRole, useManagementPath } from "@/hooks/useManagementPath";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -153,44 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <LanguageSwitcher />
 
             {/* Notification bell */}
-            <button
-              style={{
-                position: "relative",
-                width: "38px",
-                height: "38px",
-                borderRadius: "10px",
-                background: "#F7F8F5",
-                border: "1px solid #E4E8E0",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                color: "#9AAE9B",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#B88645";
-                e.currentTarget.style.color = "#B88645";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "#E4E8E0";
-                e.currentTarget.style.color = "#9AAE9B";
-              }}
-            >
-              <Bell size={15} />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  width: "7px",
-                  height: "7px",
-                  borderRadius: "50%",
-                  background: "#B03A2E",
-                  border: "2px solid #FFFFFF",
-                }}
-              />
-            </button>
+            <NotificationBell />
 
             <div style={{ width: "1px", height: "24px", background: "#E4E8E0" }} />
 

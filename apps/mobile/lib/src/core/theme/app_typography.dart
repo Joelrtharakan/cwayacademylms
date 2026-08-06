@@ -3,11 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// Type system using Plus Jakarta Sans for a ultra-modern, crisp mobile experience.
+/// Type system using Poppins (per the reference design system) for a clean,
+/// premium mobile experience.
 class AppTypography {
   const AppTypography._();
 
-  /// Noto script families used as glyph fallbacks after Plus Jakarta Sans, which
+  /// Noto script families used as glyph fallbacks after Poppins, which
   /// covers only Latin. Without these, Hindi/Tamil/Telugu/Kannada/Malayalam text
   /// renders as tofu boxes. Calling each GoogleFonts method once registers its
   /// loader so the engine can resolve the family by name at paint time.
@@ -19,14 +20,14 @@ class AppTypography {
     GoogleFonts.notoSansMalayalam().fontFamily!, // ml
   ];
 
-  static TextStyle serif(TextStyle? base) => GoogleFonts.plusJakartaSans(textStyle: base)
+  static TextStyle serif(TextStyle? base) => GoogleFonts.poppins(textStyle: base)
       .copyWith(fontFamilyFallback: indicFallback);
-  static TextStyle sans(TextStyle? base) => GoogleFonts.plusJakartaSans(textStyle: base)
+  static TextStyle sans(TextStyle? base) => GoogleFonts.poppins(textStyle: base)
       .copyWith(fontFamilyFallback: indicFallback);
 
   static TextTheme textTheme(AppColors colors) {
     TextStyle display(double size, {double height = 1.15, FontWeight weight = FontWeight.w700}) =>
-        GoogleFonts.plusJakartaSans(
+        GoogleFonts.poppins(
           fontSize: size,
           fontWeight: weight,
           height: height,
@@ -38,7 +39,7 @@ class AppTypography {
             {FontWeight weight = FontWeight.w400,
             double height = 1.45,
             Color? color,}) =>
-        GoogleFonts.plusJakartaSans(
+        GoogleFonts.poppins(
           fontSize: size,
           fontWeight: weight,
           height: height,

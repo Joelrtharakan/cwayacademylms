@@ -29,19 +29,16 @@ class StudentCoursesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: colors.forestDeep,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        flexibleSpace: DecoratedBox(
-          decoration: BoxDecoration(gradient: colors.forestGradient),
-        ),
-        title: Text(
-          context.tr('student.courses.title'),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        backgroundColor: colors.background,
+        title: Text(context.tr('student.courses.title')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: context.tr('mobile.browse.searchCoursesHint'),
+            onPressed: () => context.push(AppRoutes.coursesBrowse),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
       ),
       body: RefreshIndicator(
         color: colors.goldPrimary,

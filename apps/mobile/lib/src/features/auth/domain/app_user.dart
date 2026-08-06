@@ -31,7 +31,11 @@ class AppUser with _$AppUser {
 
   bool get isStudent => role == 'STUDENT';
   bool get isInstructor => role == 'INSTRUCTOR';
-  bool get isAdmin => role == 'ADMIN';
+  bool get isRegistrar => role == 'REGISTRAR';
+
+  /// Registrars share the admin experience: the backend authorizes REGISTRAR
+  /// exactly like ADMIN, so the app routes them to the admin/management surface.
+  bool get isAdmin => role == 'ADMIN' || role == 'REGISTRAR';
 
   /// Maps the backend language enum ("ENGLISH") to a Flutter locale code ("en").
   String get localeCode => switch (preferredLanguage.toUpperCase()) {

@@ -294,7 +294,7 @@ class _ProgramApplicationScreenState
       return Scaffold(
         appBar: AppBar(
           title: Text(context.tr('mobile.application.submittedTitle'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          backgroundColor: const Color(0xFF142417),
+          backgroundColor: colors.forestDeep,
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: Center(
@@ -349,7 +349,7 @@ class _ProgramApplicationScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142417),
+        backgroundColor: colors.forestDeep,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(

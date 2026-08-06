@@ -83,7 +83,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final colors = context.colors;
 
     return AuthScaffold(
-      badgeText: context.tr('student.sidebar.portal'),
       title: context.tr('auth.login.title'),
       subtitle: context.tr('auth.login.subtitle'),
       children: [

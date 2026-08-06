@@ -28,7 +28,11 @@ class AdminDashboardScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final user = ref.watch(currentUserProvider);
     final async = ref.watch(adminStatsProvider);
-    final firstName = (user?.name.trim().split(' ').first) ?? context.tr('mobile.admin.adminFallback');
+    final roleLabel = switch ((user?.role ?? '').toUpperCase()) {
+      'REGISTRAR' => context.tr('admin.sidebar.registrar'),
+      'INSTRUCTOR' => context.tr('mobile.instructor.roleLabel'),
+      _ => context.tr('mobile.admin.roleLabel'),
+    };
 
     return Scaffold(
       body: RefreshIndicator(
@@ -67,15 +71,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                   ],
                 ),
                 titlePadding: const EdgeInsets.only(left: AppSpacing.lg, bottom: 16),
-                title: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.tr('mobile.admin.roleLabel'),
-                        style: text.labelSmall?.copyWith(color: colors.goldLight, letterSpacing: 1),),
-                    Text(firstName,
-                        style: text.titleLarge?.copyWith(color: Colors.white),),
-                  ],
+                title: Text(
+                  roleLabel,
+                  style: text.titleLarge?.copyWith(color: Colors.white),
                 ),
               ),
               actions: [
@@ -370,6 +368,7 @@ class _BodySliver extends ConsumerWidget {
                     : '?';
                 final roleName = switch (u.role.toUpperCase()) {
                   'ADMIN' => context.tr('admin.users.roleAdmin'),
+                  'REGISTRAR' => context.tr('admin.sidebar.registrar'),
                   'INSTRUCTOR' => context.tr('admin.users.roleInstructor'),
                   _ => context.tr('admin.users.roleStudent'),
                 };

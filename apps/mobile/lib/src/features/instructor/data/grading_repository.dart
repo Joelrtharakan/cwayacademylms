@@ -19,6 +19,16 @@ abstract interface class GradingRepository {
     required double grade,
     String? feedback,
   });
+
+  /// Forum discussions across the instructor's courses.
+  Future<List<InstructorDiscussionDto>> discussions();
+
+  /// Records a grade + optional feedback for a forum discussion.
+  Future<void> gradeDiscussion({
+    required String discussionId,
+    required double score,
+    String? feedback,
+  });
 }
 
 class GradingRepositoryImpl implements GradingRepository {
@@ -66,6 +76,44 @@ class GradingRepositoryImpl implements GradingRepository {
       throw ApiException.fromDio(e);
     }
   }
+
+  @override
+  Future<List<InstructorDiscussionDto>> discussions() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        '/forums/instructor/discussions',
+      );
+      final data = res.data?['data'];
+      if (data is List) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map(InstructorDiscussionDto.fromJson)
+            .toList();
+      }
+      return const [];
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> gradeDiscussion({
+    required String discussionId,
+    required double score,
+    String? feedback,
+  }) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        '/forums/discussions/$discussionId/grade',
+        data: {
+          'score': score,
+          if (feedback != null && feedback.isNotEmpty) 'feedback': feedback,
+        },
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 }
 
 final gradingRepositoryProvider = Provider<GradingRepository>((ref) {
@@ -75,4 +123,11 @@ final gradingRepositoryProvider = Provider<GradingRepository>((ref) {
 /// Submissions still awaiting a grade, across the instructor's courses.
 final pendingGradingProvider = FutureProvider<List<SubmissionDto>>((ref) {
   return ref.watch(gradingRepositoryProvider).submissions(graded: false);
+});
+
+/// Forum discussions still awaiting a grade, across the instructor's courses.
+final pendingDiscussionsProvider =
+    FutureProvider<List<InstructorDiscussionDto>>((ref) async {
+  final all = await ref.watch(gradingRepositoryProvider).discussions();
+  return all.where((d) => !d.isGraded).toList();
 });

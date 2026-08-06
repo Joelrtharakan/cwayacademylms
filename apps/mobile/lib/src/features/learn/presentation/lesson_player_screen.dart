@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/localization/localized_text.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -12,6 +14,7 @@ import '../../../shared/widgets/primary_button.dart';
 import '../../assignments/assignment_args.dart';
 import '../../courses/presentation/widgets/lesson_type_icon.dart';
 import '../../dashboard/application/dashboard_controller.dart';
+import '../../forum/forum_args.dart';
 import '../../quiz/quiz_args.dart';
 import '../data/learn_dto.dart';
 import '../data/learn_repository.dart';
@@ -19,6 +22,93 @@ import '../data/notes_repository.dart';
 import 'widgets/lesson_list_sheet.dart';
 import 'widgets/notes_sheet.dart';
 import 'widgets/youtube_lesson_player.dart';
+
+/// Resolves [key], falling back to [fallback] when the catalog hasn't loaded it
+/// (e.g. a stale asset bundle) so a raw key is never shown to the user.
+String _trFallback(BuildContext context, String key, String fallback) {
+  final v = context.tr(key);
+  return v == key ? fallback : v;
+}
+
+/// Celebratory "course complete" state shown on the final lesson once every
+/// lesson is done: an animated gold badge, congratulations, and an exit action.
+class _CourseCompleteView extends StatelessWidget {
+  const _CourseCompleteView({required this.onExit});
+
+  final VoidCallback onExit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xl, horizontal: AppSpacing.lg,),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [colors.forestMid, colors.forestDeep],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: AppRadii.rXl,
+        boxShadow: AppShadows.card(colors.forestDeep),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              gradient: colors.goldGradient,
+              shape: BoxShape.circle,
+              boxShadow: AppShadows.glow(colors.goldPrimary),
+            ),
+            child: const Icon(Icons.emoji_events_rounded,
+                    color: Colors.white, size: 44,)
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .scale(
+                    begin: const Offset(1, 1),
+                    end: const Offset(1.08, 1.08),
+                    duration: 1200.ms,
+                    curve: Curves.easeInOut,),
+          )
+              .animate()
+              .scale(
+                  begin: const Offset(0.4, 0.4),
+                  end: const Offset(1, 1),
+                  duration: 600.ms,
+                  curve: Curves.elasticOut,)
+              .fadeIn(duration: 300.ms)
+              .then()
+              .shimmer(duration: 1400.ms, color: Colors.white70),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            _trFallback(
+                context, 'mobile.player.courseCompleteTitle', 'Course Complete!',),
+            style: text.headlineSmall?.copyWith(color: Colors.white),
+            textAlign: TextAlign.center,
+          ).animate(delay: 200.ms).fadeIn(duration: 400.ms).slideY(begin: 0.3),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            _trFallback(context, 'mobile.player.courseCompleteSubtitle',
+                "You've finished every lesson. Well done!",),
+            style: text.bodyMedium?.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ).animate(delay: 350.ms).fadeIn(duration: 400.ms),
+          const SizedBox(height: AppSpacing.xl),
+          PrimaryButton(
+            label: _trFallback(context, 'mobile.player.exitCourse', 'Exit course'),
+            icon: Icons.check_rounded,
+            variant: ButtonVariant.gold,
+            onPressed: onExit,
+          ).animate(delay: 500.ms).fadeIn(duration: 400.ms).slideY(begin: 0.3),
+        ],
+      ),
+    );
+  }
+}
 
 class LessonPlayerScreen extends ConsumerStatefulWidget {
   const LessonPlayerScreen({
@@ -135,17 +225,32 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
     );
   }
 
+  void _snack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  /// Resolves [key], falling back to [fallback] if the catalog hasn't loaded it.
+  String _trOr(String key, String fallback) {
+    final v = context.tr(key);
+    return v == key ? fallback : v;
+  }
+
   Future<void> _markComplete(EnrollmentLearnDto data, LearnLessonDto lesson) async {
     setState(() => _completing = true);
     try {
       await _repo.completeLesson(enrollmentId: data.id, lessonId: lesson.id);
-      _completed.add(lesson.id);
+      if (!mounted) return;
+      setState(() => _completed.add(lesson.id));
       ref.invalidate(dashboardControllerProvider);
-      final lessons = data.orderedLessons;
-      final idx = lessons.indexWhere((l) => l.id == lesson.id);
-      if (idx >= 0 && idx < lessons.length - 1) {
-        _switchLesson(data, lessons[idx + 1].id);
-      }
+      _snack(_trOr('mobile.player.markedComplete', 'Lesson marked complete.'));
+    } on ApiException catch (e) {
+      _snack(e.message);
+    } catch (_) {
+      _snack(_trOr('mobile.player.markCompleteFailed',
+          "Couldn't mark this lesson complete. Please try again.",),);
     } finally {
       if (mounted) setState(() => _completing = false);
     }
@@ -184,7 +289,9 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
               data: data,
               lesson: lesson,
               isDone: _isDone(lesson),
+              allComplete: lessons.every(_isDone),
               completing: _completing,
+              onExit: () => context.pop(),
               onPosition: (s) => _onPosition(data.id, lesson.id, s),
               onOpenList: () => LessonListSheet.show(
                 context,
@@ -217,7 +324,9 @@ class _PlayerBody extends StatelessWidget {
     required this.data,
     required this.lesson,
     required this.isDone,
+    required this.allComplete,
     required this.completing,
+    required this.onExit,
     required this.onPosition,
     required this.onOpenList,
     required this.onPrev,
@@ -231,7 +340,9 @@ class _PlayerBody extends StatelessWidget {
   final EnrollmentLearnDto data;
   final LearnLessonDto lesson;
   final bool isDone;
+  final bool allComplete;
   final bool completing;
+  final VoidCallback onExit;
   final ValueChanged<int> onPosition;
   final VoidCallback onOpenList;
   final VoidCallback onPrev;
@@ -247,6 +358,12 @@ class _PlayerBody extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final lessons = data.orderedLessons;
     final index = lessons.indexOf(lesson);
+
+    // Cap the 16:9 media so it never overflows a short (e.g. landscape)
+    // viewport; the content below stays scrollable in the Expanded ListView.
+    final screen = MediaQuery.sizeOf(context);
+    final mediaHeight =
+        (screen.width * 9 / 16).clamp(0.0, screen.height * 0.6);
 
     return SafeArea(
       child: Column(
@@ -276,11 +393,14 @@ class _PlayerBody extends StatelessWidget {
             ],
           ),
           if (lesson.hasPlayableVideo)
-            YouTubeLessonPlayer(
-              key: ValueKey(lesson.youTubeId),
-              videoId: lesson.youTubeId!,
-              startSeconds: lesson.watchedSeconds,
-              onPositionSecond: onPosition,
+            SizedBox(
+              height: mediaHeight,
+              child: YouTubeLessonPlayer(
+                key: ValueKey(lesson.youTubeId),
+                videoId: lesson.youTubeId!,
+                startSeconds: lesson.watchedSeconds,
+                onPositionSecond: onPosition,
+              ),
             )
           else
             _NonVideoPanel(lesson: lesson),
@@ -307,12 +427,40 @@ class _PlayerBody extends StatelessWidget {
                   style: text.bodySmall?.copyWith(color: colors.textMuted),
                 ),
                 const SizedBox(height: AppSpacing.xl),
+                if (lesson.type.toUpperCase() == 'FORUM') ...[
+                  PrimaryButton(
+                    label: _trFallback(
+                        context, 'mobile.player.openForum', 'Open discussion',),
+                    icon: Icons.forum_rounded,
+                    variant: ButtonVariant.gold,
+                    onPressed: () => context.push(
+                      AppRoutes.forumPath(lesson.id),
+                      extra: ForumArgs(
+                        title: lesson.title.resolveFor(context),
+                        prompt: lesson.content is String
+                            ? lesson.content! as String
+                            : null,
+                        courseId: data.courseId,
+                        enrollmentId: data.id,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
                 if (lesson.isAssignment && lesson.assignment != null)
                   PrimaryButton(
                     label: context.tr('mobile.player.openAssignment'),
                     icon: Icons.assignment_rounded,
                     variant: ButtonVariant.gold,
                     onPressed: onOpenAssignment,
+                  )
+                else if (lesson.type.toUpperCase() == 'FORUM' && !isDone)
+                  PrimaryButton(
+                    label: context.tr('student.player.markComplete'),
+                    icon: Icons.check_rounded,
+                    variant: ButtonVariant.outline,
+                    isLoading: completing,
+                    onPressed: completing ? null : onComplete,
                   )
                 else if (lesson.isQuiz && lesson.quiz != null)
                   PrimaryButton(
@@ -331,13 +479,19 @@ class _PlayerBody extends StatelessWidget {
                     isLoading: completing,
                     onPressed: completing ? null : onComplete,
                   )
+                else if (index < lessons.length - 1)
+                  PrimaryButton(
+                    label: context.tr('mobile.player.nextLesson'),
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: onNext,
+                  )
+                else if (allComplete)
+                  _CourseCompleteView(onExit: onExit)
                 else
                   PrimaryButton(
-                    label: index < lessons.length - 1
-                        ? context.tr('mobile.player.nextLesson')
-                        : context.tr('mobile.player.courseComplete'),
-                    icon: Icons.arrow_forward_rounded,
-                    onPressed: index < lessons.length - 1 ? onNext : null,
+                    label: context.tr('mobile.player.courseComplete'),
+                    icon: Icons.check_circle_rounded,
+                    onPressed: null,
                   ),
                 const SizedBox(height: AppSpacing.md),
                 Row(

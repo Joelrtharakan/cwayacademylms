@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/i18n/app_translations.dart';
 import '../../../core/i18n/i18n_extension.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/error_banner.dart';
@@ -29,7 +32,97 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   late final TextEditingController _bio;
 
   bool _saving = false;
+  bool _avatarBusy = false;
   String? _error;
+
+  void _snack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.path == null) return;
+
+    setState(() => _avatarBusy = true);
+    try {
+      await ref
+          .read(profileRepositoryProvider)
+          .uploadAvatar(filePath: file.path!, fileName: file.name);
+      await ref.read(authControllerProvider.notifier).refreshUser();
+      _snack(AppTranslations.tg('mobile.profile.avatarUpdated'));
+    } on ApiException catch (e) {
+      _snack(e.message);
+    } finally {
+      if (mounted) setState(() => _avatarBusy = false);
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    setState(() => _avatarBusy = true);
+    try {
+      await ref.read(profileRepositoryProvider).removeAvatar();
+      await ref.read(authControllerProvider.notifier).refreshUser();
+      _snack(AppTranslations.tg('mobile.profile.avatarRemoved'));
+    } on ApiException catch (e) {
+      _snack(e.message);
+    } finally {
+      if (mounted) setState(() => _avatarBusy = false);
+    }
+  }
+
+  /// Resolves [key], falling back to [fallback] when the catalog hasn't loaded
+  /// the key yet (so users never see a raw key like "mobile.profile.changePhoto").
+  String _label(String key, String fallback) {
+    final v = context.tr(key);
+    return v == key ? fallback : v;
+  }
+
+  Future<void> _showAvatarOptions(bool hasAvatar) async {
+    final colors = context.colors;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.surface,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_camera_rounded, color: colors.goldDark),
+              title: Text(hasAvatar
+                  ? _label('mobile.profile.changePhoto', 'Change photo')
+                  : _label('mobile.profile.addPhoto', 'Add photo'),),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickAndUploadAvatar();
+              },
+            ),
+            if (hasAvatar)
+              ListTile(
+                leading: Icon(Icons.delete_outline_rounded, color: colors.danger),
+                title: Text(
+                  _label('mobile.profile.removePhoto', 'Remove photo'),
+                  style: TextStyle(color: colors.danger),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _removeAvatar();
+                },
+              ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -94,6 +187,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 ErrorBanner(message: _error!),
                 const SizedBox(height: AppSpacing.lg),
               ],
+              _AvatarEditor(
+                busy: _avatarBusy,
+                onTap: () {
+                  final u = ref.read(currentUserProvider);
+                  final hasAvatar =
+                      (u?.avatar != null) && u!.avatar!.startsWith('http');
+                  _showAvatarOptions(hasAvatar);
+                },
+              ),
+              const SizedBox(height: AppSpacing.xl),
               AuthTextField(
                 controller: _name,
                 label: context.tr('mobile.profile.fullName'),
@@ -140,6 +243,70 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Circular avatar with a gold camera badge that opens the add / change /
+/// remove photo options. Reads the live user so it updates after upload/remove.
+class _AvatarEditor extends ConsumerWidget {
+  const _AvatarEditor({required this.busy, required this.onTap});
+
+  final bool busy;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final user = ref.watch(currentUserProvider);
+    final hasAvatar =
+        (user?.avatar != null) && user!.avatar!.startsWith('http');
+
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 48,
+            backgroundColor: colors.forestMid,
+            backgroundImage:
+                hasAvatar ? CachedNetworkImageProvider(user.avatar!) : null,
+            child: hasAvatar
+                ? null
+                : Text(
+                    user?.initials ?? '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Material(
+              color: colors.goldPrimary,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: busy ? null : onTap,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: busy
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white,),
+                        )
+                      : const Icon(Icons.camera_alt_rounded,
+                          size: 16, color: Colors.white,),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

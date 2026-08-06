@@ -94,8 +94,9 @@ import '../data/notification_dto.dart';
       final quiz = cap(RegExp(r"^You passed '(.*)'!$"), n.title);
       final score = cap(RegExp(r'^You scored (.*)%\.$'), n.body);
       return (
+        // Localize either the named title or the generic "You passed a quiz!".
         title: quiz == null
-            ? n.title
+            ? tr('mobile.notif.quizPassed.titleGeneric')
             : tr('mobile.notif.quizPassed.title', {'quiz': quiz}),
         body: score == null
             ? n.body

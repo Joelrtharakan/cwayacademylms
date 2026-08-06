@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/i18n/i18n_extension.dart';
 import '../../../../core/localization/localized_text.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
+import '../../../../shared/widgets/file_viewer_screen.dart';
 import '../../data/grading_dto.dart';
 import '../../data/grading_repository.dart';
 
@@ -45,11 +45,17 @@ class _GradeSheetState extends ConsumerState<GradeSheet> {
     super.dispose();
   }
 
-  Future<void> _openAttachment() async {
+  void _openAttachment() {
     final url = widget.submission.fileUrl;
     if (url == null) return;
-    final uri = Uri.tryParse(url);
-    if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FileViewerScreen(
+          url: url,
+          title: context.tr('mobile.assignments.openAttachment'),
+        ),
+      ),
+    );
   }
 
   Future<void> _submit() async {

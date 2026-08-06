@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +12,29 @@ import 'features/settings/application/theme_controller.dart';
 /// Root widget. Wires the router, light/dark themes, and localization delegates.
 /// Full ARB message catalogs (en/hi/ta/te/kn/ml) are added in the Multilingual
 /// module; the supported-locales list is declared up-front.
-class CwayApp extends ConsumerWidget {
+class CwayApp extends ConsumerStatefulWidget {
   const CwayApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CwayApp> createState() => _CwayAppState();
+}
+
+class _CwayAppState extends ConsumerState<CwayApp> {
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Hot reload only re-runs build methods, not bootstrap — so newly-added
+    // i18n keys would show as raw keys until a full restart. In debug, re-read
+    // the catalogs on every hot reload so translations stay fresh.
+    if (kDebugMode) {
+      AppTranslations.reload().then((_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeControllerProvider);
     final locale = ref.watch(localeControllerProvider);

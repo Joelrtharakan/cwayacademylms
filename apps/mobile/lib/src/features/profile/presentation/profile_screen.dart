@@ -15,6 +15,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../settings/application/theme_controller.dart';
+import '../../settings/presentation/settings_screen.dart' show showLanguageSelector;
 import '../data/profile_repository.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -76,7 +77,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final text = Theme.of(context).textTheme;
     final user = ref.watch(currentUserProvider);
     final mode = ref.watch(themeModeControllerProvider);
     final biometricEnabled = ref.watch(biometricServiceProvider).isEnabled;
@@ -86,63 +86,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colors.forestDeep,
-        foregroundColor: Colors.white,
-        flexibleSpace: DecoratedBox(
-          decoration: BoxDecoration(gradient: colors.forestGradient),
-        ),
-        title: Text(
-          context.tr('mobile.nav.profile'),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            tooltip: context.tr('mobile.profile.editProfile'),
-            icon: const Icon(Icons.edit_rounded, color: Colors.white),
-            onPressed: () => context.push(AppRoutes.profileEdit),
-          ),
-        ],
-      ),
+      backgroundColor: colors.background,
       body: ListView(
-        padding: const EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.lg,
-          bottom: 140,
-        ),
+        padding: const EdgeInsets.only(bottom: 140),
         children: [
-          Center(
-            child: Column(
-              children: [
-                _Avatar(
-                  user: user,
-                  busy: _uploadingAvatar,
-                  onEdit: _changeAvatar,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(user.name, style: text.headlineSmall),
-                const SizedBox(height: AppSpacing.xs),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md, vertical: 4,),
-                  decoration: BoxDecoration(
-                    color: colors.goldPrimary.withValues(alpha: 0.12),
-                    borderRadius: AppRadii.rPill,
-                  ),
-                  child: Text(_roleLabel(context, user.role),
-                      style: text.labelSmall?.copyWith(color: colors.goldDark),),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(user.email,
-                    style: text.bodySmall?.copyWith(color: colors.textMuted),),
-              ],
-            ),
+          _ProfileHeader(
+            user: user,
+            roleLabel: _roleLabel(context, user.role),
+            busy: _uploadingAvatar,
+            onEditAvatar: _changeAvatar,
+            onEditProfile: () => context.push(AppRoutes.profileEdit),
           ),
           const SizedBox(height: AppSpacing.xl),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
           _Section(title: context.tr('mobile.profile.personalInfo'), children: [
             if ((user.church ?? '').isNotEmpty)
               _InfoRow(icon: Icons.church_outlined, label: context.tr('auth.register.church'), value: user.church!),
@@ -164,19 +124,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],),
           const SizedBox(height: AppSpacing.lg),
           _Section(title: context.tr('mobile.profile.appearance'), children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              child: SegmentedButton<ThemeMode>(
-                segments: [
-                  ButtonSegment(value: ThemeMode.light, icon: const Icon(Icons.light_mode_rounded), label: Text(context.tr('mobile.profile.themeLight'))),
-                  ButtonSegment(value: ThemeMode.system, icon: const Icon(Icons.brightness_auto_rounded), label: Text(context.tr('mobile.profile.themeAuto'))),
-                  ButtonSegment(value: ThemeMode.dark, icon: const Icon(Icons.dark_mode_rounded), label: Text(context.tr('mobile.profile.themeDark'))),
-                ],
-                selected: {mode},
-                showSelectedIcon: false,
-                onSelectionChanged: (s) =>
-                    ref.read(themeModeControllerProvider.notifier).set(s.first),
-              ),
+            _ThemeToggle(
+              mode: mode,
+              onChanged: (m) =>
+                  ref.read(themeModeControllerProvider.notifier).set(m),
             ),
           ],),
           const SizedBox(height: AppSpacing.lg),
@@ -271,6 +222,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 Divider(height: 1, color: colors.border),
                 ListTile(
+                  leading: Icon(Icons.language_rounded, color: colors.goldPrimary),
+                  title: Text(context.tr('mobile.settings.language')),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => showLanguageSelector(context, ref),
+                ),
+                Divider(height: 1, color: colors.border),
+                ListTile(
                   leading: Icon(Icons.logout_rounded, color: colors.danger),
                   title: Text(context.tr('student.sidebar.signOut'), style: TextStyle(color: colors.danger)),
                   onTap: () =>
@@ -279,7 +237,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ],
             ),
           ),
-        ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, duration: 300.ms, curve: Curves.easeOutQuad),
+              ].animate(interval: 50.ms).fade(duration: 300.ms).slideY(begin: 0.1, duration: 300.ms, curve: Curves.easeOutQuad),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -348,35 +309,235 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   static String _roleLabel(BuildContext context, String role) => switch (role.toUpperCase()) {
         'ADMIN' => context.tr('admin.users.roleAdmin'),
+        'REGISTRAR' => context.tr('admin.sidebar.registrar'),
         'INSTRUCTOR' => context.tr('admin.users.roleInstructor'),
         _ => context.tr('admin.users.roleStudent'),
       };
 }
 
+/// The reference profile header: a navy/midnight gradient panel with the
+/// avatar, name, role and a gold "Edit Profile" button.
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({
+    required this.user,
+    required this.roleLabel,
+    required this.busy,
+    required this.onEditAvatar,
+    required this.onEditProfile,
+  });
+
+  final AppUser user;
+  final String roleLabel;
+  final bool busy;
+  final VoidCallback onEditAvatar;
+  final VoidCallback onEditProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [colors.forestMid, colors.forestDeep],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppRadii.xl),
+        ),
+        boxShadow: AppShadows.card(colors.forestDeep),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xl,),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  _Avatar(
+                    user: user,
+                    busy: busy,
+                    onEdit: onEditAvatar,
+                    radius: 34,
+                  ),
+                  const SizedBox(width: AppSpacing.lg),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(user.name,
+                            style: text.titleLarge?.copyWith(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,),
+                        const SizedBox(height: 2),
+                        Text(roleLabel,
+                            style: text.labelMedium
+                                ?.copyWith(color: colors.goldLight),),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _EditProfileButton(onTap: onEditProfile),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Equal-width 3-way theme toggle (Light / Auto / Dark) that fills the card
+/// width — replaces SegmentedButton which overflowed on narrow screens.
+class _ThemeToggle extends StatelessWidget {
+  const _ThemeToggle({required this.mode, required this.onChanged});
+
+  final ThemeMode mode;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.surfaceMuted,
+        borderRadius: AppRadii.rPill,
+      ),
+      child: Row(
+        children: [
+          _seg(context, ThemeMode.light, Icons.light_mode_rounded,
+              context.tr('mobile.profile.themeLight'),),
+          _seg(context, ThemeMode.system, Icons.brightness_auto_rounded,
+              context.tr('mobile.profile.themeAuto'),),
+          _seg(context, ThemeMode.dark, Icons.dark_mode_rounded,
+              context.tr('mobile.profile.themeDark'),),
+        ],
+      ),
+    );
+  }
+
+  Widget _seg(
+      BuildContext context, ThemeMode value, IconData icon, String label,) {
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+    final selected = mode == value;
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onChanged(value),
+        child: AnimatedContainer(
+          duration: AppMotion.fast,
+          curve: AppMotion.curve,
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? colors.goldPrimary : Colors.transparent,
+            borderRadius: AppRadii.rPill,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 15,
+                  color: selected ? Colors.white : colors.textSecondary,),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.labelMedium?.copyWith(
+                    color: selected ? Colors.white : colors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-width gold "Edit profile" pill for the profile header.
+class _EditProfileButton extends StatelessWidget {
+  const _EditProfileButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Material(
+      color: colors.goldPrimary,
+      borderRadius: AppRadii.rPill,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadii.rPill,
+        child: Container(
+          height: 44,
+          width: double.infinity,
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.edit_rounded, size: 18, color: Colors.white),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                context.tr('mobile.profile.editProfile'),
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Avatar extends StatelessWidget {
-  const _Avatar({required this.user, required this.busy, required this.onEdit});
+  const _Avatar({
+    required this.user,
+    required this.busy,
+    required this.onEdit,
+    this.radius = 48,
+  });
   final AppUser user;
   final bool busy;
   final VoidCallback onEdit;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final hasAvatar = user.avatar != null && user.avatar!.startsWith('http');
+    final badge = radius >= 40 ? 8.0 : 6.0;
+    final iconSize = radius >= 40 ? 16.0 : 13.0;
 
     return Stack(
       children: [
         CircleAvatar(
-          radius: 48,
+          radius: radius,
           backgroundColor: colors.forestMid,
           backgroundImage:
               hasAvatar ? CachedNetworkImageProvider(user.avatar!) : null,
           child: hasAvatar
               ? null
               : Text(user.initials,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: radius * 0.62,
                       fontWeight: FontWeight.w700,),),
         ),
         Positioned(
@@ -384,21 +545,21 @@ class _Avatar extends StatelessWidget {
           bottom: 0,
           child: Material(
             color: colors.goldPrimary,
-            shape: const CircleBorder(),
+            shape: CircleBorder(side: BorderSide(color: colors.forestDeep, width: 2)),
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: busy ? null : onEdit,
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(badge),
                 child: busy
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        width: iconSize,
+                        height: iconSize,
+                        child: const CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white,),
                       )
-                    : const Icon(Icons.camera_alt_rounded,
-                        size: 16, color: Colors.white,),
+                    : Icon(Icons.camera_alt_rounded,
+                        size: iconSize, color: Colors.white,),
               ),
             ),
           ),
