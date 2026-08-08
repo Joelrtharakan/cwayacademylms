@@ -50,12 +50,12 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(28, 43, 30, 0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(28, 43, 30, 0.5)', zIndex: 100000 }}>
           <div 
             className="bg-white shadow-2xl border border-[#E4E8E0] max-w-md w-full flex flex-col animate-in fade-in zoom-in-95 duration-200"
             role="dialog"
             aria-modal="true"
-            style={{ borderRadius: '24px', padding: '32px' }}
+            style={{ borderRadius: '24px', padding: '32px', zIndex: 100001 }}
           >
             <h3 className="text-3xl font-bold text-[#1C2B1E] font-serif tracking-tight mb-4">
               {options.title || "Confirm Action"}

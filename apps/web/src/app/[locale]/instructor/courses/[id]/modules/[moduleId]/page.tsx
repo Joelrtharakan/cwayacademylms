@@ -2,18 +2,16 @@
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules } from "@/lib/api/modules";
 import { useCourseBuilderStore } from "@/store/course-builder.store";
-import { ArrowLeft, Play, BookOpen, FileText, Award, Info, ExternalLink, Loader2, Plus, MessageSquare, Menu, Sidebar } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, FileText, Award, Info, Loader2, MessageSquare, Layers, ChevronDown } from "lucide-react";
 import { Link } from "@/i18n/routing";
-
 import dynamic from "next/dynamic";
 
 const LoadingState = () => (
-  <div className="w-full h-[400px] flex items-center justify-center">
+  <div className="w-full h-[300px] flex items-center justify-center">
     <Loader2 size={32} className="animate-spin text-[#B88645]" />
   </div>
 );
@@ -25,19 +23,25 @@ const AssignmentsPanel = dynamic(() => import("./_components/AssignmentsPanel"),
 const QuizzesPanel = dynamic(() => import("./_components/QuizzesPanel"), { loading: LoadingState });
 const ForumsPanel = dynamic(() => import("./_components/ForumsPanel"), { loading: LoadingState });
 
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  dark: "#1A261D",
+  muted: "#7F8E82",
+  border: "#EBEEE8",
+};
+
 export default function ModuleManagementPage() {
   const { id, moduleId } = useParams() as { id: string; moduleId: string };
-  const router = useRouter();
-  
   const { activeTab, setActiveTab } = useCourseBuilderStore();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
     queryFn: () => api.get(`/courses/${id}`).then((r) => r.data.data),
   });
 
-  // We fetch all modules to find this specific one and allow quick switching if needed later
   const { data: modules, isLoading: modulesLoading } = useQuery({
     queryKey: ["modules", id],
     queryFn: () => getModules(id),
@@ -47,134 +51,181 @@ export default function ModuleManagementPage() {
 
   if (courseLoading || modulesLoading) {
     return (
-      <div style={{ display: "flex", minHeight: "calc(100vh - 70px)", width: "100%", alignItems: "center", justifyContent: "center", background: "#F7F8F5" }}>
-        <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} />
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: C.gold }} />
       </div>
     );
   }
 
   if (!course || !currentModule) {
     return (
-      <div style={{ padding: "40px", textAlign: "center", background: "#F7F8F5", minHeight: "100vh" }}>
-        <h2 style={{ fontFamily: "Georgia, serif", color: "#1A261D" }}>Module not found</h2>
-        <Link href={`/instructor/courses/${id}`} style={{ color: "#B88645", textDecoration: "underline" }}>Back to Course</Link>
+      <div style={{ padding: 40, textAlign: "center" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark }}>Module not found</h2>
+        <Link href={`/instructor/courses/${id}`} style={{ color: C.gold, fontWeight: 700, textDecoration: "underline" }}>
+          Back to Course
+        </Link>
       </div>
     );
   }
 
   const TABS = [
-    { id: "overview", label: "Overview", icon: Info },
-    { id: "videos", label: "Videos", icon: Play },
-    { id: "readings", label: "Reading Materials", icon: BookOpen },
-    { id: "assignments", label: "Assignments", icon: FileText },
-    { id: "quizzes", label: "Quizzes", icon: Award },
-    { id: "forums", label: "Learning Forums", icon: MessageSquare },
+    { id: "overview", label: "Overview", shortLabel: "Overview", icon: Info },
+    { id: "videos", label: "Videos", shortLabel: "Videos", icon: Play },
+    { id: "readings", label: "Reading Materials", shortLabel: "Readings", icon: BookOpen },
+    { id: "assignments", label: "Assignments", shortLabel: "Assignments", icon: FileText },
+    { id: "quizzes", label: "Quizzes", shortLabel: "Quizzes", icon: Award },
+    { id: "forums", label: "Learning Forums", shortLabel: "Forums", icon: MessageSquare },
   ] as const;
 
+  const activeTabObj = TABS.find((t) => t.id === activeTab) || TABS[0];
+  const ActiveIcon = activeTabObj.icon;
+
   return (
-    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
-      
-      {/* Sticky Top Header */}
-      <header style={{ position: "sticky", top: "70px", zIndex: 20, background: "#FFFFFF", padding: "28px 40px 24px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <button 
-            className="flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-[#F3F4F0]"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}
-            title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+    <div style={{
+      width: "100%", maxWidth: 1150, margin: "0 auto",
+      display: "flex", flexDirection: "column", gap: 24,
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      paddingBottom: 64, boxSizing: "border-box",
+    }}>
+      {/* ── TOP HEADER CARD ── */}
+      <div style={{
+        background: "#FFFFFF",
+        borderTop: `1px solid ${C.border}`,
+        borderRight: `1px solid ${C.border}`,
+        borderBottom: `1px solid ${C.border}`,
+        borderLeft: `4px solid ${C.gold}`,
+        borderRadius: 20,
+        padding: "24px 28px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        display: "flex", flexDirection: "column", gap: 16,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <Link
+            href={`/instructor/courses/${id}`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", borderRadius: 10,
+              background: "#F7F8F5", color: "#2D3A2F",
+              fontSize: 13, fontWeight: 700, textDecoration: "none",
+              transition: "all 0.2s",
+            }}
           >
-            <Sidebar size={20} />
-          </button>
-          <div style={{ height: "24px", width: "1px", background: "#E4E8E0" }}></div>
-          <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
-            <ArrowLeft size={18} /> {course.title}
+            <ArrowLeft size={16} />
+            <span>{course.title || "Back to Course"}</span>
           </Link>
-          <div style={{ height: "24px", width: "1px", background: "rgba(184,134,69,0.3)" }}></div>
+
+          <span style={{
+            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
+            padding: "5px 14px", borderRadius: 20,
+            background: C.goldLight, color: C.gold, border: `1px solid rgba(184,134,69,0.25)`,
+          }}>
+            Module Management
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12,
+            background: C.goldLight, color: C.gold,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <Layers size={22} />
+          </div>
           <div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700, margin: 0, color: "#B88645" }}>{currentModule.title}</h1>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.dark, lineHeight: 1.3 }}>
+              {currentModule.title}
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: C.muted }}>
+              Manage curriculum videos, reading materials, assignments, and quizzes.
+            </p>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        
-        {/* Premium Sidebar Tabs */}
-        <div 
-          className="bg-[#FAFBF9] border-b md:border-b-0 md:border-r border-[#E4E8E0]/80 shrink-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto transition-all duration-300 ease-in-out" 
-          style={{ 
-            paddingTop: isSidebarOpen ? "20px" : "0", 
-            paddingBottom: isSidebarOpen ? "40px" : "0", 
-            width: isSidebarOpen ? "280px" : "0px",
-            opacity: isSidebarOpen ? 1 : 0,
-            visibility: isSidebarOpen ? "visible" : "hidden"
-          }}
-        >
-          <div style={{ paddingLeft: "32px", paddingRight: "24px", marginBottom: "24px" }}>
-            <h2 style={{ fontSize: "13px", fontWeight: 800, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: "12px", lineHeight: "1.5", whiteSpace: "nowrap" }}>
-              Manage Content
-            </h2>
-            <div style={{ height: "2px", width: "32px", background: "#D4AF37", borderRadius: "999px", opacity: 0.6 }}></div>
-          </div>
-          
-          <nav style={{ display: "flex", flexDirection: "column", gap: "8px", paddingLeft: "32px", paddingRight: "24px" }}>
+      {/* ── RESPONSIVE TABS & CONTENT LAYOUT ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* Spacious Segmented Grid Navigation Bar */}
+        <div style={{
+          background: "#FFFFFF",
+          border: `1px solid ${C.border}`,
+          borderRadius: 20,
+          padding: "16px 20px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+          width: "100%",
+          boxSizing: "border-box",
+        }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            gap: 10,
+            width: "100%",
+          }}>
             {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
+              const active = activeTab === tab.id;
               const Icon = tab.icon;
               return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`group cursor-pointer border-none text-left transition-all duration-300 ease-out relative overflow-hidden ${
-                      isActive 
-                        ? "bg-gradient-to-r from-[#B88645] to-[#D4AF37] shadow-[0_6px_16px_rgba(184,134,69,0.25)]" 
-                        : "bg-transparent hover:bg-[#F0F2EB]/80"
-                    }`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "16px",
-                      padding: "14px 20px",
-                      borderRadius: "16px",
-                      width: "100%",
-                      transform: isActive ? "translateY(-1px)" : "none"
-                    }}
-                  >
-                  {/* Subtle active indicator border */}
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 bg-white/40" style={{ width: "6px", borderTopLeftRadius: "16px", borderBottomLeftRadius: "16px" }}></div>
-                  )}
-                  
-                  <Icon 
-                    size={20} 
-                    className={`transition-transform duration-300 group-hover:scale-110 shrink-0 ${isActive ? "text-white" : "text-[#8A9E8C]"}`} 
-                  />
-                  
-                  <span 
-                    className={`transition-all duration-300 ${isActive ? "text-white tracking-wide" : "text-[#4A5568]"}`}
-                    style={{ fontSize: "15px", fontWeight: isActive ? 700 : 500 }}
-                  >
-                    {tab.label}
-                  </span>
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "14px 18px",
+                    minHeight: 48,
+                    borderRadius: 14,
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: active ? 800 : 700,
+                    color: active ? "#FFFFFF" : C.muted,
+                    background: active
+                      ? `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`
+                      : "transparent",
+                    boxShadow: active ? `0 4px 14px rgba(184,134,69,0.3)` : "none",
+                    transition: "all 0.2s ease",
+                    whiteSpace: "nowrap",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "#F7F8F5";
+                      e.currentTarget.style.color = C.dark;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = C.muted;
+                    }
+                  }}
+                >
+                  <Icon size={18} />
+                  <span>{tab.shortLabel}</span>
                 </button>
               );
             })}
-          </nav>
-        </div>
-
-        {/* Content Area */}
-        <div id="module-content-area" className="flex-1 overflow-y-auto" style={{ padding: "40px" }}>
-          <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-            {activeTab === "overview" && <ModuleOverviewPanel module={currentModule} />}
-            {activeTab === "videos" && <VideosPanel module={currentModule} />}
-            {activeTab === "readings" && <ReadingsPanel module={currentModule} />}
-            {activeTab === "assignments" && <AssignmentsPanel module={currentModule} />}
-            {activeTab === "quizzes" && <QuizzesPanel module={currentModule} />}
-            {activeTab === "forums" && <ForumsPanel module={currentModule} />}
           </div>
         </div>
 
+        {/* Panel Content Area */}
+        <div style={{
+          background: "#FFFFFF",
+          border: `1px solid ${C.border}`,
+          borderRadius: 20,
+          padding: "28px 32px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        }}>
+          {activeTab === "overview" && <ModuleOverviewPanel module={currentModule} />}
+          {activeTab === "videos" && <VideosPanel module={currentModule} />}
+          {activeTab === "readings" && <ReadingsPanel module={currentModule} />}
+          {activeTab === "assignments" && <AssignmentsPanel module={currentModule} />}
+          {activeTab === "quizzes" && <QuizzesPanel module={currentModule} />}
+          {activeTab === "forums" && <ForumsPanel module={currentModule} />}
+        </div>
       </div>
-
     </div>
   );
 }

@@ -452,32 +452,35 @@ export default function AssignmentsPanel({ module }: { module: any }) {
             const assign = item.assignment;
             if (!assign) return null;
             return (
-              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
-                <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab" }} />
-                <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645" }}>
-                  <FileText size={18} fill="currentColor" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 600, color: "#1A261D" }}>{assign.title}</h4>
-                  <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "16px" }}>
-                    <span style={{ fontWeight: 600, color: "#8F9E93" }}>{assign.maxScore} Points</span>
-                    {assign.dueDate && (
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Calendar size={12} /> Due: {new Date(assign.dueDate).toLocaleDateString()}</span>
-                    )}
-                    <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1" }}><Users size={12} /> {assign._count?.submissions || 0} Submissions</span>
+              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 200, flex: "1 1 240px" }}>
+                  <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab", flexShrink: 0 }} />
+                  <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0 }}>
+                    <FileText size={18} fill="currentColor" />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 600, color: "#1A261D" }}>{assign.title}</h4>
+                    <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 600, color: "#8F9E93" }}>{assign.maxScore} Points</span>
+                      {assign.dueDate && (
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Calendar size={12} /> Due: {new Date(assign.dueDate).toLocaleDateString()}</span>
+                      )}
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1" }}><Users size={12} /> {assign._count?.submissions || 0} Submissions</span>
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
+
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto", flexWrap: "wrap" }}>
                   <button 
                     onClick={() => setViewingSubmissionsFor(assign)}
-                    style={{ padding: "8px 16px", background: "#1A261D", color: "white", border: "none", borderRadius: "6px", fontWeight: 600, fontSize: "12px", cursor: "pointer" }}
+                    style={{ padding: "8px 16px", background: "#1A261D", color: "white", border: "none", borderRadius: "6px", fontWeight: 600, fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap" }}
                   >
                     View Submissions
                   </button>
-                  <button onClick={() => handleEdit(assign)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <button onClick={() => handleEdit(assign)} title="Edit" style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={async () => { if(await confirm("Delete assignment?")) deleteMut.mutate(assign.id); }} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <button onClick={async () => { if(await confirm("Delete assignment?")) deleteMut.mutate(assign.id); }} title="Delete" style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <Trash2 size={16} />
                   </button>
                 </div>

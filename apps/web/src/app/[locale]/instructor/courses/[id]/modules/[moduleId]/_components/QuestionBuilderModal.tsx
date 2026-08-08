@@ -81,10 +81,17 @@ export default function QuestionBuilderModal({ quiz, moduleId, onClose }: { quiz
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteQuestion(id),
+    onMutate: () => {
+      toast.loading("Deleting question...", { id: "deleteQuestion" });
+    },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["quizzes", moduleId] });
       setQuestions(prev => prev.filter(q => q.id !== id));
-      toast.success("Question deleted!");
+      toast.success("Question deleted!", { id: "deleteQuestion" });
+    },
+    onError: (err: any) => {
+      const errorMsg = err.response?.data?.message || err.message || "Failed to delete question";
+      toast.error(`Error: ${errorMsg}`, { id: "deleteQuestion" });
     }
   });
 

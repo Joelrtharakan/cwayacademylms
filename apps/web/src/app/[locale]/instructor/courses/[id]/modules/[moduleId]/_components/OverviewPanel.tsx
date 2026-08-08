@@ -1,74 +1,164 @@
+"use client";
+
 import React from "react";
-import { BookOpen, Play, FileText, Award } from "lucide-react";
+import { BookOpen, Play, FileText, Award, Layers, ArrowRight } from "lucide-react";
+import { useCourseBuilderStore } from "@/store/course-builder.store";
+
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  dark: "#1A261D",
+  darkSoft: "#2D3A2F",
+  muted: "#7F8E82",
+  border: "#EBEEE8",
+  bgAlt: "#F7F8F5",
+  surface: "#FFFFFF",
+};
 
 export default function ModuleOverviewPanel({ module }: { module: any }) {
+  const { setActiveTab } = useCourseBuilderStore();
+
   const stats = [
-    { label: "Lessons", count: module._count?.lessons || 0, icon: Play, color: "#4299E1", bg: "#ebf8ff" },
-    { label: "Readings", count: module._count?.readingMaterials || 0, icon: BookOpen, color: "#B88645", bg: "#fcf8f3" },
-    { label: "Assignments", count: module.lessons?.filter((l: any) => l.assignment).length || 0, icon: FileText, color: "#48BB78", bg: "#f0fff4" },
-    { label: "Quizzes", count: module.lessons?.filter((l: any) => l.quiz).length || 0, icon: Award, color: "#9F7AEA", bg: "#faf5ff" },
+    {
+      id: "videos",
+      label: "Lessons",
+      count: module._count?.lessons || 0,
+      icon: Play,
+      color: "#3B82F6",
+      bg: "rgba(59,130,246,0.08)",
+      border: "rgba(59,130,246,0.2)",
+    },
+    {
+      id: "readings",
+      label: "Readings",
+      count: module._count?.readingMaterials || 0,
+      icon: BookOpen,
+      color: "#B88645",
+      bg: "rgba(184,134,69,0.08)",
+      border: "rgba(184,134,69,0.2)",
+    },
+    {
+      id: "assignments",
+      label: "Assignments",
+      count: module.lessons?.filter((l: any) => l.assignment).length || 0,
+      icon: FileText,
+      color: "#10B981",
+      bg: "rgba(16,185,129,0.08)",
+      border: "rgba(16,185,129,0.2)",
+    },
+    {
+      id: "quizzes",
+      label: "Quizzes",
+      count: module.lessons?.filter((l: any) => l.quiz).length || 0,
+      icon: Award,
+      color: "#8B5CF6",
+      bg: "rgba(139,92,246,0.08)",
+      border: "rgba(139,92,246,0.2)",
+    },
   ];
 
   return (
-    <div style={{ animation: "fadeIn 0.5s ease-out", padding: "10px 20px" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "40px" }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-          <h2 style={{ fontSize: "28px", fontWeight: 800, color: "#1A261D", margin: 0, fontFamily: "Georgia, serif" }}>
-            Module Overview
-          </h2>
+    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+      {/* ── HERO MODULE CARD ── */}
+      <div style={{
+        background: C.bgAlt,
+        borderTop: `1px solid ${C.border}`,
+        borderRight: `1px solid ${C.border}`,
+        borderBottom: `1px solid ${C.border}`,
+        borderLeft: `4px solid ${C.gold}`,
+        borderRadius: 16,
+        padding: "24px 28px",
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+            color: C.gold, background: C.goldLight,
+            padding: "4px 10px", borderRadius: 6,
+          }}>
+            <Layers size={13} />
+            <span>Curriculum Module</span>
+          </span>
         </div>
-        <p style={{ color: "#8A9E8C", fontSize: "15px", lineHeight: "1.6", margin: 0, maxWidth: "600px" }}>
-          A high-level summary of all content, assignments, and materials currently configured within this module.
-        </p>
-      </div>
 
-      {/* Main Module Card */}
-      <div style={{ position: "relative", background: "#ffffff", borderRadius: "24px", padding: "40px", marginBottom: "48px", border: "1px solid #E4E8E0", boxShadow: "0 8px 30px rgba(0,0,0,0.05)", overflow: "hidden" }}>
-        {/* Top Gradient Accent */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "6px", background: "linear-gradient(to right, #B88645, #D4AF37, #B88645)" }}></div>
-        
-        <h3 style={{ fontSize: "24px", fontWeight: 700, color: "#1A261D", margin: "0 0 20px 0", fontFamily: "Georgia, serif" }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.dark, lineHeight: 1.3 }}>
           {module.title}
-        </h3>
-        
+        </h2>
+
         {module.description ? (
-          <p style={{ color: "#4A5568", fontSize: "15px", lineHeight: "1.8", margin: 0, maxWidth: "800px" }}>
+          <p style={{ margin: 0, fontSize: 14, color: C.darkSoft, lineHeight: 1.6, maxWidth: 750 }}>
             {module.description}
           </p>
         ) : (
-          <p style={{ color: "#8A9E8C", fontStyle: "italic", fontSize: "15px", margin: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>
             No description provided for this module.
           </p>
         )}
       </div>
 
-      {/* Stats Breakdown */}
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-          <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#1A261D", margin: 0 }}>Content Breakdown</h3>
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, #E4E8E0, transparent)" }}></div>
+      {/* ── METRIC CARDS BREAKDOWN ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: C.dark }}>
+            Content Breakdown
+          </h3>
+          <span style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>
+            Click card to manage
+          </span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "24px" }}>
-          {stats.map((stat, i) => (
-            <div key={i} style={{ background: "#ffffff", padding: "24px", borderRadius: "20px", border: "1px solid #E4E8E0", boxShadow: "0 4px 15px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-              {/* Top right subtle background circle */}
-              <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: stat.bg, opacity: 0.8, zIndex: 0 }}></div>
-              
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px", position: "relative", zIndex: 10 }}>
-                <div style={{ padding: "12px", borderRadius: "14px", background: stat.bg, color: stat.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <stat.icon size={24} strokeWidth={2.5} />
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: 16,
+        }}>
+          {stats.map((stat) => (
+            <div
+              key={stat.id}
+              onClick={() => setActiveTab(stat.id as any)}
+              style={{
+                background: C.surface,
+                border: `1px solid ${C.border}`,
+                borderRadius: 16,
+                padding: "20px 22px",
+                cursor: "pointer",
+                display: "flex", flexDirection: "column", justifyContent: "space-between",
+                gap: 18,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = C.gold;
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = C.border;
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  background: stat.bg, color: stat.color, border: `1px solid ${stat.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <stat.icon size={20} strokeWidth={2.5} />
                 </div>
-                <div style={{ fontSize: "36px", fontWeight: 900, color: "#1A261D", lineHeight: "1", letterSpacing: "-1px" }}>
+
+                <span style={{ fontSize: 32, fontWeight: 900, color: C.dark, lineHeight: 1 }}>
                   {stat.count}
-                </div>
+                </span>
               </div>
-              
-              <div style={{ position: "relative", zIndex: 10 }}>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "1px" }}>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: C.muted }}>
                   {stat.label}
-                </div>
+                </span>
+                <ArrowRight size={14} color={C.gold} />
               </div>
             </div>
           ))}

@@ -455,32 +455,72 @@ export default function CourseManagementPage() {
               {/* Card Body */}
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
                 {editingModuleId === mod.id ? (
-                  /* Edit Mode */
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <input
-                      type="text"
-                      defaultValue={mod.title}
-                      id={`edit-title-${mod.id}`}
-                      style={{
-                        width: "100%", boxSizing: "border-box",
-                        padding: "10px 14px", borderRadius: 8,
-                        border: `1.5px solid ${C.gold}`, background: C.surface,
-                        fontSize: 15, fontWeight: 700, color: C.dark, outline: "none",
-                      }}
-                    />
-                    <textarea
-                      defaultValue={mod.description || ""}
-                      id={`edit-desc-${mod.id}`}
-                      rows={2}
-                      onWheel={(e) => e.stopPropagation()}
-                      style={{
-                        width: "100%", boxSizing: "border-box",
-                        padding: "10px 14px", borderRadius: 8,
-                        border: `1px solid ${C.border}`, background: C.bgAlt,
-                        fontSize: 14, color: C.muted, outline: "none", resize: "vertical",
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: 8, paddingTop: 4 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: C.gold }}>
+                        Editing Module Settings
+                      </span>
+                    </div>
+
+                    {/* Title Input Field */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>Module Title</label>
+                      <input
+                        type="text"
+                        defaultValue={mod.title}
+                        id={`edit-title-${mod.id}`}
+                        style={{
+                          width: "100%", boxSizing: "border-box",
+                          padding: "12px 16px", borderRadius: 10,
+                          border: `1px solid ${C.border}`, background: "#FFFFFF",
+                          fontSize: 15, fontWeight: 700, color: C.dark, outline: "none",
+                          transition: "all 0.2s",
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = C.gold;
+                          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)";
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = C.border;
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      />
+                    </div>
+
+                    {/* Description Textarea Field */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>Module Description</label>
+                      <textarea
+                        defaultValue={mod.description || ""}
+                        id={`edit-desc-${mod.id}`}
+                        rows={4}
+                        placeholder="Add a detailed description for this module..."
+                        style={{
+                          width: "100%", boxSizing: "border-box",
+                          padding: "12px 16px", borderRadius: 10,
+                          border: `1px solid ${C.border}`, background: "#FFFFFF",
+                          fontSize: 14, fontWeight: 500, color: C.dark, lineHeight: 1.6,
+                          outline: "none", resize: "vertical", minHeight: 100, maxHeight: 240,
+                          overflowY: "auto", pointerEvents: "auto",
+                          transition: "all 0.2s",
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onWheel={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = C.gold;
+                          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(184,134,69,0.15)";
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = C.border;
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 4, flexWrap: "wrap" }}>
                       <button
                         onClick={() => {
                           const title = (document.getElementById(`edit-title-${mod.id}`) as HTMLInputElement).value;
@@ -488,20 +528,29 @@ export default function CourseManagementPage() {
                           updateModuleMut.mutate({ moduleId: mod.id, data: { title, description: desc } });
                         }}
                         style={{
-                          padding: "8px 18px", background: C.gold, color: "#fff",
-                          border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          padding: "10px 22px", background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`,
+                          color: "#FFFFFF", border: "none", borderRadius: 10,
+                          fontSize: 13, fontWeight: 800, cursor: "pointer",
+                          boxShadow: "0 2px 8px rgba(184,134,69,0.25)",
+                          transition: "all 0.2s",
                         }}
                       >
-                        Save
+                        <Check size={15} />
+                        <span>{updateModuleMut.isPending ? "Saving..." : "Save Changes"}</span>
                       </button>
+
                       <button
                         onClick={() => setEditingModuleId(null)}
                         style={{
-                          padding: "8px 16px", background: "transparent", color: C.muted,
-                          border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          padding: "10px 18px", background: "#F7F8F5",
+                          color: C.dark, border: `1px solid ${C.border}`, borderRadius: 10,
+                          fontSize: 13, fontWeight: 700, cursor: "pointer",
+                          transition: "all 0.2s",
                         }}
                       >
-                        Cancel
+                        <span>Cancel</span>
                       </button>
                     </div>
                   </div>

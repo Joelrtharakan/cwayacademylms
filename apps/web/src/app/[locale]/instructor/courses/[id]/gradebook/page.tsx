@@ -2,22 +2,26 @@
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
-import { ArrowLeft, BookOpen, Download, Loader2, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, BookOpen, Download, Loader2, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { toast } from "react-hot-toast";
 import { getLetterGrade } from "@/lib/gradeScale";
 
-const DARK = "#1A261D";
-const GOLD = "#C9973A";
-const LIGHT = "#F5F0E8";
-const MUTED = "#8A9E8C";
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  dark: "#1A261D",
+  muted: "#7F8E82",
+  border: "#EBEEE8",
+};
 
 export default function InstructorGradebookPage() {
   const { id } = useParams() as { id: string };
-  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
 
   const { data: gradebook, isLoading } = useQuery({
     queryKey: ["gradebook", id],
@@ -27,11 +31,9 @@ export default function InstructorGradebookPage() {
   const handleExportCSV = () => {
     if (!gradebook) return;
 
-    // Build headers
     const headers = ["Student Name", "Student Email", "Course Grade (%)"];
     gradebook.items.forEach((item: any) => headers.push(`${item.title} (${item.maxScore})`));
 
-    // Build rows
     const rows = gradebook.students.map((student: any) => {
       const row = [student.name, student.email, student.courseGrade.toString()];
       gradebook.items.forEach((item: any) => {
@@ -43,7 +45,7 @@ export default function InstructorGradebookPage() {
 
     const csvContent = [
       headers.join(","),
-      ...rows.map((row: string[]) => row.map(cell => `"${cell}"`).join(","))
+      ...rows.map((row: string[]) => row.map((cell) => `"${cell}"`).join(","))
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -59,8 +61,8 @@ export default function InstructorGradebookPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#F5F0E8" }}>
-        <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} />
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: C.gold }} />
       </div>
     );
   }
@@ -68,93 +70,161 @@ export default function InstructorGradebookPage() {
   const items = gradebook?.items || [];
   const students = gradebook?.students || [];
 
+  const filteredStudents = students.filter(
+    (s: any) =>
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.email.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
-      
-      {/* Header */}
-      <header style={{ position: "sticky", top: "70px", zIndex: 50, background: "#FFFFFF", padding: "16px 40px", borderBottom: `4px solid ${GOLD}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: MUTED, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = DARK} onMouseLeave={(e) => e.currentTarget.style.color = MUTED}>
-            <ArrowLeft size={18} /> Back to Course
+    <div style={{
+      width: "100%", maxWidth: 1150, margin: "0 auto",
+      display: "flex", flexDirection: "column", gap: 24,
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      paddingBottom: 64, boxSizing: "border-box",
+    }}>
+      {/* ── TOP HEADER CARD ── */}
+      <div style={{
+        background: "#FFFFFF",
+        borderTop: `1px solid ${C.border}`,
+        borderRight: `1px solid ${C.border}`,
+        borderBottom: `1px solid ${C.border}`,
+        borderLeft: `4px solid ${C.gold}`,
+        borderRadius: 20,
+        padding: "24px 28px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        display: "flex", flexDirection: "column", gap: 16,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <Link
+            href={`/instructor/courses/${id}`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", borderRadius: 10,
+              background: "#F7F8F5", color: "#2D3A2F",
+              fontSize: 13, fontWeight: 700, textDecoration: "none",
+            }}
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Course</span>
           </Link>
-          <div style={{ height: "24px", width: "1px", background: "rgba(184,134,69,0.3)" }}></div>
-          <div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700, margin: 0, color: GOLD }}>Master Gradebook</h1>
-          </div>
-        </div>
-        <div>
-          <button 
+
+          <button
             onClick={handleExportCSV}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: DARK, color: "white", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.background = "#2C3E30"} 
-            onMouseLeave={e => e.currentTarget.style.background = DARK}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "10px 20px", borderRadius: 10,
+              background: C.dark, color: "#FFFFFF",
+              border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(26,38,29,0.15)",
+            }}
           >
             <Download size={16} /> Export CSV
           </button>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main style={{ padding: "40px", flex: 1, overflowX: "auto" }}>
-        <div style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontFamily: "Georgia, serif", fontSize: "28px", fontWeight: 700, color: DARK, margin: "0 0 8px 0" }}>Student Grades</h2>
-          <p style={{ color: MUTED, fontSize: "15px", margin: 0 }}>View all scores across every assignment and quiz for enrolled students.</p>
-        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.dark, fontFamily: "Georgia, serif" }}>
+              Master Gradebook
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: C.muted }}>
+              View all scores across every assignment and quiz for enrolled students.
+            </p>
+          </div>
 
-        {students.length === 0 ? (
-          <div style={{ background: "white", padding: "60px", textAlign: "center", borderRadius: "16px", border: "1px solid #E4E8E0" }}>
-            <div style={{ width: "64px", height: "64px", background: "rgba(184,134,69,0.1)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", color: GOLD }}>
-              <BookOpen size={28} />
+          {/* Search Box */}
+          {students.length > 0 && (
+            <div style={{ position: "relative", minWidth: 240 }}>
+              <Search size={16} style={{ position: "absolute", left: 12, top: 12, color: C.muted }} />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  width: "100%", padding: "10px 14px 10px 36px",
+                  borderRadius: 10, border: `1px solid ${C.border}`,
+                  background: "#F7F8F5", fontSize: 13, boxSizing: "border-box",
+                }}
+              />
             </div>
-            <h3 style={{ fontSize: "20px", fontWeight: 700, color: DARK, margin: "0 0 8px 0" }}>No Students Enrolled</h3>
-            <p style={{ color: MUTED, margin: 0 }}>There are no students enrolled in this course yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* ── GRADEBOOK CONTENT AREA ── */}
+      {students.length === 0 ? (
+        <div style={{ background: "#FFFFFF", padding: "60px 24px", textAlign: "center", borderRadius: 20, border: `1px solid ${C.border}` }}>
+          <div style={{ width: 56, height: 56, background: C.goldLight, color: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <BookOpen size={26} />
           </div>
-        ) : items.length === 0 ? (
-          <div style={{ background: "white", padding: "60px", textAlign: "center", borderRadius: "16px", border: "1px solid #E4E8E0" }}>
-            <h3 style={{ fontSize: "20px", fontWeight: 700, color: DARK, margin: "0 0 8px 0" }}>No Graded Items</h3>
-            <p style={{ color: MUTED, margin: 0 }}>This course does not have any assignments or quizzes to grade.</p>
-          </div>
-        ) : (
-          <div style={{ background: "white", borderRadius: "16px", border: "1px solid #E4E8E0", overflow: "hidden", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", minWidth: "1000px", borderCollapse: "collapse", textAlign: "left" }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: C.dark, margin: "0 0 6px" }}>No Students Enrolled</h3>
+          <p style={{ color: C.muted, margin: 0, fontSize: 14 }}>There are no students enrolled in this course yet.</p>
+        </div>
+      ) : items.length === 0 ? (
+        <div style={{ background: "#FFFFFF", padding: "60px 24px", textAlign: "center", borderRadius: 20, border: `1px solid ${C.border}` }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: C.dark, margin: "0 0 6px" }}>No Graded Items</h3>
+          <p style={{ color: C.muted, margin: 0, fontSize: 14 }}>This course does not have any assignments or quizzes to grade.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          
+          {/* DESKTOP TABLE VIEW (Hidden on Mobile) */}
+          <div className="hidden md:block" style={{
+            background: "#FFFFFF", borderRadius: 20,
+            border: `1px solid ${C.border}`, overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+          }}>
+            <div className="custom-scrollbar" style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ background: "#FAFAF7", borderBottom: "2px solid #E4E8E0" }}>
-                    <th style={{ padding: "20px 24px", fontFamily: "Georgia, serif", fontSize: "16px", fontWeight: 700, color: DARK, borderRight: "1px solid #E4E8E0", position: "sticky", left: 0, background: "#FAFAF7", zIndex: 10 }}>Student</th>
-                    <th style={{ padding: "20px 24px", fontFamily: "Georgia, serif", fontSize: "16px", fontWeight: 700, color: DARK, borderRight: "1px solid #E4E8E0", background: "#FAFAF7" }}>Course Grade</th>
+                  <tr style={{ background: "#F7F8F5", borderBottom: `2px solid ${C.border}` }}>
+                    <th style={{ padding: "16px 20px", fontSize: 13, fontWeight: 800, color: C.dark, borderRight: `1px solid ${C.border}`, position: "sticky", left: 0, background: "#F7F8F5", zIndex: 10, minWidth: 220 }}>
+                      Student
+                    </th>
+                    <th style={{ padding: "16px 20px", fontSize: 13, fontWeight: 800, color: C.dark, borderRight: `1px solid ${C.border}`, textAlign: "center", minWidth: 130 }}>
+                      Course Grade
+                    </th>
                     {items.map((item: any) => (
-                      <th key={item.id} style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", minWidth: "180px" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 700, color: DARK, marginBottom: "4px" }}>{item.title}</div>
-                        <div style={{ fontSize: "12px", color: MUTED, display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ padding: "2px 6px", background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0", color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00", borderRadius: "4px", fontSize: "10px", fontWeight: 700 }}>
+                      <th key={item.id} style={{ padding: "14px 18px", borderRight: `1px solid ${C.border}`, minWidth: 170 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.dark, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }} title={item.title}>
+                          {item.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{
+                            padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 800,
+                            background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
+                            color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
+                          }}>
                             {item.type}
                           </span>
-                          Max: {item.maxScore}
+                          <span>Max: {item.maxScore}</span>
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map((student: any, idx: number) => (
-                    <tr key={student.id} style={{ borderBottom: idx === students.length - 1 ? "none" : "1px solid #E4E8E0", transition: "background 0.2s" }} className="hover:bg-[#F7F8F5]">
-                      <td style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", position: "sticky", left: 0, background: "white", zIndex: 10 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#F5F0E8", color: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "14px" }}>
+                  {filteredStudents.map((student: any, idx: number) => (
+                    <tr key={student.id} style={{ borderBottom: idx === filteredStudents.length - 1 ? "none" : `1px solid ${C.border}` }}>
+                      <td style={{ padding: "14px 20px", borderRight: `1px solid ${C.border}`, position: "sticky", left: 0, background: "#FFFFFF", zIndex: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.goldLight, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
                             {student.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div style={{ fontSize: "14px", fontWeight: 700, color: DARK }}>{student.name}</div>
-                            <div style={{ fontSize: "12px", color: MUTED }}>{student.email}</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.dark }}>{student.name}</div>
+                            <div style={{ fontSize: 11, color: C.muted }}>{student.email}</div>
                           </div>
                         </div>
                       </td>
-                      <td style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", textAlign: "center", background: "#FAFAF7" }}>
-                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: "6px" }}>
-                          <span style={{ fontFamily: "Georgia, serif", fontSize: "22px", fontWeight: 700, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? GOLD : "#E53E3E" }}>
+                      <td style={{ padding: "14px 20px", borderRight: `1px solid ${C.border}`, textAlign: "center", background: "#FAFBF8" }}>
+                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
+                          <span style={{ fontSize: 18, fontWeight: 800, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? C.gold : "#E53E3E" }}>
                             {getLetterGrade(student.courseGrade)}
                           </span>
-                          <span style={{ fontSize: "14px", fontWeight: 600, color: MUTED }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: C.muted }}>
                             {student.courseGrade.toFixed(1)}%
                           </span>
                         </div>
@@ -162,14 +232,14 @@ export default function InstructorGradebookPage() {
                       {items.map((item: any) => {
                         const grade = student.grades[item.id];
                         return (
-                          <td key={item.id} style={{ padding: "16px 24px", borderRight: "1px solid #E4E8E0", textAlign: "center" }}>
+                          <td key={item.id} style={{ padding: "14px 18px", borderRight: `1px solid ${C.border}`, textAlign: "center" }}>
                             {grade !== null ? (
-                              <div style={{ display: "inline-flex", alignItems: "baseline", gap: "4px" }}>
-                                <span style={{ fontFamily: "Georgia, serif", fontSize: "20px", fontWeight: 700, color: DARK }}>{grade}</span>
-                                <span style={{ fontSize: "12px", color: MUTED, fontWeight: 600 }}>/ {item.maxScore}</span>
+                              <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+                                <span style={{ fontSize: 15, fontWeight: 800, color: C.dark }}>{grade}</span>
+                                <span style={{ fontSize: 11, color: C.muted }}>/ {item.maxScore}</span>
                               </div>
                             ) : (
-                              <span style={{ color: "#D1D5DB", fontWeight: 600, fontSize: "14px" }}>—</span>
+                              <span style={{ color: "#CBD5E0", fontWeight: 600, fontSize: 13 }}>—</span>
                             )}
                           </td>
                         );
@@ -180,8 +250,74 @@ export default function InstructorGradebookPage() {
               </table>
             </div>
           </div>
-        )}
-      </main>
+
+          {/* MOBILE/TABLET RESPONSIVE CARD LIST (Visible on < 768px) */}
+          <div className="md:hidden flex flex-col gap-3">
+            {filteredStudents.map((student: any) => {
+              const isExpanded = expandedStudent === student.id;
+              return (
+                <div key={student.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${C.border}`, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: C.goldLight, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                        {student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: C.dark }}>{student.name}</h4>
+                        <span style={{ fontSize: 11, color: C.muted }}>{student.email}</span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? C.gold : "#E53E3E", display: "block" }}>
+                          {getLetterGrade(student.courseGrade)}
+                        </span>
+                        <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{student.courseGrade.toFixed(1)}%</span>
+                      </div>
+                      <button
+                        onClick={() => setExpandedStudent(isExpanded ? null : student.id)}
+                        style={{ padding: 6, background: "#F7F8F5", border: `1px solid ${C.border}`, borderRadius: 8, cursor: "pointer", color: C.muted }}
+                      >
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded Item Grades Grid */}
+                  {isExpanded && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.border}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      {items.map((item: any) => {
+                        const grade = student.grades[item.id];
+                        return (
+                          <div key={item.id} style={{ background: "#F7F8F5", padding: "10px 12px", borderRadius: 10, border: `1px solid ${C.border}` }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: C.dark, display: "block", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={item.title}>
+                              {item.title}
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+                              <span style={{
+                                padding: "1px 5px", borderRadius: 4, fontSize: 9, fontWeight: 800,
+                                background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
+                                color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
+                              }}>
+                                {item.type}
+                              </span>
+                              <span style={{ fontSize: 12, fontWeight: 800, color: grade !== null ? C.dark : "#A0AEC0" }}>
+                                {grade !== null ? `${grade} / ${item.maxScore}` : "—"}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      )}
     </div>
   );
 }

@@ -91,15 +91,15 @@ export default function QuizzesPanel({ module }: { module: any }) {
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 8px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Quizzes</h2>
+          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Quizzes</h2>
           <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Build multiple choice quizzes to test comprehension.</p>
         </div>
         {!isCreating && (
           <button 
             onClick={() => { setEditingSettingsId(null); setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" }); setIsCreating(true); }}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "10px", fontWeight: 700, cursor: "pointer", fontSize: "14px", whiteSpace: "nowrap", flexShrink: 0 }}
           >
             <Plus size={16} /> Add Quiz
           </button>
@@ -107,7 +107,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
       </div>
 
       {isCreating && (
-        <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "12px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 10px 30px rgba(26,38,29,0.04)" }}>
+        <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "16px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 4px 20px rgba(26,38,29,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
             <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>{editingSettingsId ? "Edit Quiz Settings" : "New Quiz Settings"}</h3>
             <button onClick={() => { setIsCreating(false); setEditingSettingsId(null); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8F9E93" }}><X size={20} /></button>
@@ -122,7 +122,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Chapter 1 Quiz"
                 required
-                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
               />
             </div>
             
@@ -133,11 +133,11 @@ export default function QuizzesPanel({ module }: { module: any }) {
                 onChange={e => setForm({ ...form, instructions: e.target.value })}
                 placeholder="Briefly describe what this quiz covers..."
                 rows={2}
-                style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical" }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", resize: "vertical" }}
               />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "16px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Passing Score (%)</label>
                 <input 
@@ -145,7 +145,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                   value={form.passingScore}
                   onChange={e => setForm({ ...form, passingScore: e.target.value })}
                   min="0" max="100"
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />
               </div>
               <div>
@@ -156,7 +156,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                   onChange={e => setForm({ ...form, timeLimit: e.target.value })}
                   min="0"
                   placeholder="0 for no limit"
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />
               </div>
               <div>
@@ -166,7 +166,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
                   value={form.maxAttempts}
                   onChange={e => setForm({ ...form, maxAttempts: e.target.value })}
                   min="1"
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: "10px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px" }}
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function QuizzesPanel({ module }: { module: any }) {
               <button 
                 type="submit"
                 disabled={createMut.isPending || updateMut.isPending}
-                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1 }}
+                style={{ padding: "10px 24px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "10px", fontWeight: 700, cursor: "pointer", opacity: (createMut.isPending || updateMut.isPending) ? 0.7 : 1 }}
               >
                 {editingSettingsId ? (updateMut.isPending ? "Saving..." : "Save Changes") : (createMut.isPending ? "Creating..." : "Save Quiz Settings")}
               </button>
@@ -188,45 +188,50 @@ export default function QuizzesPanel({ module }: { module: any }) {
       {isLoading ? (
         <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} /></div>
       ) : !quizzes || quizzes.length === 0 ? (
-        <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
+        <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E4E8E0" }}>
           <Award size={28} color="#A0AEC0" style={{ margin: "0 auto 16px auto" }} />
           <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: 600, color: "#1A261D" }}>No quizzes</h3>
           <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Test student understanding with quizzes.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {quizzes.map((item: any) => {
             const quiz = item.quiz;
             if (!quiz) return null;
             return (
-              <div key={item.id} style={{ padding: "16px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab" }} />
-                  <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645" }}>
-                    <Award size={18} fill="currentColor" />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 600, color: "#1A261D" }}>{quiz.title}</h4>
-                    <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "16px" }}>
-                      <span style={{ fontWeight: 600, color: "#2ECC71" }}>Pass: {quiz.passingScore}%</span>
-                      {quiz.timeLimit ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> {quiz.timeLimit / 60} Mins</span>
-                      ) : (
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> No Time Limit</span>
-                      )}
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1" }}><HelpCircle size={12} /> {quiz._count?.questions || 0} Questions</span>
+              <div key={item.id} style={{ padding: "18px 20px", background: "#FFFFFF", borderRadius: "16px", border: "1px solid #E4E8E0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 200, flex: "1 1 240px" }}>
+                    <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab", flexShrink: 0 }} />
+                    <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0 }}>
+                      <Award size={20} fill="currentColor" />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1A261D" }}>{quiz.title}</h4>
+                      <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+                        <span style={{ fontWeight: 700, color: "#2ECC71" }}>Pass: {quiz.passingScore}%</span>
+                        {quiz.timeLimit ? (
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> {quiz.timeLimit / 60} Mins</span>
+                        ) : (
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> No Limit</span>
+                        )}
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1", fontWeight: 600 }}><HelpCircle size={12} /> {quiz._count?.questions || 0} Questions</span>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <button onClick={() => handleEditSettings(quiz, item.content)} style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                      <Edit2 size={16} />
+
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", marginLeft: "auto" }}>
+                    <button onClick={() => handleEditSettings(quiz, item.content)} title="Edit Settings" style={{ width: "34px", height: "34px", background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#7F8E82", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Edit2 size={15} />
                     </button>
-                    <a href={`/instructor/courses/${id}/quizzes`} style={{ padding: "6px 12px", background: "transparent", border: "1px solid #B88645", color: "#B88645", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                    <a href={`/instructor/courses/${id}/quizzes`} style={{ padding: "8px 14px", background: "#FFFFFF", border: "1px solid #B88645", color: "#B88645", textDecoration: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
                       <List size={14} /> View Attempts
                     </a>
-                    <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "6px 12px", background: "#B88645", border: "none", color: "#FFFFFF", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Edit Questions</button>
-                    <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                      <Trash2 size={14} />
+                    <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "8px 16px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)", border: "none", color: "#FFFFFF", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(184,134,69,0.2)" }}>
+                      Edit Questions
+                    </button>
+                    <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} title="Delete Quiz" style={{ width: "34px", height: "34px", background: "rgba(229,62,62,0.06)", border: "1px solid rgba(229,62,62,0.2)", color: "#E53E3E", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>

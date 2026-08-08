@@ -116,6 +116,8 @@ export const updateModule = asyncHandler(async (req: Request, res: Response) => 
     },
   });
 
+  await invalidateCourseCache(section.courseId);
+
   res.json({ status: "success", data: updated });
 });
 
