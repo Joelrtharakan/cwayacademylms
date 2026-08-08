@@ -306,31 +306,7 @@ export default function InstructorSettingsPage() {
     } catch { toast.error(t("toastAvatarFail")); }
   };
 
-  const scrollToSection = (id: string) => {
-    setActiveTab(id);
-    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
-  /* ─── Intersection Observer for active tab ─── */
-  useEffect(() => {
-    const ids = ["profile", "credentials", "password", "notifications"];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id.replace("section-", "");
-            setActiveTab(id);
-          }
-        }
-      },
-      { rootMargin: "-40% 0px -50% 0px", threshold: 0 }
-    );
-    ids.forEach((id) => {
-      const el = document.getElementById(`section-${id}`);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div style={{
@@ -460,7 +436,7 @@ export default function InstructorSettingsPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => scrollToSection(tab.id)}
+                onClick={() => setActiveTab(tab.id)}
                 style={{
                   flex: 1, minWidth: 0,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
@@ -486,36 +462,31 @@ export default function InstructorSettingsPage() {
         </nav>
       </div>
 
-      {/* ═══════ CONTENT SECTIONS (stacked vertically) ═══════ */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* ═══════ ACTIVE TAB CONTENT ═══════ */}
+      <div key={activeTab} className="settings-section">
 
-        {/* ── PROFILE SECTION ── */}
-        <div className="settings-section">
+        {activeTab === "profile" && (
           <SectionCard id="section-profile">
             <SectionHeader icon={User} title={t("profileTab.title")} description={t("profileTab.desc")} />
 
             <form onSubmit={profileForm.handleSubmit((d) => profileMut.mutate(d))}>
-              {/* Name */}
-              <div style={{ marginBottom: 20 }}>
+              {/* Name + Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-5">
                 <SettingsInput
                   label={t("profileTab.nameLabel")}
                   icon={User}
                   {...profileForm.register("name", { required: t("profileTab.nameReq") })}
                   error={profileForm.formState.errors.name?.message}
                 />
-              </div>
-
-              {/* Bio */}
-              <div style={{ marginBottom: 20 }}>
-                <SettingsTextarea
-                  label={t("profileTab.bioLabel")}
-                  placeholder={t("profileTab.bioPlaceholder")}
-                  {...profileForm.register("bio")}
+                <SettingsInput
+                  label={t("profileTab.phoneLabel")}
+                  icon={Phone}
+                  {...profileForm.register("phone")}
                 />
               </div>
 
-              {/* Church + Location row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+              {/* Church + Location */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-5">
                 <SettingsInput
                   label={t("profileTab.churchLabel")}
                   icon={Church}
@@ -528,16 +499,15 @@ export default function InstructorSettingsPage() {
                 />
               </div>
 
-              {/* Phone */}
+              {/* Bio */}
               <div style={{ marginBottom: 0 }}>
-                <SettingsInput
-                  label={t("profileTab.phoneLabel")}
-                  icon={Phone}
-                  {...profileForm.register("phone")}
+                <SettingsTextarea
+                  label={t("profileTab.bioLabel")}
+                  placeholder={t("profileTab.bioPlaceholder")}
+                  {...profileForm.register("bio")}
                 />
               </div>
 
-              {/* Save */}
               <div style={{
                 display: "flex", justifyContent: "flex-end",
                 marginTop: 28, paddingTop: 20,
@@ -550,14 +520,12 @@ export default function InstructorSettingsPage() {
               </div>
             </form>
           </SectionCard>
-        </div>
+        )}
 
-        {/* ── CREDENTIALS SECTION ── */}
-        <div className="settings-section">
+        {activeTab === "credentials" && (
           <SectionCard id="section-credentials">
             <SectionHeader icon={ShieldCheck} title={t("credentialsTab.title")} description={t("credentialsTab.desc")} />
 
-            {/* Info callout */}
             <div style={{
               display: "flex", alignItems: "flex-start", gap: 12,
               padding: "14px 16px",
@@ -579,27 +547,27 @@ export default function InstructorSettingsPage() {
             <form onSubmit={credentialsForm.handleSubmit((d) =>
               profileMut.mutate({ ...d, yearsExperience: d.yearsExperience ? Number(d.yearsExperience) : null })
             )}>
-              {/* Title + Degrees row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 20 }}>
+              {/* Row 1: Title Prefix & Years Experience */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-5">
                 <SettingsInput
                   label={t("credentialsTab.prefixLabel")}
                   placeholder={t("credentialsTab.prefixPlaceholder")}
                   {...credentialsForm.register("title")}
                 />
                 <SettingsInput
+                  label={t("credentialsTab.yearsLabel")}
+                  type="number"
+                  {...credentialsForm.register("yearsExperience")}
+                />
+              </div>
+
+              {/* Row 2: Degree / Credentials full width */}
+              <div style={{ marginBottom: 0 }}>
+                <SettingsInput
                   label={t("credentialsTab.degreeLabel")}
                   icon={FileText}
                   placeholder={t("credentialsTab.degreePlaceholder")}
                   {...credentialsForm.register("credentials")}
-                />
-              </div>
-
-              {/* Years */}
-              <div style={{ maxWidth: 260, marginBottom: 0 }}>
-                <SettingsInput
-                  label={t("credentialsTab.yearsLabel")}
-                  type="number"
-                  {...credentialsForm.register("yearsExperience")}
                 />
               </div>
 
@@ -615,10 +583,9 @@ export default function InstructorSettingsPage() {
               </div>
             </form>
           </SectionCard>
-        </div>
+        )}
 
-        {/* ── PASSWORD SECTION ── */}
-        <div className="settings-section">
+        {activeTab === "password" && (
           <SectionCard id="section-password">
             <SectionHeader icon={Lock} title={t("passwordTab.title")} description={t("passwordTab.desc")} />
 
@@ -629,7 +596,6 @@ export default function InstructorSettingsPage() {
               }
               passwordMut.mutate(d);
             })}>
-              {/* Current password */}
               <div style={{ marginBottom: 20, position: "relative" }}>
                 <SettingsInput
                   type={showCurrentPw ? "text" : "password"}
@@ -651,7 +617,6 @@ export default function InstructorSettingsPage() {
                 </button>
               </div>
 
-              {/* New password + Confirm side-by-side */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 0 }}>
                 <div style={{ position: "relative" }}>
                   <SettingsInput
@@ -695,10 +660,9 @@ export default function InstructorSettingsPage() {
               </div>
             </form>
           </SectionCard>
-        </div>
+        )}
 
-        {/* ── NOTIFICATIONS SECTION ── */}
-        <div className="settings-section">
+        {activeTab === "notifications" && (
           <SectionCard id="section-notifications">
             <SectionHeader icon={Bell} title={t("notificationsTab.title")} description={t("notificationsTab.desc")} />
 
@@ -743,7 +707,7 @@ export default function InstructorSettingsPage() {
               </GoldButton>
             </div>
           </SectionCard>
-        </div>
+        )}
 
       </div>
     </div>
