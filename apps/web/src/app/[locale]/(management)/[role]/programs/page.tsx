@@ -10,7 +10,7 @@ import { CreateProgramModal } from "@/components/admin/lms/CreateProgramModal";
 import { SkeletonCard } from "@/components/shared/SkeletonLoader";
 import { useTranslations } from "next-intl";
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, t }: { status: string; t: any }) {
   const map: Record<string, { bg: string; color: string }> = {
     PUBLISHED: { bg: "rgba(74,140,92,0.12)", color: "#4A8C5C" },
     DRAFT: { bg: "rgba(138,158,140,0.15)", color: "#8A9E8C" },
