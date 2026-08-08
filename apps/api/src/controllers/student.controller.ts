@@ -184,10 +184,25 @@ export const unenrollFromCourse = asyncHandler(async (req: Request, res: Respons
 });
 
 export const getCourseEnrollment = asyncHandler(async (req: Request, res: Response) => {
-  const { courseId } = req.params;
+  const { courseId: paramCourseId } = req.params;
   const studentId = req.user!.id;
 
-  // BUG-024 FIX: Use logger.debug instead of console.log (suppressed in production)
+  // First find the course by ID or Slug
+  const courseTarget = await prisma.course.findFirst({
+    where: {
+      OR: [
+        { id: paramCourseId },
+        { slug: paramCourseId }
+      ]
+    },
+    select: { id: true }
+  });
+
+  if (!courseTarget) {
+    throw new AppError("Course not found", 404);
+  }
+
+  const courseId = courseTarget.id;
 
   // Check cache for course curriculum
   const cacheKey = `course:${courseId}:curriculum`;
@@ -231,8 +246,8 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
     }
   });
 
-  if (!enrollment && (req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR" || req.user!.role === "REGISTRAR")) {
-    logger.debug(`[getCourseEnrollment] Auto-enrolling ${req.user!.role} ${studentId} in course ${courseId} for preview`);
+  if (!enrollment) {
+    logger.debug(`[getCourseEnrollment] Auto-enrolling user ${studentId} in course ${courseId}`);
     enrollment = await prisma.enrollment.create({
       data: {
         studentId,
@@ -244,11 +259,6 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
         readingMaterialProgress: true,
       }
     });
-  }
-
-  if (!enrollment) {
-    logger.debug(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
-    throw new AppError("Enrollment not found", 404);
   }
 
   const sections = courseCurriculum.sections.map((section: any) => ({
@@ -946,8 +956,14 @@ export const deleteNote = asyncHandler(async (req: Request, res: Response) => {
 // ==========================================
 
 export const getCourseAnnouncements = asyncHandler(async (req: Request, res: Response) => {
-  const { courseId } = req.params;
+  const { courseId: paramCourseId } = req.params;
   const { moduleId } = req.query;
+
+  const course = await prisma.course.findFirst({
+    where: { OR: [{ id: paramCourseId }, { slug: paramCourseId }] },
+    select: { id: true }
+  });
+  const courseId = course ? course.id : paramCourseId;
 
   const where: any = { courseId };
   if (moduleId) where.sectionId = moduleId;

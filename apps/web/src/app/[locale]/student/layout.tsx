@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useAuthStore, api } from "@/store/auth.store";
 import StudentSidebar from "./StudentSidebar";
-import { Bell, Search, Check, X, Menu } from "lucide-react";
+import { Bell, Search, Check, X, Menu, Megaphone, ArrowRight } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -203,6 +203,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <LocaleGuard>{children}</LocaleGuard>
         </main>
       </div>
+
+      <AnnouncementPopupBanner />
     </div>
   );
 }
@@ -340,6 +342,177 @@ function NotificationDropdown() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AnnouncementPopupBanner() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const qc = useQueryClient();
+  const [dismissedIds, setDismissedIds] = React.useState<string[]>([]);
+
+  const { data: responseData } = useQuery({
+    queryKey: ["student-notifications"],
+    queryFn: () => api.get("/student/notifications").then((r) => r.data.data),
+    enabled: !!user && user.role === "STUDENT",
+    refetchInterval: 15000,
+  });
+
+  const notifications = responseData?.notifications || [];
+
+  const latestAnnouncement = notifications.find(
+    (n: any) =>
+      !n.isRead &&
+      (n.type === "ANNOUNCEMENT" || n.type === "BROADCAST") &&
+      !dismissedIds.includes(n.id)
+  );
+
+  const markReadMut = useMutation({
+    mutationFn: (id: string) => api.put(`/student/notifications/${id}/read`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["student-notifications"] }),
+  });
+
+  if (!latestAnnouncement) return null;
+
+  const handleDismiss = () => {
+    setDismissedIds((prev) => [...prev, latestAnnouncement.id]);
+  };
+
+  const handleView = () => {
+    markReadMut.mutate(latestAnnouncement.id);
+    handleDismiss();
+    if (latestAnnouncement.link) {
+      router.push(latestAnnouncement.link);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: "24px",
+        right: "24px",
+        zIndex: 9999,
+        width: "calc(100% - 48px)",
+        maxWidth: "420px",
+        background: "#FFFFFF",
+        color: "#1A261D",
+        borderRadius: "20px",
+        padding: "20px 22px",
+        borderTop: "4px solid #B88645",
+        borderRight: "1px solid #EBEEE8",
+        borderBottom: "1px solid #EBEEE8",
+        borderLeft: "1px solid #EBEEE8",
+        boxShadow: "0 16px 40px rgba(26,38,29,0.12), 0 2px 6px rgba(0,0,0,0.04)",
+        animation: "slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+      <style>{`
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(100px) scale(0.95); }
+          to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+      `}</style>
+
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "12px",
+              background: "rgba(184,134,69,0.12)",
+              color: "#B88645",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Megaphone size={18} />
+          </div>
+          <div>
+            <span style={{ fontSize: "10px", fontWeight: 800, color: "#B88645", textTransform: "uppercase", letterSpacing: "0.12em", display: "block" }}>
+              New Course Announcement
+            </span>
+            <span style={{ fontSize: "11px", color: "#8F9E93", fontWeight: 500 }}>
+              Just now
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleDismiss}
+          style={{
+            background: "#F7F8F5",
+            border: "1px solid #E4E8E0",
+            color: "#8F9E93",
+            borderRadius: "8px",
+            width: "26px",
+            height: "26px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#1A261D")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#8F9E93")}
+        >
+          <X size={14} />
+        </button>
+      </div>
+
+      <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", fontWeight: 800, color: "#1A261D", lineHeight: 1.3 }}>
+        {latestAnnouncement.title}
+      </h4>
+
+      <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#526658", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+        {latestAnnouncement.body}
+      </p>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <button
+          onClick={handleView}
+          style={{
+            flex: 1,
+            padding: "9px 16px",
+            borderRadius: "10px",
+            border: "none",
+            background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+            color: "#FFFFFF",
+            fontSize: "12px",
+            fontWeight: 800,
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(184,134,69,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+          }}
+        >
+          <span>View Course</span>
+          <ArrowRight size={14} />
+        </button>
+
+        <button
+          onClick={handleDismiss}
+          style={{
+            padding: "9px 14px",
+            borderRadius: "10px",
+            border: "1px solid #E4E8E0",
+            background: "#F7F8F5",
+            color: "#526658",
+            fontSize: "12px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Dismiss
+        </button>
+      </div>
     </div>
   );
 }

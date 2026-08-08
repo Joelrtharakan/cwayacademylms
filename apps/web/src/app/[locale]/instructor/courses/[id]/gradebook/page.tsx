@@ -4,7 +4,11 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
-import { ArrowLeft, BookOpen, Download, Loader2, Search, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ArrowLeft, BookOpen, Download, Loader2, Search,
+  User, CheckCircle2, Award, FileText, MessageSquare,
+  BarChart3, Users, ChevronRight, Layers, ArrowUpRight
+} from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { toast } from "react-hot-toast";
 import { getLetterGrade } from "@/lib/gradeScale";
@@ -21,7 +25,10 @@ const C = {
 export default function InstructorGradebookPage() {
   const { id } = useParams() as { id: string };
   const [search, setSearch] = useState("");
-  const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"students" | "items" | "overview">("students");
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("ALL");
 
   const { data: gradebook, isLoading } = useQuery({
     queryKey: ["gradebook", id],
@@ -76,6 +83,20 @@ export default function InstructorGradebookPage() {
       s.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const selectedStudent =
+    students.find((s: any) => s.id === selectedStudentId) || filteredStudents[0] || null;
+
+  const selectedItem =
+    items.find((i: any) => i.id === selectedItemId) || items[0] || null;
+
+  // Class Overview Stats
+  const avgGrade =
+    students.length > 0
+      ? students.reduce((acc: number, s: any) => acc + s.courseGrade, 0) / students.length
+      : 0;
+
+  const passingStudentsCount = students.filter((s: any) => s.courseGrade >= 70).length;
+
   return (
     <div style={{
       width: "100%", maxWidth: 1150, margin: "0 auto",
@@ -129,31 +150,59 @@ export default function InstructorGradebookPage() {
               Master Gradebook
             </h1>
             <p style={{ margin: "4px 0 0", fontSize: 13, color: C.muted }}>
-              View all scores across every assignment and quiz for enrolled students.
+              Zero-scroll inspection hub across every assignment, quiz, and student grade.
             </p>
           </div>
 
-          {/* Search Box */}
-          {students.length > 0 && (
-            <div style={{ position: "relative", minWidth: 240 }}>
-              <Search size={16} style={{ position: "absolute", left: 12, top: 12, color: C.muted }} />
-              <input
-                type="text"
-                placeholder="Search students..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                  width: "100%", padding: "10px 14px 10px 36px",
-                  borderRadius: 10, border: `1px solid ${C.border}`,
-                  background: "#F7F8F5", fontSize: 13, boxSizing: "border-box",
-                }}
-              />
-            </div>
-          )}
+          {/* View Mode Switcher Pills */}
+          <div style={{
+            display: "inline-flex", gap: 4, background: "#F7F8F5",
+            padding: 4, borderRadius: 12, border: `1px solid ${C.border}`
+          }}>
+            <button
+              onClick={() => setActiveTab("students")}
+              style={{
+                padding: "8px 16px", borderRadius: 9, border: "none",
+                fontSize: 12, fontWeight: 800, cursor: "pointer",
+                background: activeTab === "students" ? C.gold : "transparent",
+                color: activeTab === "students" ? "#FFFFFF" : C.muted,
+                transition: "all 0.2s",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <Users size={14} /> By Student
+            </button>
+            <button
+              onClick={() => setActiveTab("items")}
+              style={{
+                padding: "8px 16px", borderRadius: 9, border: "none",
+                fontSize: 12, fontWeight: 800, cursor: "pointer",
+                background: activeTab === "items" ? C.gold : "transparent",
+                color: activeTab === "items" ? "#FFFFFF" : C.muted,
+                transition: "all 0.2s",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <Layers size={14} /> By Assignment
+            </button>
+            <button
+              onClick={() => setActiveTab("overview")}
+              style={{
+                padding: "8px 16px", borderRadius: 9, border: "none",
+                fontSize: 12, fontWeight: 800, cursor: "pointer",
+                background: activeTab === "overview" ? C.gold : "transparent",
+                color: activeTab === "overview" ? "#FFFFFF" : C.muted,
+                transition: "all 0.2s",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <BarChart3 size={14} /> Analytics
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── GRADEBOOK CONTENT AREA ── */}
+      {/* ── MAIN ZERO-SCROLL WORKSPACE ── */}
       {students.length === 0 ? (
         <div style={{ background: "#FFFFFF", padding: "60px 24px", textAlign: "center", borderRadius: 20, border: `1px solid ${C.border}` }}>
           <div style={{ width: 56, height: 56, background: C.goldLight, color: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
@@ -167,155 +216,339 @@ export default function InstructorGradebookPage() {
           <h3 style={{ fontSize: 18, fontWeight: 800, color: C.dark, margin: "0 0 6px" }}>No Graded Items</h3>
           <p style={{ color: C.muted, margin: 0, fontSize: 14 }}>This course does not have any assignments or quizzes to grade.</p>
         </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      ) : activeTab === "students" ? (
+
+        /* ── VIEW MODE 1: BY STUDENT (MASTER-DETAIL ZERO SCROLL) ── */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* DESKTOP TABLE VIEW (Hidden on Mobile) */}
-          <div className="hidden md:block" style={{
+          {/* Left Column: Student Directory List (4 cols) */}
+          <div className="lg:col-span-4" style={{
             background: "#FFFFFF", borderRadius: 20,
-            border: `1px solid ${C.border}`, overflow: "hidden",
+            border: `1px solid ${C.border}`, padding: 18,
+            display: "flex", flexDirection: "column", gap: 14,
             boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
           }}>
-            <div className="custom-scrollbar" style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                <thead>
-                  <tr style={{ background: "#F7F8F5", borderBottom: `2px solid ${C.border}` }}>
-                    <th style={{ padding: "16px 20px", fontSize: 13, fontWeight: 800, color: C.dark, borderRight: `1px solid ${C.border}`, position: "sticky", left: 0, background: "#F7F8F5", zIndex: 10, minWidth: 220 }}>
-                      Student
-                    </th>
-                    <th style={{ padding: "16px 20px", fontSize: 13, fontWeight: 800, color: C.dark, borderRight: `1px solid ${C.border}`, textAlign: "center", minWidth: 130 }}>
-                      Course Grade
-                    </th>
-                    {items.map((item: any) => (
-                      <th key={item.id} style={{ padding: "14px 18px", borderRight: `1px solid ${C.border}`, minWidth: 170 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.dark, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }} title={item.title}>
-                          {item.title}
-                        </div>
-                        <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{
-                            padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 800,
-                            background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
-                            color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
-                          }}>
-                            {item.type}
-                          </span>
-                          <span>Max: {item.maxScore}</span>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map((student: any, idx: number) => (
-                    <tr key={student.id} style={{ borderBottom: idx === filteredStudents.length - 1 ? "none" : `1px solid ${C.border}` }}>
-                      <td style={{ padding: "14px 20px", borderRight: `1px solid ${C.border}`, position: "sticky", left: 0, background: "#FFFFFF", zIndex: 10 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.goldLight, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
-                            {student.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: C.dark }}>{student.name}</div>
-                            <div style={{ fontSize: 11, color: C.muted }}>{student.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: "14px 20px", borderRight: `1px solid ${C.border}`, textAlign: "center", background: "#FAFBF8" }}>
-                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
-                          <span style={{ fontSize: 18, fontWeight: 800, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? C.gold : "#E53E3E" }}>
-                            {getLetterGrade(student.courseGrade)}
-                          </span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: C.muted }}>
-                            {student.courseGrade.toFixed(1)}%
-                          </span>
-                        </div>
-                      </td>
-                      {items.map((item: any) => {
-                        const grade = student.grades[item.id];
-                        return (
-                          <td key={item.id} style={{ padding: "14px 18px", borderRight: `1px solid ${C.border}`, textAlign: "center" }}>
-                            {grade !== null ? (
-                              <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
-                                <span style={{ fontSize: 15, fontWeight: 800, color: C.dark }}>{grade}</span>
-                                <span style={{ fontSize: 11, color: C.muted }}>/ {item.maxScore}</span>
-                              </div>
-                            ) : (
-                              <span style={{ color: "#CBD5E0", fontWeight: 600, fontSize: 13 }}>—</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ position: "relative" }}>
+              <Search size={15} style={{ position: "absolute", left: 12, top: 11, color: C.muted }} />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  width: "100%", padding: "9px 12px 9px 34px",
+                  borderRadius: 10, border: `1px solid ${C.border}`,
+                  background: "#F7F8F5", fontSize: 13, boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filteredStudents.map((s: any) => {
+                const isSelected = selectedStudent?.id === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedStudentId(s.id)}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "12px 14px", borderRadius: 14, border: `1px solid ${isSelected ? C.gold : C.border}`,
+                      background: isSelected ? C.goldLight : "#FFFFFF",
+                      cursor: "pointer", transition: "all 0.2s", textAlign: "left", width: "100%",
+                      boxShadow: isSelected ? "0 2px 8px rgba(184,134,69,0.12)" : "none",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: "50%",
+                        background: isSelected ? C.gold : "#F5F0E8",
+                        color: isSelected ? "#FFFFFF" : C.gold,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: 800, fontSize: 14, flexShrink: 0,
+                      }}>
+                        {s.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.dark, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {s.name}
+                        </h4>
+                        <span style={{ fontSize: 11, color: C.muted, display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {s.email}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 8 }}>
+                      <span style={{
+                        fontSize: 14, fontWeight: 800,
+                        color: s.courseGrade >= 90 ? "#2E7D32" : s.courseGrade >= 70 ? C.gold : "#E53E3E"
+                      }}>
+                        {getLetterGrade(s.courseGrade)}
+                      </span>
+                      <span style={{ fontSize: 11, color: C.muted, display: "block", fontWeight: 600 }}>
+                        {s.courseGrade.toFixed(1)}%
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* MOBILE/TABLET RESPONSIVE CARD LIST (Visible on < 768px) */}
-          <div className="md:hidden flex flex-col gap-3">
-            {filteredStudents.map((student: any) => {
-              const isExpanded = expandedStudent === student.id;
-              return (
-                <div key={student.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${C.border}`, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: C.goldLight, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
-                        {student.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: C.dark }}>{student.name}</h4>
-                        <span style={{ fontSize: 11, color: C.muted }}>{student.email}</span>
-                      </div>
-                    </div>
-                    
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ textAlign: "right" }}>
-                        <span style={{ fontSize: 16, fontWeight: 800, color: student.courseGrade >= 90 ? "#2E7D32" : student.courseGrade >= 70 ? C.gold : "#E53E3E", display: "block" }}>
-                          {getLetterGrade(student.courseGrade)}
-                        </span>
-                        <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{student.courseGrade.toFixed(1)}%</span>
-                      </div>
-                      <button
-                        onClick={() => setExpandedStudent(isExpanded ? null : student.id)}
-                        style={{ padding: 6, background: "#F7F8F5", border: `1px solid ${C.border}`, borderRadius: 8, cursor: "pointer", color: C.muted }}
-                      >
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </button>
+          {/* Right Column: Selected Student Full Grade Inspection (8 cols) */}
+          {selectedStudent && (
+            <div className="lg:col-span-8" style={{
+              background: "#FFFFFF", borderRadius: 20,
+              border: `1px solid ${C.border}`, padding: "24px 28px",
+              display: "flex", flexDirection: "column", gap: 20,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+            }}>
+              {/* Selected Student Banner */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "16px 20px", background: "#F7F8F5", borderRadius: 16,
+                border: `1px solid ${C.border}`, gap: 16, flexWrap: "wrap",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{
+                    width: 46, height: 46, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`,
+                    color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: 18, shadow: "0 4px 10px rgba(184,134,69,0.3)"
+                  }}>
+                    {selectedStudent.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.dark }}>{selectedStudent.name}</h3>
+                    <span style={{ fontSize: 12, color: C.muted }}>{selectedStudent.email}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Course Grade</span>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6, justifyContent: "flex-end" }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, color: selectedStudent.courseGrade >= 90 ? "#2E7D32" : selectedStudent.courseGrade >= 70 ? C.gold : "#E53E3E" }}>
+                        {getLetterGrade(selectedStudent.courseGrade)}
+                      </span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>{selectedStudent.courseGrade.toFixed(1)}%</span>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Expanded Item Grades Grid */}
-                  {isExpanded && (
-                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.border}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                      {items.map((item: any) => {
-                        const grade = student.grades[item.id];
-                        return (
-                          <div key={item.id} style={{ background: "#F7F8F5", padding: "10px 12px", borderRadius: 10, border: `1px solid ${C.border}` }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: C.dark, display: "block", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={item.title}>
-                              {item.title}
-                            </span>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-                              <span style={{
-                                padding: "1px 5px", borderRadius: 4, fontSize: 9, fontWeight: 800,
-                                background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
-                                color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
-                              }}>
-                                {item.type}
-                              </span>
-                              <span style={{ fontSize: 12, fontWeight: 800, color: grade !== null ? C.dark : "#A0AEC0" }}>
-                                {grade !== null ? `${grade} / ${item.maxScore}` : "—"}
-                              </span>
+              {/* Type Filters */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: C.dark }}>Curriculum Item Breakdown</h4>
+                
+                <div style={{ display: "flex", gap: 6 }}>
+                  {["ALL", "ASSIGNMENT", "QUIZ", "FORUM"].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setTypeFilter(type)}
+                      style={{
+                        padding: "5px 12px", borderRadius: 8, border: "none",
+                        fontSize: 11, fontWeight: 800, cursor: "pointer",
+                        background: typeFilter === type ? C.dark : "#F7F8F5",
+                        color: typeFilter === type ? "#FFFFFF" : C.muted,
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Vertical Item Grade Cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {items
+                  .filter((item: any) => typeFilter === "ALL" || item.type === typeFilter)
+                  .map((item: any) => {
+                    const score = selectedStudent.grades[item.id];
+                    const percent = score !== null ? Math.round((score / item.maxScore) * 100) : 0;
+                    const Icon = item.type === "ASSIGNMENT" ? FileText : item.type === "QUIZ" ? Award : MessageSquare;
+                    
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: "16px 18px", borderRadius: 14,
+                          border: `1px solid ${C.border}`, background: "#FFFFFF",
+                          display: "flex", flexDirection: "column", gap: 10,
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                            <div style={{
+                              width: 36, height: 36, borderRadius: 10,
+                              background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
+                              color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                            }}>
+                              <Icon size={18} />
+                            </div>
+                            <div>
+                              <h5 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.dark }}>{item.title}</h5>
+                              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{item.type} • Max Score: {item.maxScore}</span>
                             </div>
                           </div>
-                        );
-                      })}
+
+                          <div style={{ textAlign: "right" }}>
+                            {score !== null ? (
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                                <span style={{ fontSize: 18, fontWeight: 800, color: C.dark }}>{score}</span>
+                                <span style={{ fontSize: 12, color: C.muted, fontWeight: 700 }}>/ {item.maxScore}</span>
+                                <span style={{ fontSize: 12, fontWeight: 800, color: percent >= 70 ? "#2E7D32" : "#E53E3E", marginLeft: 6 }}>
+                                  ({percent}%)
+                                </span>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "#CBD5E0" }}>Not Graded Yet</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Fill Progress Bar */}
+                        <div style={{ width: "100%", height: 6, background: "#F7F8F5", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{
+                            height: "100%", width: `${score !== null ? percent : 0}%`,
+                            background: percent >= 90 ? "#2E7D32" : percent >= 70 ? C.gold : percent > 0 ? "#E53E3E" : "transparent",
+                            borderRadius: 3, transition: "width 0.4s ease"
+                          }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : activeTab === "items" ? (
+
+        /* ── VIEW MODE 2: BY ASSIGNMENT (VERTICAL SCORES LIST) ── */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Assignment Selection Directory (4 cols) */}
+          <div className="lg:col-span-4" style={{
+            background: "#FFFFFF", borderRadius: 20,
+            border: `1px solid ${C.border}`, padding: 18,
+            display: "flex", flexDirection: "column", gap: 10,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+          }}>
+            <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: C.dark }}>Curriculum Items ({items.length})</h4>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {items.map((item: any) => {
+                const isSelected = selectedItem?.id === item.id;
+                const Icon = item.type === "ASSIGNMENT" ? FileText : item.type === "QUIZ" ? Award : MessageSquare;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedItemId(item.id)}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "12px 14px", borderRadius: 14, border: `1px solid ${isSelected ? C.gold : C.border}`,
+                      background: isSelected ? C.goldLight : "#FFFFFF",
+                      cursor: "pointer", transition: "all 0.2s", textAlign: "left", width: "100%",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                      <Icon size={16} color={isSelected ? C.gold : C.muted} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.dark, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {item.title}
+                      </span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                    <ChevronRight size={16} color={C.muted} />
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
+          {/* Right Column: All Student Scores for Selected Item (8 cols) */}
+          {selectedItem && (
+            <div className="lg:col-span-8" style={{
+              background: "#FFFFFF", borderRadius: 20,
+              border: `1px solid ${C.border}`, padding: "24px 28px",
+              display: "flex", flexDirection: "column", gap: 20,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+            }}>
+              <div>
+                <span style={{
+                  padding: "3px 8px", borderRadius: 6, fontSize: 10, fontWeight: 800,
+                  background: selectedItem.type === "ASSIGNMENT" ? "#E3F2FD" : selectedItem.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
+                  color: selectedItem.type === "ASSIGNMENT" ? "#1976D2" : selectedItem.type === "FORUM" ? "#2E7D32" : "#F57C00",
+                }}>
+                  {selectedItem.type}
+                </span>
+                <h3 style={{ margin: "6px 0 2px", fontSize: 20, fontWeight: 800, color: C.dark }}>{selectedItem.title}</h3>
+                <span style={{ fontSize: 12, color: C.muted }}>Max Score: {selectedItem.maxScore} Points</span>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {students.map((s: any) => {
+                  const score = s.grades[selectedItem.id];
+                  const percent = score !== null ? Math.round((score / selectedItem.maxScore) * 100) : 0;
+                  return (
+                    <div
+                      key={s.id}
+                      style={{
+                        padding: "14px 18px", borderRadius: 14,
+                        border: `1px solid ${C.border}`, background: "#F7F8F5",
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.goldLight, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>
+                          {s.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: C.dark }}>{s.name}</div>
+                          <div style={{ fontSize: 11, color: C.muted }}>{s.email}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        {score !== null ? (
+                          <span style={{ fontSize: 16, fontWeight: 800, color: C.dark }}>
+                            {score} <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>/ {selectedItem.maxScore} ({percent}%)</span>
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#CBD5E0", fontWeight: 600 }}>Not Submitted</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+
+        /* ── VIEW MODE 3: ANALYTICS OVERVIEW ── */
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div style={{ background: "#FFFFFF", padding: 22, borderRadius: 20, border: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>Class Average</span>
+              <div style={{ fontSize: 28, fontWeight: 800, color: C.dark, marginTop: 4 }}>
+                {avgGrade.toFixed(1)}%
+              </div>
+            </div>
+            <div style={{ background: "#FFFFFF", padding: 22, borderRadius: 20, border: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>Pass Rate (&gt;=70%)</span>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#2E7D32", marginTop: 4 }}>
+                {students.length > 0 ? Math.round((passingStudentsCount / students.length) * 100) : 0}%
+              </div>
+            </div>
+            <div style={{ background: "#FFFFFF", padding: 22, borderRadius: 20, border: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>Total Graded Items</span>
+              <div style={{ fontSize: 28, fontWeight: 800, color: C.gold, marginTop: 4 }}>
+                {items.length}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

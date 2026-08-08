@@ -1142,7 +1142,7 @@ export const getCourseAnnouncements = asyncHandler(async (req: Request, res: Res
 
 export const getInstructorAnnouncements = asyncHandler(async (req: Request, res: Response) => {
   const announcements = await prisma.announcement.findMany({
-    where: { courseId: req.params.id, authorId: req.user!.id },
+    where: { courseId: req.params.id },
     orderBy: { createdAt: "desc" },
     include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
   });
@@ -1155,8 +1155,12 @@ export const createAnnouncement = asyncHandler(async (req: Request, res: Respons
     return res.status(400).json({ status: "error", message: "Title and content are required" });
   }
 
-  const course = await prisma.course.findFirst({ where: { id: req.params.id, instructorId: req.user!.id } });
-  if (!course) return res.status(404).json({ status: "error", message: "Course not found" });
+  const courseWhere = req.user!.role === "ADMIN"
+    ? { id: req.params.id }
+    : { id: req.params.id, instructorId: req.user!.id };
+
+  const course = await prisma.course.findFirst({ where: courseWhere });
+  if (!course) return res.status(404).json({ status: "error", message: "Course not found or unauthorized" });
 
   const announcement = await prisma.announcement.create({
     data: {
@@ -1168,25 +1172,60 @@ export const createAnnouncement = asyncHandler(async (req: Request, res: Respons
     include: { author: { select: { id: true, name: true, avatar: true, role: true } } }
   });
 
-  // Create notifications for all enrolled students
-  const enrollments = await prisma.enrollment.findMany({ where: { courseId: course.id, status: "ACTIVE" } });
-  if (enrollments.length > 0) {
-    const notifications = enrollments.map(e => ({
-      userId: e.studentId,
-      type: "ANNOUNCEMENT",
-      title: `New Announcement in ${course.title}`,
-      body: title,
-      link: `/student/courses/${course.slug || course.id}/learn`,
-    }));
-    await prisma.notification.createMany({ data: notifications });
+  // Extract clean human-readable course title string
+  const courseTitleStr = typeof course.title === "string"
+    ? course.title
+    : (course.title as any)?.en || (course.title as any)?.hi || Object.values(course.title || {})[0] || "Course";
+
+  // 1. Direct Course Enrollments (all students enrolled directly in this course)
+  const directEnrollments = await prisma.enrollment.findMany({
+    where: { courseId: course.id },
+    select: { studentId: true }
+  });
+
+  // 2. Program Enrollments (if course is part of a program)
+  let programStudentIds: string[] = [];
+  if (course.programId) {
+    const programEnrollments = await prisma.programEnrollment.findMany({
+      where: { programId: course.programId },
+      select: { studentId: true }
+    });
+    programStudentIds = programEnrollments.map(p => p.studentId);
   }
 
-  res.json({ status: "success", data: announcement });
+  // Combine and deduplicate all target student IDs
+  const allStudentIds = Array.from(new Set([
+    ...directEnrollments.map(e => e.studentId),
+    ...programStudentIds
+  ]));
+
+  if (allStudentIds.length > 0) {
+    const notificationData = allStudentIds.map(studentId => ({
+      userId: studentId,
+      type: "ANNOUNCEMENT",
+      title: `New Announcement in ${courseTitleStr}`,
+      body: title,
+      link: `/student/courses/${course.id}/learn`,
+    }));
+
+    await prisma.notification.createMany({ data: notificationData });
+
+    // Purge cached notification lists for all recipient students in Redis so badge updates live
+    await Promise.all(
+      allStudentIds.map(studentId => redis.del(`notifications:${studentId}`).catch(() => {}))
+    );
+  }
+
+  res.json({ status: "success", data: announcement, notifiedStudentsCount: allStudentIds.length });
 });
 
 export const deleteAnnouncement = asyncHandler(async (req: Request, res: Response) => {
+  const whereClause = req.user!.role === "ADMIN"
+    ? { id: req.params.announcementId, courseId: req.params.id }
+    : { id: req.params.announcementId, courseId: req.params.id, authorId: req.user!.id };
+
   const announcement = await prisma.announcement.findFirst({
-    where: { id: req.params.announcementId, courseId: req.params.id, authorId: req.user!.id }
+    where: whereClause
   });
 
   if (!announcement) {

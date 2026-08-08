@@ -48,7 +48,7 @@ router.delete("/forum/replies/:replyId", authenticate, CC.deleteForumReply);
 router.get("/instructor/courses", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getMyCourses);
 router.get("/instructor/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorStats);
 router.get("/instructor/courses/:id/analytics", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getCourseAnalytics);
-router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR"), CC.getInstructorAssignments);
+router.get("/instructor/assignments", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorAssignments);
 router.get("/quizzes/:quizId/attempts", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizAttempts);
 router.get("/quizzes/:quizId/stats", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getQuizStats);
 router.post("/quizzes/:quizId/reset", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.resetQuizAttempts);
@@ -119,7 +119,7 @@ router.post("/users/me/upload-avatar", authenticate, upload.single("avatar"), CC
 
 // Announcements
 router.get("/courses/:id/announcements", authenticate, CC.getCourseAnnouncements);
-router.get("/instructor/courses/:id/announcements", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.getInstructorAnnouncements);
+router.get("/instructor/courses/:id/announcements", authenticate, CC.getInstructorAnnouncements);
 router.post("/instructor/courses/:id/announcements", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.createAnnouncement);
 router.delete("/instructor/courses/:id/announcements/:announcementId", authenticate, authorize("INSTRUCTOR", "ADMIN"), CC.deleteAnnouncement);
 

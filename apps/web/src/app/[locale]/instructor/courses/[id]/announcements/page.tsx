@@ -2,25 +2,31 @@
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Megaphone, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Megaphone, Loader2, Send, X, Calendar, Bell } from "lucide-react";
 import { Link } from "@/i18n/routing";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { getInstructorAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/api/instructor";
 import { api } from "@/store/auth.store";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  dark: "#1A261D",
+  muted: "#7F8E82",
+  border: "#EBEEE8",
+};
+
 export default function CourseAnnouncementsPage() {
   const { id } = useParams() as { id: string };
-  const router = useRouter();
   const qc = useQueryClient();
   const confirm = useConfirm();
 
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState({ title: "", content: "" });
 
-  // Fetch course info for header
   const { data: course } = useQuery({
     queryKey: ["course", id],
     queryFn: () => api.get(`/courses/${id}`).then((r) => r.data.data),
@@ -48,133 +54,263 @@ export default function CourseAnnouncementsPage() {
       qc.invalidateQueries({ queryKey: ["announcements", id] });
       toast.success("Announcement deleted");
     },
-    onError: (err: any) => toast.error("Failed to delete announcement"),
+    onError: () => toast.error("Failed to delete announcement"),
   });
+
+  const getCourseTitle = () => {
+    if (!course?.title) return "Untitled Course";
+    if (typeof course.title === "string") return course.title;
+    return course.title.en || course.title.hi || Object.values(course.title)[0] || "Untitled Course";
+  };
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#F5F0E8" }}>
-        <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} />
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: C.gold }} />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
-      
-      {/* Sticky Top Header */}
-      <header style={{ position: "sticky", top: "70px", zIndex: 50, background: "#FFFFFF", padding: "16px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#F5F0E8"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
-            <ArrowLeft size={18} /> Back to Course
-          </Link>
-          <div style={{ height: "24px", width: "1px", background: "rgba(184,134,69,0.3)" }}></div>
-          <div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700, margin: 0, color: "#B88645" }}>Course Announcements</h1>
-            <div style={{ fontSize: "12px", color: "#8F9E93", marginTop: "4px" }}>{course?.title || "Untitled Course"}</div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Area */}
-      <main style={{ maxWidth: "800px", margin: "40px auto", width: "100%", padding: "0 40px", flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
-          <div>
-            <h3 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 8px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Announcements</h3>
-            <p style={{ fontSize: "14px", color: "#8F9E93", margin: 0 }}>Broadcast important updates to all students enrolled in this course.</p>
-          </div>
-          <button 
-            onClick={() => setIsCreating(true)}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: "#B88645", border: "none", borderRadius: "8px", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 12px rgba(184,134,69,0.2)", transition: "all 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+    <div style={{
+      width: "100%", maxWidth: 1150, margin: "0 auto",
+      display: "flex", flexDirection: "column", gap: 24,
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      paddingBottom: 64, boxSizing: "border-box",
+    }}>
+      {/* ── TOP HEADER CARD ── */}
+      <div style={{
+        background: "#FFFFFF",
+        borderTop: `1px solid ${C.border}`,
+        borderRight: `1px solid ${C.border}`,
+        borderBottom: `1px solid ${C.border}`,
+        borderLeft: `4px solid ${C.gold}`,
+        borderRadius: 20,
+        padding: "24px 28px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        display: "flex", flexDirection: "column", gap: 16,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <Link
+            href={`/instructor/courses/${id}`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", borderRadius: 10,
+              background: "#F7F8F5", color: "#2D3A2F",
+              fontSize: 13, fontWeight: 700, textDecoration: "none",
+            }}
           >
-            <Plus size={18} /> New Announcement
-          </button>
+            <ArrowLeft size={16} />
+            <span>Back to Course</span>
+          </Link>
+
+          <span style={{
+            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
+            padding: "5px 14px", borderRadius: 20,
+            background: C.goldLight, color: C.gold, border: `1px solid rgba(184,134,69,0.25)`,
+          }}>
+            Course Announcements
+          </span>
         </div>
 
-        {/* Create Form */}
-        {isCreating && (
-          <div style={{ background: "#FFFFFF", padding: "24px", borderRadius: "12px", border: "1px solid #E4E8E0", marginBottom: "32px", boxShadow: "0 10px 30px rgba(26,38,29,0.04)" }}>
-            <h4 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: 700, color: "#1A261D" }}>Compose Announcement</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Subject / Title</label>
-                <input 
-                  type="text" 
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Welcome to Week 2!"
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#1A261D" }}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Message</label>
-                <textarea 
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  placeholder="Write your announcement message here..."
-                  rows={6}
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E4E8E0", background: "#F7F8F5", fontSize: "14px", color: "#1A261D", resize: "vertical" }}
-                />
-              </div>
-              <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
-                <button 
-                  onClick={() => createMut.mutate(form)}
-                  disabled={!form.title.trim() || !form.content.trim() || createMut.isPending}
-                  style={{ padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: (!form.title.trim() || !form.content.trim()) ? "not-allowed" : "pointer", opacity: (!form.title.trim() || !form.content.trim()) ? 0.5 : 1 }}
-                >
-                  {createMut.isPending ? "Posting..." : "Post Announcement"}
-                </button>
-                <button 
-                  onClick={() => { setIsCreating(false); setForm({ title: "", content: "" }); }}
-                  style={{ padding: "10px 20px", background: "transparent", color: "#8F9E93", border: "1px solid #E4E8E0", borderRadius: "8px", fontWeight: 600, cursor: "pointer" }}
-                >
-                  Cancel
-                </button>
-              </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: C.goldLight, color: C.gold,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <Bell size={22} />
+            </div>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.dark, fontFamily: "Georgia, serif" }}>
+                Course Announcements
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: C.muted }}>
+                {getCourseTitle()} — Broadcast updates to all enrolled students.
+              </p>
             </div>
           </div>
-        )}
 
-        {/* List */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {announcements?.length === 0 && !isCreating && (
-            <div style={{ padding: "60px", textAlign: "center", background: "#FFFFFF", borderRadius: "12px", border: "1px dashed #E4E8E0" }}>
-              <div style={{ width: "64px", height: "64px", background: "rgba(184,134,69,0.1)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", color: "#B88645" }}>
-                <Megaphone size={28} />
-              </div>
-              <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 700, color: "#1A261D" }}>No Announcements</h3>
-              <p style={{ margin: "0", color: "#8F9E93", fontSize: "14px" }}>You haven't posted any announcements for this course yet.</p>
-            </div>
+          {!isCreating && (
+            <button
+              onClick={() => setIsCreating(true)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "11px 22px", borderRadius: 12, border: "none",
+                background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`,
+                color: "#FFFFFF", fontSize: 13, fontWeight: 800, cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(184,134,69,0.25)", transition: "all 0.2s",
+                whiteSpace: "nowrap", flexShrink: 0,
+              }}
+            >
+              <Plus size={18} /> New Announcement
+            </button>
           )}
+        </div>
+      </div>
 
+      {/* ── COMPOSE ANNOUNCEMENT FORM ── */}
+      {isCreating && (
+        <div style={{
+          background: "#FFFFFF", padding: "28px", borderRadius: 20,
+          border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(26,38,29,0.04)",
+          display: "flex", flexDirection: "column", gap: 20,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.dark }}>
+              Compose New Announcement
+            </h3>
+            <button
+              onClick={() => { setIsCreating(false); setForm({ title: "", content: "" }); }}
+              style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 4 }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 6 }}>
+                Subject / Title
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="e.g. Welcome to Week 2 & Live Q&A Schedule"
+                style={{
+                  width: "100%", padding: "12px 16px", borderRadius: 10,
+                  border: `1px solid ${C.border}`, background: "#F7F8F5",
+                  fontSize: 14, color: C.dark, boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.muted, marginBottom: 6 }}>
+                Announcement Message
+              </label>
+              <textarea
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                placeholder="Write your announcement details here..."
+                rows={5}
+                style={{
+                  width: "100%", padding: "12px 16px", borderRadius: 10,
+                  border: `1px solid ${C.border}`, background: "#F7F8F5",
+                  fontSize: 14, color: C.dark, resize: "vertical", boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
+              <button
+                onClick={() => createMut.mutate(form)}
+                disabled={!form.title.trim() || !form.content.trim() || createMut.isPending}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "11px 24px", borderRadius: 10, border: "none",
+                  background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`,
+                  color: "#FFFFFF", fontSize: 13, fontWeight: 800, cursor: (!form.title.trim() || !form.content.trim()) ? "not-allowed" : "pointer",
+                  opacity: (!form.title.trim() || !form.content.trim() || createMut.isPending) ? 0.6 : 1,
+                  boxShadow: "0 2px 8px rgba(184,134,69,0.2)",
+                }}
+              >
+                <Send size={15} />
+                <span>{createMut.isPending ? "Publishing..." : "Publish Announcement"}</span>
+              </button>
+
+              <button
+                onClick={() => { setIsCreating(false); setForm({ title: "", content: "" }); }}
+                style={{
+                  padding: "11px 20px", borderRadius: 10,
+                  border: `1px solid ${C.border}`, background: "#F7F8F5",
+                  color: C.muted, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ANNOUNCEMENTS FEED LIST ── */}
+      {announcements?.length === 0 && !isCreating ? (
+        <div style={{
+          background: "#FFFFFF", padding: "60px 24px", textAlign: "center",
+          borderRadius: 20, border: `1px dashed ${C.border}`,
+        }}>
+          <div style={{
+            width: 56, height: 56, background: C.goldLight, color: C.gold,
+            borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 16px",
+          }}>
+            <Megaphone size={26} />
+          </div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: C.dark, margin: "0 0 6px" }}>No Announcements Posted</h3>
+          <p style={{ color: C.muted, margin: 0, fontSize: 14 }}>You haven't published any announcements for this course yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {announcements?.map((ann: any) => (
-            <div key={ann.id} style={{ background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0", padding: "24px", boxShadow: "0 2px 8px rgba(26,38,29,0.04)" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div>
-                  <h4 style={{ fontSize: "18px", fontWeight: 700, color: "#1A261D", margin: "0 0 6px 0" }}>{ann.title}</h4>
-                  <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span>Posted {new Date(ann.createdAt).toLocaleDateString()}</span>
+            <div
+              key={ann.id}
+              style={{
+                background: "#FFFFFF", borderRadius: 20,
+                border: `1px solid ${C.border}`, padding: "24px 28px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                display: "flex", flexDirection: "column", gap: 14,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 10,
+                    background: C.goldLight, color: C.gold,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <Megaphone size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: C.dark }}>{ann.title}</h3>
+                    <div style={{ fontSize: 12, color: C.muted, display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                      <Calendar size={13} />
+                      <span>{new Date(ann.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    </div>
                   </div>
                 </div>
-                <button 
-                  onClick={async () => { if(await confirm("Are you sure you want to delete this announcement?")) deleteMut.mutate(ann.id); }}
-                  style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", transition: "background 0.2s" }} 
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} 
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+
+                <button
+                  onClick={async () => {
+                    if (await confirm("Are you sure you want to delete this announcement?")) {
+                      deleteMut.mutate(ann.id);
+                    }
+                  }}
+                  title="Delete Announcement"
+                  style={{
+                    width: 34, height: 34, borderRadius: 8,
+                    background: "rgba(229,62,62,0.06)", border: "1px solid rgba(229,62,62,0.2)",
+                    color: "#E53E3E", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
-              <div style={{ fontSize: "14px", color: "#1A261D", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+
+              <div style={{
+                fontSize: 14, color: C.dark, lineHeight: 1.6,
+                whiteSpace: "pre-wrap", background: "#F7F8F5",
+                padding: "16px 20px", borderRadius: 14, border: `1px solid ${C.border}`,
+              }}>
                 {ann.content}
               </div>
             </div>
           ))}
         </div>
-      </main>
-
+      )}
     </div>
   );
 }
