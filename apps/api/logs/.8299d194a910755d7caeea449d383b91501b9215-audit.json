@@ -6,31 +6,6 @@
     "auditLog": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/.8299d194a910755d7caeea449d383b91501b9215-audit.json",
     "files": [
         {
-            "date": 1782715729256,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-06-29.log",
-            "hash": "7c58d35160ff7d55cd25935e6368772b82fae8e61a5ec47782f5c738d517533b"
-        },
-        {
-            "date": 1782814949784,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-06-30.log",
-            "hash": "ac7e4dae1f3655f02357ba9af93d4fc4e15583c87f442d8d202b932968e6d0cc"
-        },
-        {
-            "date": 1782940499390,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-02.log",
-            "hash": "792bdbdc4661962c28c53554f1729b3468250340790b20b809ef92f8d2a6a57a"
-        },
-        {
-            "date": 1783334046031,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-06.log",
-            "hash": "d94bae1733bfd1f27ab2cbdad894cf0be3833cd6d933f29a1c55a1d1a72de53f"
-        },
-        {
-            "date": 1783363510896,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-07.log",
-            "hash": "8855765b4bbc8d55d517bc20de4956dba250d5389c010a9e5f6fe3513e4a2004"
-        },
-        {
             "date": 1784214894550,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-16.log",
             "hash": "09d2df2ea0ed188bc440910a08aaa022f8c939de1f1e664129c476162426fdab"
@@ -79,6 +54,11 @@
             "date": 1785180314029,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-28.log",
             "hash": "97fcbb1184805476dac90f944295f65285f38533b92e8cc26e2ea1a8a9f66017"
+        },
+        {
+            "date": 1786188737004,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-08-08.log",
+            "hash": "05a01b52a47f1e4c007cf4ffa46ac14d93c4170260fec15864eb3cfbcaeea9d1"
         }
     ],
     "hashType": "sha256"

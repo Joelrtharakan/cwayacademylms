@@ -82,16 +82,16 @@ exports.applyForProgram = (0, errors_1.asyncHandler)(async (req, res) => {
     if (!program)
         throw new errors_1.AppError("Program not found", 404);
     const files = req.files;
-    if (!files || !files["photo"] || files["photo"].length === 0) {
-        throw new errors_1.AppError("Passport photo is required", 400);
+    let photoUrl = "https://cway-academy.r2.cloudflarestorage.com/defaults/passport-photo.png";
+    if (files && files["photo"] && files["photo"].length > 0) {
+        const photoFile = files["photo"][0];
+        const photoKey = (0, storage_service_1.generateKey)("applications/photos", `${Date.now()}-${photoFile.originalname}`);
+        const { url } = await (0, storage_service_1.uploadToR2)(photoFile.buffer, photoKey, photoFile.mimetype);
+        photoUrl = url;
     }
-    // Upload photo
-    const photoFile = files["photo"][0];
-    const photoKey = (0, storage_service_1.generateKey)("applications/photos", `${Date.now()}-${photoFile.originalname}`);
-    const { url: photoUrl } = await (0, storage_service_1.uploadToR2)(photoFile.buffer, photoKey, photoFile.mimetype);
     // Upload certificates
     const certificatesUrls = [];
-    if (files["certificates"] && files["certificates"].length > 0) {
+    if (files && files["certificates"] && files["certificates"].length > 0) {
         for (const certFile of files["certificates"]) {
             const certKey = (0, storage_service_1.generateKey)("applications/certificates", `${Date.now()}-${certFile.originalname}`);
             const { url } = await (0, storage_service_1.uploadToR2)(certFile.buffer, certKey, certFile.mimetype);

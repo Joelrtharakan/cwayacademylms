@@ -268,7 +268,7 @@ export default function ApplicationDetailsPage() {
             {app.referenceForms && app.referenceForms.map((refForm: any, idx: number) => {
               const ratings = refForm.ratings ? JSON.parse(refForm.ratings) : {};
               return (
-                <section key={refForm.id} className="mt-6 pt-6 border-t border-gray-200 print:break-before-page break-inside-avoid print:mt-0 print:pt-20" style={{ marginBottom: "16px" }}>
+                <section key={refForm.id} className="mt-6 pt-6 border-t border-gray-200 break-inside-avoid print:mt-6 print:pt-6" style={{ marginBottom: "16px" }}>
                   <h3 className="text-2xl font-bold text-center text-[#1A261D] uppercase" style={{ marginBottom: "24px", fontFamily: "var(--font-cinzel), Georgia, serif", letterSpacing: "0.05em" }}>
                     {refForm.type === 'PASTOR' ? "Pastor's Recommendation Form" : "General Reference Form"}
                   </h3>
@@ -364,16 +364,16 @@ export default function ApplicationDetailsPage() {
 
             {/* Attached Documents */}
             {certificates && certificates.length > 0 && (
-              <section className="mt-12 pt-12 border-t border-gray-200 print:break-before-page print:pt-20">
-                <h3 className="text-2xl font-bold text-center text-[#1A261D] print:break-after-avoid" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif", letterSpacing: "0.05em" }}>
+              <section className="mt-12 pt-12 border-t border-gray-200 print:mt-4 print:pt-4 print:border-none print:break-before-page">
+                <h3 className="text-2xl font-bold text-center text-[#1A261D] print:break-after-avoid print:mb-4" style={{ marginBottom: "32px", fontFamily: "var(--font-cinzel), Georgia, serif", letterSpacing: "0.05em" }}>
                   ATTACHED DOCUMENTS
                 </h3>
-                <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-8 print:gap-4">
                   {certificates.map((url: string, i: number) => {
                     const isPdf = url.toLowerCase().includes('.pdf');
                     return (
-                      <div key={i} className="flex flex-col items-center print:break-inside-avoid mb-6">
-                        <p className="text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold">Document {i + 1}</p>
+                      <div key={i} className="flex flex-col items-center print:break-inside-avoid print:mb-2 mb-6">
+                        <p className="text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold print:hidden">Document {i + 1}</p>
                         {isPdf ? (
                           <PdfViewer url={url} />
                         ) : (
@@ -397,11 +397,14 @@ export default function ApplicationDetailsPage() {
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page {
-            margin: 0;
+            margin: 15mm 12mm;
+            size: portrait;
           }
           body {
             background-color: white !important;
-            padding: 15mm !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            -webkit-print-color-adjust: exact;
           }
           .print\\:hidden {
             display: none !important;
@@ -424,10 +427,16 @@ export default function ApplicationDetailsPage() {
           }
           .react-pdf__Page__canvas {
             max-width: 100% !important;
-            max-height: 22cm !important;
+            max-height: 20.5cm !important;
             width: auto !important;
             height: auto !important;
-            object-fit: contain;
+            object-fit: contain !important;
+            display: block !important;
+            margin: 0 auto !important;
+          }
+          .react-pdf__Page {
+            margin: 0 !important;
+            padding: 0 !important;
           }
           #application-document {
             box-shadow: none !important;
@@ -436,6 +445,15 @@ export default function ApplicationDetailsPage() {
             margin: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
+          }
+          /* Prevent unnecessary empty trailing pages */
+          #application-document section:last-child,
+          #application-document div:last-child,
+          #application-document *:last-child {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
           }
         }
       `}} />

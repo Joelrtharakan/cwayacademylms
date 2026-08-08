@@ -199,7 +199,7 @@ export default function StudentSettingsPage() {
   };
 
   return (
-    <div className="w-full flex flex-col gap-5 max-w-[1000px] mx-auto font-sans px-0 sm:px-4 lg:px-6 py-2 sm:py-6" style={{ boxSizing: "border-box" }}>
+    <div className="w-full flex flex-col gap-8 max-w-[1100px] mx-auto font-sans px-4 sm:px-6 lg:px-8 py-8" style={{ boxSizing: "border-box" }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -215,20 +215,20 @@ export default function StudentSettingsPage() {
       `}</style>
 
       {/* Hero Header Area */}
-      <div>
+      <div className="pb-1">
         <div className="flex items-center gap-4 mb-2">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#B88645] to-[#8A6433] flex items-center justify-center shadow-md shrink-0">
-            <User size={22} color="#FFFFFF" strokeWidth={2} />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#B88645] to-[#8A6433] flex items-center justify-center shadow-md shrink-0">
+            <User size={26} color="#FFFFFF" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#1A261D] tracking-tight leading-tight m-0">{t("title")}</h1>
-            <p className="text-xs sm:text-sm text-[#8F9E93] mt-1 font-medium m-0">{t("subtitle")}</p>
+            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A261D] tracking-tight leading-tight m-0">{t("title")}</h1>
+            <p className="text-xs sm:text-sm text-[#8F9E93] mt-1.5 font-medium m-0">{t("subtitle")}</p>
           </div>
         </div>
       </div>
 
-      {/* Mobile & Tablet Tab Pills (< 1024px) - Grid 3 columns */}
-      <div className="grid lg:hidden grid-cols-3 gap-2 w-full">
+      {/* Settings Navigation Bar */}
+      <div className="w-full flex items-center gap-3 p-2.5 sm:p-3 bg-[#F2F4EF] border border-[#E4E8E0] rounded-2xl overflow-x-auto shadow-inner">
         {TABS.map(tab => {
           const active = activeTab === tab.id;
           const Icon = tab.icon;
@@ -236,86 +236,58 @@ export default function StudentSettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-                padding: "10px 6px",
-                borderRadius: "12px",
-                fontSize: "13px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                backgroundColor: active ? "#B88645" : "#FFFFFF",
-                color: active ? "#FFFFFF" : "#8F9E93",
-                border: active ? "1px solid #B88645" : "1px solid #E4E8E0",
-                boxShadow: active ? "0 4px 12px rgba(184,134,69,0.25)" : "0 1px 3px rgba(0,0,0,0.04)",
-                width: "100%",
-                boxSizing: "border-box"
-              }}
+              className={`flex items-center justify-center gap-3 px-6 py-4 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer border-none flex-1 min-w-[140px] ${
+                active
+                  ? "bg-white text-[#1A261D] shadow-md border border-[#E4E8E0]"
+                  : "bg-transparent text-[#6B7A6E] hover:bg-white/60 hover:text-[#1A261D]"
+              }`}
             >
-              <Icon size={16} style={{ flexShrink: 0 }} />
-              <span className="truncate">{tab.label}</span>
+              <Icon size={20} className={active ? "text-[#B88645]" : "text-[#8F9E93]"} strokeWidth={active ? 2.5 : 2} />
+              <span>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Main Settings Card */}
-      <div className="w-full flex flex-col lg:flex-row bg-white border border-[#E4E8E0] rounded-2xl lg:rounded-3xl overflow-hidden shadow-sm min-h-[400px]" style={{ background: "#FFFFFF" }}>
-        {/* Desktop Sidebar (>= 1024px) */}
-        <div className="hidden lg:flex w-[260px] shrink-0 flex-col gap-1.5 bg-[#FAFAFA] border-r border-[#E4E8E0] p-6 lg:p-8">
-          <h3 className="text-[11px] font-bold text-[#8F9E93] uppercase tracking-wider mb-3 px-3">{t("menuTitle")}</h3>
-          {TABS.map(tab => {
-            const active = activeTab === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left cursor-pointer border-none ${
-                  active
-                    ? "bg-white text-[#1A261D] shadow-sm"
-                    : "bg-transparent text-[#8F9E93] hover:bg-black/5 hover:text-[#1A261D]"
-                }`}
-              >
-                <Icon size={18} className={active ? "text-[#B88645]" : "text-[#8F9E93]"} strokeWidth={active ? 2.5 : 2} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content Pane - Optimized responsive padding */}
+      {/* Main Content Pane Card */}
+      <div className="w-full bg-white border border-[#E4E8E0] rounded-2xl lg:rounded-3xl overflow-hidden shadow-sm min-h-[500px]">
+        {/* Content Pane */}
         <div 
-          className="tab-content flex-1 bg-white min-w-0" 
+          className="tab-content w-full bg-white" 
           key={activeTab}
-          style={{ padding: "clamp(18px, 4vw, 36px)", background: "#FFFFFF", boxSizing: "border-box" }}
+          style={{ padding: "clamp(24px, 5vw, 48px)", background: "#FFFFFF", boxSizing: "border-box" }}
         >
           {activeTab === "profile" && (
             <div>
-              <div className="mb-6 sm:mb-8 pb-4 sm:pb-5 border-b border-[#E4E8E0]">
+              <div className="mb-8 pb-6 border-b border-[#E4E8E0]">
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1A261D] m-0 mb-1">{t("profile.title")}</h2>
                 <p className="text-xs sm:text-sm text-[#8F9E93] m-0 leading-relaxed">{t("profile.subtitle")}</p>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
-                <div className="avatar-container relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#F7F8F5] border-2 border-dashed border-[#E4E8E0] overflow-hidden flex items-center justify-center shadow-md cursor-pointer shrink-0">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 mb-10 text-center sm:text-left">
+                <div 
+                  className="avatar-container relative bg-[#F7F8F5] border-2 border-dashed border-[#E4E8E0] overflow-hidden flex items-center justify-center shadow-md cursor-pointer shrink-0"
+                  style={{ width: "96px", height: "96px", minWidth: "96px", minHeight: "96px", borderRadius: "50%" }}
+                >
                   {user?.avatar ? (
-                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover transition-transform duration-500" />
+                    <img 
+                      src={user.avatar} 
+                      alt="Avatar" 
+                      style={{ width: "96px", height: "96px", objectFit: "cover", borderRadius: "50%", display: "block" }} 
+                      className="transition-transform duration-500" 
+                    />
                   ) : (
                     <User size={36} className="text-[#8F9E93]" strokeWidth={1.5} />
                   )}
-                  <label className="avatar-hover-overlay absolute inset-0 bg-[#1A261D]/70 flex flex-col items-center justify-center text-white cursor-pointer gap-1">
+                  <label className="avatar-hover-overlay absolute inset-0 bg-[#1A261D]/70 flex flex-col items-center justify-center text-white cursor-pointer gap-1" style={{ borderRadius: "50%" }}>
                     <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
                     <Camera size={20} />
                     <span className="text-[11px] font-semibold">{t("profile.change")}</span>
                   </label>
                 </div>
                 <div className="flex flex-col justify-center">
-                  <h3 className="m-0 mb-1 text-base sm:text-lg font-bold text-[#1A261D]">{t("profile.pictureTitle")}</h3>
-                  <p className="text-xs sm:text-sm text-[#8F9E93] m-0 max-w-xs leading-relaxed">{t("profile.pictureDesc")}</p>
+                  <h3 className="m-0 mb-1.5 text-base sm:text-lg font-bold text-[#1A261D]">{t("profile.pictureTitle")}</h3>
+                  <p className="text-xs sm:text-sm text-[#8F9E93] m-0 max-w-sm leading-relaxed">{t("profile.pictureDesc")}</p>
                 </div>
               </div>
 

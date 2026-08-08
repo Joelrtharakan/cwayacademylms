@@ -6,10 +6,22 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dashboard/", "/api/", "/verify/", "/login"],
+        disallow: [
+          "/student/",
+          "/instructor/",
+          "/admin/",
+          "/registrar/",
+          "/api/",
+          "/verify/",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password",
+          "/references/",
+        ],
       },
     ],
-    sitemap: "https://cwayacademy.org/sitemap.xml",
-    host: "https://cwayacademy.org",
+    sitemap: "https://cwayacademy.com/sitemap.xml",
+    host: "https://cwayacademy.com",
   };
 }

@@ -37,6 +37,7 @@ exports.AuthController = void 0;
 const auth_service_1 = require("../services/auth.service");
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
+const logger_1 = require("../utils/logger");
 const isProduction = process.env.NODE_ENV === "production";
 class AuthController {
     static register = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -52,8 +53,7 @@ class AuthController {
     static login = (0, errors_1.asyncHandler)(async (req, res) => {
         try {
             const { accessToken, refreshToken, user } = await auth_service_1.AuthService.login(req.body);
-            const { logger } = await Promise.resolve().then(() => __importStar(require("../utils/logger")));
-            logger.info(`Successful login: ${user.email}`, { userId: user.id, ip: req.ip });
+            logger_1.logger.info(`Successful login: ${user.email}`, { userId: user.id, ip: req.ip });
             // Activity log — login success
             // @ts-ignore: activityLog exists at runtime; ts-node type cache lag after db push
             prisma_1.prisma.activityLog.create({
@@ -82,8 +82,7 @@ class AuthController {
             });
         }
         catch (error) {
-            const { logger } = await Promise.resolve().then(() => __importStar(require("../utils/logger")));
-            logger.warn(`Failed login attempt for ${req.body?.email || "unknown"}`, { ip: req.ip, error: error.message });
+            logger_1.logger.warn(`Failed login attempt for ${req.body?.email || "unknown"}`, { ip: req.ip, error: error.message });
             // Activity log — login failure
             // @ts-ignore: activityLog exists at runtime; ts-node type cache lag after db push
             prisma_1.prisma.activityLog.create({

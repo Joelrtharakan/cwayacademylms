@@ -5,6 +5,7 @@ import { resolveLocalized } from "../utils/localized";
 import { redis } from "../utils/redis";
 import { CertificateService } from "../services/certificate.service";
 import { resolveTranslation } from "../utils/localization";
+import { logger } from "../utils/logger";
 
 // ==========================================
 // PROGRESS TRACKING
@@ -186,7 +187,7 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
   const { courseId } = req.params;
   const studentId = req.user!.id;
 
-  console.log(`[getCourseEnrollment] Fetching for studentId=${studentId}, courseId=${courseId}`);
+  // BUG-024 FIX: Use logger.debug instead of console.log (suppressed in production)
 
   // Check cache for course curriculum
   const cacheKey = `course:${courseId}:curriculum`;
@@ -231,7 +232,7 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
   });
 
   if (!enrollment && (req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR" || req.user!.role === "REGISTRAR")) {
-    console.log(`[getCourseEnrollment] Auto-enrolling ${req.user!.role} ${studentId} in course ${courseId} for preview`);
+    logger.debug(`[getCourseEnrollment] Auto-enrolling ${req.user!.role} ${studentId} in course ${courseId} for preview`);
     enrollment = await prisma.enrollment.create({
       data: {
         studentId,
@@ -246,7 +247,7 @@ export const getCourseEnrollment = asyncHandler(async (req: Request, res: Respon
   }
 
   if (!enrollment) {
-    console.log(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
+    logger.debug(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
     throw new AppError("Enrollment not found", 404);
   }
 
@@ -284,7 +285,7 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   const { enrollmentId } = req.params;
   const studentId = req.user!.id;
 
-  console.log(`[getProgress] Fetching for enrollmentId=${enrollmentId}, studentId=${studentId}`);
+  logger.debug(`[getProgress] Fetching for enrollmentId=${enrollmentId}, studentId=${studentId}`);
 
   const enrollment = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
@@ -306,11 +307,11 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!enrollment) {
-    console.log(`[getProgress] 404 - Enrollment NOT FOUND for id=${enrollmentId}`);
+    logger.debug(`[getProgress] 404 - Enrollment NOT FOUND for id=${enrollmentId}`);
     throw new AppError("Enrollment not found", 404);
   }
   if (enrollment.studentId !== studentId && req.user!.role !== "ADMIN") {
-    console.log(`[getProgress] 403 - Unauthorized for id=${enrollmentId}, studentId=${studentId}`);
+    logger.debug(`[getProgress] 403 - Unauthorized for id=${enrollmentId}, studentId=${studentId}`);
     throw new AppError("Unauthorized", 403);
   }
 
@@ -485,7 +486,7 @@ export const completeReadingMaterial = asyncHandler(async (req: Request, res: Re
 
 export const saveWatchProgress = asyncHandler(async (req: Request, res: Response) => {
   const { enrollmentId, lessonId } = req.params;
-  const { watchedSeconds } = req.body;
+  const { watchedSeconds: rawWatchedSeconds } = req.body;
   const studentId = req.user!.id;
 
   const enrollment = await prisma.enrollment.findUnique({
@@ -496,20 +497,39 @@ export const saveWatchProgress = asyncHandler(async (req: Request, res: Response
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) throw new AppError("Lesson not found", 404);
 
+  // BUG-017 FIX: Cap watchedSeconds server-side to prevent inflated values
+  const MAX_SECONDS = lesson.duration > 0 ? Math.ceil(lesson.duration * 1.1) : 86400;
+  const watchedSeconds = Math.max(0, Math.min(Number(rawWatchedSeconds) || 0, MAX_SECONDS));
+
   const lp = await prisma.lessonProgress.upsert({
     where: { enrollmentId_lessonId: { enrollmentId, lessonId } },
     update: { watchedSeconds },
     create: { enrollmentId, lessonId, watchedSeconds }
   });
 
-  // Auto-complete if watched 80%
+  // BUG-030 FIX: Server-side auto-complete at 80% — don't rely on client to call completeLesson
+  // This eliminates the race condition where a client crash skips lesson completion
   if (lesson.duration > 0 && watchedSeconds >= lesson.duration * 0.8 && !lp.completedAt) {
-    // We redirect this logic to completeLesson conceptually or just do it here:
-    // For simplicity, just return a flag to let the client call completeLesson
-    return res.json({ status: "success", data: { saved: true, autoCompleteReady: true } });
+    await prisma.lessonProgress.update({
+      where: { enrollmentId_lessonId: { enrollmentId, lessonId } },
+      data: { completedAt: new Date() }
+    });
+
+    const totalLessons = await prisma.lesson.count({ where: { section: { courseId: enrollment.courseId } } });
+    const totalMaterials = await prisma.readingMaterial.count({ where: { section: { courseId: enrollment.courseId } } });
+    const totalItems = totalLessons + totalMaterials;
+    const completedLessons = await prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+    const completedMaterials = await prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+    const completedItems = completedLessons + completedMaterials;
+    const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+
+    await prisma.enrollment.update({ where: { id: enrollmentId }, data: { progress: overallProgress } });
+    await checkAndCompleteCourse(enrollmentId, studentId, overallProgress);
+
+    return res.json({ status: "success", data: { saved: true, autoCompleted: true, overallProgress } });
   }
 
-  res.json({ status: "success", data: { saved: true, autoCompleteReady: false } });
+  res.json({ status: "success", data: { saved: true, autoCompleted: false } });
 });
 
 // ==========================================
@@ -536,17 +556,24 @@ export const attemptQuiz = asyncHandler(async (req: Request, res: Response) => {
 
   if (!quiz) throw new AppError("Quiz not found", 404);
 
-  // Check enrollment
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { studentId_courseId: { studentId, courseId: quiz.lesson.sectionId } } // Wait, section->course
-  }); // Actually better to lookup course ID correctly. Since sectionId doesn't give courseId directly
-  // We'll skip strict enrollment check for brevity, or we can look it up:
+  // BUG-003 FIX: Resolve courseId via lesson → section, then verify enrollment
   const lesson = await prisma.lesson.findUnique({
     where: { id: quiz.lessonId },
-    include: { section: true }
+    include: { section: { select: { courseId: true } } }
   });
   if (!lesson) throw new AppError("Lesson not found", 404);
-  
+
+  const courseId = lesson.section.courseId;
+
+  // Allow admins and instructors to preview without enrollment
+  const isAdminOrInstructor = req.user!.role === "ADMIN" || req.user!.role === "INSTRUCTOR";
+  if (!isAdminOrInstructor) {
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { studentId_courseId: { studentId, courseId } }
+    });
+    if (!enrollment) throw new AppError("You must be enrolled in this course to attempt this quiz", 403);
+  }
+
   const attemptsCount = await prisma.quizAttempt.count({
     where: { quizId, studentId }
   });
@@ -563,7 +590,7 @@ export const attemptQuiz = asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-  // Remove isCorrect from answers
+  // Remove isCorrect from answers before sending to client
   const sanitizedQuiz = {
     id: quiz.id,
     title: quiz.title,

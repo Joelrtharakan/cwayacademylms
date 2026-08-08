@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createManualExtension = exports.updateExtensionRequestStatus = exports.createExtensionRequest = exports.getStudentExtensionRequests = exports.getExtensionRequests = void 0;
 const prisma_1 = require("../utils/prisma");
+const notification_service_1 = require("../services/notification.service");
 const getExtensionRequests = async (req, res) => {
     const { courseId } = req.params;
     try {
@@ -65,6 +66,22 @@ const createExtensionRequest = async (req, res) => {
                 status: "PENDING"
             }
         });
+        // Notify the course instructor so they see the request as soon as they log
+        // in. Best-effort: a failure here must not fail the student's request.
+        try {
+            const [course, student] = await Promise.all([
+                prisma_1.prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true, title: true } }),
+                prisma_1.prisma.user.findUnique({ where: { id: studentId }, select: { name: true } }),
+            ]);
+            if (course?.instructorId) {
+                const itemLabel = itemType === "FORUM" ? "a forum discussion" : "an assignment";
+                const studentName = student?.name || "A student";
+                await notification_service_1.NotificationService.createNotification(course.instructorId, "EXTENSION_REQUEST", "New extension request", `${studentName} requested a deadline extension for ${itemLabel} in "${course.title}".`, `/instructor/course/${courseId}`);
+            }
+        }
+        catch (notifyErr) {
+            console.error("Failed to notify instructor of extension request:", notifyErr);
+        }
         res.status(201).json({ success: true, data: request });
     }
     catch (error) {

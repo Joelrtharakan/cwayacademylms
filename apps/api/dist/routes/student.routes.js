@@ -43,6 +43,8 @@ router.use(authenticate_1.authenticate);
 router.use(activityLog_middleware_1.auditLog);
 // Progress
 router.post("/enrollments", studentCtrl.enrollInCourse);
+router.delete("/courses/:courseId/unenroll", studentCtrl.unenrollFromCourse);
+router.post("/courses/:courseId/unenroll", studentCtrl.unenrollFromCourse);
 router.get("/courses/:courseId/learn", studentCtrl.getCourseEnrollment);
 router.get("/courses/:courseId/grade", studentCtrl.getMyCourseGrade);
 router.get("/enrollments/:enrollmentId/progress", studentCtrl.getProgress);

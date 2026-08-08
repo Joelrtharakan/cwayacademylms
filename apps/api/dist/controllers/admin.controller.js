@@ -50,6 +50,10 @@ const storage_service_1 = require("../services/storage.service");
 const video_service_1 = require("../services/video.service");
 // ─── STATS ───────────────────────────────────────────────────────────────────
 exports.getStats = (0, errors_1.asyncHandler)(async (req, res) => {
+    const cacheKey = "admin:dashboard:stats";
+    const cached = await redis_1.redis.get(cacheKey);
+    if (cached)
+        return res.json({ status: "success", data: JSON.parse(cached) });
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const [totalUsers, totalStudents, totalInstructors, totalCourses, publishedCourses, pendingApprovals, totalEnrollments, enrollmentsThisMonth, revenueAll, revenueMonth, certificatesIssued, activeSponshorships,] = await Promise.all([
@@ -69,27 +73,30 @@ exports.getStats = (0, errors_1.asyncHandler)(async (req, res) => {
         prisma_1.prisma.certificate.count(),
         prisma_1.prisma.sponsorship.count({ where: { status: "COMPLETED" } }),
     ]);
-    res.json({
-        status: "success",
-        data: {
-            totalUsers,
-            totalStudents,
-            totalInstructors,
-            totalCourses,
-            publishedCourses,
-            pendingApprovals,
-            totalEnrollments,
-            enrollmentsThisMonth,
-            totalRevenue: revenueAll._sum.amount ?? 0,
-            revenueThisMonth: revenueMonth._sum.amount ?? 0,
-            certificatesIssued,
-            activeSponshorships,
-        },
-    });
+    const data = {
+        totalUsers,
+        totalStudents,
+        totalInstructors,
+        totalCourses,
+        publishedCourses,
+        pendingApprovals,
+        totalEnrollments,
+        enrollmentsThisMonth,
+        totalRevenue: revenueAll._sum.amount ?? 0,
+        revenueThisMonth: revenueMonth._sum.amount ?? 0,
+        certificatesIssued,
+        activeSponshorships,
+    };
+    await redis_1.redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
+    res.json({ status: "success", data });
 });
 // ─── ANALYTICS ───────────────────────────────────────────────────────────────
 exports.getRevenueAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     const period = req.query.period || "12m";
+    const cacheKey = `admin:dashboard:revenue:${period}`;
+    const cached = await redis_1.redis.get(cacheKey);
+    if (cached)
+        return res.json({ status: "success", data: JSON.parse(cached) });
     const months = period === "7d" ? 1 : period === "30d" ? 1 : 12;
     const since = new Date(new Date().setMonth(new Date().getMonth() - months));
     const stats = await prisma_1.prisma.$queryRaw `
@@ -108,6 +115,7 @@ exports.getRevenueAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
         revenue: Number(s.revenue || 0),
         enrollments: Number(s.enrollments || 0),
     }));
+    await redis_1.redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
     res.json({ status: "success", data });
 });
 exports.getUserAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -131,6 +139,10 @@ exports.getUserAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     res.json({ status: "success", data });
 });
 exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
+    const cacheKey = "admin:dashboard:course-analytics";
+    const cached = await redis_1.redis.get(cacheKey);
+    if (cached)
+        return res.json({ status: "success", data: JSON.parse(cached) });
     const [topByEnrollment, topByRating, byCategory, coursesForCompletion, completionGroups] = await Promise.all([
         prisma_1.prisma.course.findMany({
             where: { status: "PUBLISHED" },
@@ -170,40 +182,39 @@ exports.getCourseAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
         }),
     ]);
     const calcRating = (reviews) => reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
-    res.json({
-        status: "success",
-        data: {
-            topByEnrollment: topByEnrollment.map((c) => ({
-                id: c.id,
-                title: c.title,
-                enrollmentCount: c._count.enrollments,
-                rating: parseFloat(calcRating(c.reviews).toFixed(1)),
-            })),
-            topByRating: topByRating
-                .map((c) => ({
-                id: c.id,
-                title: c.title,
-                rating: parseFloat(calcRating(c.reviews).toFixed(1)),
-                reviewCount: c._count.reviews,
-            }))
-                .sort((a, b) => b.rating - a.rating)
-                .slice(0, 10),
-            byCategory: byCategory.map((cat) => ({
-                categoryName: cat.name,
-                courseCount: cat._count.courses,
-                enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
-            })),
-            completionRates: coursesForCompletion.map((c) => {
-                const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
-                const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
-                const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
-                return {
-                    courseTitle: c.title,
-                    completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
-                };
-            }).sort((a, b) => b.completionRate - a.completionRate),
-        },
-    });
+    const data = {
+        topByEnrollment: topByEnrollment.map((c) => ({
+            id: c.id,
+            title: c.title,
+            enrollmentCount: c._count.enrollments,
+            rating: parseFloat(calcRating(c.reviews).toFixed(1)),
+        })),
+        topByRating: topByRating
+            .map((c) => ({
+            id: c.id,
+            title: c.title,
+            rating: parseFloat(calcRating(c.reviews).toFixed(1)),
+            reviewCount: c._count.reviews,
+        }))
+            .sort((a, b) => b.rating - a.rating)
+            .slice(0, 10),
+        byCategory: byCategory.map((cat) => ({
+            categoryName: cat.name,
+            courseCount: cat._count.courses,
+            enrollmentCount: cat.courses.reduce((s, c) => s + c._count.enrollments, 0),
+        })),
+        completionRates: coursesForCompletion.map((c) => {
+            const statsForCourse = completionGroups.filter(g => g.courseId === c.id);
+            const total = statsForCourse.reduce((acc, g) => acc + g._count.id, 0);
+            const completed = statsForCourse.find(g => g.status === "COMPLETED")?._count.id || 0;
+            return {
+                courseTitle: c.title,
+                completionRate: total > 0 ? parseFloat(((completed / total) * 100).toFixed(1)) : 0,
+            };
+        }).sort((a, b) => b.completionRate - a.completionRate),
+    };
+    await redis_1.redis.set(cacheKey, JSON.stringify(data), "EX", 5); // 5 sec TTL
+    res.json({ status: "success", data });
 });
 exports.getEnrollmentAnalytics = (0, errors_1.asyncHandler)(async (req, res) => {
     const months = req.query.period === "12m" ? 12 : 1;
@@ -366,9 +377,13 @@ exports.banUser = (0, errors_1.asyncHandler)(async (req, res) => {
     if (id === req.user.id)
         throw new errors_1.AppError("You cannot ban your own account", 400);
     await prisma_1.prisma.user.update({ where: { id }, data: { isBanned: true } });
-    // Invalidate Redis session
+    // BUG-011 FIX: Invalidate BOTH refresh token AND auth cache so ban is effective immediately
+    // Previously only refresh token was deleted, leaving a 60s auth cache window
     try {
-        await redis_1.redis.del(`refresh:${id}`);
+        await Promise.all([
+            redis_1.redis.del(`refresh:${id}`),
+            redis_1.redis.del(`auth:user:${id}`),
+        ]);
     }
     catch (_) { }
     res.json({ status: "success", message: "User banned" });
@@ -508,21 +523,38 @@ exports.exportUsers = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 // ─── INSTRUCTORS ─────────────────────────────────────────────────────────────
 exports.getInstructors = (0, errors_1.asyncHandler)(async (req, res) => {
-    const instructors = await prisma_1.prisma.user.findMany({
-        where: { role: "INSTRUCTOR" },
-        select: {
-            id: true, name: true, email: true, avatar: true, bio: true, church: true,
-            location: true, createdAt: true, isVerified: true, isBanned: true,
-            _count: { select: { coursesCreated: true } },
-            coursesCreated: {
-                select: {
-                    status: true,
-                    _count: { select: { enrollments: true } },
-                    payments: { select: { amount: true, status: true } },
+    // BUG-028 FIX: Add pagination and search — previously returned all instructors unbounded
+    const { page = "1", limit = "20", search } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+    const where = { role: "INSTRUCTOR" };
+    if (search) {
+        where.OR = [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+        ];
+    }
+    const [instructors, total] = await Promise.all([
+        prisma_1.prisma.user.findMany({
+            where,
+            skip,
+            take: limitNum,
+            select: {
+                id: true, name: true, email: true, avatar: true, bio: true, church: true,
+                location: true, createdAt: true, isVerified: true, isBanned: true,
+                _count: { select: { coursesCreated: true } },
+                coursesCreated: {
+                    select: {
+                        status: true,
+                        _count: { select: { enrollments: true } },
+                        payments: { select: { amount: true, status: true } },
+                    },
                 },
             },
-        },
-    });
+        }),
+        prisma_1.prisma.user.count({ where }),
+    ]);
     const data = instructors.map((inst) => {
         const publishedCourses = inst.coursesCreated.filter((c) => c.status === "PUBLISHED").length;
         const totalStudents = inst.coursesCreated.reduce((sum, c) => sum + c._count.enrollments, 0);
@@ -537,7 +569,11 @@ exports.getInstructors = (0, errors_1.asyncHandler)(async (req, res) => {
             _count: inst._count, publishedCourses, totalStudents, totalRevenue,
         };
     });
-    res.json({ status: "success", data });
+    res.json({
+        status: "success",
+        data,
+        pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+    });
 });
 exports.createInstructor = (0, errors_1.asyncHandler)(async (req, res) => {
     const { name, email } = req.body;
@@ -595,7 +631,11 @@ exports.getCourses = (0, errors_1.asyncHandler)(async (req, res) => {
                 instructor: { select: { id: true, name: true, email: true } },
                 category: { select: { id: true, name: true } },
                 program: { select: { id: true, title: true } },
-                _count: { select: { enrollments: true, reviews: true } },
+                instructorId: true,
+                enrollments: {
+                    select: { studentId: true }
+                },
+                _count: { select: { reviews: true } },
                 reviews: { select: { rating: true } },
                 sections: { select: { _count: { select: { lessons: true } }, title: true, order: true } },
                 description: true, subtitle: true,
@@ -603,11 +643,16 @@ exports.getCourses = (0, errors_1.asyncHandler)(async (req, res) => {
         }),
         prisma_1.prisma.course.count({ where }),
     ]);
-    const data = courses.map((c) => ({
-        ...c,
-        avgRating: c.reviews.length ? c.reviews.reduce((a, r) => a + r.rating, 0) / c.reviews.length : 0,
-        reviews: undefined,
-    }));
+    const data = courses.map((c) => {
+        const studentEnrollmentCount = c.enrollments.filter(e => e.studentId !== c.instructorId).length;
+        return {
+            ...c,
+            _count: { enrollments: studentEnrollmentCount, reviews: c._count.reviews },
+            avgRating: c.reviews.length ? c.reviews.reduce((a, r) => a + r.rating, 0) / c.reviews.length : 0,
+            reviews: undefined,
+            enrollments: undefined,
+        };
+    });
     res.json({ status: "success", data: { courses: data, total, page: pageNum, pages: Math.ceil(total / limitNum) } });
 });
 exports.approveCourse = (0, errors_1.asyncHandler)(async (req, res) => {
@@ -1511,11 +1556,29 @@ exports.removeCourseFromProgram = (0, errors_1.asyncHandler)(async (req, res) =>
 });
 // ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
 exports.getApplications = (0, errors_1.asyncHandler)(async (req, res) => {
-    const applications = await prisma_1.prisma.programApplication.findMany({
-        include: { program: { select: { title: true } } },
-        orderBy: { createdAt: "desc" }
+    // BUG-014 FIX: Add pagination — previously returned ALL applications with no limit
+    const { page = "1", limit = "20", status } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+    const where = {};
+    if (status)
+        where.status = status;
+    const [applications, total] = await Promise.all([
+        prisma_1.prisma.programApplication.findMany({
+            where,
+            include: { program: { select: { title: true } } },
+            orderBy: { createdAt: "desc" },
+            skip,
+            take: limitNum,
+        }),
+        prisma_1.prisma.programApplication.count({ where }),
+    ]);
+    res.json({
+        status: "success",
+        data: applications,
+        pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
     });
-    res.json({ status: "success", data: applications });
 });
 exports.getApplicationById = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
@@ -1556,7 +1619,6 @@ exports.approveApplication = (0, errors_1.asyncHandler)(async (req, res) => {
             }
         });
     }
-    // Create ProgramEnrollment
     const firstCourse = application.program.courses[0];
     await prisma_1.prisma.programEnrollment.upsert({
         where: { studentId_programId: { studentId: user.id, programId: application.programId } },
@@ -1567,7 +1629,6 @@ exports.approveApplication = (0, errors_1.asyncHandler)(async (req, res) => {
             currentCourseId: firstCourse?.id
         }
     });
-    // Enroll in first course
     if (firstCourse) {
         await prisma_1.prisma.enrollment.upsert({
             where: { studentId_courseId: { studentId: user.id, courseId: firstCourse.id } },
@@ -1600,22 +1661,46 @@ exports.getProgramStudentGrades = (0, errors_1.asyncHandler)(async (req, res) =>
         include: {
             courses: {
                 include: {
-                    enrollments: { where: { studentId } }
+                    enrollments: { where: { studentId } },
+                    sections: {
+                        include: {
+                            lessons: {
+                                include: { assignment: true, quiz: true }
+                            }
+                        }
+                    }
                 }
             }
         }
     });
     if (!program)
         throw new errors_1.AppError("Program not found", 404);
-    const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
-        const courseData = await prisma_1.prisma.course.findUnique({
-            where: { id: course.id },
-            include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
-        });
-        if (!courseData)
-            return { ...course, finalGrade: 0 };
+    const courseIds = program.courses.map(c => c.id);
+    // BUG-015 FIX: Batch fetch all submissions, quiz attempts, and forum discussions for student in 3 queries
+    const [allSubmissions, allQuizAttempts, allForumDiscussions] = await Promise.all([
+        prisma_1.prisma.submission.findMany({
+            where: {
+                studentId,
+                assignment: { lesson: { section: { courseId: { in: courseIds } } } }
+            }
+        }),
+        prisma_1.prisma.quizAttempt.findMany({
+            where: {
+                studentId,
+                quiz: { lesson: { section: { courseId: { in: courseIds } } } }
+            }
+        }),
+        prisma_1.prisma.discussion.findMany({
+            where: {
+                authorId: studentId,
+                score: { not: null },
+                lesson: { section: { courseId: { in: courseIds } } }
+            }
+        })
+    ]);
+    const coursesWithGrades = program.courses.map((course) => {
         const gradedItems = [];
-        courseData.sections.forEach(sec => {
+        course.sections.forEach(sec => {
             sec.lessons.forEach(lesson => {
                 if (lesson.assignment)
                     gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
@@ -1625,17 +1710,13 @@ exports.getProgramStudentGrades = (0, errors_1.asyncHandler)(async (req, res) =>
                     gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100 });
             });
         });
-        const submissions = await prisma_1.prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
-        const quizAttempts = await prisma_1.prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
-        const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
-        const forumDiscussions = await prisma_1.prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
         const grades = {};
         gradedItems.forEach(item => grades[item.id] = null);
-        submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined)
+        allSubmissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined)
             grades[sub.assignmentId] = sub.grade; });
-        quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId])
+        allQuizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId])
             grades[qa.quizId] = qa.score; });
-        forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score > grades[sf.lessonId]))
+        allForumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score > grades[sf.lessonId]))
             grades[sf.lessonId] = sf.score; });
         let totalEarned = 0;
         let totalMaxGraded = 0;
@@ -1653,7 +1734,7 @@ exports.getProgramStudentGrades = (0, errors_1.asyncHandler)(async (req, res) =>
             courseCode: course.courseCode,
             finalGrade
         };
-    }));
+    });
     // also get student
     const student = await prisma_1.prisma.user.findUnique({
         where: { id: studentId },

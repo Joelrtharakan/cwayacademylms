@@ -6,7 +6,7 @@ import { Percent, Save, X, Plus, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
-import { getInstructors, updateInstructorPayout, createInstructor, deleteUser } from "@/lib/api/admin";
+import { getInstructors, createInstructor, deleteUser } from "@/lib/api/admin";
 import { useConfirm } from "@/components/shared/ConfirmContext";
 
 export default function AdminInstructorsPage() {

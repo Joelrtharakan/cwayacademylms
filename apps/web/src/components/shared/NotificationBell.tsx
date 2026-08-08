@@ -126,6 +126,7 @@ export function NotificationBell() {
             top: "48px",
             right: 0,
             width: "360px",
+            maxWidth: "calc(100vw - 32px)",
             maxHeight: "440px",
             display: "flex",
             flexDirection: "column",

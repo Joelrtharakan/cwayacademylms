@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gradeSubmission = exports.getAssignmentSubmissions = exports.uploadAssignmentAttachment = exports.deleteAssignment = exports.updateAssignment = exports.getAssignments = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.createQuestion = exports.deleteQuiz = exports.updateQuiz = exports.getQuizzes = exports.createQuiz = exports.reorderReadingMaterials = exports.deleteReadingMaterial = exports.updateReadingMaterial = exports.getReadingMaterials = exports.createReadingMaterial = exports.getLessonVideoStatus = exports.uploadVideoToLesson = exports.updateCurriculum = exports.getCurriculum = exports.createRubric = exports.getCourseRubrics = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderModules = exports.deleteModule = exports.updateModule = exports.invalidateCourseCache = exports.getModules = exports.createModule = void 0;
+const localized_1 = require("../utils/localized");
 const prisma_1 = require("../utils/prisma");
 const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
@@ -908,7 +909,7 @@ exports.gradeSubmission = (0, errors_1.asyncHandler)(async (req, res) => {
             userId: submission.studentId,
             type: "ASSIGNMENT_GRADED",
             title: "Your assignment has been graded",
-            body: `You scored ${grade}/${submission.assignment.maxScore} on '${submission.assignment.title}'`,
+            body: `You scored ${grade}/${submission.assignment.maxScore} on '${(0, localized_1.resolveLocalized)(submission.assignment.title)}'`,
             link: `/student/assignments/${submission.assignmentId}`
         }
     });

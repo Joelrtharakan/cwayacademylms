@@ -206,8 +206,9 @@ const SHARED_STYLES = `
     border: 2px solid #0C1527;
     display: flex; align-items: center; justify-content: center;
     background: white; margin-bottom: 8px;
+    overflow: hidden;
   }
-  .seal img { width: 38px; height: 38px; object-fit: contain; }
+  .seal img { width: 44px; height: 44px; object-fit: contain; }
   .cert-number {
     font-family: 'Montserrat', sans-serif; font-size: 10px; color: #555;
     letter-spacing: 0.03em; margin-bottom: 2px;
@@ -357,6 +358,20 @@ class CertificateService {
         }
         const isProgram = certificate.type === 'PROGRAM';
         const displayName = isProgram ? certificate.program?.title || 'Program' : certificate.course?.title || 'Course';
+        // Convert local logo.png to base64 Data URI so Puppeteer renders it 100% reliably in PDF without network dependency
+        let logoDataUri = 'https://pub-f282ad46200f49dc90b58a8a4e737923.r2.dev/assets/logo.png';
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const logoPath = path.join(process.cwd(), '../web/public/logo.png');
+            if (fs.existsSync(logoPath)) {
+                const logoB64 = fs.readFileSync(logoPath).toString('base64');
+                logoDataUri = `data:image/png;base64,${logoB64}`;
+            }
+        }
+        catch (e) {
+            console.warn('Failed to load local logo file for PDF, using R2 URL fallback', e);
+        }
         const templateData = {
             studentName: certificate.student.name,
             courseName: displayName,
@@ -366,28 +381,26 @@ class CertificateService {
             completionDate: (0, date_fns_1.format)(new Date(certificate.issuedAt), 'MMMM d, yyyy'),
             uniqueCode: certificate.uniqueCode,
             certificateNumber: certNumber,
-            logoUrl: process.env.CWAY_LOGO_URL || 'https://cwayacademy.netlify.app/logo.png?v=3',
+            logoUrl: logoDataUri,
             verifyUrl: `${process.env.APP_URL || 'https://www.cwayacademy.com'}/certificate/${certificate.uniqueCode}`
         };
-        // Pick template: if a custom template is assigned, use it.
-        // Otherwise fall back to the correct built-in default (COURSE or PROGRAM).
-        let htmlTemplate;
-        if (certificate.template?.htmlTemplate) {
-            htmlTemplate = certificate.template.htmlTemplate;
-        }
-        else {
-            // Look for a DB default template matching the type
-            const dbDefault = await prisma_1.prisma.certificateTemplate.findFirst({
-                where: { isDefault: true, type: isProgram ? 'PROGRAM' : 'COURSE' }
-            });
-            htmlTemplate = dbDefault?.htmlTemplate || (isProgram ? exports.PROGRAM_CERTIFICATE_HTML : exports.COURSE_CERTIFICATE_HTML);
-        }
+        // Always use built-in vector-optimized templates for crisp logo & seal rendering
+        const htmlTemplate = isProgram ? exports.PROGRAM_CERTIFICATE_HTML : exports.COURSE_CERTIFICATE_HTML;
         let renderedHtml = htmlTemplate.replace(/\{\{(\w+)\}\}/g, (_, key) => templateData[key] || '');
         renderedHtml = renderedHtml.replace(/\{\{#if moduleNumber\}\}([\s\S]*?)\{\{\/if\}\}/g, templateData.moduleNumber ? '$1' : '');
         renderedHtml = renderedHtml.replace(/\{\{#if scriptureRef\}\}([\s\S]*?)\{\{\/if\}\}/g, templateData.scriptureRef ? '$1' : '');
         const browser = await puppeteer_1.default.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+            ]
         });
         const page = await browser.newPage();
         await page.setContent(renderedHtml, { waitUntil: 'load' });

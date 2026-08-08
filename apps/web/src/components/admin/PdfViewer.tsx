@@ -40,7 +40,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
       </div>
 
       {/* Rendered PDF Pages purely for Printing (hidden during normal view) */}
-      <div className="hidden print:flex flex-col items-center w-full">
+      <div className="hidden print:flex flex-col items-center w-full print:m-0 print:p-0">
         {error ? (
           <div className="text-red-500">{error}</div>
         ) : (
@@ -48,16 +48,19 @@ export function PdfViewer({ url }: PdfViewerProps) {
             file={typeof window !== 'undefined' ? `${window.location.origin}/api/pdf-proxy?url=${encodeURIComponent(url)}` : ''}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
-            className="flex flex-col items-center w-full"
+            className="flex flex-col items-center w-full print:m-0 print:p-0"
           >
             {Array.from(new Array(numPages), (el, index) => (
-              <div key={`page_${index + 1}`} className="flex justify-center w-full mb-8 break-inside-avoid print:break-inside-avoid">
-                <div className="border border-gray-300 shadow-sm bg-white">
+              <div 
+                key={`page_${index + 1}`} 
+                className={`flex justify-center w-full print:m-0 print:p-0 ${index > 0 ? 'print:break-before-page' : ''}`}
+              >
+                <div className="border border-gray-300 shadow-sm bg-white print:border-none print:shadow-none print:m-0 print:p-0">
                   <Page 
                     pageNumber={index + 1} 
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
-                    width={750} 
+                    width={600} 
                   />
                 </div>
               </div>

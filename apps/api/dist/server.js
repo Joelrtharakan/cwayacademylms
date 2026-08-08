@@ -33,7 +33,9 @@ const student_routes_1 = __importDefault(require("./routes/student.routes"));
 const blog_routes_1 = __importDefault(require("./routes/blog.routes"));
 const programs_routes_1 = __importDefault(require("./routes/programs.routes"));
 const references_routes_1 = __importDefault(require("./routes/references.routes"));
+const sse_routes_1 = __importDefault(require("./routes/sse.routes"));
 const errors_1 = require("./utils/errors");
+const sanitize_1 = require("./middleware/sanitize");
 const app = (0, express_1.default)();
 app.set("trust proxy", 1); // Trust first proxy for rate limiting (Render/Cloudflare)
 const PORT = process.env.PORT || 4000;
@@ -69,7 +71,8 @@ const allowedOrigins = [
 ].filter(Boolean);
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+        // BUG-007 FIX: Removed wildcard *.netlify.app — only exact origins allowed
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         }
         else {
@@ -90,6 +93,10 @@ else {
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
+// BUG-002 FIX: XSS sanitization middleware — sanitizes req.body, req.query, req.params
+app.use(sanitize_1.sanitizeMiddleware);
+const localization_middleware_1 = require("./middleware/localization.middleware");
+app.use(localization_middleware_1.localizationMiddleware);
 // Root Welcome Route
 app.get("/", (req, res) => {
     res.status(200).json({ status: "success", message: "Welcome to CWAY Academy API. The backend is running perfectly!" });
@@ -112,6 +119,7 @@ app.use("/api/v1/student", student_routes_1.default);
 app.use("/api/v1/blog", blog_routes_1.default);
 app.use("/api/v1/programs", programs_routes_1.default);
 app.use("/api/v1/references", references_routes_1.default);
+app.use("/api/v1/stream", sse_routes_1.default); // SSE: near-real-time notifications (additive)
 // Catch-all unhandled routes
 app.all("*", (req, res, next) => {
     next(new errors_1.AppError(`Can't find ${req.originalUrl} on this server!`, 404));

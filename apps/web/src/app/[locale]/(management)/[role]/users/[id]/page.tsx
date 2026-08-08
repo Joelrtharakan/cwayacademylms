@@ -38,6 +38,7 @@ const STATUS_COLOR: Record<string, string> = {
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const basePath = useManagementPath();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState("Overview");
   const [confirmState, setConfirmState] = useState<"ban" | "unban" | null>(null);

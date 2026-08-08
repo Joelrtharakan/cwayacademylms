@@ -859,6 +859,7 @@ model ProgramApplication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([programId, email])
   @@index([programId])
   @@index([email])
 }

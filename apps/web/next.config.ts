@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://cwayacademy.com",
   },
   images: {
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     qualities: [25, 50, 75, 90, 100],
     remotePatterns: [

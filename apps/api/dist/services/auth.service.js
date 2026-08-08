@@ -74,7 +74,8 @@ class AuthService {
     }
     static async login(credentials) {
         const { email, password } = credentials;
-        const user = await prisma_1.prisma.user.findUnique({ where: { email } });
+        const cleanEmail = email.toLowerCase().trim();
+        const user = await prisma_1.prisma.user.findUnique({ where: { email: cleanEmail } });
         if (!user || !user.passwordHash) {
             throw new errors_1.AppError("Invalid email or password", 401);
         }

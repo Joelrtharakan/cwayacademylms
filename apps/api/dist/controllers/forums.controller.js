@@ -190,7 +190,7 @@ exports.getInstructorDiscussions = (0, errors_1.asyncHandler)(async (req, res) =
             include: {
                 author: { select: { id: true, name: true, avatar: true, role: true } },
                 course: { select: { id: true, title: true } },
-                lesson: { select: { id: true, title: true } },
+                lesson: { select: { id: true, title: true, forumMarks: true } },
                 replies: {
                     include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
                     orderBy: { createdAt: "asc" }

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateMyProfile = exports.uploadAvatar = exports.sendMessage = exports.getMessageThread = exports.getConversations = exports.getCourseAnalytics = exports.unenrollStudent = exports.getInstructorCourseStudents = exports.getInstructorStats = exports.getMyCourses = exports.deleteForumReply = exports.createForumReply = exports.deleteForumPost = exports.pinForumPost = exports.createForumPost = exports.getForumPosts = exports.resetQuizAttempts = exports.getQuizStats = exports.getQuizAttempts = exports.gradeSubmission = exports.getAssignmentSubmissions = exports.getInstructorAssignments = exports.updateAssignment = exports.createAssignment = exports.reorderQuestions = exports.deleteQuestion = exports.updateQuestion = exports.addQuestion = exports.updateQuiz = exports.createQuiz = exports.uploadLessonAttachment = exports.getLessonVideoStatus = exports.uploadLessonVideo = exports.reorderLessons = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.reorderSections = exports.deleteSection = exports.updateSection = exports.createSection = exports.uploadPromoVideo = exports.uploadThumbnail = exports.duplicateCourse = exports.submitForReview = exports.deleteCourseInstructor = exports.updateCourse = exports.getCourse = exports.createCourse = exports.listCourses = void 0;
 exports.declineInvitation = exports.acceptInvitation = exports.getInvitations = exports.getInstructorGradebook = exports.deleteAnnouncement = exports.createAnnouncement = exports.getInstructorAnnouncements = exports.getCourseAnnouncements = exports.getPublicCategories = void 0;
+const localized_1 = require("../utils/localized");
 const prisma_1 = require("../utils/prisma");
 const redis_1 = require("../utils/redis");
 const errors_1 = require("../utils/errors");
@@ -196,7 +197,17 @@ exports.getCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         const enrollment = await prisma_1.prisma.enrollment.findUnique({
             where: { studentId_courseId: { studentId: req.user.id, courseId: course.id } },
         });
-        isEnrolled = !!enrollment;
+        if (enrollment) {
+            isEnrolled = true;
+        }
+        else if (course.programId) {
+            const progEnrollment = await prisma_1.prisma.programEnrollment.findFirst({
+                where: { studentId: req.user.id, programId: course.programId },
+            });
+            if (progEnrollment && progEnrollment.status !== "REJECTED" && progEnrollment.status !== "WITHDRAWN") {
+                isEnrolled = true;
+            }
+        }
     }
     const isInstructor = req.user?.id === course.instructorId || req.user?.role === "ADMIN" || req.user?.role === "REGISTRAR";
     const ratings = course.reviews.map((r) => r.rating);
@@ -711,7 +722,7 @@ exports.gradeSubmission = (0, errors_1.asyncHandler)(async (req, res) => {
         where: { id: submissionId },
         data: { grade: Number(grade), feedback, isGraded: true, gradedAt: new Date() },
     });
-    await notification_service_1.NotificationService.createNotification(submission.studentId, "ASSIGNMENT_GRADED", "Your assignment has been graded", `You scored ${grade}/${submission.assignment.maxScore} on '${submission.assignment.title}'`, "/student/assignments");
+    await notification_service_1.NotificationService.createNotification(submission.studentId, "ASSIGNMENT_GRADED", "Your assignment has been graded", `You scored ${grade}/${submission.assignment.maxScore} on '${(0, localized_1.resolveLocalized)(submission.assignment.title)}'`, "/student/assignments");
     await invalidateCourseCache(submission.assignment.lesson.section.courseId);
     res.json({ status: "success", data: updated });
 });
@@ -1023,10 +1034,13 @@ exports.uploadAvatar = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 // ─── USER PROFILE UPDATE ──────────────────────────────────────────────────────
 exports.updateMyProfile = (0, errors_1.asyncHandler)(async (req, res) => {
-    const { name, bio, church, location, phone, socialLinks, title, credentials, yearsExperience, expertise, notificationPrefs } = req.body;
+    const { name, bio, church, location, phone, socialLinks, title, credentials, yearsExperience, expertise, notificationPrefs, avatar } = req.body;
     const data = {};
     if (name)
         data.name = name;
+    // Allow clearing the avatar: an explicit null/empty removes the profile photo.
+    if (avatar !== undefined)
+        data.avatar = avatar === "" ? null : avatar;
     if (bio !== undefined)
         data.bio = bio;
     if (church !== undefined)

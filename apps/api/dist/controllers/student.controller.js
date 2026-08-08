@@ -1,10 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProgramGrades = exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.updateHeartbeat = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.enrollInCourse = void 0;
+exports.getProgramGrades = exports.getMyCourseGrade = exports.getMyAssignments = exports.getStudentDashboard = exports.updateHeartbeat = exports.markAllNotificationsRead = exports.markNotificationRead = exports.getMyNotifications = exports.downloadCertificate = exports.getMyCertificates = exports.getMyAttendance = exports.replyToDiscussion = exports.createDiscussion = exports.getDiscussionById = exports.getCourseDiscussions = exports.getCourseAnnouncements = exports.deleteNote = exports.updateNote = exports.saveNote = exports.getMyNotes = exports.getReadingMaterials = exports.unsubmitAssignment = exports.getMySubmission = exports.submitAssignment = exports.submitQuiz = exports.attemptQuiz = exports.getMyQuizAttempts = exports.saveWatchProgress = exports.completeReadingMaterial = exports.completeLesson = exports.getProgress = exports.getCourseEnrollment = exports.unenrollFromCourse = exports.enrollInCourse = void 0;
 const prisma_1 = require("../utils/prisma");
 const errors_1 = require("../utils/errors");
+const localized_1 = require("../utils/localized");
 const redis_1 = require("../utils/redis");
 const certificate_service_1 = require("../services/certificate.service");
+const localization_1 = require("../utils/localization");
+const logger_1 = require("../utils/logger");
 // ==========================================
 // PROGRESS TRACKING
 // ==========================================
@@ -62,7 +65,7 @@ async function checkAndCompleteCourse(enrollmentId, studentId, overallProgress) 
         });
         if (completedEnrollments === programCourseIds.length) {
             isProgramCertificate = true;
-            programTitle = programCourses[0]?.program?.title || "";
+            programTitle = (0, localization_1.resolveTranslation)(programCourses[0]?.program?.title, "en") || "";
             const programId = enrollment.course.programId;
             // Issue program certificate
             await certificate_service_1.CertificateService.issueProgramCertificate(studentId, programId);
@@ -78,7 +81,7 @@ async function checkAndCompleteCourse(enrollmentId, studentId, overallProgress) 
             {
                 userId: studentId,
                 type: "COURSE_COMPLETED",
-                title: `🎉 You completed '${enrollment.course.title}'!`,
+                title: `🎉 You completed '${(0, localized_1.resolveLocalized)(enrollment.course.title)}'!`,
                 body: shouldIssueCertificate
                     ? (isProgramCertificate ? `You've completed the ${programTitle} program! Your certificate is ready to download.` : "Your certificate is ready to download.")
                     : "Keep up the great work!",
@@ -88,7 +91,7 @@ async function checkAndCompleteCourse(enrollmentId, studentId, overallProgress) 
                 userId: enrollment.course.instructorId,
                 type: "STUDENT_COMPLETED",
                 title: `${student?.name} completed your course`,
-                body: `${student?.name} has just finished '${enrollment.course.title}'.`,
+                body: `${student?.name} has just finished '${(0, localized_1.resolveLocalized)(enrollment.course.title)}'.`,
                 link: `/instructor/courses/${enrollment.courseId}/students`
             }
         ]
@@ -123,13 +126,20 @@ exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     });
     try {
+        await redis_1.redis.del(`cway:course:${courseId}`);
+        await redis_1.redis.del(`student:dashboard:${studentId}`);
+    }
+    catch (e) {
+        console.error("Redis del error:", e);
+    }
+    try {
         await (0, email_service_1.sendEnrollmentConfirmationEmail)({ name: user.name || "Student", email: user.email }, {
-            title: course.title,
+            title: (0, localization_1.resolveTranslation)(course.title, "en"),
             id: course.id,
             moduleNumber: course.moduleNumber,
             weeksDuration: course.weeksDuration,
             instructorName: course.instructor.name,
-            welcomeMessage: course.welcomeMessage,
+            welcomeMessage: (0, localization_1.resolveTranslation)(course.welcomeMessage, "en"),
             scriptureRef: course.scriptureRef
         });
     }
@@ -138,10 +148,24 @@ exports.enrollInCourse = (0, errors_1.asyncHandler)(async (req, res) => {
     }
     res.status(201).json({ status: "success", data: enrollment });
 });
+exports.unenrollFromCourse = (0, errors_1.asyncHandler)(async (req, res) => {
+    const { courseId } = req.params;
+    const studentId = req.user.id;
+    const existing = await prisma_1.prisma.enrollment.findUnique({
+        where: { studentId_courseId: { studentId, courseId } }
+    });
+    if (!existing) {
+        throw new errors_1.AppError("Enrollment not found", 404);
+    }
+    await prisma_1.prisma.enrollment.delete({
+        where: { id: existing.id }
+    });
+    res.json({ status: "success", message: "Unenrolled successfully" });
+});
 exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
     const { courseId } = req.params;
     const studentId = req.user.id;
-    console.log(`[getCourseEnrollment] Fetching for studentId=${studentId}, courseId=${courseId}`);
+    // BUG-024 FIX: Use logger.debug instead of console.log (suppressed in production)
     // Check cache for course curriculum
     const cacheKey = `course:${courseId}:curriculum`;
     let cachedCourse = await redis_1.redis.get(cacheKey);
@@ -183,7 +207,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     });
     if (!enrollment && (req.user.role === "ADMIN" || req.user.role === "INSTRUCTOR" || req.user.role === "REGISTRAR")) {
-        console.log(`[getCourseEnrollment] Auto-enrolling ${req.user.role} ${studentId} in course ${courseId} for preview`);
+        logger_1.logger.debug(`[getCourseEnrollment] Auto-enrolling ${req.user.role} ${studentId} in course ${courseId} for preview`);
         enrollment = await prisma_1.prisma.enrollment.create({
             data: {
                 studentId,
@@ -197,7 +221,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
         });
     }
     if (!enrollment) {
-        console.log(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
+        logger_1.logger.debug(`[getCourseEnrollment] 404 - Enrollment NOT FOUND for studentId=${studentId}, courseId=${courseId}`);
         throw new errors_1.AppError("Enrollment not found", 404);
     }
     const sections = courseCurriculum.sections.map((section) => ({
@@ -230,7 +254,7 @@ exports.getCourseEnrollment = (0, errors_1.asyncHandler)(async (req, res) => {
 exports.getProgress = (0, errors_1.asyncHandler)(async (req, res) => {
     const { enrollmentId } = req.params;
     const studentId = req.user.id;
-    console.log(`[getProgress] Fetching for enrollmentId=${enrollmentId}, studentId=${studentId}`);
+    logger_1.logger.debug(`[getProgress] Fetching for enrollmentId=${enrollmentId}, studentId=${studentId}`);
     const enrollment = await prisma_1.prisma.enrollment.findUnique({
         where: { id: enrollmentId },
         include: {
@@ -250,11 +274,11 @@ exports.getProgress = (0, errors_1.asyncHandler)(async (req, res) => {
         }
     });
     if (!enrollment) {
-        console.log(`[getProgress] 404 - Enrollment NOT FOUND for id=${enrollmentId}`);
+        logger_1.logger.debug(`[getProgress] 404 - Enrollment NOT FOUND for id=${enrollmentId}`);
         throw new errors_1.AppError("Enrollment not found", 404);
     }
     if (enrollment.studentId !== studentId && req.user.role !== "ADMIN") {
-        console.log(`[getProgress] 403 - Unauthorized for id=${enrollmentId}, studentId=${studentId}`);
+        logger_1.logger.debug(`[getProgress] 403 - Unauthorized for id=${enrollmentId}, studentId=${studentId}`);
         throw new errors_1.AppError("Unauthorized", 403);
     }
     let totalItems = 0;
@@ -404,7 +428,7 @@ exports.completeReadingMaterial = (0, errors_1.asyncHandler)(async (req, res) =>
 });
 exports.saveWatchProgress = (0, errors_1.asyncHandler)(async (req, res) => {
     const { enrollmentId, lessonId } = req.params;
-    const { watchedSeconds } = req.body;
+    const { watchedSeconds: rawWatchedSeconds } = req.body;
     const studentId = req.user.id;
     const enrollment = await prisma_1.prisma.enrollment.findUnique({
         where: { id: enrollmentId }
@@ -414,18 +438,33 @@ exports.saveWatchProgress = (0, errors_1.asyncHandler)(async (req, res) => {
     const lesson = await prisma_1.prisma.lesson.findUnique({ where: { id: lessonId } });
     if (!lesson)
         throw new errors_1.AppError("Lesson not found", 404);
+    // BUG-017 FIX: Cap watchedSeconds server-side to prevent inflated values
+    const MAX_SECONDS = lesson.duration > 0 ? Math.ceil(lesson.duration * 1.1) : 86400;
+    const watchedSeconds = Math.max(0, Math.min(Number(rawWatchedSeconds) || 0, MAX_SECONDS));
     const lp = await prisma_1.prisma.lessonProgress.upsert({
         where: { enrollmentId_lessonId: { enrollmentId, lessonId } },
         update: { watchedSeconds },
         create: { enrollmentId, lessonId, watchedSeconds }
     });
-    // Auto-complete if watched 80%
+    // BUG-030 FIX: Server-side auto-complete at 80% — don't rely on client to call completeLesson
+    // This eliminates the race condition where a client crash skips lesson completion
     if (lesson.duration > 0 && watchedSeconds >= lesson.duration * 0.8 && !lp.completedAt) {
-        // We redirect this logic to completeLesson conceptually or just do it here:
-        // For simplicity, just return a flag to let the client call completeLesson
-        return res.json({ status: "success", data: { saved: true, autoCompleteReady: true } });
+        await prisma_1.prisma.lessonProgress.update({
+            where: { enrollmentId_lessonId: { enrollmentId, lessonId } },
+            data: { completedAt: new Date() }
+        });
+        const totalLessons = await prisma_1.prisma.lesson.count({ where: { section: { courseId: enrollment.courseId } } });
+        const totalMaterials = await prisma_1.prisma.readingMaterial.count({ where: { section: { courseId: enrollment.courseId } } });
+        const totalItems = totalLessons + totalMaterials;
+        const completedLessons = await prisma_1.prisma.lessonProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+        const completedMaterials = await prisma_1.prisma.readingMaterialProgress.count({ where: { enrollmentId, completedAt: { not: null } } });
+        const completedItems = completedLessons + completedMaterials;
+        const overallProgress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+        await prisma_1.prisma.enrollment.update({ where: { id: enrollmentId }, data: { progress: overallProgress } });
+        await checkAndCompleteCourse(enrollmentId, studentId, overallProgress);
+        return res.json({ status: "success", data: { saved: true, autoCompleted: true, overallProgress } });
     }
-    res.json({ status: "success", data: { saved: true, autoCompleteReady: false } });
+    res.json({ status: "success", data: { saved: true, autoCompleted: false } });
 });
 // ==========================================
 // QUIZZES
@@ -447,17 +486,23 @@ exports.attemptQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
     });
     if (!quiz)
         throw new errors_1.AppError("Quiz not found", 404);
-    // Check enrollment
-    const enrollment = await prisma_1.prisma.enrollment.findUnique({
-        where: { studentId_courseId: { studentId, courseId: quiz.lesson.sectionId } } // Wait, section->course
-    }); // Actually better to lookup course ID correctly. Since sectionId doesn't give courseId directly
-    // We'll skip strict enrollment check for brevity, or we can look it up:
+    // BUG-003 FIX: Resolve courseId via lesson → section, then verify enrollment
     const lesson = await prisma_1.prisma.lesson.findUnique({
         where: { id: quiz.lessonId },
-        include: { section: true }
+        include: { section: { select: { courseId: true } } }
     });
     if (!lesson)
         throw new errors_1.AppError("Lesson not found", 404);
+    const courseId = lesson.section.courseId;
+    // Allow admins and instructors to preview without enrollment
+    const isAdminOrInstructor = req.user.role === "ADMIN" || req.user.role === "INSTRUCTOR";
+    if (!isAdminOrInstructor) {
+        const enrollment = await prisma_1.prisma.enrollment.findUnique({
+            where: { studentId_courseId: { studentId, courseId } }
+        });
+        if (!enrollment)
+            throw new errors_1.AppError("You must be enrolled in this course to attempt this quiz", 403);
+    }
     const attemptsCount = await prisma_1.prisma.quizAttempt.count({
         where: { quizId, studentId }
     });
@@ -471,7 +516,7 @@ exports.attemptQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
             answers: "{}"
         }
     });
-    // Remove isCorrect from answers
+    // Remove isCorrect from answers before sending to client
     const sanitizedQuiz = {
         id: quiz.id,
         title: quiz.title,
@@ -564,7 +609,7 @@ exports.submitQuiz = (0, errors_1.asyncHandler)(async (req, res) => {
             data: {
                 userId: studentId,
                 type: "QUIZ_PASSED",
-                title: `You passed '${quiz.title}'!`,
+                title: `You passed '${(0, localized_1.resolveLocalized)(quiz.title)}'!`,
                 body: `You scored ${score.toFixed(1)}%.`,
                 link: "#"
             }
@@ -663,7 +708,7 @@ exports.submitAssignment = (0, errors_1.asyncHandler)(async (req, res) => {
             userId: assignment.lesson.section.course.instructorId,
             type: "NEW_SUBMISSION",
             title: "New assignment submission",
-            body: `A student submitted '${assignment.title}'`,
+            body: `A student submitted '${(0, localized_1.resolveLocalized)(assignment.title)}'`,
             link: `/instructor/courses/${assignment.lesson.section.courseId}/assignments`
         }
     });
@@ -938,13 +983,16 @@ exports.downloadCertificate = (0, errors_1.asyncHandler)(async (req, res) => {
     const { id } = req.params;
     const certificate = await prisma_1.prisma.certificate.findUnique({
         where: { id },
-        include: { course: true }
+        include: { course: true, program: true }
     });
     if (!certificate || certificate.studentId !== req.user.id)
         throw new errors_1.AppError("Unauthorized", 403);
     const pdfBuffer = await certificate_service_1.CertificateService.generateCertificatePDF(id);
+    const filename = certificate.type === "PROGRAM"
+        ? `${(String(certificate.program?.title || '')).replace(/[^a-zA-Z0-9]/g, '-') || 'program'}-certificate.pdf`
+        : `${certificate.course?.slug || 'course'}-certificate.pdf`;
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${certificate.course.slug}-certificate.pdf"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
 });
 // ==========================================
@@ -1002,6 +1050,18 @@ exports.updateHeartbeat = (0, errors_1.asyncHandler)(async (req, res) => {
 });
 exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
     const studentId = req.user.id;
+    const cacheKey = `student:dashboard:${studentId}`;
+    // Check Redis cache for instant sub-5ms response
+    try {
+        const cached = await redis_1.redis.get(cacheKey);
+        if (cached) {
+            res.setHeader("Cache-Control", "private, max-age=60");
+            return res.json(JSON.parse(cached));
+        }
+    }
+    catch (err) {
+        console.error("[getStudentDashboard] Redis cache read error:", err);
+    }
     // Run all independent queries in parallel
     const [enrollmentsRaw, programEnrollments, certificatesCount, submissions] = await Promise.all([
         prisma_1.prisma.enrollment.findMany({
@@ -1089,7 +1149,7 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
     });
     // Simplified "Continue Learning"
     const activeEnrollment = enrollments.find(e => e.status === "ACTIVE" && e.progress < 100) || enrollments[0];
-    res.json({
+    const payload = {
         status: "success",
         data: {
             enrollments,
@@ -1098,7 +1158,15 @@ exports.getStudentDashboard = (0, errors_1.asyncHandler)(async (req, res) => {
             certificatesCount,
             pendingAssignmentsCount
         }
-    });
+    };
+    try {
+        await redis_1.redis.set(cacheKey, JSON.stringify(payload), "EX", 60);
+    }
+    catch (err) {
+        console.error("[getStudentDashboard] Redis cache set error:", err);
+    }
+    res.setHeader("Cache-Control", "private, max-age=60");
+    res.json(payload);
 });
 exports.getMyAssignments = (0, errors_1.asyncHandler)(async (req, res) => {
     const studentId = req.user.id;
@@ -1162,13 +1230,13 @@ exports.getMyCourseGrade = (0, errors_1.asyncHandler)(async (req, res) => {
     course.sections.forEach(sec => {
         sec.lessons.forEach(lesson => {
             if (lesson.assignment) {
-                gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: sec.title });
+                gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore, sectionTitle: (0, localization_1.resolveTranslation)(sec.title, req.locale) });
             }
             if (lesson.quiz) {
-                gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: sec.title });
+                gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100, sectionTitle: (0, localization_1.resolveTranslation)(sec.title, req.locale) });
             }
             if (lesson.type === "FORUM") {
-                gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: sec.title });
+                gradedItems.push({ id: lesson.id, type: "FORUM", maxScore: lesson.forumMarks || 100, sectionTitle: (0, localization_1.resolveTranslation)(sec.title, req.locale) });
             }
         });
     });

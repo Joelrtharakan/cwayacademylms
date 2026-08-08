@@ -40,12 +40,58 @@ const express_1 = require("express");
 const PC = __importStar(require("../controllers/programs.controller"));
 const multer_1 = __importDefault(require("multer"));
 const cache_middleware_1 = require("../middleware/cache.middleware");
+const rateLimit_1 = require("../middleware/rateLimit");
+const errors_1 = require("../utils/errors");
 const router = (0, express_1.Router)();
-const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
+// BUG-006 FIX: Replace bare multer with validated instance (MIME + extension + size limits)
+// Allows images and PDFs only — appropriate for passport photos and certificates
+const DANGEROUS_EXTENSIONS = [
+    'php', 'php3', 'php4', 'php5', 'phtml',
+    'exe', 'sh', 'bat', 'cmd', 'com',
+    'py', 'rb', 'pl', 'cgi',
+    'asp', 'aspx', 'jsp', 'jspx',
+    'js', 'mjs', 'ts',
+    'html', 'htm', 'xml', 'svg',
+];
+const applicationUpload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB — appropriate for application docs
+    fileFilter: (_req, file, cb) => {
+        const allowedMimes = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+            'application/pdf',
+        ];
+        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+        const nameLower = file.originalname.toLowerCase();
+        const extMatch = allowedExtensions.some(ext => nameLower.endsWith(ext));
+        const mimeMatch = allowedMimes.includes(file.mimetype);
+        const nameParts = nameLower.split('.');
+        const intermediateExtensions = nameParts.slice(1, -1);
+        const hasDangerousExtension = intermediateExtensions.some(part => DANGEROUS_EXTENSIONS.includes(part));
+        if (extMatch && mimeMatch && !hasDangerousExtension) {
+            file.originalname = file.originalname.replace(/[^a-zA-Z0-9.\-_ ]/g, '');
+            cb(null, true);
+        }
+        else {
+            cb(new Error(`Invalid file type: ${file.originalname} (${file.mimetype}). Only images and PDFs are allowed.`));
+        }
+    },
+});
+// Helper wrapper for multer file upload handling to catch Multer/FileFilter errors cleanly with 400 status
+const handleApplicationUpload = (req, res, next) => {
+    applicationUpload.fields([
+        { name: "photo", maxCount: 1 },
+        { name: "certificates", maxCount: 5 }
+    ])(req, res, (err) => {
+        if (err) {
+            return next(new errors_1.AppError(err.message || "File upload validation failed", 400));
+        }
+        next();
+    });
+};
 router.get("/", (0, cache_middleware_1.cacheRoute)(300), PC.getPublicPrograms);
 router.get("/:id", (0, cache_middleware_1.cacheRoute)(300), PC.getProgram);
-router.post("/:id/apply", upload.fields([
-    { name: "photo", maxCount: 1 },
-    { name: "certificates", maxCount: 5 }
-]), PC.applyForProgram);
+// BUG-005 FIX: Rate limited to 3 applications per IP per hour
+// BUG-006 FIX: Uses validated applicationUpload with clean 400 error handling
+router.post("/:id/apply", rateLimit_1.accountLimiter, handleApplicationUpload, PC.applyForProgram);
 exports.default = router;

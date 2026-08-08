@@ -122,7 +122,7 @@ function RegisterContent() {
           <h2 className="font-serif font-bold text-[#1C2B1E]" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
             {t("check_email")}
           </h2>
-          <p className="font-sans" style={{ fontSize: '14px', color: '#526658', maxWidth: '380px', margin: '0 auto 40px', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t.raw("check_email_desc", { email }) }}>
+          <p className="font-sans" style={{ fontSize: '14px', color: '#526658', maxWidth: '380px', margin: '0 auto 40px', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t("check_email_desc") }}>
           </p>
 
           <button

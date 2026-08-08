@@ -8,81 +8,69 @@ import { QueryProvider } from "@/components/QueryProvider";
 import { ConfirmProvider } from "@/components/shared/ConfirmContext";
 import { SessionManager } from "@/components/auth/SessionManager";
 
-/* ── Self-hosted fonts via next/font (no external network requests) ── */
+/* ── Self-hosted fonts via next/font ── */
 const plusJakarta = Jost({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 const dmSerif = Fraunces({
   subsets: ["latin"],
   variable: "--font-dm-serif",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
 });
 
 const inter = Karla({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-  style: ["normal", "italic"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
-  weight: ["400", "500"],
 });
 
 const cinzel = Cinzel({
   subsets: ["latin"],
   variable: "--font-cinzel",
   display: "swap",
-  weight: ["400", "600", "700", "900"],
 });
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
-  subsets: ["devanagari", "latin"],
+  subsets: ["devanagari"],
   variable: "--font-noto-hi",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSansTamil = Noto_Sans_Tamil({
-  subsets: ["tamil", "latin"],
+  subsets: ["tamil"],
   variable: "--font-noto-ta",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSansTelugu = Noto_Sans_Telugu({
-  subsets: ["telugu", "latin"],
+  subsets: ["telugu"],
   variable: "--font-noto-te",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSansMalayalam = Noto_Sans_Malayalam({
-  subsets: ["malayalam", "latin"],
+  subsets: ["malayalam"],
   variable: "--font-noto-ml",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSansKannada = Noto_Sans_Kannada({
-  subsets: ["kannada", "latin"],
+  subsets: ["kannada"],
   variable: "--font-noto-kn",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://cwayacademy.org"),
+  metadataBase: new URL("https://cwayacademy.com"),
   title: {
     default: "CWAY Academy — Coach, Challenge, and Commission!",
     template: "%s | CWAY Academy",
@@ -101,13 +89,13 @@ export const metadata: Metadata = {
     "Ministry training India",
     "Theological seminary online",
   ],
-  authors: [{ name: "CWAY Academy", url: "https://cwayacademy.org" }],
+  authors: [{ name: "CWAY Academy", url: "https://cwayacademy.com" }],
   creator: "CWAY MISSIONS Religious Trust",
   publisher: "CWAY Academy",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://cwayacademy.org",
+    url: "https://cwayacademy.com",
     siteName: "CWAY Academy",
     title: "CWAY Academy — Coach, Challenge, and Commission!",
     description:
@@ -145,9 +133,11 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  verification: {
-    google: "your-google-verification-code",
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION ? {
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    }
+  } : {}),
 };
 
 export const viewport = {
@@ -212,12 +202,16 @@ export default async function RootLayout({
               name: "CWAY Academy",
               description:
                 "A premier theological training institution equipping rural pastors, lay leaders, and Christian disciples through Bible-based education.",
-              url: "https://cwayacademy.org",
-              logo: "https://cwayacademy.org/logo.png",
+              url: "https://cwayacademy.com",
+              logo: "https://cwayacademy.com/logo.png",
+              sameAs: [
+                "https://www.facebook.com/cwayacademy",
+                "https://www.youtube.com/@cwayacademy"
+              ],
               contactPoint: {
                 "@type": "ContactPoint",
                 contactType: "admissions",
-                email: "admissions@cwayacademy.org",
+                email: "admissions@cwayacademy.com",
               },
               address: {
                 "@type": "PostalAddress",

@@ -202,13 +202,14 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
             left: 0,
             right: 0,
             height: "70px", // Match layout.tsx header height exactly
-            padding: "0 20px",
+            padding: isCollapsed ? "0 8px" : "0 20px",
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
             justifyContent: isCollapsed ? "center" : "space-between",
             zIndex: 2,
-            background: "transparent", 
+            background: "transparent",
+            transition: "padding 0.25s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -216,32 +217,31 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
                <Image 
                 src="/logo.png" 
                 alt="CWAY Academy Badge" 
-                width={190}
-                height={42}
-                style={{ objectFit: "cover", objectPosition: "left center", position: "absolute", left: 0, top: "-3px" }} 
+                width={36}
+                height={36}
+                style={{ objectFit: "cover", width: "36px", height: "36px", borderRadius: "50%" }} 
               />
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                opacity: isCollapsed ? 0 : 1,
-                visibility: isCollapsed ? "hidden" : "visible",
-                transition: "opacity 0.2s, visibility 0.2s",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-                <span style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "16px", fontWeight: 700, letterSpacing: "0.05em", color: "#FDFBF7", textTransform: "uppercase" as const }}>CWAY</span>
-                <span style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "13px", fontWeight: 400, letterSpacing: "0.1em", color: "#B88645", textTransform: "uppercase" as const }}>Academy</span>
+            {!isCollapsed && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                  <span style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "16px", fontWeight: 700, letterSpacing: "0.05em", color: "#FDFBF7", textTransform: "uppercase" as const }}>CWAY</span>
+                  <span style={{ fontFamily: "var(--font-plus-jakarta), sans-serif", fontSize: "13px", fontWeight: 400, letterSpacing: "0.1em", color: "#B88645", textTransform: "uppercase" as const }}>Academy</span>
+                </div>
+                <div style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.15em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" as const, marginTop: "2px" }}>
+                  {user?.role === "ADMIN" ? t("adminView") : user?.role === "REGISTRAR" ? t("registrarView") : t("instructorPanel")}
+                </div>
               </div>
-              <div style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.15em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" as const, marginTop: "2px" }}>
-                {user?.role === "ADMIN" ? t("adminView") : user?.role === "REGISTRAR" ? t("registrarView") : t("instructorPanel")}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Close on mobile / Collapse on desktop */}
@@ -253,15 +253,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
             >
               <X size={16} />
             </button>
-            {!isCollapsed && (
-              <button
-                className="hidden md:flex items-center justify-center p-1.5 rounded-lg bg-white/10 border border-white/15 text-white/60 hover:text-white"
-                onClick={onToggleCollapse}
-                title="Minimize sidebar"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            )}
+
           </div>
         </div>
 
@@ -570,7 +562,7 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
           width: "24px",
           height: "24px",
           borderRadius: "50%",
-          background: "#1e293b",
+          background: "#1A261D",
           border: "1px solid rgba(255,255,255,0.1)",
           cursor: "pointer",
           color: "rgba(255,255,255,0.7)",
@@ -579,11 +571,11 @@ export default function InstructorSidebar({ mobileOpen = false, onClose = () => 
           transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#334155";
+          e.currentTarget.style.background = "#2D3A2F";
           e.currentTarget.style.color = "#FDFBF7";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#1e293b";
+          e.currentTarget.style.background = "#1A261D";
           e.currentTarget.style.color = "rgba(255,255,255,0.7)";
         }}
         title={isCollapsed ? t("expandSidebar") : t("collapseSidebar")}

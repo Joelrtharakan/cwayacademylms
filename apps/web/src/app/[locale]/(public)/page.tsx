@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import { EmailCard } from "@/components/EmailCard";
-import { ContactContent } from "./contact/ContactContent";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useTranslations } from "next-intl";
+
+const ContactContent = dynamic(() => import("./contact/ContactContent").then(m => m.ContactContent), {
+  loading: () => <div style={{ minHeight: "200px" }} />,
+  ssr: true,
+});
 
 interface Post {
   slug: string;

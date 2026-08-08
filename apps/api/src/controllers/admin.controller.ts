@@ -387,8 +387,14 @@ export const banUser = asyncHandler(async (req: Request, res: Response) => {
   if (id === req.user!.id) throw new AppError("You cannot ban your own account", 400);
 
   await prisma.user.update({ where: { id }, data: { isBanned: true } });
-  // Invalidate Redis session
-  try { await redis.del(`refresh:${id}`); } catch (_) {}
+  // BUG-011 FIX: Invalidate BOTH refresh token AND auth cache so ban is effective immediately
+  // Previously only refresh token was deleted, leaving a 60s auth cache window
+  try {
+    await Promise.all([
+      redis.del(`refresh:${id}`),
+      redis.del(`auth:user:${id}`),
+    ]);
+  } catch (_) {}
 
   res.json({ status: "success", message: "User banned" });
 });
@@ -529,21 +535,40 @@ export const exportUsers = asyncHandler(async (req: Request, res: Response) => {
 // ─── INSTRUCTORS ─────────────────────────────────────────────────────────────
 
 export const getInstructors = asyncHandler(async (req: Request, res: Response) => {
-  const instructors = await prisma.user.findMany({
-    where: { role: "INSTRUCTOR" },
-    select: {
-      id: true, name: true, email: true, avatar: true, bio: true, church: true,
-      location: true, createdAt: true, isVerified: true, isBanned: true,
-      _count: { select: { coursesCreated: true } },
-      coursesCreated: {
-        select: {
-          status: true,
-          _count: { select: { enrollments: true } },
-          payments: { select: { amount: true, status: true } },
+  // BUG-028 FIX: Add pagination and search — previously returned all instructors unbounded
+  const { page = "1", limit = "20", search } = req.query as Record<string, string>;
+  const pageNum = Math.max(1, parseInt(page));
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+  const skip = (pageNum - 1) * limitNum;
+
+  const where: any = { role: "INSTRUCTOR" };
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const [instructors, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limitNum,
+      select: {
+        id: true, name: true, email: true, avatar: true, bio: true, church: true,
+        location: true, createdAt: true, isVerified: true, isBanned: true,
+        _count: { select: { coursesCreated: true } },
+        coursesCreated: {
+          select: {
+            status: true,
+            _count: { select: { enrollments: true } },
+            payments: { select: { amount: true, status: true } },
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.user.count({ where }),
+  ]);
 
   const data = instructors.map((inst) => {
     const publishedCourses = inst.coursesCreated.filter((c) => c.status === "PUBLISHED").length;
@@ -561,7 +586,11 @@ export const getInstructors = asyncHandler(async (req: Request, res: Response) =
     };
   });
 
-  res.json({ status: "success", data });
+  res.json({
+    status: "success",
+    data,
+    pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+  });
 });
 
 export const createInstructor = asyncHandler(async (req: Request, res: Response) => {
@@ -625,7 +654,11 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
         instructor: { select: { id: true, name: true, email: true } },
         category: { select: { id: true, name: true } },
         program: { select: { id: true, title: true } },
-        _count: { select: { enrollments: true, reviews: true } },
+        instructorId: true,
+        enrollments: {
+          select: { studentId: true }
+        },
+        _count: { select: { reviews: true } },
         reviews: { select: { rating: true } },
         sections: { select: { _count: { select: { lessons: true } }, title: true, order: true } },
         description: true, subtitle: true,
@@ -634,11 +667,16 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
     prisma.course.count({ where }),
   ]);
 
-  const data = courses.map((c) => ({
-    ...c,
-    avgRating: c.reviews.length ? c.reviews.reduce((a, r) => a + r.rating, 0) / c.reviews.length : 0,
-    reviews: undefined,
-  }));
+  const data = courses.map((c) => {
+    const studentEnrollmentCount = c.enrollments.filter(e => e.studentId !== c.instructorId).length;
+    return {
+      ...c,
+      _count: { enrollments: studentEnrollmentCount, reviews: c._count.reviews },
+      avgRating: c.reviews.length ? c.reviews.reduce((a, r) => a + r.rating, 0) / c.reviews.length : 0,
+      reviews: undefined,
+      enrollments: undefined,
+    };
+  });
 
   res.json({ status: "success", data: { courses: data, total, page: pageNum, pages: Math.ceil(total / limitNum) } });
 });
@@ -1700,11 +1738,31 @@ export const removeCourseFromProgram = asyncHandler(async (req: Request, res: Re
 
 // ─── PROGRAM APPLICATIONS ────────────────────────────────────────────────────
 export const getApplications = asyncHandler(async (req: Request, res: Response) => {
-  const applications = await prisma.programApplication.findMany({
-    include: { program: { select: { title: true } } },
-    orderBy: { createdAt: "desc" }
+  // BUG-014 FIX: Add pagination — previously returned ALL applications with no limit
+  const { page = "1", limit = "20", status } = req.query as Record<string, string>;
+  const pageNum = Math.max(1, parseInt(page));
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+  const skip = (pageNum - 1) * limitNum;
+
+  const where: any = {};
+  if (status) where.status = status;
+
+  const [applications, total] = await Promise.all([
+    prisma.programApplication.findMany({
+      where,
+      include: { program: { select: { title: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limitNum,
+    }),
+    prisma.programApplication.count({ where }),
+  ]);
+
+  res.json({
+    status: "success",
+    data: applications,
+    pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
   });
-  res.json({ status: "success", data: applications });
 });
 
 export const getApplicationById = asyncHandler(async (req: Request, res: Response) => {
@@ -1747,7 +1805,6 @@ export const approveApplication = asyncHandler(async (req: Request, res: Respons
     });
   }
 
-  // Create ProgramEnrollment
   const firstCourse = application.program.courses[0];
   
   await prisma.programEnrollment.upsert({
@@ -1760,7 +1817,6 @@ export const approveApplication = asyncHandler(async (req: Request, res: Respons
     }
   });
 
-  // Enroll in first course
   if (firstCourse) {
     await prisma.enrollment.upsert({
       where: { studentId_courseId: { studentId: user.id, courseId: firstCourse.id } },
@@ -1799,7 +1855,14 @@ export const getProgramStudentGrades = asyncHandler(async (req: Request, res: Re
     include: {
       courses: {
         include: {
-          enrollments: { where: { studentId } }
+          enrollments: { where: { studentId } },
+          sections: {
+            include: {
+              lessons: {
+                include: { assignment: true, quiz: true }
+              }
+            }
+          }
         }
       }
     }
@@ -1807,16 +1870,34 @@ export const getProgramStudentGrades = asyncHandler(async (req: Request, res: Re
 
   if (!program) throw new AppError("Program not found", 404);
 
-  const coursesWithGrades = await Promise.all(program.courses.map(async (course) => {
-    const courseData = await prisma.course.findUnique({
-      where: { id: course.id },
-      include: { sections: { include: { lessons: { include: { assignment: true, quiz: true } } } } }
-    });
-    
-    if (!courseData) return { ...course, finalGrade: 0 };
+  const courseIds = program.courses.map(c => c.id);
 
+  // BUG-015 FIX: Batch fetch all submissions, quiz attempts, and forum discussions for student in 3 queries
+  const [allSubmissions, allQuizAttempts, allForumDiscussions] = await Promise.all([
+    prisma.submission.findMany({
+      where: {
+        studentId,
+        assignment: { lesson: { section: { courseId: { in: courseIds } } } }
+      }
+    }),
+    prisma.quizAttempt.findMany({
+      where: {
+        studentId,
+        quiz: { lesson: { section: { courseId: { in: courseIds } } } }
+      }
+    }),
+    prisma.discussion.findMany({
+      where: {
+        authorId: studentId,
+        score: { not: null },
+        lesson: { section: { courseId: { in: courseIds } } }
+      }
+    })
+  ]);
+
+  const coursesWithGrades = program.courses.map((course) => {
     const gradedItems: { id: string, type: string, maxScore: number }[] = [];
-    courseData.sections.forEach(sec => {
+    course.sections.forEach(sec => {
       sec.lessons.forEach(lesson => {
         if (lesson.assignment) gradedItems.push({ id: lesson.assignment.id, type: "ASSIGNMENT", maxScore: lesson.assignment.maxScore });
         if (lesson.quiz) gradedItems.push({ id: lesson.quiz.id, type: "QUIZ", maxScore: 100 });
@@ -1824,17 +1905,12 @@ export const getProgramStudentGrades = asyncHandler(async (req: Request, res: Re
       });
     });
 
-    const submissions = await prisma.submission.findMany({ where: { studentId, assignment: { lesson: { section: { courseId: course.id } } } } });
-    const quizAttempts = await prisma.quizAttempt.findMany({ where: { studentId, quiz: { lesson: { section: { courseId: course.id } } } } });
-    const forumIds = gradedItems.filter(i => i.type === "FORUM").map(i => i.id);
-    const forumDiscussions = await prisma.discussion.findMany({ where: { lessonId: { in: forumIds }, authorId: studentId, score: { not: null } } });
-
     const grades: Record<string, number | null> = {};
     gradedItems.forEach(item => grades[item.id] = null);
 
-    submissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined) grades[sub.assignmentId] = sub.grade; });
-    quizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId]!) grades[qa.quizId] = qa.score; });
-    forumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score! > grades[sf.lessonId]!)) grades[sf.lessonId] = sf.score!; });
+    allSubmissions.forEach(sub => { if (sub.grade !== null && sub.grade !== undefined) grades[sub.assignmentId] = sub.grade; });
+    allQuizAttempts.forEach(qa => { if (grades[qa.quizId] === null || qa.score > grades[qa.quizId]!) grades[qa.quizId] = qa.score; });
+    allForumDiscussions.forEach(sf => { if (sf.lessonId && (grades[sf.lessonId] === null || sf.score! > grades[sf.lessonId]!)) grades[sf.lessonId] = sf.score!; });
 
     let totalEarned = 0;
     let totalMaxGraded = 0;
@@ -1855,7 +1931,7 @@ export const getProgramStudentGrades = asyncHandler(async (req: Request, res: Re
       courseCode: course.courseCode,
       finalGrade
     };
-  }));
+  });
 
   // also get student
   const student = await prisma.user.findUnique({

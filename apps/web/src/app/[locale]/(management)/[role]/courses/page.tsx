@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useManagementPath } from "@/hooks/useManagementPath";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings, MoreHorizontal, Eye } from "lucide-react";
+import { Search, CheckCircle, XCircle, Star, StarOff, Trash2, ExternalLink, Settings, MoreHorizontal, Eye, Users } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -179,7 +179,37 @@ export default function AdminCoursesPage() {
     { key: "category", header: "Category", render: (row) => <span style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93" }}>{row.category?.name || "—"}</span> },
     { key: "program", header: "Program", render: (row) => <span style={{ fontSize: "13px", fontWeight: 500, color: "#8F9E93" }}>{row.program?.title || "—"}</span> },
     { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
-    { key: "enrollments", header: "Students", render: (row) => <span style={{ fontSize: "13px", fontWeight: 700, color: "#1A261D" }}>{row._count?.enrollments ?? 0}</span> },
+    { 
+      key: "enrollments", 
+      header: "Students", 
+      render: (row) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/instructor/courses/${row.id}/students`);
+          }}
+          title="Click to view enrolled students"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            fontSize: "13px",
+            fontWeight: 700,
+            color: row._count?.enrollments > 0 ? "#C9973A" : "#1A261D",
+            background: row._count?.enrollments > 0 ? "rgba(201,151,58,0.1)" : "transparent",
+            padding: "4px 8px",
+            borderRadius: "6px",
+            border: "none",
+            cursor: "pointer",
+            transition: "all 0.15s"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(201,151,58,0.2)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = row._count?.enrollments > 0 ? "rgba(201,151,58,0.1)" : "transparent"}
+        >
+          {row._count?.enrollments ?? 0}
+        </button>
+      ) 
+    },
     { key: "price", header: "Price", render: (row) => <span style={{ fontSize: "13px", fontWeight: 700, color: row.isFree ? "#3D7A4B" : "#1A261D" }}>{row.isFree ? "Free" : `₹${row.price}`}</span> },
   ];
 
@@ -222,9 +252,21 @@ export default function AdminCoursesPage() {
               flexDirection: "column",
               gap: "4px",
               zIndex: 9999,
-              minWidth: "160px",
+              minWidth: "180px",
             }}
           >
+            <DropdownMenu.Item asChild>
+              <button
+                onClick={() => router.push(`/instructor/courses/${row.id}/students`)}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px", color: "#1A261D", fontSize: "13px", fontWeight: 500, border: "none", background: "transparent", cursor: "pointer", textAlign: "left", transition: "background 0.15s", outline: "none" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F7F8F5"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                <Users size={14} color="#C9973A" />
+                View Enrolled Students ({row._count?.enrollments ?? 0})
+              </button>
+            </DropdownMenu.Item>
+
             <DropdownMenu.Item asChild>
               <a
                 href={`/courses/${row.slug}`}

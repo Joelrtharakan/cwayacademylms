@@ -34,6 +34,7 @@ import programsRoutes from "./routes/programs.routes";
 import referencesRoutes from "./routes/references.routes";
 import sseRoutes from "./routes/sse.routes";
 import { AppError } from "./utils/errors";
+import { sanitizeMiddleware } from "./middleware/sanitize";
 
 const app = express();
 app.set("trust proxy", 1); // Trust first proxy for rate limiting (Render/Cloudflare)
@@ -74,7 +75,8 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+    // BUG-007 FIX: Removed wildcard *.netlify.app — only exact origins allowed
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -95,6 +97,8 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+// BUG-002 FIX: XSS sanitization middleware — sanitizes req.body, req.query, req.params
+app.use(sanitizeMiddleware);
 
 import { localizationMiddleware } from "./middleware/localization.middleware";
 app.use(localizationMiddleware);

@@ -104,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Mobile Hamburger Menu */}
           <button 
             className="mr-4"
+            aria-label="Toggle Navigation Menu"
             onClick={() => {
               if (window.innerWidth < 768) setIsMobileMenuOpen(true);
               else setIsDesktopCollapsed(!isDesktopCollapsed);
@@ -121,7 +122,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             />
             <input
               type="text"
+              aria-label={t("header.searchPlaceholder")}
               placeholder={t("header.searchPlaceholder")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                  router.push(`${basePath}/courses?search=${encodeURIComponent(e.currentTarget.value.trim())}`);
+                }
+              }}
               style={{
                 width: "100%",
                 paddingLeft: "36px",
@@ -214,6 +221,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       zIndex: 50
                     }}
                   >
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        router.push(`${basePath}/settings`);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "13px",
+                        color: "#1A261D",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginBottom: "4px"
+                      }}
+                    >
+                      Settings
+                    </button>
                     <button
                       onClick={() => {
                         setIsProfileOpen(false);

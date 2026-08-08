@@ -2,14 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationService = void 0;
 const prisma_1 = require("../utils/prisma");
+const redis_1 = require("../utils/redis");
 class NotificationService {
     /**
      * Create a notification for a single user
      */
     static async createNotification(userId, type, title, body, link) {
-        return prisma_1.prisma.notification.create({
+        const notification = await prisma_1.prisma.notification.create({
             data: { userId, type, title, body, link },
         });
+        // Invalidate the recipient's cached notifications so the new one (and the
+        // unread badge) shows immediately instead of after the 60s cache TTL.
+        await redis_1.redis.del(`notifications:${userId}`).catch(() => { });
+        return notification;
     }
     /**
      * Broadcast notification to all users matching a role (or ALL)
@@ -35,6 +40,8 @@ class NotificationService {
         await prisma_1.prisma.notification.createMany({
             data: userIds.map((userId) => ({ userId, type: "BROADCAST", title, body, link })),
         });
+        // Invalidate cached notifications for every recipient.
+        await Promise.all(userIds.map((userId) => redis_1.redis.del(`notifications:${userId}`).catch(() => { })));
         return { count: userIds.length };
     }
 }
