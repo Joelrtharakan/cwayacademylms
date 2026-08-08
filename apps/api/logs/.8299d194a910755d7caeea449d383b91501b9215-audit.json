@@ -59,6 +59,11 @@
             "date": 1786188737004,
             "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-08-08.log",
             "hash": "05a01b52a47f1e4c007cf4ffa46ac14d93c4170260fec15864eb3cfbcaeea9d1"
+        },
+        {
+            "date": 1786214303898,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-08-09.log",
+            "hash": "58d01db6c74ed57b795755fa7ac88b630cd09f7040dbdec9d56b40eb4283adf6"
         }
     ],
     "hashType": "sha256"

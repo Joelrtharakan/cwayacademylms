@@ -164,7 +164,12 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
   
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) course = JSON.parse(cached);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed.program !== "undefined") {
+        course = parsed;
+      }
+    }
   } catch (e) {
     console.error("Redis get error:", e);
   }
@@ -175,6 +180,7 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
       include: {
         instructor: { select: { id: true, name: true, avatar: true, bio: true, church: true } },
         category: { select: { id: true, name: true, slug: true } },
+        program: { select: { id: true, title: true, description: true } },
         sections: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { quiz: true } }, readingMaterials: { orderBy: { order: "asc" } } } },
         reviews: { select: { rating: true } },
         announcements: { orderBy: { createdAt: "desc" } },

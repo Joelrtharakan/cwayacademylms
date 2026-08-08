@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/routing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
 import { getModules, createModule, updateModule, deleteModule } from "@/lib/api/modules";
-import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, Loader2, Clock, Eye, Megaphone, Check } from "lucide-react";
+import { ArrowLeft, Plus, GripVertical, Settings, Trash2, Edit2, Play, BookOpen, Loader2, Clock, Eye, Megaphone, Check, GraduationCap } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useConfirm } from "@/components/shared/ConfirmContext";
@@ -169,6 +169,30 @@ export default function CourseManagementPage() {
           </div>
 
           <div style={{ flex: 1, minWidth: 200, paddingTop: 2 }}>
+            {/* Program Badge Tag */}
+            {(() => {
+              const rawTitle = course.program?.title || course.programName || course.programTitle;
+              const pTitle = typeof rawTitle === "object" && rawTitle !== null
+                ? (rawTitle.en || rawTitle.hi || Object.values(rawTitle)[0] || "")
+                : String(rawTitle || "");
+
+              const isPart = Boolean(pTitle && pTitle.trim());
+
+              return (
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                  padding: "5px 12px", borderRadius: 20, marginBottom: 10,
+                  background: isPart ? "rgba(184,134,69,0.12)" : C.bgAlt,
+                  color: isPart ? C.gold : C.muted,
+                  border: `1px solid ${isPart ? "rgba(184,134,69,0.25)" : C.border}`,
+                }}>
+                  <GraduationCap size={14} />
+                  <span>{isPart ? pTitle : "Standalone Course"}</span>
+                </div>
+              );
+            })()}
+
             <h1 style={{
               margin: "0 0 6px 0", fontSize: 24, fontWeight: 800, color: C.dark,
               letterSpacing: "-0.01em", lineHeight: 1.3,
