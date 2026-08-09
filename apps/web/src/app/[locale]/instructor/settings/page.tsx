@@ -243,6 +243,7 @@ export default function InstructorSettingsPage() {
   });
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const TABS = [
     { id: "profile", label: t("tabs.profile"), icon: User },
@@ -415,19 +416,24 @@ export default function InstructorSettingsPage() {
         background: "rgba(245,246,242,0.85)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
-        padding: "12px 0 12px",
+        padding: "8px 0 12px",
         marginBottom: 20,
+        width: "100%",
+        boxSizing: "border-box" as const,
       }}>
         <nav
           className="settings-nav-pill"
           style={{
-            display: "flex", gap: 6,
-            overflowX: "auto",
-            padding: "4px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+            gap: 6,
+            padding: "6px",
             background: C.surface,
             borderRadius: 14,
             border: `1px solid ${C.borderLight}`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            width: "100%",
+            boxSizing: "border-box" as const,
           }}
         >
           {TABS.map((tab) => {
@@ -438,24 +444,25 @@ export default function InstructorSettingsPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: 1, minWidth: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  padding: "10px 14px",
+                  width: "100%",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "9px 12px",
                   borderRadius: 10,
                   border: "none",
                   cursor: "pointer",
-                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  fontSize: 12, fontWeight: active ? 800 : 600,
                   color: active ? "#fff" : C.muted,
                   background: active
                     ? `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`
                     : "transparent",
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transition: "all 0.2s",
                   whiteSpace: "nowrap" as const,
                   boxShadow: active ? `0 2px 10px ${C.goldGlow}` : "none",
+                  boxSizing: "border-box" as const,
                 }}
               >
-                <Icon size={15} strokeWidth={active ? 2.5 : 2} color={active ? "#fff" : C.mutedLight} />
-                <span>{tab.label}</span>
+                <Icon size={14} strokeWidth={active ? 2.5 : 2} color={active ? "#fff" : C.mutedLight} style={{ flexShrink: 0 }} />
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tab.label}</span>
               </button>
             );
           })}
@@ -608,7 +615,7 @@ export default function InstructorSettingsPage() {
                   type="button"
                   onClick={() => setShowCurrentPw(!showCurrentPw)}
                   style={{
-                    position: "absolute", right: 14, bottom: 14,
+                    position: "absolute", right: 14, top: 38,
                     background: "none", border: "none", cursor: "pointer",
                     color: C.mutedLight, padding: 0, display: "flex",
                   }}
@@ -617,11 +624,12 @@ export default function InstructorSettingsPage() {
                 </button>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 0 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-5">
                 <div style={{ position: "relative" }}>
                   <SettingsInput
                     type={showNewPw ? "text" : "password"}
                     label={t("passwordTab.newLabel")}
+                    icon={Lock}
                     {...passwordForm.register("newPassword", {
                       required: t("passwordTab.reqMsg"),
                       minLength: { value: 8, message: t("passwordTab.minMsg") },
@@ -632,7 +640,7 @@ export default function InstructorSettingsPage() {
                     type="button"
                     onClick={() => setShowNewPw(!showNewPw)}
                     style={{
-                      position: "absolute", right: 14, bottom: passwordForm.formState.errors.newPassword ? 32 : 14,
+                      position: "absolute", right: 14, top: 38,
                       background: "none", border: "none", cursor: "pointer",
                       color: C.mutedLight, padding: 0, display: "flex",
                     }}
@@ -640,12 +648,26 @@ export default function InstructorSettingsPage() {
                     {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                <SettingsInput
-                  type="password"
-                  label={t("passwordTab.confirmLabel")}
-                  {...passwordForm.register("confirmPassword", { required: t("passwordTab.reqMsg") })}
-                  error={passwordForm.formState.errors.confirmPassword?.message}
-                />
+                <div style={{ position: "relative" }}>
+                  <SettingsInput
+                    type={showConfirmPw ? "text" : "password"}
+                    label={t("passwordTab.confirmLabel")}
+                    icon={Lock}
+                    {...passwordForm.register("confirmPassword", { required: t("passwordTab.reqMsg") })}
+                    error={passwordForm.formState.errors.confirmPassword?.message}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPw(!showConfirmPw)}
+                    style={{
+                      position: "absolute", right: 14, top: 38,
+                      background: "none", border: "none", cursor: "pointer",
+                      color: C.mutedLight, padding: 0, display: "flex",
+                    }}
+                  >
+                    {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div style={{

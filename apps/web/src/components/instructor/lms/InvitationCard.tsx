@@ -99,27 +99,32 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6, width: "100%" }}>
             {invitation.course.program && (
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: statusConfig.color }}>
+              <span style={{
+                fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                padding: "3px 8px", borderRadius: 20,
+                background: "rgba(184,134,69,0.12)", color: "#B88645", border: "1px solid rgba(184,134,69,0.25)",
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%"
+              }}>
                 {invitation.course.program.title}
               </span>
             )}
-            {invitation.course.program && <span style={{ color: "#D4D9CE", fontSize: 10 }}>·</span>}
             <span style={{
-              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
+              fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
               background: statusConfig.bg, color: statusConfig.color,
-              padding: "4px 10px", borderRadius: 999, border: `1px solid ${statusConfig.border}`,
+              padding: "3px 8px", borderRadius: 20, border: `1px solid ${statusConfig.border}`,
+              whiteSpace: "nowrap", flexShrink: 0
             }}>
               {statusConfig.label}
             </span>
           </div>
 
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1C2B1E", margin: "0 0 6px", lineHeight: 1.3 }}>
+          <h3 style={{ fontSize: "clamp(16px, 3.5vw, 18px)", fontWeight: 800, color: "#1C2B1E", margin: "0 0 6px", lineHeight: 1.35, wordBreak: "normal", overflowWrap: "break-word" }}>
             {invitation.course.title}
           </h3>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             {invitation.course.weeksDuration && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#8A9E8C" }}>
                 <Clock size={12} />

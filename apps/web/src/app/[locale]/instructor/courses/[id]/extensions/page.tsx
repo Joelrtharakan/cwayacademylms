@@ -123,10 +123,11 @@ export default function ExtensionsPage() {
 
           {/* Status Filter Tabs */}
           <div style={{
-            display: "flex", gap: 4, background: "#F7F8F5",
-            padding: 4, borderRadius: 12, border: `1px solid ${C.border}`,
-            maxWidth: "100%", overflowX: "auto", boxSizing: "border-box",
-            WebkitOverflowScrolling: "touch",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+            gap: 6, background: "#F7F8F5",
+            padding: 6, borderRadius: 14, border: `1px solid ${C.border}`,
+            width: "100%", boxSizing: "border-box",
           }}>
             {[
               { id: "ALL", label: `All (${allRequests.length})` },
@@ -138,11 +139,12 @@ export default function ExtensionsPage() {
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id)}
                 style={{
-                  padding: "7px 12px", borderRadius: 9, border: "none",
-                  fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                  padding: "8px 12px", borderRadius: 10, border: "none",
+                  fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap",
+                  display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center",
                   background: statusFilter === tab.id ? C.gold : "transparent",
                   color: statusFilter === tab.id ? "#FFFFFF" : C.muted,
-                  transition: "all 0.2s",
+                  transition: "all 0.2s", boxSizing: "border-box",
                 }}
               >
                 {tab.label}

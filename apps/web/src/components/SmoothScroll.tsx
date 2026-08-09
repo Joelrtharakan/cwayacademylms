@@ -22,7 +22,15 @@ function RouteScroller() {
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
   return (
-    <ReactLenis root options={{ lerp: 0.1, smoothWheel: true }}>
+    <ReactLenis
+      root
+      options={{
+        lerp: 0.12,
+        duration: 1.0,
+        smoothWheel: true,
+        syncTouch: true,
+      }}
+    >
       <RouteScroller />
       {children}
     </ReactLenis>

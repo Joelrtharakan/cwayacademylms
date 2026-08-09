@@ -118,57 +118,67 @@ export default function CourseManagementPage() {
         borderBottom: `1px solid ${C.borderLight}`,
         borderLeft: `4px solid ${C.gold}`,
         borderRadius: 20,
-        padding: "28px 32px",
+        padding: "24px 28px",
         boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.02)",
-        display: "flex", flexDirection: "column", gap: 24,
+        display: "flex", flexDirection: "column", gap: 20,
+        width: "100%", boxSizing: "border-box",
       }}>
         {/* Top bar: Back link + Status badge */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%", boxSizing: "border-box" }}>
           <Link
             href="/instructor/courses"
             style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "8px 16px", borderRadius: 10,
-              background: C.bgAlt, color: C.darkSoft,
-              fontSize: 13, fontWeight: 700, textDecoration: "none",
-              transition: "all 0.2s",
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "0 12px", height: 28, borderRadius: 20,
+              background: C.bgAlt, color: C.darkSoft, border: `1px solid ${C.border}`,
+              fontSize: 11, fontWeight: 800, textDecoration: "none",
+              transition: "all 0.2s", whiteSpace: "nowrap", flexShrink: 0,
+              boxSizing: "border-box"
             }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={14} />
             <span>Courses</span>
           </Link>
 
           <span style={{
-            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
-            padding: "5px 14px", borderRadius: 20,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            height: 28, padding: "0 12px", borderRadius: 20,
+            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
             background: course.status === "PUBLISHED" ? "rgba(61,122,75,0.12)" : "rgba(184,134,69,0.12)",
             color: course.status === "PUBLISHED" ? C.green : C.gold,
+            border: `1px solid ${course.status === "PUBLISHED" ? "rgba(61,122,75,0.25)" : "rgba(184,134,69,0.25)"}`,
+            whiteSpace: "nowrap", flexShrink: 0, boxSizing: "border-box"
           }}>
             {course.status}
           </span>
         </div>
 
-        {/* Middle: Thumbnail + Course Title & Description */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 24, flexWrap: "wrap" }}>
-          <div style={{
-            width: 100, height: 100, minWidth: 100,
-            borderRadius: 16, overflow: "hidden",
-            background: C.bgAlt, border: `1px solid ${C.border}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-            flexShrink: 0,
-          }}>
-            {course.thumbnail ? (
+        {/* Middle: Thumbnail + Course Title & Program Badge */}
+        <div style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 20,
+          flexWrap: "wrap",
+          width: "100%",
+          boxSizing: "border-box",
+        }}>
+          {/* Course Thumbnail Card */}
+          {course.thumbnail && (
+            <div style={{
+              width: 130, height: 130, minWidth: 130,
+              borderRadius: 16, overflow: "hidden",
+              border: `1px solid ${C.border}`, background: C.bgAlt,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              flexShrink: 0,
+            }}>
               <img
                 src={course.thumbnail} alt={course.title}
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
-            ) : (
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.muted }}>No Image</span>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div style={{ flex: 1, minWidth: 200, paddingTop: 2 }}>
+          <div style={{ flex: "1 1 240px", minWidth: 200 }}>
             {/* Program Badge Tag */}
             {(() => {
               const rawTitle = course.program?.title || course.programName || course.programTitle;
@@ -182,23 +192,27 @@ export default function CourseManagementPage() {
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
-                  padding: "5px 12px", borderRadius: 20, marginBottom: 10,
+                  padding: "4px 12px", borderRadius: 20, marginBottom: 8,
                   background: isPart ? "rgba(184,134,69,0.12)" : C.bgAlt,
                   color: isPart ? C.gold : C.muted,
                   border: `1px solid ${isPart ? "rgba(184,134,69,0.25)" : C.border}`,
+                  whiteSpace: "nowrap", maxWidth: "100%"
                 }}>
-                  <GraduationCap size={14} />
-                  <span>{isPart ? pTitle : "Standalone Course"}</span>
+                  <GraduationCap size={14} style={{ flexShrink: 0 }} />
+                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isPart ? pTitle : "Standalone Course"}</span>
                 </div>
               );
             })()}
 
+            {/* Course Title */}
             <h1 style={{
-              margin: "0 0 6px 0", fontSize: 24, fontWeight: 800, color: C.dark,
-              letterSpacing: "-0.01em", lineHeight: 1.3,
+              margin: "0 0 6px 0", fontSize: "clamp(20px, 3vw, 26px)", fontWeight: 800, color: C.dark,
+              letterSpacing: "-0.01em", lineHeight: 1.3, wordBreak: "normal", overflowWrap: "break-word"
             }}>
               {course.title || "Untitled Course"}
             </h1>
+
+            {/* Course Description */}
             <p style={{ margin: 0, fontSize: 14, color: C.muted, lineHeight: 1.6, maxWidth: 650 }}>
               Manage modules, videos, assignments, and quizzes for this course.
             </p>
@@ -206,7 +220,7 @@ export default function CourseManagementPage() {
         </div>
 
         {/* Separate Divider Line */}
-        <div style={{ width: "100%", height: 1, background: C.borderLight, margin: "24px 0 20px" }} />
+        <div style={{ width: "100%", height: 1, background: C.borderLight }} />
 
         {/* Bottom Toolbar: Action buttons */}
         <div style={{

@@ -76,7 +76,7 @@ export default function InstructorForumsPage() {
           <p className="text-cway-text-muted m-0 text-base">There are currently no student discussion posts to review.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {discussions.map((discussion: any) => {
             const isExpanded = expandedId === discussion.id;
             const isGraded = discussion.score !== null;
@@ -84,94 +84,135 @@ export default function InstructorForumsPage() {
             return (
               <div
                 key={discussion.id}
-                className="bg-white rounded-2xl border border-cway-border-light overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-shadow duration-300"
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: 16,
+                  border: `1px solid ${isGraded ? "#E4E8E0" : "rgba(184,134,69,0.3)"}`,
+                  overflow: "hidden",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                  width: "100%",
+                  boxSizing: "border-box",
+                }}
+                className="transition-all duration-200"
               >
+                {/* ── CARD HEADER ── */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : discussion.id)}
-                  style={{ padding: '20px 24px' }}
-                  className={`flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer transition-colors duration-200 ${
-                    isExpanded ? "bg-cway-cream/40" : "bg-white hover:bg-cway-cream/20"
+                  style={{ padding: "18px 20px" }}
+                  className={`flex items-start justify-between gap-3.5 cursor-pointer transition-colors duration-200 ${
+                    isExpanded ? "bg-[#F7F8F5]" : "bg-white hover:bg-[#F7F8F5]/60"
                   }`}
                 >
-                  <div className="flex items-start md:items-center gap-5 flex-1 min-w-0">
+                  {/* Left: Avatar */}
+                  <div style={{
+                    width: 42, height: 42, minWidth: 42, borderRadius: "50%",
+                    background: "rgba(184,134,69,0.12)", color: "#B88645",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: 15, flexShrink: 0, border: "1px solid rgba(184,134,69,0.2)"
+                  }}>
                     {discussion.author?.avatar ? (
-                      <Image
-                        src={discussion.author.avatar}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="rounded-full object-cover shrink-0 w-12 h-12 border border-gray-100 shadow-sm"
-                      />
+                      <img src={discussion.author.avatar} alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-cway-cream-dark/60 text-cway-forest flex items-center justify-center font-bold text-lg shrink-0 border border-gray-100 shadow-sm">
-                        {discussion.author?.name?.charAt(0)?.toUpperCase() || "U"}
-                      </div>
+                      discussion.author?.name?.charAt(0)?.toUpperCase() || "U"
                     )}
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h3 className="m-0 text-base md:text-lg font-bold text-cway-dark-green truncate max-w-full">
-                          {discussion.title}
-                        </h3>
-                        {isGraded ? (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-cway-success bg-cway-success/10 px-2.5 py-1 rounded-md whitespace-nowrap">
-                            <CheckCircle size={12} /> {t("graded", { score: discussion.score })}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-cway-gold bg-cway-gold/10 px-2.5 py-1 rounded-md whitespace-nowrap">
-                            <Clock size={12} /> {t("needsGrading")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-[13px] text-cway-text-muted">
-                        <span className="flex items-center gap-1.5">
-                          <User size={14} className="shrink-0 text-gray-400" /> <span className="truncate max-w-[120px] md:max-w-[200px] font-medium text-gray-600">{discussion.author?.name}</span>
+                  </div>
+
+                  {/* Middle Column: Title + Badges + Metadata */}
+                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {/* Row 1: Title + Status Badge */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A261D", lineHeight: 1.3 }}>
+                        {discussion.title}
+                      </h3>
+                      {isGraded ? (
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                          padding: "3px 10px", borderRadius: 20,
+                          background: "rgba(61,122,75,0.12)", color: "#3D7A4B", border: "1px solid rgba(61,122,75,0.25)",
+                          whiteSpace: "nowrap"
+                        }}>
+                          <CheckCircle size={12} /> {t("graded", { score: discussion.score })}
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <BookOpen size={14} className="shrink-0 text-gray-400" /> 
-                          <span className="truncate max-w-[180px] md:max-w-[300px] font-medium text-gray-600">
-                            {discussion.course?.title} {discussion.lesson ? `› ${discussion.lesson.title}` : ""}
-                          </span>
+                      ) : (
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                          padding: "3px 10px", borderRadius: 20,
+                          background: "rgba(184,134,69,0.12)", color: "#B88645", border: "1px solid rgba(184,134,69,0.25)",
+                          whiteSpace: "nowrap"
+                        }}>
+                          <Clock size={12} /> {t("needsGrading")}
                         </span>
-                        <span className="ml-auto md:ml-0 font-medium text-gray-400">{new Date(discussion.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
+                      )}
+                    </div>
+
+                    {/* Row 2: Author & Date */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", fontSize: 13, color: "#7F8E82" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#2D3A2F", fontWeight: 600 }}>
+                        <User size={13} style={{ color: "#7F8E82" }} />
+                        <span>{discussion.author?.name || "Student"}</span>
+                      </span>
+                      <span style={{ color: "#7F8E82", fontSize: 12 }}>
+                        {new Date(discussion.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+
+                    {/* Row 3: Course & Lesson Tag */}
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "#7F8E82", wordBreak: "break-word" }}>
+                      <BookOpen size={13} style={{ flexShrink: 0, color: "#7F8E82" }} />
+                      <span style={{ color: "#526658", fontWeight: 500 }}>
+                        {discussion.course?.title} {discussion.lesson ? `› ${discussion.lesson.title}` : ""}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-cway-text-muted hidden md:flex items-center shrink-0 ml-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors">
-                    {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+
+                  {/* Right: Expand Toggle Button */}
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10,
+                    background: "#F7F8F5", border: "1px solid #E4E8E0",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#7F8E82", flexShrink: 0, marginTop: 2
+                  }}>
+                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                 </div>
 
-                {/* Expanded Content */}
+                {/* ── EXPANDED CONTENT PANEL ── */}
                 {isExpanded && (
-                  <div style={{ padding: '24px 32px' }} className="border-t border-cway-border-light bg-white animate-fade-in">
-                    <div className="mb-8">
-                      <h4 className="text-xs font-bold uppercase tracking-widest text-cway-text-muted mb-4 flex items-center gap-2">
-                        <MessageCircle size={16} /> {t("studentPost")}
-                      </h4>
-                      <div style={{ padding: '24px' }} className="text-[15px] text-cway-dark-green leading-relaxed whitespace-pre-wrap bg-cway-cream/40 rounded-xl border border-gray-50">
+                  <div style={{ padding: "20px", borderTop: "1px solid #E4E8E0", background: "#FFFFFF", display: "flex", flexDirection: "column", gap: 20 }}>
+                    {/* Student Post */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#7F8E82", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                        <MessageCircle size={14} /> <span>{t("studentPost")}</span>
+                      </div>
+                      <div style={{
+                        padding: "14px 18px", background: "#F7F8F5", borderRadius: 12,
+                        border: "1px solid #E4E8E0", color: "#1A261D", fontSize: 14, lineHeight: 1.6,
+                        whiteSpace: "pre-wrap", wordBreak: "break-word"
+                      }}>
                         {discussion.content}
                       </div>
                     </div>
 
+                    {/* Replies */}
                     {discussion.replies && discussion.replies.length > 0 && (
-                      <div className="mb-8">
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-cway-text-muted mb-4">
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#7F8E82", marginBottom: 10 }}>
                           {t("replies", { count: discussion.replies.length })}
-                        </h4>
-                        <div className="flex flex-col gap-4 pl-3 border-l-2 border-gray-100">
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingLeft: 12, borderLeft: "2px solid #EBEEE8" }}>
                           {discussion.replies.map((reply: any) => (
-                            <div key={reply.id} style={{ padding: '20px' }} className="flex gap-4 bg-white rounded-xl border border-cway-border-light shadow-[0_2px_8px_rgba(0,0,0,0.02)] relative">
-                              <div className="absolute top-6 -left-4 w-4 h-[2px] bg-gray-100"></div>
-                              <div className="w-10 h-10 rounded-full bg-cway-cream-dark/50 text-cway-forest flex items-center justify-center font-bold text-sm shrink-0 border border-gray-100">
+                            <div key={reply.id} style={{ padding: "14px 16px", background: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E8E0", display: "flex", gap: 10 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(184,134,69,0.12)", color: "#B88645", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
                                 {reply.author?.name?.charAt(0)?.toUpperCase() || "U"}
                               </div>
-                              <div className="flex-1 min-w-0 pt-0.5">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                  <span className="text-sm font-bold text-cway-dark-green truncate">{reply.author?.name}</span>
-                                  <span className="text-xs text-cway-text-muted shrink-0">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800, color: "#1A261D" }}>{reply.author?.name}</span>
+                                  <span style={{ fontSize: 11, color: "#7F8E82" }}>{new Date(reply.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="text-[14px] text-cway-forest leading-relaxed whitespace-pre-wrap">
+                                <div style={{ fontSize: 13, color: "#2D3A2F", lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                                   {reply.content}
                                 </div>
                               </div>
@@ -181,47 +222,65 @@ export default function InstructorForumsPage() {
                       </div>
                     )}
 
-                    <div className="border-t border-cway-border-light" style={{ paddingTop: '24px', marginTop: '16px' }}>
-                      <h4 className="text-lg font-bold text-cway-dark-green mb-6">
+                    {/* Grading Form Section */}
+                    <div style={{ paddingTop: 16, borderTop: "1px solid #E4E8E0", display: "flex", flexDirection: "column", gap: 14 }}>
+                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#1A261D" }}>
                         {isGraded ? t("updateGrade") : t("gradeSubmission")}
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-6 mb-6">
-                        <div className="flex flex-col gap-2.5">
-                          <label className="text-xs font-bold text-cway-forest">{t("scoreLabel")}</label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            style={{ padding: '12px 16px' }}
-                            placeholder={isGraded ? discussion.score.toString() : t("scorePlaceholder")}
-                            value={gradingScores[discussion.id] !== undefined ? gradingScores[discussion.id] : (discussion.score || "")}
-                            onChange={(e) => setGradingScores(prev => ({ ...prev, [discussion.id]: e.target.value }))}
-                            className="w-full bg-white rounded-lg border border-gray-200 text-base font-bold outline-none transition-all duration-200 focus:border-cway-gold focus:ring-2 focus:ring-cway-gold/20 shadow-sm"
-                          />
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+                        {/* Score & Feedback Inputs */}
+                        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", width: "100%" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 120 }}>
+                            <label style={{ fontSize: 11, fontWeight: 800, color: "#7F8E82", textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("scoreLabel")}</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              style={{
+                                width: 110, height: 42, padding: "0 12px", borderRadius: 10,
+                                border: "1px solid #E4E8E0", background: "#FFFFFF",
+                                fontSize: 16, fontWeight: 800, color: "#1A261D", outline: "none"
+                              }}
+                              placeholder={isGraded ? discussion.score.toString() : "0"}
+                              value={gradingScores[discussion.id] !== undefined ? gradingScores[discussion.id] : (discussion.score || "")}
+                              onChange={(e) => setGradingScores(prev => ({ ...prev, [discussion.id]: e.target.value }))}
+                            />
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 200 }}>
+                            <label style={{ fontSize: 11, fontWeight: 800, color: "#7F8E82", textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("feedbackLabel")}</label>
+                            <input
+                              type="text"
+                              style={{
+                                width: "100%", height: 42, padding: "0 14px", borderRadius: 10,
+                                border: "1px solid #E4E8E0", background: "#FFFFFF",
+                                fontSize: 14, color: "#1A261D", outline: "none", boxSizing: "border-box"
+                              }}
+                              placeholder={t("feedbackPlaceholder")}
+                              value={gradingFeedbacks[discussion.id] !== undefined ? gradingFeedbacks[discussion.id] : (discussion.feedback || "")}
+                              onChange={(e) => setGradingFeedbacks(prev => ({ ...prev, [discussion.id]: e.target.value }))}
+                            />
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-2.5">
-                          <label className="text-xs font-bold text-cway-forest">{t("feedbackLabel")}</label>
-                          <input
-                            type="text"
-                            style={{ padding: '12px 16px' }}
-                            placeholder={t("feedbackPlaceholder")}
-                            value={gradingFeedbacks[discussion.id] !== undefined ? gradingFeedbacks[discussion.id] : (discussion.feedback || "")}
-                            onChange={(e) => setGradingFeedbacks(prev => ({ ...prev, [discussion.id]: e.target.value }))}
-                            className="w-full bg-white rounded-lg border border-gray-200 text-sm outline-none transition-all duration-200 focus:border-cway-gold focus:ring-2 focus:ring-cway-gold/20 shadow-sm"
-                          />
+
+                        {/* Save Grade Button */}
+                        <div style={{ marginTop: 4 }}>
+                          <button
+                            onClick={() => handleGrade(discussion.id)}
+                            disabled={gradeMut.isPending}
+                            style={{
+                              height: 40, padding: "0 24px", borderRadius: 10,
+                              background: "#B88645", color: "#FFFFFF",
+                              fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
+                              border: "none", cursor: gradeMut.isPending ? "not-allowed" : "pointer",
+                              transition: "all 0.2s", opacity: gradeMut.isPending ? 0.7 : 1,
+                              display: "inline-flex", alignItems: "center", justifyContent: "center"
+                            }}
+                          >
+                            {gradeMut.isPending ? t("saving") : t("saveGrade")}
+                          </button>
                         </div>
-                      </div>
-                      <div style={{ marginTop: '24px' }}>
-                        <button
-                          onClick={() => handleGrade(discussion.id)}
-                          disabled={gradeMut.isPending}
-                          style={{ padding: '12px 24px' }}
-                          className={`inline-flex items-center justify-center rounded-lg font-bold text-sm text-white bg-cway-gold hover:bg-[#d49938] transition-all shadow-sm hover:shadow-md ${
-                            gradeMut.isPending ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5"
-                          }`}
-                        >
-                          {gradeMut.isPending ? t("saving") : t("saveGrade")}
-                        </button>
                       </div>
                     </div>
                   </div>

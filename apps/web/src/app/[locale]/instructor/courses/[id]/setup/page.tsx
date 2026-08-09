@@ -1,22 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/store/auth.store";
-import { BookOpen, Image as ImageIcon, FileText, LayoutList, Award, ClipboardCheck, Users, CheckCircle2, Loader2, ArrowLeft } from "lucide-react";
+import {
+  BookOpen, Image as ImageIcon, FileText, LayoutList,
+  CheckCircle2, Loader2, ArrowLeft, GraduationCap, Save, ExternalLink
+} from "lucide-react";
 import { Link } from "@/i18n/routing";
 
-// Placeholder components for the 8 sections
 import BasicInfoSection from "@/components/instructor/setup/BasicInfoSection";
 import ThumbnailPromoSection from "@/components/instructor/setup/ThumbnailPromoSection";
 import CurriculumPlannerSection from "@/components/instructor/setup/CurriculumPlannerSection";
-import ModulesSection from "@/components/instructor/setup/ModulesSection";
-import AssessmentsSection from "@/components/instructor/setup/AssessmentsSection";
-import RubricsSection from "@/components/instructor/setup/RubricsSection";
-import AttendanceSection from "@/components/instructor/setup/AttendanceSection";
 import PublicationSection from "@/components/instructor/setup/PublicationSection";
+
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  goldGlow: "rgba(184,134,69,0.25)",
+  dark: "#1A261D",
+  darkSoft: "#2D3A2F",
+  muted: "#7F8E82",
+  surface: "#FFFFFF",
+  bgAlt: "#F7F8F5",
+  border: "#E2E6DE",
+  borderLight: "#EBEEE8",
+  red: "#DC4A4A",
+  green: "#3D7A4B",
+};
 
 const SECTIONS = [
   { id: "basic", label: "Basic Info", icon: BookOpen },
@@ -37,17 +51,21 @@ export default function CourseSetupPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#F7F8F5" }}>
-        <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#B88645" }} />
+      <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+        <Loader2 size={36} style={{ animation: "setup-spin 1s linear infinite", color: C.gold }} />
+        <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.muted }}>Loading course settings…</span>
+        <style>{`@keyframes setup-spin { 100% { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div style={{ padding: "40px", textAlign: "center", background: "#F7F8F5", minHeight: "100vh" }}>
-        <h2 style={{ fontFamily: "Georgia, serif", color: "#1A261D" }}>Course not found</h2>
-        <Link href="/instructor/courses" style={{ color: "#B88645", textDecoration: "underline" }}>Back to Courses</Link>
+      <div style={{ padding: 40, textAlign: "center", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, margin: "32px 0" }}>
+        <h2 style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: C.dark, marginBottom: 8 }}>Course not found</h2>
+        <Link href="/instructor/courses" style={{ color: C.gold, fontWeight: 700, textDecoration: "underline", fontSize: 14 }}>
+          Back to Courses
+        </Link>
       </div>
     );
   }
@@ -62,81 +80,194 @@ export default function CourseSetupPage() {
     }
   };
 
+  const rawTitle = course.program?.title || course.programName || course.programTitle;
+  const pTitle = typeof rawTitle === "object" && rawTitle !== null
+    ? (rawTitle.en || rawTitle.hi || Object.values(rawTitle)[0] || "")
+    : String(rawTitle || "");
+  const isPart = Boolean(pTitle && pTitle.trim());
+
   return (
-    <div style={{ minHeight: "calc(100vh - 70px)", margin: "-32px -36px", background: "#F7F8F5", color: "#1A261D", display: "flex", flexDirection: "column" }}>
-      
-      {/* Header */}
-      <header style={{ position: "sticky", top: "70px", zIndex: 50, background: "#FFFFFF", padding: "20px 40px", borderBottom: "4px solid #B88645", display: "flex", alignItems: "center", justifyContent: "space-between", color: "#1A261D" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link href={`/instructor/courses/${id}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#8F9E93", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "#1A261D"} onMouseLeave={(e) => e.currentTarget.style.color = "#8A9E8C"}>
-            <ArrowLeft size={20} /> Back to Course
+    <div style={{
+      width: "100%", maxWidth: 1100, margin: "0 auto",
+      display: "flex", flexDirection: "column", gap: 28,
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      paddingBottom: 64, boxSizing: "border-box",
+    }}>
+      {/* ── UNIFIED COURSE HERO CARD (MATCHING REFERENCE DESIGN) ── */}
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.borderLight}`,
+        borderRight: `1px solid ${C.borderLight}`,
+        borderBottom: `1px solid ${C.borderLight}`,
+        borderLeft: `4px solid ${C.gold}`,
+        borderRadius: 20,
+        padding: "24px 28px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.02)",
+        display: "flex", flexDirection: "column", gap: 20,
+        width: "100%", boxSizing: "border-box",
+      }}>
+        {/* Top Bar: Back Link + Status Badge */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%", boxSizing: "border-box" }}>
+          <Link
+            href={`/instructor/courses/${id}`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "0 12px", height: 28, borderRadius: 20,
+              background: C.bgAlt, color: C.darkSoft, border: `1px solid ${C.border}`,
+              fontSize: 11, fontWeight: 800, textDecoration: "none",
+              transition: "all 0.2s", whiteSpace: "nowrap", flexShrink: 0,
+              boxSizing: "border-box"
+            }}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Course</span>
           </Link>
-          <div style={{ height: "24px", width: "1px", background: "rgba(184,134,69,0.3)" }}></div>
-          <div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: "20px", fontWeight: 700, margin: 0, color: "#B88645" }}>{course.title || "Untitled Course"}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" }}>
-              <span style={{ fontSize: "12px", background: course.status === "PUBLISHED" ? "rgba(46,204,113,0.2)" : "#E4E8E0", color: course.status === "PUBLISHED" ? "#2ECC71" : "#8A9E8C", padding: "2px 8px", borderRadius: "999px", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-                {course.status}
-              </span>
-              <span style={{ fontSize: "13px", color: "#8F9E93" }}>ID: {course.id}</span>
-            </div>
-          </div>
+
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            height: 28, padding: "0 12px", borderRadius: 20,
+            fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+            background: course.status === "PUBLISHED" ? "rgba(61,122,75,0.12)" : "rgba(184,134,69,0.12)",
+            color: course.status === "PUBLISHED" ? C.green : C.gold,
+            border: `1px solid ${course.status === "PUBLISHED" ? "rgba(61,122,75,0.25)" : "rgba(184,134,69,0.25)"}`,
+            whiteSpace: "nowrap", flexShrink: 0, boxSizing: "border-box"
+          }}>
+            {course.status}
+          </span>
         </div>
-      </header>
 
-      {/* Main Layout */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        
-        {/* Sidebar Navigation */}
-        <div style={{ width: "280px", background: "#FFFFFF", borderRight: "1px solid #E4E8E0", padding: "24px 0", overflowY: "auto" }}>
-          <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 24px", marginBottom: "16px" }}>Setup Checklist</h2>
-          <nav style={{ display: "flex", flexDirection: "column" }}>
-            {SECTIONS.map((sec) => {
-              const isActive = activeSection === sec.id;
-              const Icon = sec.icon;
-              return (
-                <button
-                  key={sec.id}
-                  onClick={() => setActiveSection(sec.id)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "12px", padding: "12px 24px", cursor: "pointer", background: isActive ? "rgba(184,134,69,0.1)" : "transparent", border: "none", borderRight: isActive ? "4px solid #B88645" : "4px solid transparent", textAlign: "left", transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => !isActive && (e.currentTarget.style.background = "#F7F8F5")}
-                  onMouseLeave={(e) => !isActive && (e.currentTarget.style.background = "transparent")}
-                >
-                  <Icon size={18} color={isActive ? "#B88645" : "#8A9E8C"} />
-                  <span style={{ fontSize: "14px", fontWeight: isActive ? 700 : 500, color: isActive ? "#1C2B1E" : "#4A5568" }}>{sec.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+        {/* Middle Info: Thumbnail + Program Tag + Course Title & Subtitle */}
+        <div style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 14,
+          flexWrap: "wrap",
+          width: "100%",
+          boxSizing: "border-box",
+        }}>
+          {/* Compact Thumbnail Preview */}
+          <div style={{
+            width: 64, height: 64, minWidth: 64,
+            borderRadius: 14, overflow: "hidden",
+            background: C.bgAlt, border: `1px solid ${C.border}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+            flexShrink: 0,
+          }}>
+            {course.thumbnail ? (
+              <img
+                src={course.thumbnail} alt={course.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.muted }}>No Image</span>
+            )}
+          </div>
 
-          <div style={{ padding: "24px", marginTop: "16px", borderTop: "1px solid #E4E8E0" }}>
-            <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>Curriculum</h2>
-            <Link 
-              href={`/instructor/courses/${course.id}`}
-              style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", background: "#1A261D", color: "#FFFFFF", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600, transition: "background 0.2s" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#2C3E30"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#1A261D"}
-            >
-              <LayoutList size={18} />
-              Open Module Builder
-            </Link>
-            <p style={{ fontSize: "12px", color: "#8A9E8C", marginTop: "8px", lineHeight: 1.5 }}>
-              Manage modules, lessons, quizzes, and assignments.
+          <div style={{ flex: "1 1 180px", minWidth: 160 }}>
+            {/* Program Badge */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+              padding: "3px 10px", borderRadius: 20, marginBottom: 6,
+              background: isPart ? "rgba(184,134,69,0.12)" : C.bgAlt,
+              color: isPart ? C.gold : C.muted,
+              border: `1px solid ${isPart ? "rgba(184,134,69,0.25)" : C.border}`,
+              whiteSpace: "nowrap", maxWidth: "100%"
+            }}>
+              <GraduationCap size={13} style={{ flexShrink: 0 }} />
+              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isPart ? pTitle : "Standalone Course"}</span>
+            </div>
+
+            {/* Course Title */}
+            <h1 style={{
+              margin: "0 0 4px 0", fontSize: "clamp(16px, 4vw, 24px)", fontWeight: 800, color: C.dark,
+              letterSpacing: "-0.01em", lineHeight: 1.3, wordBreak: "normal", overflowWrap: "break-word"
+            }}>
+              {course.title || "Untitled Course"}
+            </h1>
+
+            {/* Course Description */}
+            <p style={{ margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.5, maxWidth: 650 }}>
+              Manage course setup, promotional media, curriculum details, and publication settings.
             </p>
           </div>
         </div>
 
-        {/* Content Area */}
-        <div style={{ flex: 1, padding: "40px", overflowY: "auto" }}>
-          <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-            {renderActiveSection()}
-          </div>
-        </div>
+        {/* Separate Divider Line */}
+        <div style={{ width: "100%", height: 1, background: C.borderLight }} />
 
+        {/* Bottom Toolbar Navigation (2-Column Grid on Mobile) */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+          gap: 8,
+          width: "100%",
+          boxSizing: "border-box",
+        }}>
+          {SECTIONS.map((sec) => {
+            const isActive = activeSection === sec.id;
+            const Icon = sec.icon;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => setActiveSection(sec.id)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  border: `1px solid ${isActive ? C.gold : C.border}`,
+                  background: isActive ? C.goldLight : C.surface,
+                  color: isActive ? C.gold : C.darkSoft,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  whiteSpace: "nowrap",
+                  transition: "all 0.2s",
+                  boxShadow: isActive ? "0 2px 8px rgba(184,134,69,0.15)" : "0 1px 2px rgba(0,0,0,0.02)",
+                  boxSizing: "border-box",
+                  width: "100%",
+                }}
+              >
+                <Icon size={15} color={isActive ? C.gold : C.muted} />
+                <span>{sec.label}</span>
+              </button>
+            );
+          })}
+
+          <Link
+            href={`/instructor/courses/${course.id}`}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 12,
+              background: C.dark,
+              color: "#FFFFFF",
+              fontSize: 12,
+              fontWeight: 800,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              whiteSpace: "nowrap",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              boxSizing: "border-box",
+              width: "100%",
+            }}
+          >
+            <LayoutList size={15} />
+            <span>Open Module Builder</span>
+          </Link>
+        </div>
       </div>
 
+      {/* ── ACTIVE SECTION FORM CONTAINER ── */}
+      <div style={{ width: "100%", boxSizing: "border-box" }}>
+        {renderActiveSection()}
+      </div>
     </div>
   );
 }

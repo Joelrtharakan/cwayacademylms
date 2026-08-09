@@ -54,7 +54,11 @@ export default function InvitationsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(115px, 1fr))",
+        gap: 8, marginBottom: 24, width: "100%", boxSizing: "border-box",
+      }}>
         {FILTERS.map((f) => {
           const count = f === "ALL" ? invitations.length : invitations.filter((i) => i.status === f).length;
           const active = filter === f;
@@ -63,24 +67,23 @@ export default function InvitationsPage() {
               key={f}
               onClick={() => setFilter(f)}
               style={{
-                padding: "8px 20px",
-                borderRadius: 999,
+                padding: "9px 14px",
+                borderRadius: 12,
                 border: "none",
-                background: active ? "#C9973A" : "transparent",
+                background: active ? "#C9973A" : "#F7F8F5",
                 color: active ? "#FFFFFF" : "#6B7D70",
-                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                fontSize: 13, fontWeight: 800, cursor: "pointer",
                 transition: "all 0.2s ease",
-                display: "flex", alignItems: "center", gap: 8,
-                boxShadow: active ? "0 4px 12px rgba(201,151,58,0.25)" : "none",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                boxShadow: active ? "0 3px 10px rgba(201,151,58,0.25)" : "none",
+                width: "100%", boxSizing: "border-box", whiteSpace: "nowrap"
               }}
-              onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "#F9FAFC"; e.currentTarget.style.color = "#1C2B1E"; } }}
-              onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7D70"; } }}
             >
-              {t(`filters.${f}`)}
+              <span>{t(`filters.${f}`)}</span>
               {count > 0 && (
                 <span style={{
-                  background: active ? "rgba(255,255,255,0.2)" : "#EEF0EA",
-                  borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 800,
+                  background: active ? "rgba(255,255,255,0.25)" : "#EEF0EA",
+                  borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 800,
                   color: active ? "#FFFFFF" : "#8A9E8C",
                 }}>
                   {count}
