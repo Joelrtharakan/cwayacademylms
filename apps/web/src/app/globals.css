@@ -34,9 +34,15 @@
 }
 
 /* Lenis Smooth Scroll Base Styles */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 html.lenis, html.lenis body {
   height: auto;
-  overscroll-behavior: none;
+  overscroll-behavior: auto;
 }
 
 .lenis.lenis-smooth {
@@ -48,11 +54,7 @@ html.lenis, html.lenis body {
 }
 
 .lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
+  overflow: auto;
 }
 
 

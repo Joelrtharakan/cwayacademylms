@@ -28,7 +28,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         lerp: 0.12,
         duration: 1.0,
         smoothWheel: true,
-        syncTouch: true,
+        syncTouch: false,
       }}
     >
       <RouteScroller />
