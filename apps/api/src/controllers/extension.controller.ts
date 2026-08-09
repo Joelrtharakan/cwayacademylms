@@ -14,7 +14,27 @@ export const getExtensionRequests = async (req: Request, res: Response) => {
       orderBy: { createdAt: "desc" },
     });
 
-    res.json({ success: true, data: requests });
+    const assignmentIds = requests.filter(r => r.itemType === "ASSIGNMENT").map(r => r.itemId);
+    const quizIds = requests.filter(r => r.itemType === "QUIZ").map(r => r.itemId);
+    const forumIds = requests.filter(r => r.itemType === "FORUM").map(r => r.itemId);
+
+    const [assignments, quizzes, lessons] = await Promise.all([
+      assignmentIds.length > 0 ? prisma.assignment.findMany({ where: { id: { in: assignmentIds } }, select: { id: true, title: true } }) : [],
+      quizIds.length > 0 ? prisma.quiz.findMany({ where: { id: { in: quizIds } }, select: { id: true, title: true } }) : [],
+      forumIds.length > 0 ? prisma.lesson.findMany({ where: { id: { in: forumIds } }, select: { id: true, title: true } }) : [],
+    ]);
+
+    const titleMap = new Map<string, string>();
+    assignments.forEach(a => titleMap.set(a.id, typeof a.title === "string" ? a.title : (a.title as any)?.en || (a.title as any)?.hi || "Assignment"));
+    quizzes.forEach(q => titleMap.set(q.id, typeof q.title === "string" ? q.title : (q.title as any)?.en || (q.title as any)?.hi || "Quiz"));
+    lessons.forEach(l => titleMap.set(l.id, typeof l.title === "string" ? l.title : (l.title as any)?.en || (l.title as any)?.hi || "Forum Discussion"));
+
+    const populatedRequests = requests.map(r => ({
+      ...r,
+      itemTitle: titleMap.get(r.itemId) || r.itemId
+    }));
+
+    res.json({ success: true, data: populatedRequests });
   } catch (error) {
     console.error("Error fetching extension requests:", error);
     res.status(500).json({ success: false, message: "Failed to fetch extension requests" });

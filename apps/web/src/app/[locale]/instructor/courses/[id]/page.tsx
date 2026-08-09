@@ -558,53 +558,55 @@ export default function CourseManagementPage() {
                   /* Normal Mode */
                   <>
                     {/* Module Title & Actions Header */}
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: C.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", width: "100%" }}>
+                      <div style={{ flex: 1, minWidth: 180 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: C.gold, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
                             Module {index + 1}
                           </span>
                           <span style={{
-                            fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 12,
-                            background: mod.isPublished ? "rgba(61,122,75,0.1)" : C.bgAlt,
+                            fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 12,
+                            background: mod.isPublished ? "rgba(61,122,75,0.12)" : C.bgAlt,
                             color: mod.isPublished ? C.green : C.muted,
+                            whiteSpace: "nowrap", flexShrink: 0, textTransform: "uppercase",
                           }}>
                             {mod.isPublished ? "Published" : "Draft"}
                           </span>
                         </div>
-                        <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.dark, lineHeight: 1.4 }}>
+                        <h4 style={{
+                          margin: 0, fontSize: "clamp(16px, 3.5vw, 18px)", fontWeight: 800,
+                          color: C.dark, lineHeight: 1.4, wordBreak: "break-word"
+                        }}>
                           {mod.title}
                         </h4>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: "auto" }}>
                         <button
                           onClick={() => setEditingModuleId(mod.id)}
-                          style={{
-                            width: 34, height: 34, borderRadius: 8, border: "none",
-                            background: "transparent", color: C.muted, cursor: "pointer",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            transition: "background 0.2s",
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = C.bgAlt; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                           title="Edit Module"
+                          style={{
+                            width: 34, height: 34, borderRadius: 8, border: `1px solid ${C.border}`,
+                            background: C.bgAlt, color: C.darkSoft, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}
                         >
-                          <Edit2 size={16} />
+                          <Edit2 size={15} />
                         </button>
                         <button
-                          onClick={async () => { if (await confirm("Are you sure you want to delete this module?")) deleteModuleMut.mutate(mod.id); }}
-                          style={{
-                            width: 34, height: 34, borderRadius: 8, border: "none",
-                            background: "transparent", color: C.red, cursor: "pointer",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            transition: "background 0.2s",
+                          onClick={async () => {
+                            if (await confirm("Delete this module and all its contents?")) {
+                              deleteModuleMut.mutate(mod.id);
+                            }
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(220,74,74,0.1)"; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                           title="Delete Module"
+                          style={{
+                            width: 34, height: 34, borderRadius: 8, border: "1px solid rgba(220,74,74,0.2)",
+                            background: "rgba(220,74,74,0.06)", color: C.red, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </div>

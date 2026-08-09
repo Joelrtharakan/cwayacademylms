@@ -94,20 +94,27 @@ export default function ForumsPanel({ module }: { module: any }) {
 
 
   return (
-    <div>
-      
-      {/* Header section */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" }}>
-        <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 8px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Learning Forums</h2>
-          <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Add discussion prompts for students to interact with you and each other.</p>
+    <div style={{ width: "100%", boxSizing: "border-box" }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, flexWrap: "wrap", marginBottom: 28, width: "100%", boxSizing: "border-box",
+      }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Learning Forums</h2>
+          <p style={{ margin: 0, color: "#7F8E82", fontSize: 13, lineHeight: 1.4 }}>Create discussion prompts for students in this module.</p>
         </div>
         {!isCreating && !editingForumId && (
           <button 
             onClick={() => setIsCreating(true)}
-            style={{ display: "flex", alignItems: "center", gap: "8px", background: "#B88645", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "8px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "10px 20px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+              color: "#FFFFFF", border: "none", borderRadius: 12, fontWeight: 800,
+              cursor: "pointer", fontSize: 13, whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: "0 4px 14px rgba(184,134,69,0.25)"
+            }}
           >
-            <Plus size={16} /> Add Forum Prompt
+            <Plus size={16} /> <span style={{ whiteSpace: "nowrap" }}>New Forum Topic</span>
           </button>
         )}
       </div>
@@ -256,26 +263,43 @@ export default function ForumsPanel({ module }: { module: any }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {forums.map((forum: any) => (
-            <div key={forum.id} style={{ background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px", transition: "all 0.2s" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                    <MessageSquare size={16} color="#B88645" />
-                    <h4 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1A261D" }}>{forum.title}</h4>
+            <div
+              key={forum.id}
+              style={{
+                display: "flex", flexDirection: "column", gap: 14,
+                padding: "20px 22px", background: "#FFFFFF", borderRadius: 16,
+                border: "1px solid #E4E8E0", boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                width: "100%", boxSizing: "border-box", transition: "all 0.2s",
+              }}
+            >
+              {/* Top Row: Title, Marks Badge, Prompt Text & Top-Right Edit/Delete Action Icons */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", width: "100%" }}>
+                <div style={{ flex: "1 1 180px", minWidth: 160 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <MessageSquare size={18} color="#B88645" style={{ flexShrink: 0 }} />
+                    <h4 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A261D", wordBreak: "break-word", lineHeight: 1.3 }}>
+                      {forum.title}
+                    </h4>
                     {forum.forumMarks ? (
-                      <span style={{ padding: "2px 8px", background: "#FDF8F3", color: "#B88645", border: "1px solid #F3E8D6", borderRadius: "12px", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>
+                      <span style={{ padding: "3px 10px", background: "rgba(184,134,69,0.12)", color: "#B88645", border: "1px solid rgba(184,134,69,0.25)", borderRadius: 12, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}>
                         Max: {forum.forumMarks} Marks
                       </span>
                     ) : (
-                      <span style={{ padding: "2px 8px", background: "#F3F4F0", color: "#8A9E8C", border: "1px solid #E4E8E0", borderRadius: "12px", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>
+                      <span style={{ padding: "3px 10px", background: "#F7F8F5", color: "#7F8E82", border: "1px solid #E4E8E0", borderRadius: 12, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}>
                         Max: 100 Marks (Default)
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: 0, color: "#8A9E8C", fontSize: "14px", lineHeight: "1.5" }}>{forum.content}</p>
+                  {forum.content && (
+                    <p style={{ margin: "4px 0 0 0", color: "#7F8E82", fontSize: 13, lineHeight: 1.5, wordBreak: "break-word" }}>
+                      {forum.content}
+                    </p>
+                  )}
                 </div>
-                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                  <button 
+
+                {/* Right Action Icons (Edit & Delete) */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: "auto" }}>
+                  <button
                     onClick={() => {
                       setEditingForumId(forum.id);
                       setForumTitle(forum.title);
@@ -284,32 +308,48 @@ export default function ForumsPanel({ module }: { module: any }) {
                       setForumDueDate(forum.dueDate ? new Date(forum.dueDate).toISOString().slice(0, 16) : "");
                       setIsCreating(false);
                     }}
-                    style={{ background: "#F3F4F0", border: "1px solid #E4E8E0", color: "#526658", cursor: "pointer", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", borderRadius: "6px", transition: "all 0.2s", fontSize: "12px", fontWeight: 600 }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"}
-                    onMouseLeave={e => e.currentTarget.style.background = "#F3F4F0"}
+                    title="Edit Forum Prompt"
+                    style={{
+                      width: 34, height: 34, background: "#F7F8F5", border: "1px solid #E4E8E0",
+                      color: "#2D3A2F", cursor: "pointer", borderRadius: 8,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
                   >
-                    <Edit size={14} /> Edit Prompt
+                    <Edit size={15} />
                   </button>
-                  <button 
+                  <button
                     onClick={async () => {
                       if(await confirm("Delete this forum? All student posts will be lost.")) {
                         deleteMut.mutate(forum.id);
                       }
                     }}
                     disabled={deleteMut.isPending}
-                    style={{ background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", cursor: "pointer", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", borderRadius: "6px", transition: "all 0.2s", fontSize: "12px", fontWeight: 600 }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
-                    onMouseLeave={e => e.currentTarget.style.background = "#FEF2F2"}
+                    title="Delete Forum"
+                    style={{
+                      width: 34, height: 34, background: "rgba(220,74,74,0.06)", border: "1px solid rgba(220,74,74,0.2)",
+                      color: "#DC4A4A", cursor: "pointer", borderRadius: 8,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
                   >
-                    <Trash2 size={14} /> Delete
+                    <Trash2 size={15} />
                   </button>
                 </div>
               </div>
-              
-              <div style={{ borderTop: "1px solid #E4E8E0", paddingTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+
+              {/* Divider Line */}
+              <div style={{ width: "100%", height: 1, background: "#EBEEE8" }} />
+
+              {/* Bottom Row: Grade Replies Button */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "100%" }}>
                 <Link href={`/instructor/courses/${module.courseId}/modules/${module.id}/forums/${forum.id}`} style={{ textDecoration: "none" }}>
-                  <button style={{ display: "flex", alignItems: "center", gap: "6px", background: "#FDF8F3", color: "#B88645", border: "1px solid #F3E8D6", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
-                    <Users size={14} /> Grade Replies
+                  <button style={{
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)", color: "#FFFFFF",
+                    border: "none", padding: "9px 18px", borderRadius: 10, fontSize: 13,
+                    fontWeight: 800, cursor: "pointer", boxShadow: "0 3px 10px rgba(184,134,69,0.25)",
+                    whiteSpace: "nowrap",
+                  }}>
+                    <Users size={15} /> <span>Grade Replies</span>
                   </button>
                 </Link>
               </div>

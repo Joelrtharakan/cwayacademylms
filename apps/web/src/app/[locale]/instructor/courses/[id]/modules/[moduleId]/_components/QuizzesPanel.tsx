@@ -90,18 +90,31 @@ export default function QuizzesPanel({ module }: { module: any }) {
   };
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
-        <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Quizzes</h2>
-          <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Build multiple choice quizzes to test comprehension.</p>
+    <div style={{ width: "100%", boxSizing: "border-box" }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, flexWrap: "wrap", marginBottom: 28, width: "100%", boxSizing: "border-box",
+      }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Quizzes</h2>
+          <p style={{ margin: 0, color: "#7F8E82", fontSize: 13, lineHeight: 1.4 }}>Test student comprehension with multiple choice questions.</p>
         </div>
         {!isCreating && (
           <button 
-            onClick={() => { setEditingSettingsId(null); setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "0", maxAttempts: "3" }); setIsCreating(true); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "10px", fontWeight: 700, cursor: "pointer", fontSize: "14px", whiteSpace: "nowrap", flexShrink: 0 }}
+            onClick={() => {
+              setEditingSettingsId(null);
+              setForm({ title: "", instructions: "", passingScore: "70", timeLimit: "", maxAttempts: "3" });
+              setIsCreating(true);
+            }}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "10px 20px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+              color: "#FFFFFF", border: "none", borderRadius: 12, fontWeight: 800,
+              cursor: "pointer", fontSize: 13, whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: "0 4px 14px rgba(184,134,69,0.25)"
+            }}
           >
-            <Plus size={16} /> Add Quiz
+            <Plus size={16} /> <span style={{ whiteSpace: "nowrap" }}>Add Quiz</span>
           </button>
         )}
       </div>
@@ -199,41 +212,110 @@ export default function QuizzesPanel({ module }: { module: any }) {
             const quiz = item.quiz;
             if (!quiz) return null;
             return (
-              <div key={item.id} style={{ padding: "18px 20px", background: "#FFFFFF", borderRadius: "16px", border: "1px solid #E4E8E0", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 200, flex: "1 1 240px" }}>
-                    <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab", flexShrink: 0 }} />
-                    <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0 }}>
+              <div
+                key={item.id}
+                style={{
+                  display: "flex", flexDirection: "column", gap: 14,
+                  padding: "20px 22px", background: "#FFFFFF", borderRadius: 16,
+                  border: "1px solid #E4E8E0", boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                  width: "100%", boxSizing: "border-box",
+                }}
+              >
+                {/* Top Row: Award Icon + Title & Top-Right Edit/Delete Action Icons */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: "1 1 180px", minWidth: 160 }}>
+                    <GripVertical size={18} color="#7F8E82" style={{ cursor: "grab", flexShrink: 0, marginTop: 4 }} />
+                    <div style={{
+                      width: 42, height: 42, borderRadius: 12, background: "rgba(184,134,69,0.12)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#B88645", flexShrink: 0, border: "1px solid rgba(184,134,69,0.2)"
+                    }}>
                       <Award size={20} fill="currentColor" />
                     </div>
-                    <div>
-                      <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1A261D" }}>{quiz.title}</h4>
-                      <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-                        <span style={{ fontWeight: 700, color: "#2ECC71" }}>Pass: {quiz.passingScore}%</span>
-                        {quiz.timeLimit ? (
-                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> {quiz.timeLimit / 60} Mins</span>
-                        ) : (
-                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> No Limit</span>
-                        )}
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#4299E1", fontWeight: 600 }}><HelpCircle size={12} /> {quiz._count?.questions || 0} Questions</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: 16, fontWeight: 800, color: "#1A261D", wordBreak: "break-word", lineHeight: 1.3 }}>
+                        {quiz.title}
+                      </h4>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#7F8E82", flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 800, color: "#3D7A4B", background: "rgba(61,122,75,0.1)", padding: "2px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                          Pass: {quiz.passingScore}%
+                        </span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+                          <Clock size={13} /> {quiz.timeLimit ? `${quiz.timeLimit / 60} Mins` : "No Limit"}
+                        </span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#1976D2", fontWeight: 700, whiteSpace: "nowrap" }}>
+                          <HelpCircle size={13} /> {quiz._count?.questions || 0} Questions
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", marginLeft: "auto" }}>
-                    <button onClick={() => handleEditSettings(quiz, item.content)} title="Edit Settings" style={{ width: "34px", height: "34px", background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#7F8E82", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {/* Top Right Action Icons (Edit Settings & Delete) */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: "auto" }}>
+                    <button
+                      onClick={() => handleEditSettings(quiz, item.content)}
+                      title="Edit Settings"
+                      style={{
+                        width: 34, height: 34, background: "#F7F8F5", border: "1px solid #E4E8E0",
+                        color: "#2D3A2F", cursor: "pointer", borderRadius: 8,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >
                       <Edit2 size={15} />
                     </button>
-                    <a href={`/instructor/courses/${id}/quizzes`} style={{ padding: "8px 14px", background: "#FFFFFF", border: "1px solid #B88645", color: "#B88645", textDecoration: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                      <List size={14} /> View Attempts
-                    </a>
-                    <button onClick={() => setActiveQuizId(quiz.id)} style={{ padding: "8px 16px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)", border: "none", color: "#FFFFFF", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(184,134,69,0.2)" }}>
-                      Edit Questions
-                    </button>
-                    <button onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }} title="Delete Quiz" style={{ width: "34px", height: "34px", background: "rgba(229,62,62,0.06)", border: "1px solid rgba(229,62,62,0.2)", color: "#E53E3E", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button
+                      onClick={async () => { if(await confirm("Delete quiz?")) deleteMut.mutate(quiz.id); }}
+                      title="Delete Quiz"
+                      style={{
+                        width: 34, height: 34, background: "rgba(220,74,74,0.06)", border: "1px solid rgba(220,74,74,0.2)",
+                        color: "#DC4A4A", cursor: "pointer", borderRadius: 8,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >
                       <Trash2 size={15} />
                     </button>
                   </div>
+                </div>
+
+                {/* Divider Line */}
+                <div style={{ width: "100%", height: 1, background: "#EBEEE8" }} />
+
+                {/* Bottom Row: 2 Main Action Buttons (Flexible Stack/Grid) */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  width: "100%",
+                  boxSizing: "border-box",
+                }}>
+                  <a
+                    href={`/instructor/courses/${id}/quizzes`}
+                    style={{
+                      flex: "1 1 130px",
+                      padding: "10px 16px", background: "#FFFFFF", border: "1px solid #B88645",
+                      color: "#B88645", textDecoration: "none", borderRadius: 10, fontSize: 12,
+                      fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center",
+                      justifyContent: "center", gap: 6, whiteSpace: "nowrap", textAlign: "center",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.02)", boxSizing: "border-box",
+                    }}
+                  >
+                    <List size={14} /> <span>View Attempts</span>
+                  </a>
+
+                  <button
+                    onClick={() => setActiveQuizId(quiz.id)}
+                    style={{
+                      flex: "1 1 130px",
+                      padding: "10px 16px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+                      border: "none", color: "#FFFFFF", borderRadius: 10, fontSize: 12,
+                      fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap",
+                      boxShadow: "0 3px 10px rgba(184,134,69,0.25)", textAlign: "center",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, boxSizing: "border-box",
+                    }}
+                  >
+                    <Edit2 size={14} /> <span>Edit Questions</span>
+                  </button>
                 </div>
               </div>
             );

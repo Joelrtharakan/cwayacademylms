@@ -79,6 +79,7 @@
   "courses": {
     "title": "My Courses",
     "desc": "Manage and monitor your course catalog.",
+    "createCourse": "Create Course",
     "moduleNumber": "Module {num}",
     "modulesCount": "{count} module(s)",
     "studentsCount": "{count} student(s)",

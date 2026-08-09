@@ -43,29 +43,33 @@ export default function CourseAnalyticsPage() {
         {/* Enrollments Chart */}
         <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#1A261D", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}><Users size={18} color={GOLD} /> Enrollments Over Time</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={analytics?.enrollmentsOverTime} margin={{ left: -20 }}>
-              <CartesianGrid stroke="#F7F8F5" vertical={false} />
-              <XAxis dataKey="month" stroke={MUTED} tick={{ fontSize: 11 }} />
-              <YAxis stroke={MUTED} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid rgba(184,134,69,0.3)", borderRadius: 8 }} labelStyle={{ color: "#1A261D" }} />
-              <Line type="monotone" dataKey="count" stroke={GOLD} strokeWidth={2.5} dot={{ fill: GOLD, r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          <div style={{ width: "100%", height: 220, minWidth: 0, minHeight: 220, position: "relative" }}>
+            <ResponsiveContainer width="100%" height={220} minWidth={100} minHeight={150}>
+              <LineChart data={analytics?.enrollmentsOverTime} margin={{ left: -20 }}>
+                <CartesianGrid stroke="#F7F8F5" vertical={false} />
+                <XAxis dataKey="month" stroke={MUTED} tick={{ fontSize: 11 }} />
+                <YAxis stroke={MUTED} tick={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid rgba(184,134,69,0.3)", borderRadius: 8 }} labelStyle={{ color: "#1A261D" }} />
+                <Line type="monotone" dataKey="count" stroke={GOLD} strokeWidth={2.5} dot={{ fill: GOLD, r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Student Progress */}
         <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#1A261D", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}><Target size={18} color={GOLD} /> Overall Progress</h3>
-          <div style={{ display: "flex", alignItems: "center", height: 220, minWidth: 0, minHeight: 0 }}>
-            <ResponsiveContainer width="50%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart>
-                <Pie data={progressData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
-                  {progressData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid rgba(184,134,69,0.3)", borderRadius: 8 }} itemStyle={{ color: "#1A261D" }} />
-              </PieChart>
-            </ResponsiveContainer>
+          <div style={{ display: "flex", alignItems: "center", height: 220, width: "100%", minWidth: 0, minHeight: 220 }}>
+            <div style={{ flex: 1, height: 220, minWidth: 0, minHeight: 220, position: "relative" }}>
+              <ResponsiveContainer width="100%" height={220} minWidth={100} minHeight={150}>
+                <PieChart>
+                  <Pie data={progressData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
+                    {progressData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid rgba(184,134,69,0.3)", borderRadius: 8 }} itemStyle={{ color: "#1A261D" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
               {progressData.map(d => (
                 <div key={d.name}>
@@ -83,8 +87,8 @@ export default function CourseAnalyticsPage() {
       {/* Lesson Completion Rates */}
       <div style={{ background: SURFACE, border: "1px solid rgba(184,134,69,0.2)", borderRadius: 12, padding: 24 }}>
         <h3 style={{ fontFamily: "var(--font-dm-serif), serif", fontSize: 18, color: "#1A261D", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}><PlayCircle size={18} color={GOLD} /> Lesson Completion Rates</h3>
-        <div style={{ height: "260px", minWidth: 0, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <div style={{ height: 260, width: "100%", minWidth: 0, minHeight: 260, position: "relative" }}>
+          <ResponsiveContainer width="100%" height={260} minWidth={100} minHeight={200}>
             <BarChart data={analytics?.lessonCompletionRates} margin={{ left: -20 }} layout="vertical">
               <CartesianGrid stroke="#F7F8F5" horizontal={true} vertical={false} />
               <XAxis type="number" domain={[0, 100]} stroke={MUTED} tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} />

@@ -31,34 +31,63 @@ const SubmissionsViewer = ({ assignment, onBack }: { assignment: any, onBack: ()
 
   if (gradingSubmission) {
     return (
-      <div style={{ background: "#FFFFFF", padding: "32px", borderRadius: "16px", border: "1px solid #E4E8E0" }}>
-        <button onClick={() => setGradingSubmission(null)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", fontWeight: 600, marginBottom: "24px" }}>
-          <ChevronLeft size={16} /> Back to list
+      <div style={{
+        background: "#FFFFFF", padding: "24px 28px", borderRadius: 20,
+        border: "1px solid #E4E8E0", boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+        width: "100%", boxSizing: "border-box",
+      }}>
+        <button
+          onClick={() => setGradingSubmission(null)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            background: "#F7F8F5", border: "1px solid #E4E8E0",
+            color: "#2D3A2F", cursor: "pointer", fontWeight: 700,
+            padding: "8px 16px", borderRadius: 10, fontSize: 13, marginBottom: 20,
+          }}
+        >
+          <ChevronLeft size={16} /> <span>Back to list</span>
         </button>
-        <h3 style={{ fontSize: "20px", fontWeight: 700, margin: "0 0 8px 0" }}>Grading: {gradingSubmission.student.name}</h3>
-        <p style={{ color: "#8F9E93", fontSize: "14px", marginBottom: "32px" }}>Submitted on {new Date(gradingSubmission.submittedAt).toLocaleString()}</p>
+
+        <h3 style={{ fontSize: "clamp(20px, 4vw, 24px)", fontWeight: 800, margin: "0 0 6px 0", color: "#1A261D" }}>
+          Grading: {gradingSubmission.student?.name || "Student"}
+        </h3>
+        <p style={{ color: "#7F8E82", fontSize: 13, marginBottom: 24, lineHeight: 1.4 }}>
+          Submitted on {new Date(gradingSubmission.submittedAt).toLocaleString()}
+        </p>
         
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "32px" }}>
-          <div style={{ minWidth: 0 }}>
-            <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Response</h4>
-            <div style={{ background: "#FAFAF7", padding: "20px", borderRadius: "12px", fontSize: "15px", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere", color: "#1A261D", minHeight: "150px" }}>
+        {/* RESPONSIVE FLEX LAYOUT */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%", boxSizing: "border-box" }}>
+          
+          {/* Top Section: Student Response & Attachments */}
+          <div style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
+            <h4 style={{ fontSize: 12, fontWeight: 800, color: "#B88645", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, whiteSpace: "nowrap" }}>
+              Student Response
+            </h4>
+            <div style={{
+              background: "#F7F8F5", padding: "18px 20px", borderRadius: 14,
+              border: "1px solid #E4E8E0", fontSize: 14, whiteSpace: "pre-wrap",
+              wordBreak: "break-word", color: "#1A261D", minHeight: 100, lineHeight: 1.6,
+              width: "100%", boxSizing: "border-box",
+            }}>
               {gradingSubmission.content || "No text response provided."}
             </div>
 
             {gradingSubmission.fileUrl && (
-              <div style={{ marginTop: "24px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Attachment</h4>
+              <div style={{ marginTop: 20 }}>
+                <h4 style={{ fontSize: 12, fontWeight: 800, color: "#B88645", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, whiteSpace: "nowrap" }}>
+                  Submitted Attachment
+                </h4>
                 {gradingSubmission.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i) ? (
-                  <div style={{ border: "1px solid #E4E8E0", borderRadius: "8px", overflow: "hidden" }}>
+                  <div style={{ border: "1px solid #E4E8E0", borderRadius: 14, overflow: "hidden" }}>
                     <img src={gradingSubmission.fileUrl} alt="Attachment" style={{ width: "100%", display: "block" }} />
-                    <div style={{ padding: "12px", background: "#FFFFFF", borderTop: "1px solid #E4E8E0" }}>
-                      <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "#4A8C5C", textDecoration: "none", fontWeight: 600, fontSize: "14px" }}>
-                        <Download size={14} /> Download Original
+                    <div style={{ padding: 14, background: "#FFFFFF", borderTop: "1px solid #E4E8E0" }}>
+                      <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#3D7A4B", textDecoration: "none", fontWeight: 800, fontSize: 13 }}>
+                        <Download size={15} /> Download Original
                       </a>
                     </div>
                   </div>
                 ) : (
-                  <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "12px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: "8px", textDecoration: "none", color: "#1A261D", fontWeight: 600 }}>
+                  <a href={gradingSubmission.fileUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "#FFFFFF", border: "1px solid #E4E8E0", borderRadius: 12, textDecoration: "none", color: "#1A261D", fontWeight: 700, fontSize: 13 }}>
                     <Download size={16} /> View / Download File
                   </a>
                 )}
@@ -66,35 +95,39 @@ const SubmissionsViewer = ({ assignment, onBack }: { assignment: any, onBack: ()
             )}
           </div>
 
-          <div>
-            <div style={{ background: "#FAFAF7", padding: "24px", borderRadius: "16px", border: "1px solid #E4E8E0" }}>
-              <h4 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "20px" }}>Grade & Feedback</h4>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Score (out of {assignment.maxScore})</label>
+          {/* Bottom Section: Grade & Feedback Form */}
+          <div style={{ width: "100%", boxSizing: "border-box" }}>
+            <div style={{ background: "#F7F8F5", padding: "22px 24px", borderRadius: 16, border: "1px solid #E4E8E0", width: "100%", boxSizing: "border-box" }}>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "#1A261D", margin: "0 0 18px 0" }}>Grade & Feedback</h4>
+              
+              <div style={{ marginBottom: 16, width: "100%", boxSizing: "border-box" }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#1A261D", marginBottom: 6 }}>Score (out of {assignment.maxScore})</label>
                 <input 
                   type="number" 
                   value={grade}
                   onChange={e => setGrade(e.target.value)}
                   placeholder="e.g. 95"
-                  style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "15px" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 10, border: "1px solid #E4E8E0", background: "#FFFFFF", fontSize: 15, fontWeight: 700 }}
                 />
               </div>
-              <div style={{ marginBottom: "24px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8F9E93", marginBottom: "6px" }}>Feedback</label>
+
+              <div style={{ marginBottom: 20, width: "100%", boxSizing: "border-box" }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#1A261D", marginBottom: 6 }}>Feedback</label>
                 <textarea 
                   value={feedback}
                   onChange={e => setFeedback(e.target.value)}
-                  placeholder="Great job on..."
+                  placeholder="Provide constructive feedback for the student..."
                   rows={4}
-                  style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #E4E8E0", fontSize: "15px", resize: "vertical" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 10, border: "1px solid #E4E8E0", background: "#FFFFFF", fontSize: 14, resize: "vertical", lineHeight: 1.5 }}
                 />
               </div>
+
               <button 
                 onClick={() => gradeMut.mutate()}
                 disabled={gradeMut.isPending || !grade}
-                style={{ width: "100%", padding: "14px", background: "#4A8C5C", color: "white", borderRadius: "8px", fontWeight: 600, border: "none", cursor: "pointer", opacity: gradeMut.isPending || !grade ? 0.7 : 1 }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 24px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)", color: "#FFFFFF", borderRadius: 10, fontWeight: 800, fontSize: 13, border: "none", cursor: "pointer", opacity: gradeMut.isPending || !grade ? 0.7 : 1, boxShadow: "0 4px 14px rgba(184,134,69,0.25)" }}
               >
-                {gradeMut.isPending ? "Saving..." : "Submit Grade"}
+                {gradeMut.isPending ? "Saving Grade…" : "Submit Grade"}
               </button>
             </div>
           </div>
@@ -119,33 +152,71 @@ const SubmissionsViewer = ({ assignment, onBack }: { assignment: any, onBack: ()
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {submissions.map((sub: any) => (
-            <div key={sub.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "24px", background: "#FAFAF7", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#1A261D" }}>
-                  {sub.student.name.charAt(0)}
+            <div
+              key={sub.id}
+              style={{
+                display: "flex", flexDirection: "column", gap: 12,
+                padding: "16px 20px", background: "#FFFFFF", borderRadius: 16,
+                border: "1px solid #E4E8E0", width: "100%", boxSizing: "border-box",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+              }}
+            >
+              {/* Top Row: Avatar & Student Details */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", minWidth: 0 }}>
+                <div style={{
+                  width: 42, height: 42, borderRadius: "50%", background: "rgba(184,134,69,0.12)",
+                  color: "#B88645", display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 800, fontSize: 15, flexShrink: 0, border: "1px solid rgba(184,134,69,0.2)"
+                }}>
+                  {sub.student?.name?.charAt(0) || "S"}
                 </div>
-                <div>
-                  <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 600 }}>{sub.student.name}</h4>
-                  <p style={{ margin: 0, fontSize: "13px", color: "#8F9E93" }}>{sub.student.email} • {new Date(sub.submittedAt).toLocaleDateString()}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h4 style={{ margin: "0 0 2px 0", fontSize: 15, fontWeight: 800, color: "#1A261D", wordBreak: "break-word" }}>
+                    {sub.student?.name || "Student"}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: 12, color: "#7F8E82", wordBreak: "break-all" }}>
+                    {sub.student?.email ? `${sub.student.email} • ` : ""}{new Date(sub.submittedAt).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+
+              {/* Divider */}
+              <div style={{ width: "100%", height: 1, background: "#EBEEE8" }} />
+
+              {/* Bottom Row: Status Badge & Grade Button */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", width: "100%", boxSizing: "border-box" }}>
                 {sub.isGraded ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#4A8C5C", fontWeight: 600, fontSize: "14px", background: "rgba(74,140,92,0.1)", padding: "6px 12px", borderRadius: "999px" }}>
-                    <CheckCircle size={16} /> Graded: {sub.grade}/{assignment.maxScore}
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    color: "#3D7A4B", fontWeight: 800, fontSize: 12,
+                    background: "rgba(61,122,75,0.12)", padding: "5px 12px",
+                    borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
+                  }}>
+                    <CheckCircle size={14} />
+                    <span>Graded: {sub.grade}/{assignment.maxScore}</span>
                   </div>
                 ) : (
-                  <div style={{ color: "#B88645", fontWeight: 600, fontSize: "14px", background: "rgba(184,134,69,0.1)", padding: "6px 12px", borderRadius: "999px" }}>
-                    Needs Grading
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    color: "#B88645", fontWeight: 800, fontSize: 12,
+                    background: "rgba(184,134,69,0.12)", padding: "5px 12px",
+                    borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
+                  }}>
+                    <span>Needs Grading</span>
                   </div>
                 )}
-                <button 
+
+                <button
                   onClick={() => {
                     setGradingSubmission(sub);
                     setGrade(sub.grade?.toString() || "");
                     setFeedback(sub.feedback || "");
                   }}
-                  style={{ padding: "8px 16px", background: "#FAFAF7", border: "1px solid #E4E8E0", borderRadius: "8px", fontWeight: 600, cursor: "pointer", color: "#1A261D" }}
+                  style={{
+                    padding: "8px 16px", background: "#F7F8F5", border: "1px solid #E4E8E0",
+                    borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer",
+                    color: "#1A261D", whiteSpace: "nowrap", flexShrink: 0, marginLeft: "auto",
+                  }}
                 >
                   {sub.isGraded ? "Edit Grade" : "Grade"}
                 </button>
@@ -269,11 +340,14 @@ export default function AssignmentsPanel({ module }: { module: any }) {
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
-        <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 8px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Assignments</h2>
-          <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Create tasks for students to submit files or text.</p>
+    <div style={{ width: "100%", boxSizing: "border-box" }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, flexWrap: "wrap", marginBottom: 28, width: "100%", boxSizing: "border-box",
+      }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Assignments</h2>
+          <p style={{ margin: 0, color: "#7F8E82", fontSize: 13, lineHeight: 1.4 }}>Create tasks for students to submit files or text.</p>
         </div>
         {!isCreating && (
           <button 
@@ -283,9 +357,15 @@ export default function AssignmentsPanel({ module }: { module: any }) {
               setSelectedFile(null);
               setIsCreating(true);
             }}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "10px 20px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+              color: "#FFFFFF", border: "none", borderRadius: 12, fontWeight: 800,
+              cursor: "pointer", fontSize: 13, whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: "0 4px 14px rgba(184,134,69,0.25)"
+            }}
           >
-            <Plus size={16} /> Add Assignment
+            <Plus size={16} /> <span style={{ whiteSpace: "nowrap" }}>Add Assignment</span>
           </button>
         )}
       </div>
@@ -458,8 +538,8 @@ export default function AssignmentsPanel({ module }: { module: any }) {
                   <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0 }}>
                     <FileText size={18} fill="currentColor" />
                   </div>
-                  <div>
-                    <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 600, color: "#1A261D" }}>{assign.title}</h4>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1A261D", wordBreak: "break-word", lineHeight: 1.4 }}>{assign.title}</h4>
                     <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px", flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 600, color: "#8F9E93" }}>{assign.maxScore} Points</span>
                       {assign.dueDate && (
@@ -470,19 +550,24 @@ export default function AssignmentsPanel({ module }: { module: any }) {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginLeft: "auto", flexWrap: "wrap", justifyContent: "flex-end" }}>
                   <button 
                     onClick={() => setViewingSubmissionsFor(assign)}
-                    style={{ padding: "8px 16px", background: "#1A261D", color: "white", border: "none", borderRadius: "6px", fontWeight: 600, fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    style={{ padding: "8px 16px", background: "#1A261D", color: "white", border: "none", borderRadius: "10px", fontWeight: 700, fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "6px" }}
                   >
-                    View Submissions
+                    <Users size={14} />
+                    <span>View Submissions</span>
                   </button>
-                  <button onClick={() => handleEdit(assign)} title="Edit" style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#8F9E93", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "#E4E8E0"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={async () => { if(await confirm("Delete assignment?")) deleteMut.mutate(assign.id); }} title="Delete" style={{ width: "32px", height: "32px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <Trash2 size={16} />
-                  </button>
+
+                  {/* Icon Action Group: Edit & Delete stay together */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                    <button onClick={() => handleEdit(assign)} title="Edit Assignment" style={{ width: "34px", height: "34px", background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#2D3A2F", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Edit2 size={15} />
+                    </button>
+                    <button onClick={async () => { if(await confirm("Delete assignment?")) deleteMut.mutate(assign.id); }} title="Delete Assignment" style={{ width: "34px", height: "34px", background: "rgba(220,74,74,0.06)", border: "1px solid rgba(220,74,74,0.2)", color: "#DC4A4A", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

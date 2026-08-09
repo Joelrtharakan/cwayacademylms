@@ -10,6 +10,21 @@ import { ArrowLeft, Users, MessageSquare, CheckCircle, ChevronDown, ChevronUp, E
 import { toast } from "sonner";
 import { Link } from "@/i18n/routing";
 
+const C = {
+  gold: "#B88645",
+  goldHover: "#A3763A",
+  goldLight: "rgba(184,134,69,0.10)",
+  dark: "#1A261D",
+  darkSoft: "#2D3A2F",
+  muted: "#7F8E82",
+  surface: "#FFFFFF",
+  bgAlt: "#F7F8F5",
+  border: "#E2E6DE",
+  borderLight: "#EBEEE8",
+  red: "#DC4A4A",
+  green: "#3D7A4B",
+};
+
 const getInitials = (name: string) => {
   if (!name) return "ST";
   const parts = name.trim().split(" ");
@@ -101,16 +116,16 @@ export default function GradeForumPage() {
 
   if (isModuleLoading || isDiscussionsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-12 text-[#8A9E8C] font-medium gap-3" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "12px" }}>
-        <div className="w-6 h-6 border-2 border-[#C9973A] border-t-transparent rounded-full animate-spin" />
-        Loading submissions...
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "12px", color: C.muted }}>
+        <div style={{ width: 24, height: 24, borderRadius: "50%", border: `2px solid ${C.gold}`, borderTopColor: "transparent", animation: "spin 1s linear infinite" }} />
+        <span style={{ fontSize: 14, fontWeight: 700 }}>Loading submissions...</span>
       </div>
     );
   }
 
   if (!lesson) {
     return (
-      <div className="p-12 text-[#8A9E8C] font-medium">
+      <div style={{ padding: 40, color: C.muted, fontWeight: 600 }}>
         Forum not found.
       </div>
     );
@@ -119,235 +134,315 @@ export default function GradeForumPage() {
   const maxMarks = lesson.forumMarks;
 
   return (
-    <div className="max-w-6xl mx-auto min-h-screen" style={{ padding: "40px" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box", paddingBottom: 64 }}>
       
-      {/* Header Section */}
-      <div className="mb-12" style={{ marginBottom: "48px" }}>
+      {/* Back Link */}
+      <div style={{ marginBottom: 24 }}>
         <Link 
           href={`/instructor/courses/${courseId}/modules/${moduleId}`}
-          className="inline-flex items-center gap-2 text-[#8A9E8C] hover:text-[#1A261D] mb-8 font-bold text-[13px] tracking-widest uppercase transition-colors"
-          style={{ marginBottom: "32px" }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, color: C.muted, fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", textDecoration: "none" }}
         >
           <ArrowLeft size={16} /> Back to Module
         </Link>
-        
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8 bg-white rounded-3xl border border-[#E4E8E0] shadow-sm relative group" style={{ padding: "40px" }}>
-          
-          {!isEditing && (
-            <button 
-              onClick={() => {
-                setEditTitle(lesson.title);
-                setEditPrompt(lesson.content || "");
-                setEditMarks(lesson.forumMarks || "");
-                setIsEditing(true);
-              }}
-              className="absolute top-6 right-6 p-2 text-[#8A9E8C] hover:bg-[#F3F4F0] rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-              title="Edit Forum"
-            >
-              <Edit3 size={18} />
-            </button>
-          )}
-
-          {isEditing ? (
-            <div className="w-full flex flex-col" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-serif font-bold text-xl text-[#1A261D]">Edit Forum Settings</h3>
-                <button onClick={() => setIsEditing(false)} className="text-[#8A9E8C] hover:text-[#1A261D]"><X size={18} /></button>
-              </div>
-              
-              <div>
-                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Title</label>
-                <input 
-                  type="text" 
-                  value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
-                  style={{ padding: "12px 16px" }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Prompt / Instructions</label>
-                <textarea 
-                  value={editPrompt} onChange={e => setEditPrompt(e.target.value)}
-                  rows={4}
-                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7] resize-y"
-                  style={{ padding: "12px 16px" }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[13px] font-bold text-[#8A9E8C] mb-2 uppercase tracking-wide">Total Marks for Grading</label>
-                <input 
-                  type="number" 
-                  value={editMarks} onChange={e => setEditMarks(e.target.value ? Number(e.target.value) : "")}
-                  placeholder="e.g. 100"
-                  className="w-full border border-[#E4E8E0] rounded-xl focus:outline-none focus:border-[#C9973A] bg-[#FAFAF7]"
-                  style={{ padding: "12px 16px" }}
-                />
-              </div>
-
-              <div className="flex justify-end mt-4" style={{ display: "flex", justifyContent: "flex-end", gap: "16px", marginTop: "16px" }}>
-                <button onClick={() => setIsEditing(false)} className="text-[#8A9E8C] font-bold text-sm" style={{ padding: "10px 20px" }}>Cancel</button>
-                <button onClick={() => updateForumMut.mutate()} disabled={updateForumMut.isPending} className="flex items-center bg-[#1A261D] text-white rounded-xl font-bold text-sm hover:bg-[#2C3E30] transition-colors disabled:opacity-50" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px" }}>
-                  <Save size={16} /> {updateForumMut.isPending ? "Saving..." : "Save Settings"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold font-serif text-[#1A261D] mb-4 leading-tight" style={{ marginBottom: "16px" }}>
-                  {lesson.title}
-                </h1>
-                <p className="text-[#526658] text-[16px] leading-relaxed max-w-3xl">
-                  {lesson.content}
-                </p>
-              </div>
-              
-              <div className="bg-[#FAFAF7] border border-[#E4E8E0] rounded-2xl flex flex-col items-center shrink-0" style={{ padding: "20px 32px" }}>
-                <span className="text-[11px] uppercase font-bold text-[#8A9E8C] tracking-widest mb-1">Max Points</span>
-                <span className="text-3xl font-serif font-bold text-[#C9973A]">{maxMarks || "—"}</span>
-              </div>
-            </>
-          )}
-        </div>
       </div>
 
-      {/* Submissions Section */}
-      <div>
-        <div className="flex items-center justify-between mb-8 px-2" style={{ marginBottom: "32px" }}>
-          <h2 className="text-[22px] font-bold text-[#1A261D] flex items-center gap-3 font-serif">
-            Student Submissions
-          </h2>
-          <span className="text-[14px] font-bold text-[#526658]">
-            {discussions?.length || 0} Total
-          </span>
-        </div>
+      {/* Header Card */}
+      <div style={{
+        background: C.surface, border: `1px solid ${C.border}`, borderRadius: 20,
+        padding: "24px 28px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", marginBottom: 32,
+        width: "100%", boxSizing: "border-box",
+      }}>
+        {isEditing ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 800, color: C.dark, margin: 0 }}>Edit Forum Settings</h3>
+              <button onClick={() => setIsEditing(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}><X size={20} /></button>
+            </div>
+            
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Title</label>
+              <input 
+                type="text" 
+                value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.bgAlt, fontSize: 14, fontWeight: 700, outline: "none" }}
+              />
+            </div>
 
-        {(!discussions || discussions.length === 0) ? (
-          <div className="bg-white rounded-3xl text-center border border-[#E4E8E0] shadow-sm flex flex-col items-center justify-center" style={{ padding: "64px 32px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <MessageSquare size={40} className="text-[#D3D9D5] mb-4" style={{ marginBottom: "16px" }} />
-            <h3 className="text-[#1A261D] font-bold font-serif text-xl mb-2" style={{ marginBottom: "8px" }}>No Submissions Yet</h3>
-            <p className="text-[#8A9E8C] text-[15px]">Students haven't posted any replies to this prompt. Check back later!</p>
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Prompt / Instructions</label>
+              <textarea 
+                value={editPrompt} onChange={e => setEditPrompt(e.target.value)}
+                rows={4}
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.bgAlt, fontSize: 14, outline: "none", resize: "vertical" }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Total Marks for Grading</label>
+              <input 
+                type="number" 
+                value={editMarks} onChange={e => setEditMarks(e.target.value ? Number(e.target.value) : "")}
+                placeholder="e.g. 100"
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.bgAlt, fontSize: 14, outline: "none" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
+              <button onClick={() => setIsEditing(false)} style={{ padding: "10px 20px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 10, color: C.muted, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => updateForumMut.mutate()} disabled={updateForumMut.isPending} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 24px", background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`, color: "#FFFFFF", borderRadius: 10, fontWeight: 800, fontSize: 13, border: "none", cursor: "pointer" }}>
+                <Save size={16} /> {updateForumMut.isPending ? "Saving..." : "Save Settings"}
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-5" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {discussions.map((discussion: any) => {
-              const isExpanded = expandedDiscussionId === discussion.id;
-              const hasBeenGraded = discussion.score !== null && discussion.score !== undefined;
-
-              return (
-                <div 
-                  key={discussion.id} 
-                  className={`bg-white rounded-2xl transition-all duration-300 border overflow-hidden ${
-                    isExpanded 
-                      ? "shadow-md border-[#C9973A]/40 ring-1 ring-[#C9973A]/20" 
-                      : "shadow-sm border-[#E4E8E0] hover:border-[#D3D9D5]"
-                  }`}
-                >
-                  <div 
-                    className="flex flex-col md:flex-row md:items-center justify-between cursor-pointer gap-6"
-                    style={{ padding: "24px 32px" }}
-                    onClick={() => setExpandedDiscussionId(isExpanded ? null : discussion.id)}
-                  >
-                    <div className="flex items-center gap-5 flex-1">
-                      <div className="w-12 h-12 rounded-full bg-[#FAFAF7] text-[#1A261D] font-bold text-[14px] flex items-center justify-center border border-[#E4E8E0] shrink-0">
-                        {getInitials(discussion.author?.name || "Student")}
-                      </div>
-                      <div>
-                        <h4 className="text-[16px] font-bold text-[#1A261D] mb-1" style={{ marginBottom: "4px" }}>{discussion.author?.name || "Student"}</h4>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[13px] text-[#8A9E8C] font-medium">Submitted {new Date(discussion.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-6 self-start md:self-auto">
-                      {hasBeenGraded ? (
-                        <div className="flex items-center gap-2 text-[#4A8C5C] font-bold text-[13px] bg-[#ECFDF5] rounded-xl border border-[#4A8C5C]/20" style={{ padding: "8px 16px" }}>
-                          <CheckCircle size={15} strokeWidth={2.5} /> Graded: {discussion.score}{maxMarks ? `/${maxMarks}` : ''}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-[#B88645] font-bold text-[13px] bg-[#FFFBEB] rounded-xl border border-[#F59E0B]/20" style={{ padding: "8px 16px" }}>
-                          <Edit3 size={15} strokeWidth={2.5} /> Needs Grading
-                        </div>
-                      )}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? "bg-[#FAFAF7] text-[#1A261D]" : "bg-transparent text-[#8A9E8C]"}`}>
-                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </div>
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="pt-2" style={{ paddingLeft: "32px", paddingRight: "32px", paddingBottom: "32px" }}>
-                      <div className="h-px w-full bg-[#E4E8E0] mb-8" style={{ marginBottom: "32px" }} />
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "40px" }}>
-                        {/* Student's Post */}
-                        <div className="space-y-4" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                          <h5 className="text-[12px] font-bold uppercase tracking-widest text-[#8A9E8C]">Student's Response</h5>
-                          <div className="bg-[#FAFAF7] rounded-2xl border border-[#E4E8E0]" style={{ padding: "24px" }}>
-                            <p className="text-[#1A261D] text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                              {discussion.content}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Grading Section */}
-                        <div>
-                          <div className="bg-white rounded-2xl border border-[#E4E8E0] shadow-sm" style={{ padding: "32px" }}>
-                            <h4 className="text-[15px] font-bold text-[#1A261D] mb-6 flex items-center gap-2" style={{ marginBottom: "24px" }}>
-                              Instructor Evaluation
-                            </h4>
-                            
-                            <div className="flex flex-col gap-6" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                              <div className="flex flex-col gap-3" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                                <label className="text-[12px] font-bold uppercase tracking-widest text-[#8A9E8C]">Points Awarded</label>
-                                <div className="flex items-center gap-3">
-                                  <input 
-                                    type="number"
-                                    className="w-24 bg-[#FAFAF7] rounded-xl border border-[#E4E8E0] text-[16px] font-bold text-[#1A261D] outline-none focus:border-[#C9973A] focus:bg-white transition-all text-center"
-                                    style={{ padding: "12px 16px", minHeight: "48px" }}
-                                    value={grades[discussion.id] !== undefined ? grades[discussion.id] : ""}
-                                    onChange={e => setGrades({ ...grades, [discussion.id]: e.target.value === "" ? "" : Number(e.target.value) })}
-                                    placeholder="--"
-                                    max={maxMarks || undefined}
-                                  />
-                                  {maxMarks && <span className="text-[#8A9E8C] font-bold text-[16px] shrink-0">/ {maxMarks}</span>}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-col gap-3" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                                <label className="text-[12px] font-bold uppercase tracking-widest text-[#8A9E8C]">Feedback (Optional)</label>
-                                <textarea 
-                                  className="w-full bg-[#FAFAF7] rounded-xl border border-[#E4E8E0] text-[15px] text-[#1A261D] outline-none focus:border-[#C9973A] focus:bg-white transition-all min-h-[140px] resize-y leading-relaxed"
-                                  style={{ padding: "16px 20px" }}
-                                  placeholder="Leave constructive feedback..."
-                                  value={feedbacks[discussion.id] !== undefined ? feedbacks[discussion.id] : ""}
-                                  onChange={e => setFeedbacks({ ...feedbacks, [discussion.id]: e.target.value })}
-                                />
-                              </div>
-
-                              <button 
-                                onClick={() => handleSaveGrade(discussion.id)}
-                                disabled={gradeMut.isPending}
-                                className="w-full mt-4 bg-[#1A261D] hover:bg-[#2C3E30] text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ padding: "18px 24px", fontSize: "16px" }}
-                              >
-                                {gradeMut.isPending ? "Saving..." : "Save Grade & Feedback"}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", boxSizing: "border-box" }}>
+            {/* Top Header Row: Icon, Title, Points Badge & Edit Button */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap", width: "100%" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: "1 1 200px", minWidth: 160 }}>
+                <div style={{
+                  width: 42, height: 42, borderRadius: 12, background: C.goldLight,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: C.gold, flexShrink: 0, border: "1px solid rgba(184,134,69,0.2)"
+                }}>
+                  <MessageSquare size={20} />
                 </div>
-              );
-            })}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+                    <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(18px, 3.5vw, 24px)", fontWeight: 800, color: C.dark, margin: 0, lineHeight: 1.3, wordBreak: "break-word" }}>
+                      {lesson.title}
+                    </h1>
+                    <span style={{ padding: "4px 12px", background: C.goldLight, color: C.gold, border: "1px solid rgba(184,134,69,0.25)", borderRadius: 20, fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}>
+                      Max: {maxMarks || 100} Points
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {!isEditing && (
+                <button 
+                  onClick={() => {
+                    setEditTitle(lesson.title);
+                    setEditPrompt(lesson.content || "");
+                    setEditMarks(lesson.forumMarks || "");
+                    setIsEditing(true);
+                  }}
+                  style={{
+                    padding: "8px 16px", background: C.bgAlt, border: `1px solid ${C.border}`,
+                    borderRadius: 10, color: C.darkSoft, cursor: "pointer", display: "inline-flex",
+                    alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, flexShrink: 0,
+                    whiteSpace: "nowrap", marginLeft: "auto", boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+                  }}
+                >
+                  <Edit3 size={15} /> <span>Edit Prompt</span>
+                </button>
+              )}
+            </div>
+
+            {/* Discussion Prompt Guidelines Text */}
+            {lesson.content && (
+              <div style={{
+                background: C.bgAlt, padding: "16px 20px", borderRadius: 14,
+                border: `1px solid ${C.borderLight}`, fontSize: 14, lineHeight: 1.6,
+                color: C.darkSoft, wordBreak: "break-word"
+              }}>
+                {lesson.content}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Submissions Section Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "0 4px", flexWrap: "wrap", gap: 10 }}>
+        <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>
+          Student Submissions
+        </h2>
+        <span style={{ fontSize: 13, fontWeight: 800, color: C.muted }}>
+          {discussions?.length || 0} Total
+        </span>
+      </div>
+
+      {/* Submissions List */}
+      {(!discussions || discussions.length === 0) ? (
+        <div style={{ background: "#FFFFFF", borderRadius: 20, textAlign: "center", border: `2px dashed ${C.border}`, padding: "50px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <MessageSquare size={36} color={C.muted} style={{ marginBottom: 14 }} />
+          <h3 style={{ fontFamily: "Georgia, serif", fontSize: 18, fontWeight: 800, color: C.dark, margin: "0 0 6px 0" }}>No Submissions Yet</h3>
+          <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>Students haven't posted any replies to this prompt yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", boxSizing: "border-box" }}>
+          {discussions.map((discussion: any) => {
+            const isExpanded = expandedDiscussionId === discussion.id;
+            const hasBeenGraded = discussion.score !== null && discussion.score !== undefined;
+
+            return (
+              <div 
+                key={discussion.id} 
+                style={{
+                  background: "#FFFFFF", borderRadius: 18, border: `1px solid ${C.border}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.03)", width: "100%", boxSizing: "border-box",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Accordion Top Bar */}
+                <div 
+                  onClick={() => setExpandedDiscussionId(isExpanded ? null : discussion.id)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 16, padding: "20px 24px", cursor: "pointer", flexWrap: "wrap",
+                    width: "100%", boxSizing: "border-box", background: isExpanded ? C.bgAlt : "#FFFFFF"
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 180 }}>
+                    <div style={{
+                      width: 42, height: 42, borderRadius: "50%", background: C.goldLight,
+                      color: C.gold, fontWeight: 800, fontSize: 15, display: "flex",
+                      alignItems: "center", justifyContent: "center", border: `1px solid rgba(184,134,69,0.2)`,
+                      flexShrink: 0
+                    }}>
+                      {getInitials(discussion.author?.name || "Student")}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: "0 0 2px 0", fontSize: 15, fontWeight: 800, color: C.dark, wordBreak: "break-word" }}>
+                        {discussion.author?.name || "Student"}
+                      </h4>
+                      <div style={{ fontSize: 12, color: C.muted }}>
+                        Submitted {new Date(discussion.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0, marginLeft: "auto" }}>
+                    {hasBeenGraded ? (
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        color: C.green, fontWeight: 800, fontSize: 12,
+                        background: "rgba(61,122,75,0.12)", padding: "5px 14px",
+                        borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
+                      }}>
+                        <CheckCircle size={14} />
+                        <span>Graded: {discussion.score}{maxMarks ? `/${maxMarks}` : ''}</span>
+                      </div>
+                    ) : (
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        color: C.gold, fontWeight: 800, fontSize: 12,
+                        background: "rgba(184,134,69,0.12)", padding: "5px 14px",
+                        borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
+                      }}>
+                        <Edit3 size={14} />
+                        <span>Needs Grading</span>
+                      </div>
+                    )}
+                    
+                    <div style={{
+                      width: 32, height: 32, borderRadius: "50%",
+                      background: isExpanded ? "rgba(0,0,0,0.05)" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: C.muted, flexShrink: 0
+                    }}>
+                      {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Section */}
+                {isExpanded && (
+                  <div style={{ padding: "0 24px 24px 24px", width: "100%", boxSizing: "border-box" }}>
+                    <div style={{ width: "100%", height: 1, background: C.borderLight, marginBottom: 20 }} />
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%", boxSizing: "border-box" }}>
+                      
+                      {/* Student's Post */}
+                      <div style={{ width: "100%", boxSizing: "border-box" }}>
+                        <h5 style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: C.gold, margin: "0 0 8px 0" }}>
+                          Student's Response
+                        </h5>
+                        <div style={{
+                          background: C.bgAlt, padding: "18px 20px", borderRadius: 14,
+                          border: `1px solid ${C.border}`, fontSize: 14, lineHeight: 1.6,
+                          color: C.dark, whiteSpace: "pre-wrap", wordBreak: "break-word",
+                          width: "100%", boxSizing: "border-box"
+                        }}>
+                          {discussion.content}
+                        </div>
+                      </div>
+
+                      {/* Instructor Evaluation Form */}
+                      <div style={{ width: "100%", boxSizing: "border-box" }}>
+                        <div style={{ background: C.bgAlt, padding: "22px 24px", borderRadius: 16, border: `1px solid ${C.border}`, width: "100%", boxSizing: "border-box" }}>
+                          <h4 style={{ fontSize: 15, fontWeight: 800, color: C.dark, margin: "0 0 16px 0" }}>
+                            Instructor Evaluation
+                          </h4>
+                          
+                          <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", boxSizing: "border-box" }}>
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: C.dark, marginBottom: 6 }}>
+                                Points Awarded
+                              </label>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <input 
+                                  type="number"
+                                  style={{
+                                    width: 100, padding: "10px 14px", borderRadius: 10,
+                                    border: `1px solid ${C.border}`, background: "#FFFFFF",
+                                    fontSize: 16, fontWeight: 800, color: C.dark, textAlign: "center",
+                                    boxSizing: "border-box"
+                                  }}
+                                  value={grades[discussion.id] !== undefined ? grades[discussion.id] : ""}
+                                  onChange={e => setGrades({ ...grades, [discussion.id]: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  placeholder="--"
+                                  max={maxMarks || undefined}
+                                />
+                                {maxMarks && <span style={{ color: C.muted, fontWeight: 800, fontSize: 15 }}>/ {maxMarks}</span>}
+                              </div>
+                            </div>
+
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: C.dark, marginBottom: 6 }}>
+                                Feedback (Optional)
+                              </label>
+                              <textarea 
+                                style={{
+                                  width: "100%", padding: "12px 16px", borderRadius: 10,
+                                  border: `1px solid ${C.border}`, background: "#FFFFFF",
+                                  fontSize: 14, color: C.dark, outline: "none",
+                                  resize: "vertical", minHeight: 100, lineHeight: 1.5,
+                                  boxSizing: "border-box"
+                                }}
+                                placeholder="Leave constructive feedback for the student..."
+                                value={feedbacks[discussion.id] !== undefined ? feedbacks[discussion.id] : ""}
+                                onChange={e => setFeedbacks({ ...feedbacks, [discussion.id]: e.target.value })}
+                              />
+                            </div>
+
+                            <button 
+                              onClick={() => handleSaveGrade(discussion.id)}
+                              disabled={gradeMut.isPending}
+                              style={{
+                                width: "100%", padding: "12px 24px",
+                                background: `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`,
+                                color: "#FFFFFF", borderRadius: 10, fontWeight: 800,
+                                fontSize: 13, border: "none", cursor: "pointer",
+                                opacity: gradeMut.isPending ? 0.7 : 1,
+                                boxShadow: "0 4px 14px rgba(184,134,69,0.25)",
+                                boxSizing: "border-box"
+                              }}
+                            >
+                              {gradeMut.isPending ? "Saving Grade..." : "Save Grade & Feedback"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
     </div>
   );

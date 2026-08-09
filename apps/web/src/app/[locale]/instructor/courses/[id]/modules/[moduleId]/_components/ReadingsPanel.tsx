@@ -61,18 +61,27 @@ export default function ReadingsPanel({ module }: { module: any }) {
   };
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
-        <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "0 0 8px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Reading Materials</h2>
-          <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Upload PDFs, Word documents, or other reference files.</p>
+    <div style={{ width: "100%", boxSizing: "border-box" }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, flexWrap: "wrap", marginBottom: 28, width: "100%", boxSizing: "border-box",
+      }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 4px 0", color: "#1A261D", fontFamily: "Georgia, serif" }}>Reading Materials</h2>
+          <p style={{ margin: 0, color: "#7F8E82", fontSize: 13, lineHeight: 1.4 }}>Upload PDFs, Word documents, or other reference files.</p>
         </div>
         {!isCreating && (
           <button 
             onClick={() => setIsCreating(true)}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#B88645", color: "#FFFFFF", border: "none", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "10px 20px", background: "linear-gradient(135deg, #B88645 0%, #A3763A 100%)",
+              color: "#FFFFFF", border: "none", borderRadius: 12, fontWeight: 800,
+              cursor: "pointer", fontSize: 13, whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: "0 4px 14px rgba(184,134,69,0.25)"
+            }}
           >
-            <Plus size={16} /> Add Material
+            <Plus size={16} /> <span style={{ whiteSpace: "nowrap" }}>Add Material</span>
           </button>
         )}
       </div>
@@ -158,24 +167,27 @@ export default function ReadingsPanel({ module }: { module: any }) {
           <p style={{ margin: 0, color: "#8F9E93", fontSize: "14px" }}>Provide supplemental documents for your students.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", boxSizing: "border-box" }}>
           {materials.map((mat: any) => (
-            <div key={mat.id} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid #E4E8E0" }}>
-              <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab" }} />
-              <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645" }}>
-                <FileText size={18} fill="currentColor" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 600, color: "#1A261D" }}>{mat.title}</h4>
-                <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px" }}>
-                  <span style={{ textTransform: "uppercase", fontWeight: 600 }}>{mat.fileType}</span>
-                  <span>{(mat.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+            <div key={mat.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", padding: "16px 20px", background: "#FFFFFF", borderRadius: "16px", border: "1px solid #E4E8E0", flexWrap: "wrap", width: "100%", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "14px", flex: 1, minWidth: "180px" }}>
+                <GripVertical size={18} color="#A0AEC0" style={{ cursor: "grab", flexShrink: 0 }} />
+                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(184,134,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B88645", flexShrink: 0 }}>
+                  <FileText size={18} fill="currentColor" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1A261D", wordBreak: "break-word", lineHeight: 1.4 }}>{mat.title}</h4>
+                  <div style={{ fontSize: "12px", color: "#8F9E93", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <span style={{ textTransform: "uppercase", fontWeight: 600, whiteSpace: "nowrap" }}>{mat.fileType}</span>
+                    <span style={{ whiteSpace: "nowrap" }}>{(mat.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button onClick={() => window.open(mat.fileUrl, "_blank")} style={{ padding: "6px 12px", background: "#F7F8F5", border: "none", color: "#B88645", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>View</button>
-                <button onClick={async () => { if(await confirm("Delete material?")) deleteMut.mutate(mat.id); }} style={{ width: "28px", height: "28px", background: "transparent", border: "none", color: "#E53E3E", cursor: "pointer", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,62,62,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <Trash2 size={14} />
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, marginLeft: "auto" }}>
+                <button onClick={() => window.open(mat.fileUrl, "_blank")} style={{ padding: "8px 14px", background: "#F7F8F5", border: "1px solid #E4E8E0", color: "#B88645", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>View</button>
+                <button onClick={async () => { if(await confirm("Delete material?")) deleteMut.mutate(mat.id); }} style={{ width: "34px", height: "34px", background: "rgba(220,74,74,0.06)", border: "1px solid rgba(220,74,74,0.2)", color: "#DC4A4A", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }} title="Delete Material">
+                  <Trash2 size={15} />
                 </button>
               </div>
             </div>
