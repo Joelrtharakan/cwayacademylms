@@ -301,11 +301,21 @@ function NotificationDropdown() {
       </button>
 
       {isOpen && (
-        <div style={{
-          position: "absolute", top: "48px", right: 0, width: "360px", background: "#FFFFFF",
-          borderRadius: "16px", border: "1px solid #E4E8E0", boxShadow: "0 10px 40px rgba(26,38,29,0.1)",
-          zIndex: 100, overflow: "hidden", display: "flex", flexDirection: "column"
-        }}>
+        <div 
+          className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:top-12 sm:right-0 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
+          style={{
+            maxHeight: "min(460px, calc(100vh - 80px))",
+            background: "#FFFFFF",
+            borderRadius: "16px",
+            border: "1px solid #E4E8E0",
+            boxShadow: "0 16px 40px rgba(26,38,29,0.18)",
+            zIndex: 9999,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            boxSizing: "border-box"
+          }}
+        >
           <div style={{ padding: "16px 20px", borderBottom: "1px solid #E4E8E0", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F7F8F5" }}>
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1A261D" }}>{t("notifications")}</h3>
             {unreadCount > 0 && (

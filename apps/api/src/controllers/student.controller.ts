@@ -629,6 +629,69 @@ export const attemptQuiz = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const parseAnswersObject = (rawInput: any): Record<string, any> => {
+  let current = rawInput;
+  try {
+    while (typeof current === "string") {
+      current = JSON.parse(current);
+    }
+    if (current && typeof current === "object") {
+      return current;
+    }
+  } catch (e) {}
+  return {};
+};
+
+const buildQuestionResults = (questions: any[], userAnswers: Record<string, any>) => {
+  let earnedPoints = 0;
+  let totalPoints = 0;
+  const results: any[] = [];
+
+  for (const q of questions) {
+    totalPoints += q.points;
+    const userAnswer = userAnswers[q.id] ?? userAnswers[String(q.id)];
+    let isCorrect = false;
+    let correctAnswer: string | null = null;
+    let pointsEarned = 0;
+    let yourAnswerText: string | null = null;
+
+    if (q.type === "MCQ" || q.type === "TRUE_FALSE") {
+      const correctAns = q.answers.find((a: any) => a.isCorrect);
+      correctAnswer = correctAns?.text || null;
+
+      const userSelectedAns = q.answers.find((a: any) => a.id === userAnswer || a.text === userAnswer);
+      if (userSelectedAns) {
+        yourAnswerText = userSelectedAns.text;
+        if (correctAns && (correctAns.id === userSelectedAns.id || correctAns.text === userSelectedAns.text)) {
+          isCorrect = true;
+          pointsEarned = q.points;
+          earnedPoints += q.points;
+        }
+      } else if (userAnswer !== undefined && userAnswer !== null) {
+        yourAnswerText = String(userAnswer);
+      }
+    } else if (q.type === "SHORT_ANSWER") {
+      yourAnswerText = (userAnswer !== undefined && userAnswer !== null) ? String(userAnswer) : null;
+      correctAnswer = "Pending manual grading";
+    }
+
+    results.push({
+      questionId: q.id,
+      questionText: q.text,
+      type: q.type,
+      yourAnswer: yourAnswerText,
+      correctAnswer,
+      isCorrect,
+      points: q.points,
+      pointsEarned,
+      scriptureRef: q.scriptureRef
+    });
+  }
+
+  const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
+  return { earnedPoints, totalPoints, score, results };
+};
+
 export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
   const { quizId } = req.params;
   const { attemptId, answers, timeTaken } = req.body;
@@ -644,44 +707,8 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
   });
   if (!quiz) throw new AppError("Quiz not found", 404);
 
-  let earnedPoints = 0;
-  let totalPoints = 0;
-  const results: any[] = [];
-
-  for (const q of quiz.questions) {
-    totalPoints += q.points;
-    const userAnswer = answers[q.id];
-    let isCorrect = false;
-    let correctAnswer = null;
-    let pointsEarned = 0;
-
-    if (q.type === "MCQ" || q.type === "TRUE_FALSE") {
-      const correctAns = q.answers.find(a => a.isCorrect);
-      correctAnswer = correctAns?.text;
-      if (correctAns && correctAns.id === userAnswer) {
-        isCorrect = true;
-        pointsEarned = q.points;
-        earnedPoints += q.points;
-      }
-    } else if (q.type === "SHORT_ANSWER") {
-      // Manual grading required, 0 points for now
-      correctAnswer = "Pending manual grading";
-    }
-
-    results.push({
-      questionId: q.id,
-      questionText: q.text,
-      type: q.type,
-      yourAnswer: q.type === "SHORT_ANSWER" ? userAnswer : q.answers.find(a => a.id === userAnswer)?.text,
-      correctAnswer,
-      isCorrect,
-      points: q.points,
-      pointsEarned,
-      scriptureRef: q.scriptureRef
-    });
-  }
-
-  const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
+  const userAnswers = parseAnswersObject(answers);
+  const { earnedPoints, totalPoints, score, results } = buildQuestionResults(quiz.questions, userAnswers);
   const passed = score >= quiz.passingScore;
 
   await prisma.quizAttempt.update({
@@ -689,7 +716,7 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
     data: {
       score,
       passed,
-      answers: JSON.stringify(answers),
+      answers: JSON.stringify(userAnswers),
       completedAt: new Date()
     }
   });
@@ -720,7 +747,46 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
       timeTaken,
       results,
       canRetake: quiz.maxAttempts === 0 || attemptsCount < quiz.maxAttempts,
-      attemptsLeft: quiz.maxAttempts === 0 ? "Unlimited" : quiz.maxAttempts - attemptsCount
+      attemptsLeft: quiz.maxAttempts === 0 ? "Unlimited" : Math.max(0, quiz.maxAttempts - attemptsCount)
+    }
+  });
+});
+
+export const getQuizAttemptById = asyncHandler(async (req: Request, res: Response) => {
+  const { quizId, attemptId } = req.params;
+  const studentId = req.user!.id;
+
+  const attempt = await prisma.quizAttempt.findUnique({
+    where: { id: attemptId }
+  });
+
+  if (!attempt || attempt.studentId !== studentId) {
+    throw new AppError("Attempt not found", 404);
+  }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    include: { questions: { include: { answers: true } } }
+  });
+
+  if (!quiz) throw new AppError("Quiz not found", 404);
+
+  const userAnswers = parseAnswersObject(attempt.answers);
+  const { earnedPoints, totalPoints, score, results } = buildQuestionResults(quiz.questions, userAnswers);
+
+  const attemptsCount = await prisma.quizAttempt.count({ where: { quizId, studentId } });
+
+  res.json({
+    status: "success",
+    data: {
+      score: attempt.score,
+      passed: attempt.passed,
+      passingScore: quiz.passingScore,
+      earnedPoints,
+      totalPoints,
+      results,
+      canRetake: quiz.maxAttempts === 0 || attemptsCount < quiz.maxAttempts,
+      attemptsLeft: quiz.maxAttempts === 0 ? "Unlimited" : Math.max(0, quiz.maxAttempts - attemptsCount)
     }
   });
 });

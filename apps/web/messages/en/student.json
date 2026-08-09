@@ -68,7 +68,8 @@
     "saveNote": "Save Note",
     "cannotPreview": "This material cannot be previewed inside the player. You can download it instead.",
     "openDownload": "Open / Download",
-    "backToLesson": "Back to lesson"
+    "backToLesson": "Back to lesson",
+    "closeSidebar": "Close Sidebar"
   },
   "courses": {
     "status": {

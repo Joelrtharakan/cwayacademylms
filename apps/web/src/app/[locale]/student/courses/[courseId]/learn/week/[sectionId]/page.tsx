@@ -52,220 +52,214 @@ export default function WeekDescriptionPage() {
   const firstLesson = section?.lessons?.[0];
 
   return (
-    <div className="w-full flex flex-col h-[calc(100vh-70px)] relative overflow-hidden bg-[#FAFAF7]" style={{ color: "#1C2B1E", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+    <div className="w-full flex flex-col h-[calc(100vh-70px)] relative overflow-hidden bg-[#FAFAF7]" style={{ color: "#1C2B1E", fontFamily: "var(--font-plus-jakarta), 'Inter', system-ui, sans-serif" }}>
       
       <div data-lenis-prevent="true" className="flex-1 w-full relative overflow-y-auto flex flex-col">
         {/* Hero Banner Header */}
         <div style={{ 
-          padding: "60px 48px", 
+          padding: "clamp(24px, 4vw, 48px) clamp(16px, 4vw, 48px)", 
           background: "linear-gradient(180deg, #FFFFFF 0%, #FAFAF7 100%)", 
-          borderBottom: "1px solid rgba(201,151,58,0.2)",
+          borderBottom: "1px solid rgba(184,134,69,0.2)",
           position: "relative",
           overflow: "hidden",
           flexShrink: 0
         }}>
-        {/* Subtle Decorative Background Elements */}
-        <div style={{ position: "absolute", top: -50, right: -50, width: 250, height: 250, background: "radial-gradient(circle, rgba(201,151,58,0.08) 0%, transparent 70%)", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", bottom: -50, left: 100, width: 200, height: 200, background: "radial-gradient(circle, rgba(28,43,30,0.03) 0%, transparent 70%)", borderRadius: "50%" }} />
+          {/* Subtle Decorative Background Elements */}
+          <div style={{ position: "absolute", top: -50, right: -50, width: 250, height: 250, background: "radial-gradient(circle, rgba(184,134,69,0.08) 0%, transparent 70%)", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", bottom: -50, left: 100, width: 200, height: 200, background: "radial-gradient(circle, rgba(28,43,30,0.03) 0%, transparent 70%)", borderRadius: "50%" }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", display: "flex", gap: "24px", alignItems: "flex-start" }}>
-          <div style={{ 
-            width: "64px", height: "64px", 
-            borderRadius: "16px", 
-            background: "#FFFFFF", 
-            display: "flex", alignItems: "center", justifyContent: "center", 
-            color: "#C9973A", 
-            border: "1px solid rgba(201,151,58,0.3)", 
-            boxShadow: "0 8px 24px rgba(201,151,58,0.12)",
-            flexShrink: 0
-          }}>
-            <FileText size={32} strokeWidth={1.5} />
-          </div>
-          <div>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "nowrap" }}>
             <div style={{ 
-              fontSize: "12px", 
-              fontWeight: 700, 
-              color: "#A8792A", 
-              marginBottom: "8px", 
-              textTransform: "uppercase", 
-              letterSpacing: "0.15em" 
-            }}>
-              Week Overview
+              width: "48px", height: "48px", 
+              borderRadius: "14px", 
+              background: "#FFFFFF", 
+              display: "flex", alignItems: "center", justifyContent: "center", 
+              color: "#B88645", 
+              border: "1px solid rgba(184,134,69,0.3)", 
+              boxShadow: "0 4px 16px rgba(184,134,69,0.12)",
+              flexShrink: 0
+            }} className="sm:!w-16 sm:!h-16 sm:!rounded-2xl">
+              <FileText size={26} strokeWidth={1.5} className="sm:!w-8 sm:!h-8" />
             </div>
-            <h1 style={{ 
-              fontSize: "36px", 
-              fontWeight: 400, 
-              margin: 0, 
-              color: "#1C2B1E", 
-              fontFamily: "var(--font-dm-serif), Georgia, serif",
-              lineHeight: "1.2"
-            }}>
-              {section.title}
-            </h1>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ 
+                fontSize: "11px", 
+                fontWeight: 800, 
+                color: "#B88645", 
+                marginBottom: "6px", 
+                textTransform: "uppercase", 
+                letterSpacing: "0.15em",
+                fontFamily: "var(--font-plus-jakarta), -apple-system, sans-serif"
+              }}>
+                Week Overview
+              </div>
+              <h1 style={{ 
+                fontSize: "clamp(22px, 4vw, 34px)", 
+                fontWeight: 800, 
+                margin: 0, 
+                color: "#1C2B1E", 
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                lineHeight: "1.25",
+                letterSpacing: "-0.01em",
+                overflowWrap: "break-word"
+              }}>
+                {section.title}
+              </h1>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content Area */}
-      <div style={{ padding: "48px 48px", maxWidth: "900px", margin: "0 auto", width: "100%", flex: 1, paddingBottom: "80px" }}>
-        <div style={{ 
-          background: "#FFFFFF", 
-          borderRadius: "24px", 
-          padding: "56px", 
-          border: "1px solid #E4E8E0",
-          boxShadow: "0 12px 40px rgba(28,43,30,0.04)",
-          position: "relative"
-        }}>
-          {/* Accent Line */}
-          <div style={{ position: "absolute", top: 0, left: "40px", right: "40px", height: "3px", background: "linear-gradient(90deg, transparent, #C9973A, transparent)", opacity: 0.8 }} />
-
-          <h2 style={{ 
-            fontSize: "18px", 
-            fontWeight: 700, 
-            marginBottom: "24px", 
-            color: "#C9973A", 
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px"
-          }}>
-            <span style={{ width: "24px", height: "1px", background: "#C9973A" }}></span>
-            About this Week
-          </h2>
-          
+        {/* Main Content Area */}
+        <div style={{ padding: "clamp(16px, 3vw, 36px) clamp(16px, 3vw, 36px)", maxWidth: "900px", margin: "0 auto", width: "100%", flex: 1, paddingBottom: "40px", boxSizing: "border-box" }}>
           <div style={{ 
-            fontSize: "17px", 
-            color: "#243825", 
-            lineHeight: "1.8",
-            whiteSpace: "pre-wrap",
-            fontWeight: 400,
-            textAlign: "justify"
+            background: "#FFFFFF", 
+            borderRadius: "20px", 
+            padding: "clamp(20px, 4vw, 44px)", 
+            border: "1px solid #E4E8E0",
+            boxShadow: "0 8px 30px rgba(28,43,30,0.03)",
+            position: "relative",
+            width: "100%",
+            boxSizing: "border-box"
           }}>
-            {section.description ? (
-              <span style={{ display: "block", position: "relative" }}>
-                <span style={{ fontSize: "20px", color: "#1C2B1E", lineHeight: "1.6", display: "block", marginBottom: "16px", textAlign: "justify" }}>
-                  {section.description.split('\n')[0]}
-                </span>
-                <span style={{ color: "#4A5D4E", textAlign: "justify" }}>
-                  {section.description.substring(section.description.split('\n')[0].length).trim()}
-                </span>
-              </span>
-            ) : (
-              <span style={{ color: "#8A9E8C", fontStyle: "italic" }}>No description provided for this week.</span>
-            )}
-          </div>
-        </div>
+            {/* Accent Line */}
+            <div style={{ position: "absolute", top: 0, left: "20px", right: "20px", height: "3px", background: "linear-gradient(90deg, transparent, #B88645, transparent)", opacity: 0.8 }} />
 
-        {/* Timeline Section */}
-        {section.lessons && section.lessons.length > 0 && (
-          <div style={{ marginTop: "48px" }}>
-            <h3 style={{ 
-              fontSize: "16px", 
-              fontWeight: 700, 
-              marginBottom: "24px", 
-              color: "#1C2B1E", 
-              letterSpacing: "0.05em",
+            <h2 style={{ 
+              fontSize: "14px", 
+              fontWeight: 800, 
+              marginBottom: "20px", 
+              color: "#B88645", 
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
               display: "flex",
               alignItems: "center",
-              gap: "12px"
+              gap: "10px",
+              fontFamily: "Georgia, serif"
             }}>
-              <span style={{ width: "24px", height: "1px", background: "#E4E8E0" }}></span>
-              Items to Complete
-            </h3>
+              <span style={{ width: "20px", height: "1px", background: "#B88645" }}></span>
+              About this Week
+            </h2>
             
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {section.lessons.map((l: any, index: number) => {
-                const isCompleted = l.isCompleted;
-                return (
-                  <div 
-                    key={l.id} 
-                    onClick={() => router.push(`/student/courses/${courseId}/learn/${l.id}`)}
-                    style={{ 
-                      background: "#FFFFFF", 
-                      border: "1px solid #E4E8E0", 
-                      borderRadius: "16px", 
-                      padding: "20px 24px", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "20px",
-                      cursor: "pointer",
-                      boxShadow: "0 2px 8px rgba(28,43,30,0.02)",
-                      transition: "all 0.2s ease"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "#C9973A";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 8px 24px rgba(201,151,58,0.08)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "#E4E8E0";
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,43,30,0.02)";
-                    }}
-                  >
-                    <div style={{ 
-                      width: "48px", 
-                      height: "48px", 
-                      borderRadius: "12px", 
-                      background: isCompleted ? "rgba(201,151,58,0.1)" : "#FAFAF7", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      border: isCompleted ? "1px solid rgba(201,151,58,0.2)" : "1px solid #E4E8E0"
-                    }}>
-                      {isCompleted ? <CheckCircle size={24} color="#C9973A" /> : (
-                        l.type === "VIDEO" ? <PlayCircle size={24} color="#8A9E8C" /> :
-                        l.type === "READING_MATERIAL" ? <BookOpen size={24} color="#8A9E8C" /> :
-                        l.type === "QUIZ" ? <HelpCircle size={24} color="#8A9E8C" /> :
-                        l.type === "ASSIGNMENT" ? <Edit3 size={24} color="#8A9E8C" /> :
-                        <FileText size={24} color="#8A9E8C" />
-                      )}
-                    </div>
-                    
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "12px", fontWeight: 700, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
-                        {l.type.replace('_', ' ')}
-                      </div>
-                      <div style={{ fontSize: "16px", fontWeight: 600, color: "#1C2B1E" }}>
-                        {l.title}
-                      </div>
-                    </div>
-                    
-                    <div style={{ color: "#D4A35B", opacity: 0.5, transition: "opacity 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.opacity = "1"} onMouseLeave={(e) => e.currentTarget.style.opacity = "0.5"}>
-                      <ArrowRight size={20} />
-                    </div>
-                  </div>
-                );
-              })}
+            <div style={{ 
+              fontSize: "16px", 
+              color: "#243825", 
+              lineHeight: "1.75",
+              whiteSpace: "pre-wrap",
+              fontWeight: 400,
+              textAlign: "left",
+              overflowWrap: "break-word"
+            }}>
+              {section.description ? (
+                <span style={{ display: "block", color: "#243825", fontSize: "16px", fontWeight: 400, lineHeight: "1.75" }}>
+                  {section.description}
+                </span>
+              ) : (
+                <span style={{ color: "#8A9E8C", fontStyle: "italic" }}>No description provided for this week.</span>
+              )}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Timeline Section */}
+          {section.lessons && section.lessons.length > 0 && (
+            <div style={{ marginTop: "32px" }}>
+              <h3 style={{ 
+                fontSize: "13px", 
+                fontWeight: 800, 
+                marginBottom: "20px", 
+                color: "#1C2B1E", 
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                fontFamily: "Georgia, serif"
+              }}>
+                <span style={{ width: "20px", height: "1px", background: "#E4E8E0" }}></span>
+                Items to Complete
+              </h3>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {section.lessons.map((l: any) => {
+                  const isCompleted = l.isCompleted;
+                  return (
+                    <div 
+                      key={l.id} 
+                      onClick={() => router.push(`/student/courses/${courseId}/learn/${l.id}`)}
+                      style={{ 
+                        background: "#FFFFFF", 
+                        border: "1px solid #E4E8E0", 
+                        borderRadius: "14px", 
+                        padding: "16px 20px", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "14px",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 6px rgba(28,43,30,0.02)",
+                        transition: "all 0.2s ease"
+                      }}
+                    >
+                      <div style={{ 
+                        width: "42px", 
+                        height: "42px", 
+                        borderRadius: "10px", 
+                        background: isCompleted ? "rgba(184,134,69,0.12)" : "#FAFAF7", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        border: isCompleted ? "1px solid rgba(184,134,69,0.25)" : "1px solid #E4E8E0"
+                      }}>
+                        {isCompleted ? <CheckCircle size={20} color="#B88645" /> : (
+                          l.type === "VIDEO" ? <PlayCircle size={20} color="#8A9E8C" /> :
+                          l.type === "READING_MATERIAL" ? <BookOpen size={20} color="#8A9E8C" /> :
+                          l.type === "QUIZ" ? <HelpCircle size={20} color="#8A9E8C" /> :
+                          l.type === "ASSIGNMENT" ? <Edit3 size={20} color="#8A9E8C" /> :
+                          <FileText size={20} color="#8A9E8C" />
+                        )}
+                      </div>
+                      
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "2px", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+                          {l.type.replace('_', ' ')}
+                        </div>
+                        <div style={{ fontSize: "15px", fontWeight: 700, color: "#1C2B1E", overflowWrap: "break-word", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+                          {l.title}
+                        </div>
+                      </div>
+                      
+                      <div style={{ color: "#B88645", flexShrink: 0 }}>
+                        <ArrowRight size={18} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* PREV/NEXT NAV BOTTOM BAR */}
-      <div className="h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 w-full" style={{ paddingLeft: "48px", paddingRight: "48px" }}>
-        <div style={{ flex: 1 }}>
-          {/* Future expansion for 'previous module' button */}
-        </div>
-        
-        <div className="flex flex-col items-center justify-center gap-1 text-center px-4" style={{ flex: 1 }}>
-          <div className="text-[11px] text-[#8A9E8C] font-bold tracking-[0.2em] uppercase">
+      <div className="h-16 sm:h-20 shrink-0 bg-[#FFFFFF] border-t border-[#E4E8E0] flex items-center justify-between z-30 w-full" style={{ paddingLeft: "clamp(24px, 5vw, 64px)", paddingRight: "clamp(20px, 4vw, 40px)", boxSizing: "border-box" }}>
+        {/* Left Section: Overview Label */}
+        <div className="flex items-center">
+          <span style={{ fontSize: "11px", fontWeight: 800, color: "#8A9E8C", textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
             Overview
-          </div>
+          </span>
         </div>
         
-        <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+        {/* Center Spacer */}
+        <div className="flex-1" />
+        
+        {/* Right Section: Start Lesson Action Button */}
+        <div className="flex-shrink-0 flex justify-end">
           <button 
             onClick={() => firstLesson && router.push(`/student/courses/${courseId}/learn/${firstLesson.id}`)}
             disabled={!firstLesson}
-            className="bg-[#4a8c5c] hover:bg-[#3d7a4e] text-white border-transparent flex items-center gap-2 font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ padding: "12px 28px", borderRadius: "999px", fontSize: "16px" }}
+            className="bg-[#B88645] hover:bg-[#A3763A] text-white border-transparent flex items-center gap-2 font-extrabold transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ padding: "9px 20px", borderRadius: "10px", fontSize: "13px", whiteSpace: "nowrap" }}
           >
-            {firstLesson ? "Start First Lesson" : "No Lessons"} <ArrowRight className="w-4 h-4" />
+            {firstLesson ? "Start Lesson" : "No Lessons"} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

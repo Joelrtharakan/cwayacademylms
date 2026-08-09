@@ -22,6 +22,7 @@ router.post("/enrollments/:enrollmentId/reading-materials/:materialId/complete",
 
 // Quizzes
 router.get("/quizzes/:quizId/my-attempts", studentCtrl.getMyQuizAttempts);
+router.get("/quizzes/:quizId/attempts/:attemptId", studentCtrl.getQuizAttemptById);
 router.post("/quizzes/:quizId/attempt", studentCtrl.attemptQuiz);
 router.post("/quizzes/:quizId/submit", studentCtrl.submitQuiz);
 

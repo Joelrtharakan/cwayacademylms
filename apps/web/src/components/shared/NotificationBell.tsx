@@ -121,21 +121,18 @@ export function NotificationBell() {
 
       {open && (
         <div
+          className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:top-12 sm:right-0 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
           style={{
-            position: "absolute",
-            top: "48px",
-            right: 0,
-            width: "360px",
-            maxWidth: "calc(100vw - 32px)",
-            maxHeight: "440px",
+            maxHeight: "460px",
             display: "flex",
             flexDirection: "column",
             background: "#FFFFFF",
             border: "1px solid #E4E8E0",
             borderRadius: "14px",
-            boxShadow: "0 16px 40px rgba(26, 38, 29, 0.16)",
-            zIndex: 60,
+            boxShadow: "0 16px 40px rgba(26, 38, 29, 0.18)",
+            zIndex: 9999,
             overflow: "hidden",
+            boxSizing: "border-box"
           }}
         >
           <div

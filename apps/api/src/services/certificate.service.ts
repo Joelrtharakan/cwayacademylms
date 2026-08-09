@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import { prisma } from '../utils/prisma';
 import { format } from 'date-fns';
+import { resolveLocalized } from '../utils/localized';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.cwayacademy.com';
 
@@ -329,7 +330,10 @@ export class CertificateService {
     }
 
     const isProgram = certificate.type === 'PROGRAM';
-    const displayName = isProgram ? (certificate.program?.title as any) || 'Program' : (certificate.course?.title as any) || 'Course';
+    const rawTitle = isProgram 
+      ? certificate.program?.title || certificate.course?.program?.title
+      : certificate.course?.title;
+    const displayName = resolveLocalized(rawTitle) || (isProgram ? 'Program' : 'Course');
 
     // Convert local logo.png to base64 Data URI so Puppeteer renders it 100% reliably in PDF without network dependency
     let logoDataUri = 'https://pub-f282ad46200f49dc90b58a8a4e737923.r2.dev/assets/logo.png';
@@ -422,7 +426,7 @@ export class CertificateService {
       const { sendCertificateIssuedEmail } = await import('./email.service');
       await sendCertificateIssuedEmail(
         { name: certificate.student.name, email: certificate.student.email },
-        { title: (certificate.course?.title as any) || 'Course' },
+        { title: resolveLocalized(certificate.course?.title) || 'Course' },
         certificate.uniqueCode
       );
     } catch (e) {
@@ -462,7 +466,7 @@ export class CertificateService {
       const { sendCertificateIssuedEmail } = await import('./email.service');
       await sendCertificateIssuedEmail(
         { name: certificate.student.name, email: certificate.student.email },
-        { title: (certificate.program?.title as any) || 'Program' },
+        { title: resolveLocalized(certificate.program?.title) || 'Program' },
         certificate.uniqueCode
       );
     } catch (e) {

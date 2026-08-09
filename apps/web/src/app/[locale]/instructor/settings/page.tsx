@@ -246,10 +246,10 @@ export default function InstructorSettingsPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const TABS = [
-    { id: "profile", label: t("tabs.profile"), icon: User },
-    { id: "credentials", label: t("tabs.credentials"), icon: ShieldCheck },
-    { id: "password", label: t("tabs.password"), icon: Lock },
-    { id: "notifications", label: t("tabs.notifications"), icon: Bell },
+    { id: "profile", label: t("tabs.profile"), shortLabel: t("tabs.profile"), icon: User },
+    { id: "credentials", label: t("tabs.credentials"), shortLabel: "Creds", icon: ShieldCheck },
+    { id: "password", label: t("tabs.password"), shortLabel: t("tabs.password"), icon: Lock },
+    { id: "notifications", label: t("tabs.notifications"), shortLabel: "Alerts", icon: Bell },
   ];
 
   /* ─── Forms ─── */
@@ -413,27 +413,27 @@ export default function InstructorSettingsPage() {
       {/* ═══════ STICKY PILL NAV ═══════ */}
       <div style={{
         position: "sticky", top: 0, zIndex: 20,
-        background: "rgba(245,246,242,0.85)",
+        background: "rgba(245,246,242,0.95)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
-        padding: "8px 0 12px",
+        padding: "6px 0 12px",
         marginBottom: 20,
         width: "100%",
         boxSizing: "border-box" as const,
       }}>
         <nav
-          className="settings-nav-pill"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
-            gap: 6,
-            padding: "6px",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 4,
+            padding: 4,
             background: C.surface,
             borderRadius: 14,
             border: `1px solid ${C.borderLight}`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             width: "100%",
             boxSizing: "border-box" as const,
+            overflow: "hidden"
           }}
         >
           {TABS.map((tab) => {
@@ -442,15 +442,16 @@ export default function InstructorSettingsPage() {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   width: "100%",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "9px 12px",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                  padding: "9px 2px",
                   borderRadius: 10,
                   border: "none",
                   cursor: "pointer",
-                  fontSize: 12, fontWeight: active ? 800 : 600,
+                  fontSize: "clamp(11px, 2.5vw, 13px)", fontWeight: active ? 800 : 600,
                   color: active ? "#fff" : C.muted,
                   background: active
                     ? `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`
@@ -462,7 +463,8 @@ export default function InstructorSettingsPage() {
                 }}
               >
                 <Icon size={14} strokeWidth={active ? 2.5 : 2} color={active ? "#fff" : C.mutedLight} style={{ flexShrink: 0 }} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tab.label}</span>
+                <span className="hidden sm:inline" style={{ whiteSpace: "nowrap" }}>{tab.label}</span>
+                <span className="sm:hidden" style={{ whiteSpace: "nowrap" }}>{tab.shortLabel}</span>
               </button>
             );
           })}

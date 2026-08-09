@@ -379,25 +379,25 @@ export default function InstructorGradebookPage() {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "nowrap" }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1, minWidth: 0 }}>
                             <div style={{
                               width: 36, height: 36, borderRadius: 10,
                               background: item.type === "ASSIGNMENT" ? "#E3F2FD" : item.type === "FORUM" ? "#E8F5E9" : "#FFF3E0",
                               color: item.type === "ASSIGNMENT" ? "#1976D2" : item.type === "FORUM" ? "#2E7D32" : "#F57C00",
-                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2
                             }}>
                               <Icon size={18} />
                             </div>
-                            <div>
-                              <h5 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.dark }}>{item.title}</h5>
-                              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{item.type} • Max Score: {item.maxScore}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <h5 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.dark, lineHeight: 1.35, overflowWrap: "break-word" }}>{item.title}</h5>
+                              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600, marginTop: 2, display: "block" }}>{item.type} • Max Score: {item.maxScore}</span>
                             </div>
                           </div>
 
-                          <div style={{ textAlign: "right" }}>
+                          <div style={{ textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>
                             {score !== null ? (
-                              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end" }}>
                                 <span style={{ fontSize: 18, fontWeight: 800, color: C.dark }}>{score}</span>
                                 <span style={{ fontSize: 12, color: C.muted, fontWeight: 700 }}>/ {item.maxScore}</span>
                                 <span style={{ fontSize: 12, fontWeight: 800, color: percent >= 70 ? "#2E7D32" : "#E53E3E", marginLeft: 6 }}>

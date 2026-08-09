@@ -4,11 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { api, useAuthStore, fetchWithCache, clearApiCache } from "@/store/auth.store";
-import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award } from "lucide-react";
+import { ArrowLeft, PanelLeft, StickyNote, Bell, CheckCircle, Lock, PlayCircle, FileText, HelpCircle, ClipboardCheck, ChevronDown, ChevronRight, Download, Mail, Phone, GraduationCap, Award, X } from "lucide-react";
 import { getLetterGrade } from "@/lib/gradeScale";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 export default function CoursePlayerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -255,11 +257,12 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             zIndex: 2,
             position: "relative"
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", borderRadius: "50%", flexShrink: 0 }}>
                <Image 
                 src="/logo.png" 
@@ -283,6 +286,36 @@ export default function CoursePlayerLayout({ children }: { children: React.React
               </div>
             </div>
           </div>
+
+          {/* Close Sidebar Button */}
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              color: "rgba(255, 255, 255, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.16)";
+              e.currentTarget.style.color = "#FFFFFF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+              e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+            }}
+            title="Close Sidebar"
+          >
+            <X size={16} />
+          </button>
         </div>
 
         {/* Course Info & Progress */}
@@ -615,30 +648,33 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 28px",
+            padding: "0 clamp(12px, 3vw, 28px)",
             flexShrink: 0,
             zIndex: 20,
+            width: "100%",
+            boxSizing: "border-box"
           }}
         >
-          {/* Left side (Mobile Toggle) */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* Left side (Sidebar Toggle & Title) */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              style={{ background: "none", border: "none", padding: "8px", cursor: "pointer", color: "#1A261D" }}
+              style={{ background: "none", border: "none", padding: "6px", cursor: "pointer", color: "#1A261D", display: "flex", alignItems: "center", borderRadius: "6px" }}
+              title="Toggle Sidebar"
             >
               <PanelLeft size={20} />
             </button>
-            <div className="hidden md:block" style={{ fontSize: "14px", fontWeight: 600, color: "#1A261D" }}>
+            <div className="hidden md:block" style={{ fontSize: "14px", fontWeight: 700, color: "#1A261D", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {enrollment.course.title}
             </div>
           </div>
 
-          {/* Right side */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Right side Actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
             {/* Instructor Contact */}
             {enrollment?.course?.instructor && (
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginRight: "8px", paddingRight: "16px", borderRight: "1px solid #E4E8E0" }}>
-                <div className="hidden md:block" style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div className="hidden lg:block" style={{ fontSize: "11px", fontWeight: 700, color: "#8F9E93", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: "4px" }}>
                   {t("instructor")}
                 </div>
                 {enrollment.course.instructor.email && (
@@ -649,11 +685,11 @@ export default function CoursePlayerLayout({ children }: { children: React.React
                     }}
                     title={t("emailInstructor")}
                     style={{
-                      width: "38px", height: "38px", borderRadius: "10px", background: "#F7F8F5", border: "1px solid #E4E8E0",
-                      display: "flex", alignItems: "center", justifyContent: "center", color: "#9AAE9B", transition: "all 0.15s", cursor: "pointer"
+                      width: "36px", height: "36px", borderRadius: "9px", background: "#F7F8F5", border: "1px solid #E4E8E0",
+                      display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B", transition: "all 0.15s", cursor: "pointer"
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.color = "#B88645"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#9AAE9B"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#64748B"; }}
                   >
                     <Mail size={15} />
                   </button>
@@ -664,38 +700,29 @@ export default function CoursePlayerLayout({ children }: { children: React.React
             <button
               onClick={() => setIsNotesOpen(true)}
               style={{
-                width: "38px", height: "38px", borderRadius: "10px", background: "#F7F8F5", border: "1px solid #E4E8E0",
-                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#9AAE9B", transition: "all 0.15s"
+                width: "36px", height: "36px", borderRadius: "9px", background: "#F7F8F5", border: "1px solid #E4E8E0",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#64748B", transition: "all 0.15s"
               }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.color = "#B88645"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#9AAE9B"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#64748B"; }}
               title={t("myNotes")}
             >
               <StickyNote size={15} />
             </button>
 
-            <button
-              style={{
-                position: "relative", width: "38px", height: "38px", borderRadius: "10px", background: "#F7F8F5", border: "1px solid #E4E8E0",
-                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#9AAE9B", transition: "all 0.15s"
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#B88645"; e.currentTarget.style.color = "#B88645"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E8E0"; e.currentTarget.style.color = "#9AAE9B"; }}
-            >
-              <Bell size={15} />
-            </button>
+            <NotificationBell />
 
-            <div style={{ width: "1px", height: "24px", background: "#E4E8E0", margin: "0 4px" }} />
+            <div className="hidden sm:block" style={{ width: "1px", height: "20px", background: "#E4E8E0", margin: "0 2px" }} />
 
-            {/* User */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "default" }}>
+            {/* User Avatar */}
+            <div style={{ display: "flex", alignItems: "center", cursor: "default" }}>
               <div
                 style={{
-                  width: "36px", height: "36px", borderRadius: "50%", background: "rgba(184,134,69,0.1)", border: "1.5px solid rgba(184,134,69,0.25)",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "#B88645", textTransform: "uppercase"
+                  width: "34px", height: "34px", borderRadius: "50%", background: "rgba(184,134,69,0.12)", border: "1.5px solid rgba(184,134,69,0.3)",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800, color: "#B88645", textTransform: "uppercase"
                 }}
               >
-                {user?.name?.slice(0, 2) || "ST"}
+                {user?.fullName ? user.fullName.split(' ').map((n: string) => n[0]).join('').substring(0,2) : "TE"}
               </div>
             </div>
           </div>

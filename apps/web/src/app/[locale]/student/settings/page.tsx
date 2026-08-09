@@ -246,9 +246,9 @@ export default function StudentSettingsPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const TABS = [
-    { id: "profile", label: t("tabs.profile"), icon: User },
-    { id: "password", label: t("tabs.password"), icon: Lock },
-    { id: "notifications", label: t("tabs.notifications"), icon: Bell },
+    { id: "profile", label: t("tabs.profile"), shortLabel: t("tabs.profile"), icon: User },
+    { id: "password", label: t("tabs.password"), shortLabel: t("tabs.password"), icon: Lock },
+    { id: "notifications", label: t("tabs.notifications"), shortLabel: "Alerts", icon: Bell },
   ];
 
   /* ─── Forms ─── */
@@ -322,24 +322,24 @@ export default function StudentSettingsPage() {
         background: C.surface,
         borderRadius: 20,
         border: `1px solid ${C.borderLight}`,
-        padding: "28px 28px 24px",
-        marginBottom: 12,
+        padding: "clamp(20px, 4vw, 28px)",
+        marginBottom: 16,
         boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.02)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           {/* Avatar with camera overlay */}
           <label
             className="settings-avatar-ring"
             style={{
               position: "relative",
-              width: 72, height: 72, minWidth: 72,
+              width: 64, height: 64, minWidth: 64,
               borderRadius: "50%",
               border: `2.5px solid ${C.border}`,
               overflow: "hidden",
               cursor: "pointer",
               transition: "border-color 0.25s",
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: C.bgAlt,
+              background: "linear-gradient(135deg, #1A261D 0%, #2D3A2F 100%)",
               boxShadow: `0 2px 12px rgba(0,0,0,0.06)`,
             }}
           >
@@ -357,13 +357,15 @@ export default function StudentSettingsPage() {
                 }}
               />
             ) : (
-              <User size={28} color={C.mutedLight} strokeWidth={1.5} />
+              <div style={{ fontSize: 20, fontWeight: 800, color: C.gold, textTransform: "uppercase" }}>
+                {user?.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2) : "ST"}
+              </div>
             )}
             <div
               className="settings-avatar-overlay"
               style={{
                 position: "absolute", inset: 0,
-                background: "rgba(26,38,29,0.65)",
+                background: "rgba(26,38,29,0.75)",
                 display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
                 opacity: 0, transition: "opacity 0.25s",
@@ -378,18 +380,26 @@ export default function StudentSettingsPage() {
           </label>
 
           {/* Name & role info */}
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <h1 style={{
-              margin: 0, fontSize: 22, fontWeight: 800,
-              color: C.dark, letterSpacing: "-0.02em", lineHeight: 1.3,
-            }}>
-              {user?.name || "Student"}
-            </h1>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <h1 style={{
+                margin: 0, fontSize: "clamp(18px, 4vw, 24px)", fontWeight: 800,
+                color: C.dark, letterSpacing: "-0.02em", lineHeight: 1.25, overflowWrap: "break-word"
+              }}>
+                {user?.name || "Student"}
+              </h1>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                background: C.goldLight, color: C.gold, padding: "3px 8px", borderRadius: 6
+              }}>
+                {user?.role || "Student"}
+              </span>
+            </div>
             <p style={{
-              margin: "4px 0 0", fontSize: 13, color: C.muted,
-              lineHeight: 1.4,
+              margin: 0, fontSize: 13, color: C.muted,
+              lineHeight: 1.4, overflowWrap: "break-word"
             }}>
-              {t("subtitle")}
+              {user?.email || t("subtitle")}
             </p>
           </div>
         </div>
@@ -398,27 +408,27 @@ export default function StudentSettingsPage() {
       {/* ═══════ STICKY PILL NAV ═══════ */}
       <div style={{
         position: "sticky", top: 0, zIndex: 20,
-        background: "rgba(245,246,242,0.85)",
+        background: "rgba(245,246,242,0.95)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
-        padding: "8px 0 12px",
+        padding: "6px 0 12px",
         marginBottom: 20,
         width: "100%",
         boxSizing: "border-box" as const,
       }}>
         <nav
-          className="settings-nav-pill"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
-            gap: 6,
-            padding: "6px",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 4,
+            padding: 4,
             background: C.surface,
             borderRadius: 14,
             border: `1px solid ${C.borderLight}`,
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             width: "100%",
             boxSizing: "border-box" as const,
+            overflow: "hidden"
           }}
         >
           {TABS.map((tab) => {
@@ -427,15 +437,16 @@ export default function StudentSettingsPage() {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   width: "100%",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "9px 12px",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                  padding: "9px 4px",
                   borderRadius: 10,
                   border: "none",
                   cursor: "pointer",
-                  fontSize: 12, fontWeight: active ? 800 : 600,
+                  fontSize: "clamp(11px, 2.5vw, 13px)", fontWeight: active ? 800 : 600,
                   color: active ? "#fff" : C.muted,
                   background: active
                     ? `linear-gradient(135deg, ${C.gold} 0%, ${C.goldHover} 100%)`
@@ -447,7 +458,8 @@ export default function StudentSettingsPage() {
                 }}
               >
                 <Icon size={14} strokeWidth={active ? 2.5 : 2} color={active ? "#fff" : C.mutedLight} style={{ flexShrink: 0 }} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tab.label}</span>
+                <span className="hidden sm:inline" style={{ whiteSpace: "nowrap" }}>{tab.label}</span>
+                <span className="sm:hidden" style={{ whiteSpace: "nowrap" }}>{tab.shortLabel}</span>
               </button>
             );
           })}
