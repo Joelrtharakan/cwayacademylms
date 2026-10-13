@@ -6,64 +6,9 @@
     "auditLog": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/.8299d194a910755d7caeea449d383b91501b9215-audit.json",
     "files": [
         {
-            "date": 1784214894550,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-16.log",
-            "hash": "09d2df2ea0ed188bc440910a08aaa022f8c939de1f1e664129c476162426fdab"
-        },
-        {
-            "date": 1784318960063,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-18.log",
-            "hash": "3959fe2a37613b78967715207b0e89f01079c6d8d812bab31fe0770ad790d7ef"
-        },
-        {
-            "date": 1784404347060,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-19.log",
-            "hash": "2f28f4b88422813d391e73a2ec88656629dc86dc1128c4b7754b6997d27df7d8"
-        },
-        {
-            "date": 1784525006251,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-20.log",
-            "hash": "a8fad765d5b8b8d13fdf0e69c674f6a1a347c185d4c683cc3eea07954b350e8f"
-        },
-        {
-            "date": 1784810364164,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-23.log",
-            "hash": "0a18913d987830f07e40036ba35e3b477d1aafd7d4463365fb8f6369346eebb2"
-        },
-        {
-            "date": 1784836133277,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-24.log",
-            "hash": "e48e16e40341964777eab67c944916139cbdc313f93641e42937d3f0b6e1d9a2"
-        },
-        {
-            "date": 1784972258064,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-25.log",
-            "hash": "98d1eae2b6ece9b3bc022ee25667c722f448cb9efdd1e2db900c600669507b10"
-        },
-        {
-            "date": 1785034153225,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-26.log",
-            "hash": "b779855d2054cb605864b6dd4fdb6a06a48be7d8c821ba5da7fa71971e26fb2c"
-        },
-        {
-            "date": 1785155204913,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-27.log",
-            "hash": "0d74c7432e4d8c54ca9062337e6ac72d128f97dbac6535672b2c11b129d28308"
-        },
-        {
-            "date": 1785180314029,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-07-28.log",
-            "hash": "97fcbb1184805476dac90f944295f65285f38533b92e8cc26e2ea1a8a9f66017"
-        },
-        {
-            "date": 1786188737004,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-08-08.log",
-            "hash": "05a01b52a47f1e4c007cf4ffa46ac14d93c4170260fec15864eb3cfbcaeea9d1"
-        },
-        {
-            "date": 1786214303898,
-            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-08-09.log",
-            "hash": "58d01db6c74ed57b795755fa7ac88b630cd09f7040dbdec9d56b40eb4283adf6"
+            "date": 1791878406383,
+            "name": "/Users/joeltharakan/Documents/cway-academy/apps/api/logs/error-2026-10-13.log",
+            "hash": "62e911b1737d1d105f719b05d043943305c93701659ba584d5c80fff3faf4e73"
         }
     ],
     "hashType": "sha256"
